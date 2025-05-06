@@ -378,7 +378,7 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     uf = form_data.scopes[0] if form_data.scopes else None
     ip = request.client.host if request and request.client else None
     key = (crm, ip)
-    now = time()
+    now = time.time()
     # Checar bloqueio
     if key in BLOCKED_LOGINS and BLOCKED_LOGINS[key] > now:
         raise HTTPException(status_code=429, detail="Muitas tentativas de login. Tente novamente em alguns minutos.")
