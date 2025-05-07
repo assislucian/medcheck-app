@@ -1,5 +1,37 @@
+# Diretórios e arquivos de dependências
+venv/
+node_modules/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# Dados, dumps, PDFs e arquivos grandes
+*.pdf
+*.db
+*.sqlite3
+*.zip
+*.log
+*.csv
+*.json
+uploads/
+results/
+data/
+logs/
+
+# Arquivos temporários e do sistema
+.DS_Store
+*.swp
+*.tmp
+
+# Build e dist
+build/
+dist/
+
+# Exceções: mantenha exemplos mínimos
+!data/cbhpm/CBHPM2015_v1.xlsx
+!examples/
+
 # Dependencies
-node_modules
 .pnp
 .pnp.js
 
@@ -34,7 +66,6 @@ yarn-error.log*
 *.sw?
 
 # OS
-.DS_Store
 Thumbs.db
 
 # Yarn

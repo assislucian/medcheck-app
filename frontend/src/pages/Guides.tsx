@@ -7,7 +7,7 @@ import {
 } from "../components/ui/card";
 import { DataGrid } from "../components/ui/data-grid";
 import { Button } from "../components/ui/button";
-import { FileText, Upload, Eye, Trash2, HelpCircle } from "lucide-react";
+import { FileText, Upload, Eye, Trash2, HelpCircle, Users, UserCheck } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { useState, useEffect } from "react";
 import {
@@ -32,6 +32,7 @@ import { Card } from "../components/ui/card";
 import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
+import InfoCard from "../components/ui/InfoCard";
 // import Fuse from 'fuse.js';
 
 function getCurrentCrm() {
@@ -474,6 +475,8 @@ const GuidesPage = () => {
           </span>
         }
         icon={<FileText size={28} />}
+        description="Gerencie e consulte suas guias médicas processadas"
+        size="md"
         actions={userProfile ? (
           <UserMenu
             name={userProfile.name || 'Usuário'}
@@ -484,20 +487,26 @@ const GuidesPage = () => {
           />
         ) : null}
       />
-      <div className="space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
-          <div className="bg-card rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-xs text-muted-foreground">Guias</span>
-            <span className="text-xl font-bold">{totalGuias}</span>
-          </div>
-          <div className="bg-card rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-xs text-muted-foreground">Procedimentos</span>
-            <span className="text-xl font-bold">{totalProcedimentos}</span>
-          </div>
-          <div className="bg-card rounded-lg shadow p-4 flex flex-col items-center">
-            <span className="text-xs text-muted-foreground">Papel mais frequente</span>
-            <span className="text-xl font-bold">{papelMaisFrequente[0]} ({papelMaisFrequente[1]})</span>
-          </div>
+          <InfoCard
+            icon={<FileText className="h-6 w-6 text-blue-500" />}
+            title="Guias"
+            value={totalGuias}
+            variant="info"
+          />
+          <InfoCard
+            icon={<Users className="h-6 w-6 text-green-500" />}
+            title="Procedimentos"
+            value={totalProcedimentos}
+            variant="success"
+          />
+          <InfoCard
+            icon={<UserCheck className="h-6 w-6 text-purple-500" />}
+            title="Papel mais frequente"
+            value={`${papelMaisFrequente[0]} (${papelMaisFrequente[1]})`}
+            variant="neutral"
+          />
         </div>
         <div className="bg-muted rounded-lg p-3 mb-2">
           <div className="flex justify-between items-center mb-1">

@@ -1,54 +1,60 @@
-# React + TypeScript + Vite
+# 🧑‍💻 MedCheck Frontend — Guia Rápido
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Frontend React + TypeScript + Vite para o MedCheck. Foco em UX, segurança, integração robusta com backend e AI-first.**
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Instalação e Execução
 
-## Expanding the ESLint configuration
+```bash
+# Instale as dependências
+cd frontend
+npm install  # ou yarn install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Crie o arquivo de variáveis de ambiente
+cp .env.example .env
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+# Rode o app em modo dev
+npm run dev  # ou yarn dev
+```
+Acesse: http://localhost:5173
+
+## ⚙️ Variáveis de Ambiente
+Exemplo de `.env`:
+```
+VITE_API_URL=http://localhost:8000
+```
+- Configure para apontar para o backend correto (local ou produção).
+
+## 🏗️ Build e Deploy
+```bash
+npm run build  # ou yarn build
+```
+Os arquivos finais estarão em `frontend/dist/`.
+
+## 🧪 Testes
+```bash
+npm test  # ou yarn test
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🤖 Premissas e Segurança
+- Nunca exponha segredos no frontend.
+- Sempre valide dados no backend.
+- Siga as regras de `.cursorrules` e `.notes/` para máxima eficiência com AI.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🔗 Integração Backend
+- O frontend consome a API do backend MedCheck (ver `VITE_API_URL`).
+- Autenticação JWT, upload de arquivos, LGPD, etc.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## 📚 Links Úteis
+- [../README.md](../README.md): guia do backend
+- [docs/technical.md](../docs/technical.md): stack, padrões, variáveis
+- [.notes/](../.notes/): visão geral, tarefas, histórico
+
+## ❓ FAQ
+- **Como aponto para o backend de produção?** Edite `VITE_API_URL` no `.env`.
+- **Como faço deploy?** Rode `npm run build` e publique o conteúdo de `dist/` em seu host (ex: Vercel, Netlify).
+- **Como contribuo?** Siga as premissas de segurança e documentação do projeto.
+
+---
+**Dúvidas? Consulte `.notes/meeting_notes.md` ou abra uma issue.**

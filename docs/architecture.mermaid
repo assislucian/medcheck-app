@@ -1,0 +1,8 @@
+graph TD
+  FE[Frontend (React/TS)] -->|REST API| BE[Backend (FastAPI)]
+  BE --> DB[(Banco de Dados)]
+  BE --> S3[(Armazenamento de Arquivos)]
+  BE --> Email[(SendGrid)]
+  FE --> Auth[Autenticação JWT]
+  BE --> Logs[(Logs/Auditoria)]
+  BE --> LGPD[Endpoints LGPD] 

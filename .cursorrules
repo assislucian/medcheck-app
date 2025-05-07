@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "context_initialization": {
+      "description": "Sempre leia .notes/project_overview.md e .notes/task_list.md antes de sugerir mudanças."
+    },
+    "operational_protocol": {
+      "before_action": [
+        "Quebre tarefas grandes em subtarefas MECE",
+        "Leia o código relevante antes de editar",
+        "Preserve funcionalidades existentes"
+      ],
+      "code_changes": [
+        "Mantenha tipagem e tratamento de erros",
+        "Documente todo novo código"
+      ]
+    },
+    "safety_requirements": [
+      "Nunca quebre a tipagem",
+      "Sempre trate erros",
+      "Nunca exponha segredos"
+    ],
+    "priorities": [
+      { "source": ".notes/", "weight": 1.0 }
+    ]
+  }
+} 
