@@ -1,16 +1,15 @@
-
 import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+// import { Button } from '@/components/ui/button'; // Não é mais usado
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Link } from 'react-router-dom';
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle } from "../ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 
 interface UserMenuProps {
   name: string;
@@ -33,62 +32,60 @@ export const UserMenu = ({ name, email, specialty, avatarUrl, onLogout }: UserMe
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost"
-          className="flex items-center gap-2"
+        <button
+          className="flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-full transition hover:bg-muted px-1 py-1"
+          aria-label="Abrir menu do usuário"
         >
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 border border-muted">
             <AvatarImage src={avatarUrl} alt="Avatar" />
             <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
-          <div className="hidden lg:block text-left">
-            <p className="text-sm font-medium">{name}</p>
-            {specialty && (
-              <p className="text-xs text-muted-foreground">{specialty}</p>
-            )}
-          </div>
-          <ChevronDown className="h-4 w-4 hidden lg:block" />
-        </Button>
+          <span className="hidden xl:block text-sm font-medium text-neutral-900 dark:text-white max-w-[120px] truncate">{name}</span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
-        <div className="flex items-center justify-start p-2 lg:hidden">
-          <Avatar className="h-10 w-10 mr-3">
-            <AvatarImage src={avatarUrl} alt="Avatar" />
+      <DropdownMenuContent align="end" className="w-60 max-w-xs rounded-xl shadow-xl border bg-popover p-0 mt-2">
+        <div className="flex flex-col items-center gap-2 px-4 py-4 bg-muted rounded-t-xl border-b">
+          <Avatar className="h-9 w-9 border border-muted">
+            <AvatarImage src={avatarUrl} alt={name} />
             <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-medium">{name}</p>
-            <p className="text-xs text-muted-foreground">{email}</p>
+          <div className="text-center w-full">
+            <p className="font-semibold text-base truncate">{name}</p>
+            <p className="text-xs text-muted-foreground truncate">{email}</p>
+            {specialty && <p className="text-xs text-muted-foreground truncate">CRM: {specialty}</p>}
           </div>
         </div>
-        <DropdownMenuSeparator className="lg:hidden" />
-        <DropdownMenuItem asChild>
-          <Link to="/profile" className="cursor-pointer flex items-center">
-            <User className="mr-2 h-4 w-4" />
-            <span>Meu Perfil</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings" className="cursor-pointer flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Configurações</span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <div className="p-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Tema</span>
-            <ThemeToggle className="ml-0" />
-          </div>
+        <div className="py-1">
+          <DropdownMenuItem asChild className="transition-colors duration-100 hover:bg-muted/80 focus:bg-muted/80 cursor-pointer flex items-center gap-2 px-4 py-2" role="menuitem">
+            <Link to="/profile">
+              <User className="h-4 w-4" />
+              <span>Meu Perfil</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="transition-colors duration-100 hover:bg-muted/80 focus:bg-muted/80 cursor-pointer flex items-center gap-2 px-4 py-2" role="menuitem">
+            <Link to="/settings">
+              <Settings className="h-4 w-4" />
+              <span>Configurações</span>
+            </Link>
+          </DropdownMenuItem>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-          className="cursor-pointer text-destructive focus:text-destructive"
-          onClick={onLogout}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair</span>
-        </DropdownMenuItem>
+        <div className="flex items-center justify-between px-4 py-2">
+          <span className="text-sm">Tema</span>
+          <ThemeToggle className="ml-0" />
+        </div>
+        <div className="py-1">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            className="transition-colors duration-100 hover:bg-red-50 focus:bg-red-100 text-destructive font-semibold flex items-center gap-2 px-4 py-2 mt-1"
+            onClick={onLogout}
+            role="menuitem"
+          >
+            <LogOut className="h-4 w-4 text-destructive" />
+            <span>Sair</span>
+          </DropdownMenuItem>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

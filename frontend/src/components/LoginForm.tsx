@@ -124,7 +124,7 @@ const LoginForm = () => {
               type="text"
               value={crm}
               onChange={e => setCrm(e.target.value)}
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               autoComplete="username"
               disabled={isLoading}
             />
@@ -137,7 +137,7 @@ const LoginForm = () => {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="input input-bordered w-full"
+              className="input input-bordered w-full bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               autoComplete="current-password"
               disabled={isLoading}
             />

@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
@@ -96,7 +95,7 @@ export const GuestNavigation = () => {
         <Button variant="ghost" asChild className="text-sm hidden md:flex">
           <Link to="/login">Entrar</Link>
         </Button>
-        <Button asChild className="rounded-md">
+        <Button asChild variant="default" className="rounded-md">
           <Link to="/register">Começar agora</Link>
         </Button>
       </div>

@@ -1,8 +1,8 @@
-
 import { ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar/AppSidebar";
+import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { AppSidebar } from "../sidebar/AppSidebar";
+import GlobalHeader from "./GlobalHeader";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -24,21 +24,16 @@ export function MainLayout({
   return (
     <>
       <Helmet>
-        <title>{`${title} | MedCheck`}</title>
-        {description && <meta name="description" content={description} />}
+        <title>MedCheck</title>
+        {/* Mantém SEO, mas não renderiza título/descrição visualmente */}
       </Helmet>
 
       <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
+        <div className="min-h-screen w-full bg-neutral-50 dark:bg-neutral-900">
           {showSideNav && <AppSidebar />}
-          
-          <main className="flex-1">
-            <div className="p-4">
-              <div className="flex items-center gap-4 mb-8">
-                <SidebarTrigger />
-                <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-              </div>
-              
+          <main className="ml-[272px] bg-neutral-50 min-h-screen px-8 py-6 overflow-y-auto">
+            <GlobalHeader actions={<SidebarTrigger />} />
+            <div className="pt-2">
               {children}
             </div>
           </main>

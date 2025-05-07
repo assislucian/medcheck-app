@@ -1,37 +1,17 @@
-
-import { 
-  LayoutDashboard, 
-  FileText, 
-  FileBarChart, 
-  FileX,
-  History,
-  HelpCircle,
-  Bell,
-  User,
-  Play,
-  LogOut
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ThemeToggle } from "../ThemeToggle";
+import { LogOut, Play, LayoutDashboard, FileText, FileBarChart, FileX, History, HelpCircle, User } from "lucide-react";
+import { useAuth } from "../../contexts/auth/AuthContext";
 import { toast } from "sonner";
+import Brand from "./Brand";
+import SidebarFooter from "./Footer";
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
+
+  const isActive = (route: string) => location.pathname.startsWith(route);
 
   const handleSignOut = async () => {
     try {
@@ -54,101 +34,63 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/logo.png" alt="MedCheck" />
-            <AvatarFallback>MC</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-semibold text-lg">MedCheck</span>
-            <span className="text-xs text-muted-foreground">{user?.email}</span>
-          </div>
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    onClick={() => navigate(item.href)}
-                    tooltip={item.label}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Notificações</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => navigate("/notifications")}
-                  tooltip="Notificações"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span>Notificações</span>
-                  <Badge className="ml-auto">2</Badge>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Conta</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => navigate("/profile")}
-                  tooltip="Perfil"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Perfil</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="p-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => navigate("/tour")}
-              variant="outline"
-              tooltip="Tour"
+    <aside className="fixed inset-y-0 left-0 flex flex-col w-[272px] bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 px-6 py-6 h-screen z-40">
+      <Brand />
+      {/* Espaço para UserMiniCard futuramente, se necessário */}
+      <nav className="flex-1 mt-4 space-y-2 overflow-y-auto">
+        <h4 className="mt-6 mb-2 text-xs font-semibold text-neutral-400 uppercase">Operações</h4>
+        <ul className="space-y-1">
+          {mainMenuItems.slice(0, 4).map((item) => (
+            <li key={item.href}>
+              <button
+                onClick={() => navigate(item.href)}
+                className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+                  ${isActive(item.href)
+                    ? 'bg-brand-50 text-brand border-l-4 border-brand'
+                    : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <h4 className="mt-6 mb-2 text-xs font-semibold text-neutral-400 uppercase">Insights</h4>
+        <ul className="space-y-1">
+          {mainMenuItems.slice(4).map((item) => (
+            <li key={item.href}>
+              <button
+                onClick={() => navigate(item.href)}
+                className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+                  ${isActive(item.href)
+                    ? 'bg-brand-50 text-brand border-l-4 border-brand'
+                    : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+              >
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <h4 className="mt-6 mb-2 text-xs font-semibold text-neutral-400 uppercase">Conta</h4>
+        <ul className="space-y-1">
+          <li>
+            <button
+              onClick={() => navigate('/profile')}
+              className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+                ${isActive('/profile')
+                  ? 'bg-brand-50 text-brand border-l-4 border-brand'
+                  : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
             >
-              <Play className="h-4 w-4" />
-              <span>Ver Tour</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={handleSignOut}
-              variant="outline"
-              className="mt-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
-              tooltip="Sair"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sair</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+              <User className="h-4 w-4" />
+              <span>Perfil</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <div className="mt-auto pt-4 space-y-3 border-t border-neutral-200">
+        <SidebarFooter />
+      </div>
+    </aside>
   );
 }

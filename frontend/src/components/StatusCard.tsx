@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
@@ -37,49 +36,45 @@ export function StatusCard({
   };
 
   return (
-    <Card className={cn("overflow-hidden transition-colors", variantStyles[variant], className)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium flex items-center">
-          {title}
-          {tooltipContent && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 ml-1 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <p>{tooltipContent}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </CardTitle>
-        <Icon className={cn("h-4 w-4", {
-          "text-primary": variant === 'default',
-          "text-success": variant === 'success',
-          "text-destructive": variant === 'error',
-          "text-warning": variant === 'warning'
-        })} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+    <div className="rounded-xl bg-white dark:bg-neutral-800 shadow-sm hover:shadow-md transition p-6 flex items-center gap-4">
+      <span className={cn(
+        "h-10 w-10 flex items-center justify-center rounded-full bg-brand-light text-brand",
+        variant === 'success' && 'bg-success/10 text-success',
+        variant === 'error' && 'bg-danger/10 text-danger',
+        variant === 'warning' && 'bg-warning/10 text-warning',
+      )}>
+        <Icon className="h-6 w-6" />
+      </span>
+      <div className="flex-1">
+        <div className="text-sm font-medium text-gray-500">{title}</div>
+        <div className="text-2xl font-semibold">{value}</div>
         {trend && (
-          <p className="text-xs text-muted-foreground flex items-center mt-1">
-            <span
-              className={cn(
-                "mr-1",
-                trend.isPositive ? "text-success" : "text-destructive"
-              )}
-            >
+          <p className="text-xs flex items-center mt-1">
+            <span className={cn(
+              "mr-1",
+              trend.isPositive ? "text-success" : "text-danger"
+            )}>
               {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
             </span>
             em relação ao mês anterior
           </p>
         )}
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-gray-500 mt-1">{description}</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      {tooltipContent && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="h-4 w-4 ml-2 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs">
+              <p>{tooltipContent}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
   );
 }

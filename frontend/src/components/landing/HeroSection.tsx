@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Clock, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/atoms/Button/Button';
+import { Button } from '@/components/ui/button';
 
 export function HeroSection() {
   return (
@@ -34,14 +33,8 @@ export function HeroSection() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-6">
-              <Button 
-                size="lg" 
-                className="text-lg px-8 h-12 rounded-md transition-all duration-300 hover:translate-y-[-2px] shadow-lg shadow-primary-500/20"
-                rightIcon={<ArrowRight className="h-5 w-5" />}
-              >
-                <Link to="/register">
-                  Comece agora
-                </Link>
+              <Button asChild size="lg" variant="default" className="rounded-md text-lg px-8 h-12 transition-all duration-300 hover:translate-y-[-2px] shadow-lg shadow-primary-500/20">
+                <Link to="/register">Comece agora</Link>
               </Button>
               <Button 
                 variant="outline" 

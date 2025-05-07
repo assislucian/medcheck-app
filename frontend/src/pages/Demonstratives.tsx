@@ -1,7 +1,7 @@
-import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DataGrid } from "@/components/ui/data-grid";
-import { Button } from "@/components/ui/button";
+import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { DataGrid } from "../components/ui/data-grid";
+import { Button } from "../components/ui/button";
 import { 
   FileBarChart, 
   Download, 
@@ -14,18 +14,19 @@ import {
   Trash2
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FileDropZone from "@/components/upload/FileDropZone";
-import { useFileUpload } from "@/hooks/useFileUpload";
-import { FileType } from "@/types/upload";
-import FileList from "@/components/upload/FileList";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import FileDropZone from "../components/upload/FileDropZone";
+import { useFileUpload } from "../hooks/useFileUpload";
+import { FileType } from "../types/upload";
+import FileList from "../components/upload/FileList";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "../components/ui/dialog";
+import { Badge } from "../components/ui/badge";
 import axios from "axios";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { findProcedureByCodigo, calculateTotalCBHPM } from "@/data/cbhpmData";
+import { findProcedureByCodigo, calculateTotalCBHPM } from "../data/cbhpmData";
+import PageHeader from "../components/layout/PageHeader";
 
 const mockDetailedProcedures = [
   {
@@ -512,6 +513,7 @@ const DemonstrativesPage = () => {
       title="Demonstrativos"
       description="Gerencie seus demonstrativos de pagamento"
     >
+      <PageHeader title="Demonstrativos" icon={<FileBarChart size={24} />} />
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>

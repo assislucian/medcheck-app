@@ -29,6 +29,9 @@ import { Link } from "react-router-dom";
 import LoaderTable from "../components/ui/LoaderTable";
 import { cn } from "../lib/utils";
 import { Card } from "../components/ui/card";
+import PageHeader from "../components/layout/PageHeader";
+import { useAuth } from "../contexts/auth/AuthContext";
+import { UserMenu } from "../components/navbar/UserMenu";
 // import Fuse from 'fuse.js';
 
 function getCurrentCrm() {
@@ -128,6 +131,8 @@ const GuidesPage = () => {
     handleFileChangeByType,
     processUploadedFiles,
   } = fileUpload;
+
+  const { userProfile, signOut } = useAuth();
 
   // Carrega guias já salvas
   useEffect(() => {
@@ -451,23 +456,35 @@ const GuidesPage = () => {
   const defaultPapelColor = { bg: 'rgba(99,102,241,0.13)', text: '#3730a3' }; // fallback suave
 
   return (
-    <AuthenticatedLayout title="Guias Médicas">
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">Guias Médicas</h2>
+    <AuthenticatedLayout title="Guias" description="Gerencie e consulte suas guias médicas processadas">
+      <PageHeader
+        title={
+          <span className="flex items-center">
+            Guias Médicas
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link to="/help" className="text-primary hover:underline flex items-center" aria-label="Central de Ajuda">
+                  <Link to="/help" className="ml-2 text-brand hover:underline flex items-center" aria-label="Central de Ajuda">
                     <HelpCircle className="w-5 h-5" />
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent>Central de Ajuda: tutoriais, vídeos e perguntas frequentes</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </div>
-        </div>
+          </span>
+        }
+        icon={<FileText size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
+      <div className="space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
           <div className="bg-card rounded-lg shadow p-4 flex flex-col items-center">
             <span className="text-xs text-muted-foreground">Guias</span>

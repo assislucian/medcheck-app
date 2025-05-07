@@ -1,5 +1,4 @@
-
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
@@ -21,7 +20,7 @@ export function CtaSection() {
           </p>
           
           <div className="flex flex-col md:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="text-md">
+            <Button asChild size="lg" variant="default" className="text-md rounded-md">
               <Link to="/register">Comece agora gratuitamente</Link>
             </Button>
             
