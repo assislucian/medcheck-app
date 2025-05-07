@@ -4,6 +4,9 @@ import { DataGrid } from "@/components/ui/data-grid";
 import { Button } from "@/components/ui/button";
 import { FileText, Download } from "lucide-react";
 import { useState } from "react";
+import PageHeader from "../components/layout/PageHeader";
+import { useAuth } from "../contexts/auth/AuthContext";
+import { UserMenu } from "../components/navbar/UserMenu";
 
 // Mock data for demonstration purposes
 const mockHistory = [
@@ -62,9 +65,23 @@ const historyColumns = [
 
 const HistoryPage = () => {
   const [history] = useState<any[]>(mockHistory);
+  const { userProfile, signOut } = useAuth();
 
   return (
     <AuthenticatedLayout title="Histórico">
+      <PageHeader
+        title="Histórico"
+        icon={<FileText size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex space-x-2">
@@ -78,7 +95,6 @@ const HistoryPage = () => {
             </Button>
           </div>
         </div>
-
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">

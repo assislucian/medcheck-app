@@ -1,15 +1,17 @@
-
-import { useAuth } from "@/contexts/AuthContext";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TicketList } from '@/components/support/TicketList';
-import { TicketDetail } from '@/components/support/TicketDetail';
-import { NewTicketForm } from '@/components/support/NewTicketForm';
-import { useTickets } from '@/hooks/useTickets';
+import { useAuth } from "../contexts/auth/AuthContext";
+import { MainLayout } from "../components/layout/MainLayout";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { TicketList } from '../components/support/TicketList';
+import { TicketDetail } from '../components/support/TicketDetail';
+import { NewTicketForm } from '../components/support/NewTicketForm';
+import { useTickets } from '../hooks/useTickets';
+import PageHeader from "../components/layout/PageHeader";
+import { UserMenu } from "../components/navbar/UserMenu";
+import { HelpCircle } from "lucide-react";
 
 const Support = () => {
-  const { user } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   
   const {
     tickets,
@@ -74,6 +76,19 @@ const Support = () => {
 
   return (
     <MainLayout title="Suporte Técnico">
+      <PageHeader
+        title="Suporte"
+        icon={<HelpCircle size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full">

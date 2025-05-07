@@ -1,13 +1,16 @@
-
-import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { DataGrid } from "@/components/ui/data-grid";
-import { Button } from "@/components/ui/button";
+import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { DataGrid } from "../components/ui/data-grid";
+import { Button } from "../components/ui/button";
 import { AlertCircle, Download, FileX, Filter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "../components/ui/badge";
 import { useState } from "react";
-import { ResourceDialog } from "@/components/unpaid-procedures/ResourceDialog";
-import { formatCurrency } from "@/utils/format";
+import { ResourceDialog } from "../components/unpaid-procedures/ResourceDialog";
+import { formatCurrency } from "../utils/format";
+import PageHeader from "../components/layout/PageHeader";
+import { useAuth } from "../contexts/auth/AuthContext";
+import { UserMenu } from "../components/navbar/UserMenu";
+import InfoCard from "../components/ui/InfoCard";
 
 // Dados mock de exemplo para a demonstração
 const mockUnpaidProcedures = [
@@ -85,37 +88,41 @@ const unpaidColumns = [
 
 const UnpaidProceduresPage = () => {
   const [unpaidProcedures] = useState<any[]>(mockUnpaidProcedures);
+  const { userProfile, signOut } = useAuth();
 
   return (
     <AuthenticatedLayout title="Procedimentos Não Pagos">
+      <PageHeader
+        title="Procedimentos Não Pagos"
+        icon={<FileX size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
-          <Card className="flex-1 border-amber-500/20 bg-amber-500/5">
-            <CardContent className="p-4 flex items-start md:items-center">
-              <div className="bg-amber-500/10 p-2 rounded-full mr-4">
-                <AlertCircle className="h-6 w-6 text-amber-500" />
-              </div>
-              <div>
-                <p className="font-medium">
-                  Existem {unpaidProcedures.filter(p => p.status !== "Negado").length} procedimentos que podem ser contestados
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Conteste em até 30 dias para garantir a análise pelo convênio
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex gap-2 self-end">
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtrar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button>
-          </div>
+        <InfoCard
+          icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
+          title={`Existem ${unpaidProcedures.filter(p => p.status !== "Negado").length} procedimentos que podem ser contestados`}
+          description="Conteste em até 30 dias para garantir a análise pelo convênio"
+          variant="warning"
+          className="w-full mb-4"
+        />
+        
+        <div className="flex gap-2 self-end">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtrar
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
         </div>
 
         <Card>

@@ -27,6 +27,9 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { findProcedureByCodigo, calculateTotalCBHPM } from "../data/cbhpmData";
 import PageHeader from "../components/layout/PageHeader";
+import { useAuth } from "../contexts/auth/AuthContext";
+import { UserMenu } from "../components/navbar/UserMenu";
+import InfoCard from "../components/ui/InfoCard";
 
 const mockDetailedProcedures = [
   {
@@ -251,62 +254,56 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         {/* Insights CBHPM - cards pequenos */}
         <div className="w-full flex flex-col gap-4 mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Card className="shadow border-0 bg-white rounded-xl flex flex-row items-center px-4 py-3 min-h-[70px]">
-              <div className="rounded-lg bg-red-50 p-2 mr-3 flex items-center justify-center"><DollarSign className="h-6 w-6 text-red-400" /></div>
-              <div>
-                <div className="text-xs text-gray-400 font-medium mb-0.5">Total abaixo da CBHPM</div>
-                <div className="text-lg font-bold text-red-500">{formatCurrency(Math.abs(totalAbaixoCBHPM))}</div>
-              </div>
-            </Card>
-            <Card className="shadow border-0 bg-white rounded-xl flex flex-row items-center px-4 py-3 min-h-[70px]">
-              <div className="rounded-lg bg-yellow-50 p-2 mr-3 flex items-center justify-center"><FileBarChart className="h-6 w-6 text-yellow-400" /></div>
-              <div>
-                <div className="text-xs text-gray-400 font-medium mb-0.5">% abaixo da tabela</div>
-                <div className="text-lg font-bold text-yellow-500">{percentAbaixoCBHPM}%</div>
-              </div>
-            </Card>
-            <Card className="shadow border-0 bg-white rounded-xl flex flex-row items-center px-4 py-3 min-h-[70px]">
-              <div className="rounded-lg bg-blue-50 p-2 mr-3 flex items-center justify-center"><Download className="h-6 w-6 text-blue-400" /></div>
-              <div>
-                <div className="text-xs text-gray-400 font-medium mb-0.5">Maior diferença individual</div>
-                <div className="text-lg font-bold text-blue-500">{maiorPrejuizoProc && maiorPrejuizoProc.diferenca !== null ? formatCurrency(Math.abs(maiorPrejuizoProc.diferenca)) : '--'}</div>
-                {maiorPrejuizoProc && (
-                  <div className="text-xs text-blue-800 mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap max-w-[120px]">{maiorPrejuizoProc.codigo} - {maiorPrejuizoProc.descricao}</div>
-                )}
-              </div>
-            </Card>
+            <InfoCard
+              icon={<DollarSign className="h-6 w-6 text-red-400" />}
+              title="Total abaixo da CBHPM"
+              value={formatCurrency(Math.abs(totalAbaixoCBHPM))}
+              variant="danger"
+            />
+            <InfoCard
+              icon={<FileBarChart className="h-6 w-6 text-yellow-400" />}
+              title="% abaixo da tabela"
+              value={`${percentAbaixoCBHPM}%`}
+              variant="warning"
+            />
+            <InfoCard
+              icon={<DollarSign className="h-6 w-6 text-blue-400" />}
+              title="Maior diferença individual"
+              value={maiorPrejuizoProc && maiorPrejuizoProc.diferenca !== null ? formatCurrency(Math.abs(maiorPrejuizoProc.diferenca)) : '--'}
+              variant="info"
+            >
+              {maiorPrejuizoProc && (
+                <div className="text-xs text-blue-800 mt-0.5 text-ellipsis overflow-hidden whitespace-nowrap max-w-[120px]">{maiorPrejuizoProc.codigo} - {maiorPrejuizoProc.descricao}</div>
+              )}
+            </InfoCard>
           </div>
         </div>
         {/* Totais - cards pequenos */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="shadow border-0 bg-gray-50 rounded-xl">
-            <CardContent className="py-3 flex flex-col items-center">
-              <Calendar className="h-6 w-6 text-blue-400 mb-1" />
-              <div className="text-xs text-gray-400 font-medium">Período</div>
-              <div className="font-bold text-base text-blue-900">{demonstrative.periodo}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow border-0 bg-gray-50 rounded-xl">
-            <CardContent className="py-3 flex flex-col items-center">
-              <DollarSign className="h-6 w-6 text-green-400 mb-1" />
-              <div className="text-xs text-gray-400 font-medium">Total Liberado</div>
-              <div className="font-bold text-base text-green-900">{formatCurrency(totals.totalLiberado)}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow border-0 bg-gray-50 rounded-xl">
-            <CardContent className="py-3 flex flex-col items-center">
-              <FileBarChart className="h-6 w-6 text-blue-400 mb-1" />
-              <div className="text-xs text-gray-400 font-medium">Procedimentos</div>
-              <div className="font-bold text-base text-blue-900">{totals.totalProcedimentos}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow border-0 bg-gray-50 rounded-xl">
-            <CardContent className="py-3 flex flex-col items-center">
-              <DollarSign className="h-6 w-6 text-red-400 mb-1" />
-              <div className="text-xs text-gray-400 font-medium">Total Glosa</div>
-              <div className="font-bold text-base text-red-900">{formatCurrency(totals.totalGlosa)}</div>
-            </CardContent>
-          </Card>
+          <InfoCard
+            icon={<Calendar className="h-6 w-6 text-blue-400 mb-1" />}
+            title="Período"
+            value={demonstrative.periodo}
+            variant="info"
+          />
+          <InfoCard
+            icon={<DollarSign className="h-6 w-6 text-green-400 mb-1" />}
+            title="Total Liberado"
+            value={formatCurrency(totals.totalLiberado)}
+            variant="success"
+          />
+          <InfoCard
+            icon={<FileBarChart className="h-6 w-6 text-blue-400 mb-1" />}
+            title="Procedimentos"
+            value={totals.totalProcedimentos}
+            variant="info"
+          />
+          <InfoCard
+            icon={<DollarSign className="h-6 w-6 text-red-400 mb-1" />}
+            title="Total Glosa"
+            value={formatCurrency(totals.totalGlosa)}
+            variant="danger"
+          />
         </div>
         {/* Tabela de procedimentos - estilo lovable.dev */}
         <div className="space-y-4">
@@ -387,6 +384,8 @@ const DemonstrativesPage = () => {
     handleFileChangeByType,
     processUploadedFiles
   } = fileUpload;
+
+  const { userProfile, signOut } = useAuth();
 
   useEffect(() => {
     fetchDemonstratives();
@@ -513,30 +512,39 @@ const DemonstrativesPage = () => {
       title="Demonstrativos"
       description="Gerencie seus demonstrativos de pagamento"
     >
-      <PageHeader title="Demonstrativos" icon={<FileBarChart size={24} />} />
+      <PageHeader
+        title="Demonstrativos"
+        icon={<FileBarChart size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
-            <CardContent className="flex flex-col items-center py-6">
-              <span className="text-3xl text-green-600">$</span>
-              <div className="text-muted-foreground">Total Liberado</div>
-              <div className="text-2xl font-bold">{formatCurrency(summaryStats.totalProcessado)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex flex-col items-center py-6">
-              <span className="text-3xl text-red-600">$</span>
-              <div className="text-muted-foreground">Total Glosas</div>
-              <div className="text-2xl font-bold">{formatCurrency(summaryStats.totalGlosa)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex flex-col items-center py-6">
-              <span className="text-3xl text-blue-600">📄</span>
-              <div className="text-muted-foreground">Procedimentos</div>
-              <div className="text-2xl font-bold">{summaryStats.totalProcedimentos}</div>
-            </CardContent>
-          </Card>
+          <InfoCard
+            icon={<DollarSign className="h-6 w-6 text-green-500" />}
+            title="Total Liberado"
+            value={formatCurrency(summaryStats.totalProcessado)}
+            variant="success"
+          />
+          <InfoCard
+            icon={<DollarSign className="h-6 w-6 text-red-500" />}
+            title="Total Glosas"
+            value={formatCurrency(summaryStats.totalGlosa)}
+            variant="danger"
+          />
+          <InfoCard
+            icon={<FileBarChart className="h-6 w-6 text-blue-500" />}
+            title="Procedimentos"
+            value={summaryStats.totalProcedimentos}
+            variant="info"
+          />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
