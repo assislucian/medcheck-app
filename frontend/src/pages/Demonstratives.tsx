@@ -515,8 +515,6 @@ const DemonstrativesPage = () => {
       <PageHeader
         title="Demonstrativos"
         icon={<FileBarChart size={28} />}
-        description="Gerencie seus demonstrativos de pagamento"
-        size="md"
         actions={userProfile ? (
           <UserMenu
             name={userProfile.name || 'Usuário'}
@@ -548,6 +546,7 @@ const DemonstrativesPage = () => {
             variant="info"
           />
         </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="list">Lista</TabsTrigger>

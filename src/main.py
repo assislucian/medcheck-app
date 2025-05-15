@@ -333,6 +333,8 @@ def main():
                  'beneficiario','qtd','status','liberado','valor_tabela',
                  'diferenca','diferenca_percentual']))
 
+# === Removido: API FastAPI mínima para uso com Uvicorn ===
+
 if __name__ == "__main__":
     main()
     # Utilitário temporário para debug: extrair texto de noivana.pdf

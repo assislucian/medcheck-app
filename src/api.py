@@ -1,3 +1,11 @@
+"""
+API principal do MedCheck Backend.
+
+Execute com:
+    uvicorn src.api:app --reload
+
+Adicione endpoints reais conforme necessário.
+"""
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, BackgroundTasks, Form, Body, Request, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
@@ -190,7 +198,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return {"crm": payload.get("crm"), "nome": payload.get("nome")}
 
 # --- FastAPI app ---
-app = FastAPI(title="Validador de Demonstrativos e Guias Médicas", version="1.0.0")
+app = FastAPI(title="MedCheck Backend API")
 
 # --- SlowAPI Rate Limiter ---
 limiter = Limiter(key_func=get_remote_address)
@@ -1296,3 +1304,8 @@ def canal_lgpd(data: LGPDRequest, request: Request):
 # - Para Prometheus, adicione instrumentação com prometheus_fastapi_instrumentator
 # - Para rate-limiting, use slowapi/starlette-limiter
 # - Para logs estruturados, use structlog 
+
+@app.get("/health")
+def health_check():
+    """Endpoint de health check para verificação do backend."""
+    return JSONResponse(content={"status": "ok"}) 

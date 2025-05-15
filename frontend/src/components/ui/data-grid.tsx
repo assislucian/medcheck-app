@@ -1,5 +1,5 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
-import { Button } from "./button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface DataGridProps {
@@ -37,7 +37,7 @@ export function DataGrid({
   };
   
   return (
-    <div className={"overflow-x-auto w-full " + className} role="region" aria-label="Tabela de dados">
+    <div className={className}>
       <Table>
         <TableHeader>
           <TableRow>
@@ -48,7 +48,6 @@ export function DataGrid({
                   width: column.width,
                   flex: column.flex
                 }}
-                className="bg-muted/40 sticky top-0 z-10"
               >
                 {column.headerName}
               </TableHead>
@@ -57,16 +56,11 @@ export function DataGrid({
         </TableHeader>
         <TableBody>
           {safeRows.slice(0, pageSize).map((row, rowIndex) => [
-            <TableRow
-              key={row?.id || rowIndex}
-              tabIndex={0}
-              className="transition-all hover:bg-muted/10 focus:bg-muted/20 focus-visible:ring-2 focus-visible:ring-brand/60 outline-none"
-              role="row"
-            >
+            <TableRow key={row?.id || rowIndex}>
               {columns.map((column) => {
                 const cellValue = getCellValue(row, column.field);
                 return (
-                  <TableCell key={`${row?.id || rowIndex}-${column.field}`} role="cell">
+                  <TableCell key={`${row?.id || rowIndex}-${column.field}`}>
                     {column.renderCell ? (
                       column.renderCell({ value: cellValue, row })
                     ) : column.valueFormatter ? (
@@ -82,7 +76,7 @@ export function DataGrid({
           ])}
           {safeRows.length === 0 && (
             <TableRow>
-              <TableCell colSpan={columns.length} className="text-center py-4" role="cell">
+              <TableCell colSpan={columns.length} className="text-center py-4">
                 Nenhum registro encontrado
               </TableCell>
             </TableRow>

@@ -1,14 +1,12 @@
-import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader } from "../components/ui/card";
-import { DataGrid } from "../components/ui/data-grid";
-import { Button } from "../components/ui/button";
+import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DataGrid } from "@/components/ui/data-grid";
+import { Button } from "@/components/ui/button";
 import { FileText, Download } from "lucide-react";
 import { useState } from "react";
 import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
-import InfoCard from "../components/ui/InfoCard";
-import { Clock, Users, CheckCircle, AlertCircle } from "lucide-react";
 
 // Mock data for demonstration purposes
 const mockHistory = [
@@ -69,22 +67,11 @@ const HistoryPage = () => {
   const [history] = useState<any[]>(mockHistory);
   const { userProfile, signOut } = useAuth();
 
-  // Indicadores
-  const totalAnalises = history.length;
-  const totalRecuperado = history.reduce((sum, h) => sum + (h.recoveredValue || 0), 0);
-  const statusCounts = history.reduce((acc, h) => {
-    acc[h.status] = (acc[h.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-  const statusMaisFrequente = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
-
   return (
     <AuthenticatedLayout title="Histórico">
       <PageHeader
         title="Histórico"
         icon={<FileText size={28} />}
-        description="Acompanhe o histórico de análises e valores recuperados"
-        size="md"
         actions={userProfile ? (
           <UserMenu
             name={userProfile.name || 'Usuário'}
@@ -95,27 +82,7 @@ const HistoryPage = () => {
           />
         ) : null}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2">
-          <InfoCard
-            icon={<Clock className="h-6 w-6 text-blue-500" />}
-            title="Total de Análises"
-            value={totalAnalises}
-            variant="info"
-          />
-          <InfoCard
-            icon={<CheckCircle className="h-6 w-6 text-green-500" />}
-            title="Total Recuperado"
-            value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalRecuperado)}
-            variant="success"
-          />
-          <InfoCard
-            icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
-            title="Status mais frequente"
-            value={statusMaisFrequente}
-            variant="warning"
-          />
-        </div>
+      <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex space-x-2">
             <Button variant="outline" size="sm">
