@@ -61,6 +61,7 @@
     "jspdf-autotable": "^4.0.0",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "pdfjs-dist": "^5.3.31",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -73,9 +74,9 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
+    "vite": "^6.3.3",
     "xmlbuilder2": "^3.1.1",
-    "zod": "^3.23.8",
-    "vite": "^6.3.3"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -93,4 +94,4 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3"
   }
-} 
+}
