@@ -18,7 +18,7 @@ export interface Procedure {
   pago: boolean;
   guia: string;
   beneficiario: string;
-  doctors: DoctorParticipation[];
+  doctors: any[];
 }
 
 export interface PaymentStatement {
@@ -81,4 +81,27 @@ export interface GuideProcedure {
   dt_inicio?: string;
   dt_fim?: string;
   status_part?: string;
+}
+
+export interface DashboardStats {
+  totals: {
+    totalRecebido: number;
+    totalGlosado: number;
+    totalRecuperado: number;
+    potencialRecuperacao: number;
+    tempoEconomizado: number;
+    taxaSucesso: number;
+  };
+  procedures: Procedure[];
+  glosas: any[];
+}
+
+export interface InfoCardProps {
+  icon: React.ReactNode;
+  title: React.ReactNode;
+  value: React.ReactNode;
+  description: React.ReactNode;
+  variant?: 'default' | 'success' | 'warning' | 'info';
+  badge?: string;
+  className?: string;
 }

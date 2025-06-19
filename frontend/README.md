@@ -32,6 +32,13 @@ npm run build
 ```
 Os arquivos finais estarão em `frontend/dist/`.
 
+### Deploy na Vercel (Recomendado)
+1. Faça login em [vercel.com](https://vercel.com/) e conecte o repositório.
+2. No painel do projeto, configure a variável de ambiente `VITE_API_URL` para o endpoint do backend (ex: https://api.medcheck.com.br).
+3. O build será feito automaticamente (`npm run build`).
+4. O domínio será provisionado automaticamente, ou configure o seu domínio customizado.
+5. **Nunca exponha segredos no frontend.**
+
 ## 🧪 Testes
 ```bash
 npm test
@@ -52,9 +59,19 @@ npm test
 - [.notes/](../.notes/): visão geral, tarefas, histórico
 
 ## ❓ FAQ
-- **Como aponto para o backend de produção?** Edite `VITE_API_URL` no `.env`.
-- **Como faço deploy?** Rode `npm run build` e publique o conteúdo de `dist/` em seu host (ex: Vercel, Netlify).
+- **Como aponto para o backend de produção?** Edite `VITE_API_URL` no `.env` ou no painel Vercel.
+- **Como faço deploy?** Conecte o repositório na Vercel e configure as variáveis de ambiente.
 - **Como contribuo?** Siga as premissas de segurança e documentação do projeto.
 
 ---
 **Dúvidas? Consulte `.notes/meeting_notes.md` ou abra uma issue.**
+
+## Configuração de Ambiente
+
+Crie um arquivo `.env` na raiz do frontend com base no `.env.example`:
+
+```
+cp .env.example .env
+```
+
+Preencha a variável `VITE_API_URL` com a URL do backend (ex: https://medcheck-app.up.railway.app)

@@ -1,4 +1,5 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
+import { PageContainer } from "../components/layout/PageContainer";
 import {
   CardContent,
   CardHeader,
@@ -21,7 +22,7 @@ import { useFileUpload } from "../hooks/useFileUpload";
 import { FileType } from "../types/upload";
 import FileList from "../components/upload/FileList";
 import { toast } from "sonner";
-import { getGuides, deleteGuide, uploadGuide, uploadGuides, GuidesQueryParams } from "../services/guides";
+import { getGuides, deleteGuide, uploadGuides, GuidesQueryParams } from "../services/guides";
 import DetalhesGuia from "../components/guides/DetalhesGuia";
 import { GuideProcedure } from "../types/medical";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "../components/ui/tooltip";
@@ -29,7 +30,7 @@ import { Link } from "react-router-dom";
 import LoaderTable from "../components/ui/LoaderTable";
 import { cn } from "../lib/utils";
 import { Card } from "../components/ui/card";
-import PageHeader from "../components/layout/PageHeader";
+import { PageHeader } from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
 import { FiltersToolbar } from "../components/guides/FiltersToolbar";
@@ -520,263 +521,324 @@ const GuidesPage = () => {
 
   return (
     <AuthenticatedLayout title="Guias" description="Gerencie e consulte suas guias médicas processadas">
-      <PageHeader
-        title={
-          <span className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-gray-900">
-            Guias Médicas
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to="/help" className="ml-2 text-brand hover:underline flex items-center" aria-label="Central de Ajuda">
-                    <HelpCircle className="w-5 h-5" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>Central de Ajuda: tutoriais, vídeos e perguntas frequentes</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </span>
-        }
-        icon={<FileText size={28} />}
-        actions={userProfile ? (
-          <UserMenu
-            name={userProfile.name || 'Usuário'}
-            email={userProfile.email || 'sem-email@exemplo.com'}
-            specialty={userProfile.crm || ''}
-            avatarUrl={userProfile.avatarUrl || undefined}
-            onLogout={signOut}
-          />
-        ) : null}
-      />
-      <div className="space-y-6">
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-2">
-          <InfoCard
-            icon={<User className="h-6 w-6" />}
-            title={<span className="text-xs font-semibold">Pacientes Atendidos</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{pacientesUnicos.size}</span>}
-            description={<span className="text-xs">Total de pacientes únicos neste período</span>}
-            variant="info"
-          />
-          <InfoCard
-            icon={<ClipboardList className="h-6 w-6" />}
-            title={<span className="text-xs font-semibold">Procedimentos</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{totalProcedimentos}</span>}
-            description={<span className="text-xs">Extraídos das guias</span>}
-            variant="info"
-          />
-        </div>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-          <InfoCard
-            icon={<User className="h-6 w-6" />}
-            title={<span className="text-xs font-semibold">Cirurgião</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['cirurgiao'] || 0}</span>}
-            description={<span className="text-xs">Atuou como cirurgião em <span className="font-bold">{percent(papelCounts['cirurgiao'] || 0)}</span> dos procedimentos</span>}
-            variant="success"
-          />
-          <InfoCard
-            icon={<User className="h-6 w-6" />}
-            title={<span className="text-xs font-semibold">1º Auxiliar</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['primeiro_auxiliar'] || 0}</span>}
-            description={<span className="text-xs">Atuou como 1º auxiliar em <span className="font-bold">{percent(papelCounts['primeiro_auxiliar'] || 0)}</span> dos procedimentos</span>}
-            variant="success"
-          />
-          <InfoCard
-            icon={<User className="h-6 w-6" />}
-            title={<span className="text-xs font-semibold">2º Auxiliar</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['segundo_auxiliar'] || 0}</span>}
-            description={<span className="text-xs">Atuou como 2º auxiliar em <span className="font-bold">{percent(papelCounts['segundo_auxiliar'] || 0)}</span> dos procedimentos</span>}
-            variant="success"
-          />
-        </div>
-        <div>
-          <FiltersToolbar
-            search={search}
-            onSearch={val => { setSearch(val); setPage(1); }}
-            date={formatDateToISO(data)}
-            onDateChange={val => { setData(formatDateToBR(val)); setPage(1); }}
-            status={status || "ALL"}
-            onStatusChange={val => { setStatus(val); setPage(1); }}
-            pendingCount={filteredMacroRows.filter(row => row.status === "Pendente").length}
-            onClear={() => { setSearch(""); setData(""); setStatus("ALL"); setPage(1); }}
-            onExportCsv={() => exportToCSV(filteredMacroRows)}
-            onExportProcedures={() => exportProceduresToCSV(grouped)}
-            onNewGuide={() => setActiveTab("upload")}
-          />
-        </div>
+      <PageContainer>
+        <PageHeader
+          title={
+            <span className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-gray-900">
+              Guias Médicas
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link to="/help" className="ml-2 text-brand hover:underline flex items-center" aria-label="Central de Ajuda">
+                      <HelpCircle className="w-5 h-5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>Central de Ajuda: tutoriais, vídeos e perguntas frequentes</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </span>
+          }
+          icon={<FileText size={28} />}
+          actions={userProfile ? (
+            <UserMenu
+              name={userProfile.name || 'Usuário'}
+              email={userProfile.email || 'sem-email@exemplo.com'}
+              specialty={userProfile.crm || ''}
+              avatarUrl={userProfile.avatarUrl || undefined}
+              onLogout={signOut}
+            />
+          ) : null}
+        />
+        <main className="page-shell">
+          <section className="section-spacing">
+            <div className="card-grid">
+              <InfoCard
+                icon={<User className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">Pacientes Atendidos</span>}
+                value={<span className="text-2xl md:text-3xl font-bold">{pacientesUnicos.size}</span>}
+                description={<span className="text-xs">Total de pacientes únicos neste período</span>}
+                variant="info"
+              />
+              <InfoCard
+                icon={<ClipboardList className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">Procedimentos</span>}
+                value={<span className="text-2xl md:text-3xl font-bold">{totalProcedimentos}</span>}
+                description={<span className="text-xs">Extraídos das guias</span>}
+                variant="info"
+              />
+            </div>
+          </section>
+          <section className="section-spacing">
+            <div className="card-grid">
+              <InfoCard
+                icon={<User className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">Cirurgião</span>}
+                value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['cirurgiao'] || 0}</span>}
+                description={<span className="text-xs">Atuou como cirurgião em <span className="font-bold">{percent(papelCounts['cirurgiao'] || 0)}</span> dos procedimentos</span>}
+                variant="success"
+              />
+              <InfoCard
+                icon={<User className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">1º Auxiliar</span>}
+                value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['primeiro_auxiliar'] || 0}</span>}
+                description={<span className="text-xs">Atuou como 1º auxiliar em <span className="font-bold">{percent(papelCounts['primeiro_auxiliar'] || 0)}</span> dos procedimentos</span>}
+                variant="success"
+              />
+              <InfoCard
+                icon={<User className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">2º Auxiliar</span>}
+                value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['segundo_auxiliar'] || 0}</span>}
+                description={<span className="text-xs">Atuou como 2º auxiliar em <span className="font-bold">{percent(papelCounts['segundo_auxiliar'] || 0)}</span> dos procedimentos</span>}
+                variant="success"
+              />
+            </div>
+          </section>
+          <section className="section-spacing">
+            <FiltersToolbar
+              search={search}
+              onSearch={val => { setSearch(val); setPage(1); }}
+              date={formatDateToISO(data)}
+              onDateChange={val => { setData(formatDateToBR(val)); setPage(1); }}
+              status={status || "ALL"}
+              onStatusChange={val => { setStatus(val); setPage(1); }}
+              pendingCount={filteredMacroRows.filter(row => row.status === "Pendente").length}
+              onClear={() => { setSearch(""); setData(""); setStatus("ALL"); setPage(1); }}
+              onExportCsv={() => exportToCSV(filteredMacroRows)}
+              onExportProcedures={() => exportProceduresToCSV(grouped)}
+              onNewGuide={() => setActiveTab("upload")}
+            />
+          </section>
+          <section className="section-spacing">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "list" | "upload")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="list">Lista de Guias</TabsTrigger>
+                <TabsTrigger value="upload">Upload de Guias</TabsTrigger>
+              </TabsList>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "list" | "upload")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list">Lista de Guias</TabsTrigger>
-            <TabsTrigger value="upload">Upload de Guias</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="list">
-            <Card className="w-full shadow-none border-none bg-transparent">
-              <CardHeader className="hidden" />
-              <CardContent className="p-0">
-                {loading ? (
-                  <LoaderTable />
-                ) : (
-                  <GuidesTable
-                    rows={filteredMacroRows}
-                    columns={macroColumns}
-                    selectedRows={selectedRows}
-                    onSelectRow={handleSelectRow}
-                    onSelectAll={handleSelectAll}
-                    onExpand={id => setExpandedRow(expandedRow === id ? null : id)}
-                    expandedRow={expandedRow}
-                    renderExpandedRow={(row) => (
-                      <div className="w-full max-w-full overflow-hidden px-2 py-2">
-                        <div className="overflow-x-auto w-full">
-                          <table className="w-full text-sm min-w-[600px]">
-                            <thead>
-                              <tr>
-                                {['Data', 'Código', 'Descrição', 'Participação', 'Qtd', 'Prestador'].map(h => (
-                                  <th
-                                    key={h}
-                                    className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
-                                  >
-                                    {h}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {row.detalhes.map((proc: any) => (
-                                <tr key={proc.codigo} className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10">
-                                  <td className="py-2 px-3 whitespace-nowrap">{proc.data}</td>
-                                  <td className="py-2 px-3 whitespace-nowrap font-mono">{proc.codigo}</td>
-                                  <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.descricao}>{proc.descricao}</td>
-                                  <td className="py-2 px-3 whitespace-nowrap">
-                                    <Badge variant="participacao">{proc.papel}</Badge>
-                                  </td>
-                                  <td className="py-2 px-3 whitespace-nowrap text-center">{proc.qtd}</td>
-                                  <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.prestador}>{proc.prestador}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+              <TabsContent value="list">
+                <Card className="w-full shadow-none border-none bg-transparent">
+                  <CardHeader className="hidden" />
+                  <CardContent className="p-0">
+                    {loading ? (
+                      <LoaderTable />
+                    ) : (
+                      <GuidesTable
+                        rows={filteredMacroRows}
+                        columns={macroColumns}
+                        selectedRows={selectedRows}
+                        onSelectRow={handleSelectRow}
+                        onSelectAll={handleSelectAll}
+                        onExpand={id => setExpandedRow(expandedRow === id ? null : id)}
+                        expandedRow={expandedRow}
+                        renderExpandedRow={(row) => (
+                          <div className="w-full max-w-full overflow-hidden">
+                            <div className="overflow-x-auto w-full">
+                              <table className="w-full text-sm min-w-[600px]">
+                                <thead>
+                                  <tr>
+                                    {['Data', 'Código', 'Descrição', 'Participação', 'Qtd', 'Prestador'].map(h => (
+                                      <th
+                                        key={h}
+                                        className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
+                                      >
+                                        {h}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {row.detalhes.map((proc: any) => (
+                                    <tr key={proc.codigo} className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10">
+                                      <td className="py-2 px-3 whitespace-nowrap">{proc.data}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap font-mono">{proc.codigo}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.descricao}>{proc.descricao}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap">
+                                        <Badge variant="participacao">{proc.papel}</Badge>
+                                      </td>
+                                      <td className="py-2 px-3 whitespace-nowrap text-center">{proc.qtd}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.prestador}>{proc.prestador}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    )}
+                    {selectedGuia && (
+                      <DetalhesGuia
+                        guia={selectedGuia}
+                        procedimentos={grouped[selectedGuia]}
+                        onClose={() => setSelectedGuia(null)}
+                      />
+                    )}
+                    {activeTab === "list" && (
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="text-xs text-muted-foreground">
+                          Página {page} de {Math.ceil(total / pageSize) || 1}
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={selectedRows.length === 0}
+                                  onClick={handleDeleteSelected}
+                                  aria-label="Remover selecionadas"
+                                >
+                                  Remover selecionadas
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Remove todas as guias selecionadas da sua lista</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page === 1}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          >Anterior</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page * pageSize >= total}
+                            onClick={() => setPage((p) => p + 1)}
+                          >Próxima</Button>
+                          <select
+                            value={pageSize}
+                            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                            className="border border-border rounded bg-surface-1 text-foreground px-2 py-1 text-xs w-full sm:w-auto focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
+                          >
+                            {[10, 20, 50, 100].map((sz) => (
+                              <option key={sz} value={sz}>{sz} por página</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     )}
-                  />
-                )}
-                {selectedGuia && (
-                  <DetalhesGuia
-                    guia={selectedGuia}
-                    procedimentos={grouped[selectedGuia]}
-                    onClose={() => setSelectedGuia(null)}
-                  />
-                )}
-                {activeTab === "list" && (
-                  <div className="flex justify-between items-center mt-2">
-                    <div className="text-xs text-muted-foreground">
-                      Página {page} de {Math.ceil(total / pageSize) || 1}
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              disabled={selectedRows.length === 0}
-                              onClick={handleDeleteSelected}
-                              aria-label="Remover selecionadas"
-                            >
-                              Remover selecionadas
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Remove todas as guias selecionadas da sua lista</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page === 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      >Anterior</Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page * pageSize >= total}
-                        onClick={() => setPage((p) => p + 1)}
-                      >Próxima</Button>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                        className="border border-border rounded bg-surface-1 text-foreground px-2 py-1 text-xs w-full sm:w-auto focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
-                      >
-                        {[10, 20, 50, 100].map((sz) => (
-                          <option key={sz} value={sz}>{sz} por página</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload de Guias</CardTitle>
-                <CardDescription>
-                  Faça upload de guias TISS para processamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FileDropZone
-                  type="guia"
-                  onDropFiles={handleFileDrop}
-                  disabled={isUploading || loading}
-                  hasFiles={files.some((f) => f.type === "guia")}
-                />
-                <FileList
-                  files={files.filter((f) => f.type === "guia")}
-                  onRemove={removeFile}
-                  disabled={isUploading || loading}
-                />
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={resetFiles}
-                    disabled={!files.length || isUploading || loading}
-                    className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 dark:hover:bg-border/20 border-border"
-                  >
-                    Limpar
-                  </Button>
-                  <Button
-                    onClick={handleUploadGuias}
-                    disabled={!files.length || isUploading || loading}
-                    className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
-                  >
-                    {isUploading || loading
-                      ? "Processando..."
-                      : "Processar Guias"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {loading && (
-          <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center min-h-screen">
-            <div className="bg-body dark:bg-body rounded-lg shadow-lg p-8 flex flex-col items-center gap-4">
-              <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-              </svg>
-              <span className="text-lg font-medium">Processando guias...</span>
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Aviso de Privacidade - rodapé simples, por extenso */}
-      <div className="w-full text-center text-xs text-gray-500 my-6" role="note" aria-label="Aviso de Privacidade">
-        Ao inserir dados de pacientes, você declara ter consentimento ou base legal para o tratamento, conforme a <a href="/privacy" className="underline hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>. O uso indevido pode gerar responsabilidade legal.
-      </div>
+              <TabsContent value="upload">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upload de Guias</CardTitle>
+                    <CardDescription>
+                      Faça upload de novas guias para processamento
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {loading ? (
+                      <LoaderTable />
+                    ) : (
+                      <GuidesTable
+                        rows={filteredMacroRows}
+                        columns={macroColumns}
+                        selectedRows={selectedRows}
+                        onSelectRow={handleSelectRow}
+                        onSelectAll={handleSelectAll}
+                        onExpand={id => setExpandedRow(expandedRow === id ? null : id)}
+                        expandedRow={expandedRow}
+                        renderExpandedRow={(row) => (
+                          <div className="w-full max-w-full overflow-hidden">
+                            <div className="overflow-x-auto w-full">
+                              <table className="w-full text-sm min-w-[600px]">
+                                <thead>
+                                  <tr>
+                                    {['Data', 'Código', 'Descrição', 'Participação', 'Qtd', 'Prestador'].map(h => (
+                                      <th
+                                        key={h}
+                                        className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
+                                      >
+                                        {h}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {row.detalhes.map((proc: any) => (
+                                    <tr key={proc.codigo} className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10">
+                                      <td className="py-2 px-3 whitespace-nowrap">{proc.data}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap font-mono">{proc.codigo}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.descricao}>{proc.descricao}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap">
+                                        <Badge variant="participacao">{proc.papel}</Badge>
+                                      </td>
+                                      <td className="py-2 px-3 whitespace-nowrap text-center">{proc.qtd}</td>
+                                      <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.prestador}>{proc.prestador}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    )}
+                    {selectedGuia && (
+                      <DetalhesGuia
+                        guia={selectedGuia}
+                        procedimentos={grouped[selectedGuia]}
+                        onClose={() => setSelectedGuia(null)}
+                      />
+                    )}
+                    {activeTab === "list" && (
+                      <div className="flex justify-between items-center mt-2">
+                        <div className="text-xs text-muted-foreground">
+                          Página {page} de {Math.ceil(total / pageSize) || 1}
+                        </div>
+                        <div className="flex gap-2 items-center">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={selectedRows.length === 0}
+                                  onClick={handleDeleteSelected}
+                                  aria-label="Remover selecionadas"
+                                >
+                                  Remover selecionadas
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Remove todas as guias selecionadas da sua lista</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page === 1}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          >Anterior</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={page * pageSize >= total}
+                            onClick={() => setPage((p) => p + 1)}
+                          >Próxima</Button>
+                          <select
+                            value={pageSize}
+                            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                            className="border border-border rounded bg-surface-1 text-foreground px-2 py-1 text-xs w-full sm:w-auto focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-colors"
+                          >
+                            {[10, 20, 50, 100].map((sz) => (
+                              <option key={sz} value={sz}>{sz} por página</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </section>
+        </main>
+      </PageContainer>
     </AuthenticatedLayout>
   );
 };

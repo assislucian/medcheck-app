@@ -262,7 +262,10 @@ from src.api import app as api_app
 # Exporta o app principal para o Uvicorn/FastAPI
 app = api_app
 
-# (Opcional: health check pode ser mantido no src/api.py)
+# Healthcheck endpoint
+@app.get("/healthz")
+def healthz():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     main()

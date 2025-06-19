@@ -21,12 +21,15 @@ const alertVariants = cva(
 
 const Alert = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     role="alert"
-    className={cn(alertVariants({ variant }), className)}
+    className={cn(
+      "relative w-full rounded-xl border border-border/40 bg-white/90 backdrop-blur-sm px-4 py-3 shadow-md transition-all duration-200 flex items-start gap-3",
+      className
+    )}
     {...props}
   />
 ))

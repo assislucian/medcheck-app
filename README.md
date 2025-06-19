@@ -91,6 +91,80 @@ docker-compose up --build
 
 ---
 
+## 🚀 Deploy Backend no Railway
+
+1. Crie um projeto no [Railway](https://railway.app/).
+2. Conecte o repositório GitHub.
+3. Configure as variáveis de ambiente:
+   - `DATABASE_URL` (ex: fornecido pelo Railway Postgres)
+   - `JWT_SECRET` (valor forte e secreto)
+   - `ALGORITHM` (HS256)
+   - `ACCESS_TOKEN_EXPIRE_MINUTES` (ex: 480)
+4. Configure o comando de start: `uvicorn src.main:app --host 0.0.0.0 --port $PORT`
+5. Certifique-se de que `requirements.txt` está atualizado.
+6. (Opcional) Adicione um serviço Postgres pelo painel Railway.
+7. O deploy será feito automaticamente a cada push na branch principal.
+
+> **Dica:** Use o painel de logs do Railway para monitorar o deploy e eventuais erros.
+
+# Deploy Gratuito para Testes no Railway
+
+Este projeto pode ser publicado gratuitamente para testes usando o Railway, permitindo que médicos testem todas as funcionalidades via web.
+
+## Passo a Passo para Deploy Backend (FastAPI) no Railway
+
+### 1. Crie Conta e Projeto
+- Acesse https://railway.app/
+- Faça login com GitHub.
+- Clique em "New Project" e selecione "Deploy from GitHub repo".
+- Escolha este repositório.
+
+### 2. Configure o Banco de Dados
+- No painel do projeto, clique em "Add Plugin" > "PostgreSQL".
+- Copie a string de conexão gerada (ex: `postgresql://...`).
+
+### 3. Configure Variáveis de Ambiente
+No painel "Variables" do Railway, adicione:
+- `DATABASE_URL` = (cole a string do passo anterior)
+- `JWT_SECRET` = (valor forte, ex: `um-segredo-para-teste`)
+- `FRONTEND_ORIGINS` = (URL do frontend, ex: `https://seufrontend.vercel.app`)
+- `SKIP_AUTH` = `true` (opcional, para testes sem login)
+- `CRM_LOGADO` = `6091` (opcional, CRM de teste)
+
+### 4. Deploy
+- O Railway detecta o Dockerfile e faz o build automaticamente.
+- Após o deploy, acesse a URL pública gerada (ex: `https://medical-honorarium-validator.up.railway.app`).
+- Teste a API em `/docs` (Swagger UI).
+
+### 5. Integração com Frontend
+- No frontend (Vercel/Netlify/local), configure a variável de ambiente para apontar para a URL do backend Railway:
+  - Exemplo (React): `REACT_APP_API_URL=https://medical-honorarium-validator.up.railway.app`
+
+### 6. Observações
+- O plano gratuito do Railway pode dormir após inatividade, mas é suficiente para testes.
+- Não use dados sensíveis neste ambiente.
+- Para dúvidas, consulte a documentação oficial do Railway.
+
+---
+
+## Dicas para Testes
+- Use o endpoint `/api/v1/register` para cadastrar médicos.
+- Use `/token` para autenticação (ou SKIP_AUTH para pular login).
+- Uploads e validações funcionam normalmente.
+
+---
+
+## Suporte
+Em caso de dúvidas, abra uma issue ou entre em contato com o time técnico.
+
+---
+
+## 🏗️ Deploy Frontend na Vercel
+
+Veja instruções em `frontend/README.md`.
+
+---
+
 ## 🧪 Testes & Lint
 
 ### Backend
@@ -152,5 +226,19 @@ curl -X POST http://localhost:8000/token \
 - **Dúvidas?** Consulte `.notes/` ou abra uma issue.
 
 ---
+
+## Configuração de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
+
+```
+cp .env.example .env
+```
+
+Preencha as variáveis conforme necessário.
+
+## Healthcheck
+
+O backend expõe o endpoint `/healthz` para verificação de status.
 
 **MedCheck — Healthtech SaaS. Segurança, precisão e compliance em auditoria médica.**

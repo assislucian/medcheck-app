@@ -1,4 +1,3 @@
-
 import { StatusCards } from "./dashboard/StatusCards";
 import { AnalyticsChart } from "./dashboard/AnalyticsChart";
 import { RecentActivities } from "./dashboard/RecentActivities";
@@ -18,13 +17,13 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Insights Message */}
       {totalRecovered > 0 && (
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-primary/20 bg-primary/5 glass-card shadow-2xl animate-fadein transition-all duration-500">
           <CardContent className="p-4 flex items-center">
-            <div className="bg-primary/10 p-2 rounded-full mr-4">
+            <div className="bg-primary/10 p-2 rounded-full mr-4 shadow-md">
               <TrendingUp className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="font-medium">
+              <p className="font-medium text-lg text-gradient">
                 Você recuperou R$ {totalRecovered.toLocaleString('pt-BR')} este mês. Excelente!
               </p>
               <p className="text-sm text-muted-foreground">
@@ -36,13 +35,13 @@ const Dashboard = () => {
       )}
       
       {actionableGlosas > 0 && (
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-amber-500/20 bg-amber-500/5 glass-card shadow-2xl animate-fadein transition-all duration-500">
           <CardContent className="p-4 flex items-center">
-            <div className="bg-amber-500/10 p-2 rounded-full mr-4">
+            <div className="bg-amber-500/10 p-2 rounded-full mr-4 shadow-md">
               <AlertCircle className="h-6 w-6 text-amber-500" />
             </div>
             <div>
-              <p className="font-medium">
+              <p className="font-medium text-lg text-gradient">
                 Detectamos {actionableGlosas} glosa{actionableGlosas > 1 ? 's' : ''} que {actionableGlosas > 1 ? 'podem' : 'pode'} ser contestada{actionableGlosas > 1 ? 's' : ''} com sucesso.
               </p>
               <p className="text-sm text-muted-foreground">

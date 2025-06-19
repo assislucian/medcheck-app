@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/70 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/70 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:scale-[1.03] focus:shadow-lg focus:scale-[1.03] active:scale-95",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] focus:shadow-xl focus:scale-[1.01] active:scale-98",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-md hover:scale-[1.03] focus:shadow-lg focus:scale-[1.03] active:scale-95",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:shadow-lg hover:scale-[1.02] focus:shadow-xl focus:scale-[1.01] active:scale-98",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-md hover:scale-[1.03] focus:shadow-lg focus:scale-[1.03] active:scale-95",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-lg hover:scale-[1.02] focus:shadow-xl focus:scale-[1.01] active:scale-98",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
@@ -39,13 +39,42 @@ export interface ButtonProps
   asChild?: boolean
 }
 
+// Ripple effect premium
+function useRipple(ref: React.RefObject<HTMLButtonElement>) {
+  React.useEffect(() => {
+    const button = ref.current
+    if (!button) return
+    const handleClick = (e: MouseEvent) => {
+      const ripple = document.createElement("span")
+      ripple.className = "lovable-ripple"
+      const rect = button.getBoundingClientRect()
+      const size = Math.max(rect.width, rect.height)
+      ripple.style.width = ripple.style.height = `${size}px`
+      ripple.style.left = `${e.clientX - rect.left - size / 2}px`
+      ripple.style.top = `${e.clientY - rect.top - size / 2}px`
+      button.appendChild(ripple)
+      setTimeout(() => {
+        ripple.remove()
+      }, 600)
+    }
+    button.addEventListener("click", handleClick)
+    return () => button.removeEventListener("click", handleClick)
+  }, [ref])
+}
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const innerRef = React.useRef<HTMLButtonElement>(null)
+    useRipple(innerRef)
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
+        ref={(node: any) => {
+          if (typeof ref === "function") ref(node)
+          else if (ref) (ref as any).current = node
+          innerRef.current = node
+        }}
+        className={cn(buttonVariants({ variant, size, className }), "lovable-btn-premium")}
         {...props}
       />
     )
@@ -54,3 +83,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
+// CSS para ripple effect (adicionar em index.css):
+// .lovable-ripple {
+//   position: absolute;
+//   border-radius: 50%;
+//   background: rgba(0,0,0,0.08);
+//   pointer-events: none;
+//   transform: scale(0);
+//   animation: lovable-ripple 0.6s linear;
+//   z-index: 1;
+// }
+// @keyframes lovable-ripple {
+//   to { transform: scale(2.5); opacity: 0; }
+// }

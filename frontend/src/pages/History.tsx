@@ -1,12 +1,13 @@
-import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
+import { PageContainer } from "../components/layout/PageContainer";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { DataGrid } from "@/components/ui/data-grid";
-import { Button } from "@/components/ui/button";
-import { FileText, Download } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { ArrowLeft, Download, FileText, Calendar, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { useState } from "react";
-import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
+import { PageHeader } from "../components/layout/PageHeader";
 
 // Mock data for demonstration purposes
 const mockHistory = [

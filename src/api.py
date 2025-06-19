@@ -41,13 +41,13 @@ CBHPM_VERSION = "2015"
 MAX_UPLOAD_SIZE_MB = 10
 # Centraliza o segredo JWT em variável de ambiente para segurança
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me")  # Troque em produção
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRE_MINUTES = 480
+JWT_ALGORITHM = os.environ.get("ALGORITHM", "HS256")
+JWT_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 480))
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 # --- Banco de dados SQLAlchemy (SQLite) ---
-DATABASE_URL = "sqlite:///medicos.db"
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///medicos.db")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -224,16 +224,22 @@ limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS para frontend local e produção (ajuste conforme necessário)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# --- CORS seguro ---
+FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
+if FRONTEND_ORIGINS:
+    allowed_origins = [o.strip() for o in FRONTEND_ORIGINS.split(",") if o.strip()]
+else:
+    allowed_origins = [
         "http://localhost:8080",  # Frontend local
         "http://localhost:8081",  # Frontend local alternativo
         "http://localhost:8082",  # Frontend local alternativo
         "http://localhost:3000",  # Alternativo local
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

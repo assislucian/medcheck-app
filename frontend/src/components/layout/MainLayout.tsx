@@ -1,8 +1,10 @@
 import { ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
-import { SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { SidebarProvider as UISidebarProvider } from "../ui/sidebar";
 import { AppSidebar } from "../sidebar/AppSidebar";
 import GlobalHeader from "./GlobalHeader";
+import { SidebarProvider, useSidebarContext } from "../../contexts/SidebarContext";
+import { SidebarTriggerWrapper } from "../ui/SidebarTriggerWrapper";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -13,7 +15,7 @@ interface MainLayoutProps {
   loadingMessage?: string;
 }
 
-export function MainLayout({
+function MainLayoutContent({
   children,
   title,
   description,
@@ -21,6 +23,8 @@ export function MainLayout({
   isLoading = false,
   loadingMessage,
 }: MainLayoutProps) {
+  const { isStatic, isOverlay, isOpen } = useSidebarContext();
+
   return (
     <>
       <Helmet>
@@ -28,17 +32,44 @@ export function MainLayout({
         {/* Mantém SEO, mas não renderiza título/descrição visualmente */}
       </Helmet>
 
-      <SidebarProvider>
-        <div className="min-h-screen w-full bg-background">
+      <UISidebarProvider>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50/80 via-white/90 to-green-50/80 backdrop-blur-md flex relative">
           {showSideNav && <AppSidebar />}
-          <main className="ml-[272px] bg-background min-h-screen px-8 py-6 overflow-y-auto">
-            <GlobalHeader actions={<SidebarTrigger />} />
-            <div className="pt-2">
-              {children}
+          
+          {/* Overlay para mobile quando sidebar está aberta */}
+          {isOverlay && isOpen && (
+            <div 
+              className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+              onClick={() => {
+                // Fechar sidebar ao clicar no overlay
+                const event = new CustomEvent('closeSidebar');
+                window.dispatchEvent(event);
+              }}
+            />
+          )}
+          
+          <main 
+            className={`flex-1 min-w-0 bg-background overflow-y-auto sidebar-offset ${
+              isStatic ? 'static' : ''
+            }`}
+          >
+            <div className="page-shell">
+              <GlobalHeader actions={<SidebarTriggerWrapper />} />
+              <div className="content-layout">
+                {children}
+              </div>
             </div>
           </main>
         </div>
-      </SidebarProvider>
+      </UISidebarProvider>
     </>
+  );
+}
+
+export function MainLayout(props: MainLayoutProps) {
+  return (
+    <SidebarProvider>
+      <MainLayoutContent {...props} />
+    </SidebarProvider>
   );
 }

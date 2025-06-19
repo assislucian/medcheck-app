@@ -1,44 +1,20 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Dockerfile para FastAPI Backend (Railway)
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies
-COPY package.json ./
-RUN npm install
+# Instala dependências
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY . .
+# Copia o código-fonte
+COPY ./src ./src
+COPY ./backend ./backend
+COPY ./logs ./logs
+COPY ./uploads ./uploads
 
-# Generate Prisma client
-RUN npx prisma generate
+# Expõe a porta padrão do Railway
+EXPOSE 8000
 
-# Build TypeScript
-RUN npm run build
-
-# Production stage
-FROM node:20-alpine
-
-WORKDIR /app
-
-# Copy built assets from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/prisma ./prisma
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-
-# Create uploads directory
-RUN mkdir -p uploads && chown -R node:node uploads
-
-# Switch to non-root user
-USER node
-
-# Expose port
-EXPOSE 3000
-
-# Start the application
-CMD ["npm", "start"] 
+# Comando de start
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"] 

@@ -1,69 +1,84 @@
 import { ReactNode } from "react";
-import clsx from "clsx";
+import { cn } from "../../lib/utils";
+import { InfoCardProps } from "../../types/medical";
 
 interface InfoCardProps {
   icon?: ReactNode;
-  title: string;
+  title: ReactNode;
   value?: ReactNode;
-  description?: string;
-  variant?: "info" | "success" | "warning" | "danger" | "neutral";
+  description?: ReactNode;
+  variant?: "info" | "success" | "warning" | "danger" | "neutral" | "default";
   elevation?: "flat" | "raised" | "elevated";
   className?: string;
   children?: ReactNode;
+  badge?: string;
 }
 
 const variantStyles = {
-  success:  'bg-surface-2 border-l-4 border-success text-success',
-  danger:   'bg-surface-2 border-l-4 border-danger text-danger',
-  info:     'bg-surface-2 border-l-4 border-primary text-primary',
-  warning:  'bg-surface-2 border-l-4 border-warning text-warning',
-  neutral:  'bg-surface-2',
+  default: 'bg-card text-card-foreground',
+  success: 'bg-green-50/50 text-green-900 dark:bg-green-950/50 dark:text-green-100',
+  warning: 'bg-yellow-50/50 text-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-100',
+  info: 'bg-blue-50/50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-100'
 };
 
 const elevationStyles = {
   flat: "shadow-none border",
-  raised: "shadow-sm border",
-  elevated: "shadow-lg border",
+  raised: "shadow border border-surface-3",
+  elevated: "shadow-lg border border-surface-3",
 };
 
 /**
- * InfoCard - Card de informação com ícone, título, valor, descrição e children customizáveis.
+ * InfoCard - Card premium com glassmorphism, gradiente, shadow, animação e badge de conquista.
  * @param {InfoCardProps} props
  */
-export function InfoCard({
+const InfoCard = ({
   icon,
   title,
   value,
   description,
-  variant = "neutral",
-  elevation = "raised",
+  variant = 'default',
+  elevation = "elevated",
   className = "",
   children,
-}: InfoCardProps) {
+  badge,
+}: InfoCardProps) => {
   return (
-    <div
-      tabIndex={0}
-      className={clsx(
-        "rounded-xl p-4 flex flex-col gap-0.5 min-w-0 transition-all duration-150 outline-none border border-surface-3 shadow-md",
-        variantStyles[variant],
-        elevationStyles[elevation],
-        "hover:shadow-md hover:scale-[1.015] focus:shadow-lg focus:scale-[1.015]",
-        "focus-visible:ring-2 focus-visible:ring-brand/60",
-        "cursor-pointer",
-        className
-      )}
-      aria-label={title}
-      role={variant === "danger" || variant === "warning" ? "alert" : undefined}
-    >
-      <div className="flex items-center gap-2 mb-0.5">
-        {icon && <span className="shrink-0 text-lg md:text-xl">{icon}</span>}
-        <span className="font-semibold text-sm md:text-base truncate flex-1">{title}</span>
+    <div className={cn(
+      "rounded-xl border p-4 shadow-sm transition-all hover:shadow-md",
+      variantStyles[variant],
+      elevationStyles[elevation],
+      className
+    )}>
+      <div className="flex items-center justify-between">
+        <div className={cn(
+          "rounded-lg p-2",
+          variant === 'success' && "bg-green-100/50 text-green-600",
+          variant === 'warning' && "bg-yellow-100/50 text-yellow-600",
+          variant === 'info' && "bg-blue-100/50 text-blue-600",
+          variant === 'default' && "bg-muted text-muted-foreground"
+        )}>
+          {icon}
+        </div>
+        {badge && (
+          <span className={cn(
+            "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+            variant === 'success' && "bg-green-100/50 text-green-700",
+            variant === 'warning' && "bg-yellow-100/50 text-yellow-700",
+            variant === 'info' && "bg-blue-100/50 text-blue-700",
+            variant === 'default' && "bg-muted text-muted-foreground"
+          )}>
+            {badge}
+          </span>
+        )}
       </div>
-      {value && <div className="text-xl md:text-2xl font-extrabold text-ink mb-0.5 truncate">{value}</div>}
-      {description && <div className="text-xs md:text-sm text-muted-foreground mb-0.5 truncate">{description}</div>}
-      {children && <div className="mt-0.5 [&_button]:text-base">{children}</div>}
+      <div className="mt-4 space-y-2">
+        <div className="text-sm font-medium">{title}</div>
+        <div className="text-2xl font-bold tracking-tight">{value}</div>
+        <div className="text-sm text-muted-foreground">{description}</div>
+      </div>
+      {children && <div className="mt-1 [&_button]:text-base">{children}</div>}
     </div>
   );
-}
+};
 
 export default InfoCard; 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run vercel:check && vite build",
+    "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -74,7 +74,8 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
     "xmlbuilder2": "^3.1.1",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "vite": "^6.3.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -90,8 +91,6 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
-    "typescript": "^5.5.3",
-    "typescript-eslint": "^8.0.1",
-    "vite": "^6.3.3"
+    "typescript": "^5.5.3"
   }
 } 

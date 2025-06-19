@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "./styles/base.css";
+@import "./styles/tokens-layout.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -41,6 +42,9 @@
     --ring: 213 100% 42%;
     
     --radius: 0.5rem;
+    
+    /* Sidebar width - fonte única de verdade */
+    --sidebar-width: 256px;
     
     --color-card: 255 255 255;      /* #FFFFFF */
     --color-body: 26 26 26;         /* #1A1A1A */
@@ -123,7 +127,10 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-white/5 backdrop-blur-sm border border-white/10 shadow-lg;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
   }
   
   .bg-grid-pattern {
@@ -133,7 +140,11 @@
   }
   
   .text-gradient {
-    @apply bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent;
+    background: linear-gradient(90deg, #2563eb 60%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
   }
   
   .scrollbar-hide {
@@ -174,4 +185,29 @@
 .dark .demonstrativo-dialog-content {
   border: 1.5px solid #262626 !important;
   background: #18181b;
+}
+
+@keyframes fadein {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadein {
+  animation: fadein 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.lovable-btn-premium {
+  position: relative;
+  overflow: hidden;
+}
+.lovable-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.08);
+  pointer-events: none;
+  transform: scale(0);
+  animation: lovable-ripple 0.6s linear;
+  z-index: 1;
+}
+@keyframes lovable-ripple {
+  to { transform: scale(2.5); opacity: 0; }
 }

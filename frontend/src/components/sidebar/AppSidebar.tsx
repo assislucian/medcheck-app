@@ -5,11 +5,13 @@ import { useAuth } from "../../contexts/auth/AuthContext";
 import { toast } from "sonner";
 import Brand from "./Brand";
 import SidebarFooter from "./Footer";
+import { useSidebarContext } from "../../contexts/SidebarContext";
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isOverlay, isOpen } = useSidebarContext();
 
   const isActive = (route: string) => location.pathname.startsWith(route);
 
@@ -33,8 +35,19 @@ export function AppSidebar() {
     { icon: HelpCircle, label: "Suporte", href: "/support" },
   ];
 
+  // Classes condicionais baseadas no estado da sidebar
+  const sidebarClasses = `
+    fixed inset-y-0 left-0 flex flex-col bg-card border-r border-border px-6 py-6 h-screen z-40
+    transition-all duration-200 ease-linear
+    ${isOverlay 
+      ? 'w-[var(--sidebar-width)] transform' 
+      : 'w-[var(--sidebar-width)]'
+    }
+    ${isOverlay && !isOpen ? '-translate-x-full' : 'translate-x-0'}
+  `;
+
   return (
-    <aside className="fixed inset-y-0 left-0 flex flex-col w-[272px] bg-card border-r border-border px-6 py-6 h-screen z-40">
+    <aside className={sidebarClasses}>
       <Brand />
       {/* Espaço para UserMiniCard futuramente, se necessário */}
       <nav className="flex-1 mt-4 space-y-2 overflow-y-auto">

@@ -1,23 +1,48 @@
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface PageHeaderProps {
   title: ReactNode;
-  icon?: ReactNode;
   description?: string;
+  icon?: ReactNode;
   actions?: ReactNode;
+  children?: ReactNode;
+  className?: string;
 }
 
-export default function PageHeader({ title, icon, description, actions }: PageHeaderProps) {
+export function PageHeader({ 
+  title, 
+  description, 
+  icon,
+  actions,
+  children, 
+  className 
+}: PageHeaderProps) {
   return (
-    <header className="mb-6 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        {icon && <span className="text-brand">{icon}</span>}
-        <h1 className="text-3xl font-bold text-brand">{title}</h1>
+    <div className={cn("mb-6", className)}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex-shrink-0">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {title}
+            </h1>
+            {description && (
+              <p className="mt-2 text-muted-foreground">
+                {description}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {actions}
+          {children}
+        </div>
       </div>
-      {actions && (
-        <div className="flex items-center gap-2 ml-2">{actions}</div>
-      )}
-      {/* Descrição opcional pode ser adicionada abaixo se necessário */}
-    </header>
+    </div>
   );
 }
