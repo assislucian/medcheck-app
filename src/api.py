@@ -238,6 +238,7 @@ else:
         "http://localhost:8082",  # Frontend local alternativo
         "http://localhost:3000",  # Alternativo local
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
+        "https://medcheck-9hff69jkl-assislucians-projects.vercel.app",  # Vercel deploy
     ]
 
 app.add_middleware(
