@@ -51,7 +51,13 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///medicos.db")
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    engine = create_engine(DATABASE_URL)
+    # Ajuste: pool_pre_ping=True evita erros de conexão morta, pool_size e max_overflow controlam o pool
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,  # Evita erros de conexão morta
+        pool_size=10,        # Ajuste conforme limite do Railway
+        max_overflow=20      # Ajuste conforme necessidade
+    )
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
