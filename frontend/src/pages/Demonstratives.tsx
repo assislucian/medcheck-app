@@ -1,5 +1,4 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { PageContainer } from "../components/layout/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { DataGrid } from "../components/ui/data-grid";
 import { Button } from "../components/ui/button";
@@ -33,13 +32,12 @@ import axios from "axios";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { findProcedureByCodigo, calculateTotalCBHPM } from "../data/cbhpmData";
-import { PageHeader } from "../components/layout/PageHeader";
+import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
 import InfoCard from "../components/ui/InfoCard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
 import { useNavigate } from 'react-router-dom';
-import classNames from "classnames";
 
 const mockDetailedProcedures = [
   {
@@ -93,11 +91,11 @@ const formatCurrency = (value: number | undefined | null) => {
   }).format(value);
 };
 
-function normalizePapel(papel: any) {
+function normalizePapel(papel) {
   return String(papel || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
-const papelDisplay = (papel: any) => {
+const papelDisplay = (papel) => {
   const norm = normalizePapel(papel);
   if (norm === 'primeiro auxiliar') return '1º Auxiliar';
   if (norm === 'segundo auxiliar') return '2º Auxiliar';
@@ -117,7 +115,7 @@ function mapPapelToCBHPM(papel: string): string {
 }
 
 // Converte string BRL para número
-function parseBRL(str: any) {
+function parseBRL(str) {
   if (typeof str === 'number') return str;
   if (!str) return 0;
   let cleaned = String(str).replace('R$', '').replace(/\s/g, '');
@@ -134,57 +132,27 @@ function parseBRL(str: any) {
 }
 
 // Limpa string BRL para conter apenas números, vírgula e ponto
-function cleanBRL(str: any) {
+function cleanBRL(str) {
   if (typeof str === 'number') return str.toString();
   if (!str) return '0';
   return str.replace(/[^0-9.,-]/g, '');
 }
 
 // Função utilitária para parse seguro de BRL para número
-function parseBRLToNumber(val: any) {
+function parseBRLToNumber(val) {
   if (typeof val === 'number') return val;
   if (!val) return 0;
   let cleaned = String(val).replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
   return Number(cleaned) || 0;
 }
 
-const papelBadgeVariant = (papel: any) => {
-  const norm = String(papel || '').toLowerCase();
-  if (norm.includes('cirurg')) return 'participacao';
-  if (norm.includes('1º') || norm.includes('primeiro')) return 'success';
-  if (norm.includes('2º') || norm.includes('segundo')) return 'warning';
-  if (norm.includes('anest')) return 'secondary';
-  if (!papel) return 'outline';
-  return 'outline';
-};
-
-const papelBadgeText = (papel: any) => {
-  const norm = String(papel || '').toLowerCase();
-  if (norm.includes('cirurg')) return 'Cir.';
-  if (norm.includes('1º') || norm.includes('primeiro')) return '1º Aux.';
-  if (norm.includes('2º') || norm.includes('segundo')) return '2º Aux.';
-  if (norm.includes('anest')) return 'Anest.';
-  if (!papel) return 'Pendente';
-  return 'Outro';
-};
-
 const proceduresColumns = [
-  { field: 'guia', headerName: 'Guia', width: 100, align: 'center', headerAlign: 'center' },
-  { field: 'data', headerName: 'Data', width: 100, align: 'center', headerAlign: 'center' },
-  { field: 'paciente', headerName: 'Paciente', width: 150, align: 'center', headerAlign: 'center' },
-  { field: 'codigo', headerName: 'Código', width: 100, align: 'center', headerAlign: 'center' },
-  { field: 'descricao', headerName: 'Descrição', flex: 1, align: 'left', headerAlign: 'left' },
-  { 
-    field: 'participacao', 
-    headerName: 'Papel', 
-    width: 100,
-    align: 'center',
-    headerAlign: 'center',
-    renderCell: ({ value }: { value: any }) => (
-      <Badge variant={papelBadgeVariant(value) as any} className="min-w-[70px] justify-center text-xs font-semibold">{papelBadgeText(value)}</Badge>
-    )
-  },
-  { field: 'quantidade', headerName: 'Qtd', width: 60, align: 'center', headerAlign: 'center' },
+  { field: 'guia', headerName: 'Guia', width: 100 },
+  { field: 'data', headerName: 'Data', width: 100 },
+  { field: 'paciente', headerName: 'Paciente', width: 150 },
+  { field: 'codigo', headerName: 'Código', width: 100 },
+  { field: 'descricao', headerName: 'Descrição', flex: 1 },
+  { field: 'quantidade', headerName: 'Qtd', width: 60 },
   { 
     field: 'apresentado', 
     headerName: 'Apresentado', 
@@ -197,15 +165,14 @@ const proceduresColumns = [
     width: 120,
     valueFormatter: (params: any) => formatCurrency(params.value) 
   },
-  {
-    field: 'glosa',
-    headerName: 'Glosa',
+  { 
+    field: 'glosa', 
+    headerName: 'Glosa', 
     width: 120,
-    valueFormatter: (params: any) => formatCurrency(params.value),
-    renderCell: ({ value }: { value: any }) => (
-      <span className={value > 0 ? "text-danger font-medium" : "text-muted-foreground"}>
+    renderCell: ({ value }) => (
+      <Badge variant={value > 0 ? 'danger' : 'neutral'} className="whitespace-nowrap px-3 py-1">
         {formatCurrency(value)}
-      </span>
+      </Badge>
     )
   },
   {
@@ -233,7 +200,7 @@ const proceduresColumns = [
         Icon = <ArrowUpRight className="inline w-4 h-4 ml-1 text-success" />;
       }
       return (
-        <Badge variant={variant} className="min-w-[90px] justify-center text-xs font-semibold flex items-center gap-1 text-center px-3 py-1">
+        <Badge variant={variant} className="whitespace-nowrap px-3 py-1 font-semibold flex items-center gap-1">
           {formatCurrency(value)}
           {Icon}
         </Badge>
@@ -252,12 +219,43 @@ const proceduresColumns = [
       if (value < 0) variant = 'warning';
       if (value > 0) variant = 'success';
       return (
-        <Badge variant={variant} className="min-w-[70px] justify-center text-xs font-semibold text-center px-3 py-1">
+        <Badge variant={variant} className="whitespace-nowrap px-3 py-1 font-semibold">
           {value !== null && value !== undefined ? `${value.toFixed(2)}%` : '--'}
         </Badge>
       );
     }
   },
+  {
+    field: 'acao',
+    headerName: 'Ação',
+    minWidth: 80,
+    flex: 0,
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => {
+      const participacao = String(params.row.participacao || '').trim().toLowerCase();
+      if (participacao !== 'upload guia') return null;
+      const codigo = encodeURIComponent(params.row.codigo || '');
+      const paciente = encodeURIComponent(params.row.paciente || '');
+      const navigate = useNavigate();
+      return (
+        <Button
+          size="sm"
+          variant="outline"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigate(`/guides?codigo=${codigo}&paciente=${paciente}`);
+          }}
+          title="Clique para enviar a guia TISS referente a este procedimento. Você será redirecionado para a tela de upload de guias."
+        >
+          <Upload className="h-4 w-4 mr-1" />
+          Enviar Guia
+        </Button>
+      );
+    }
+  }
 ];
 
 const DemonstrativeDetailDialog = ({ demonstrative }) => {
@@ -559,7 +557,6 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     className="min-h-[200px] text-[0.92rem]"
                     autoHeight={false}
                     renderExpandedRow={undefined}
-                    rowClassName={row => (Number(row.glosa) > 0 ? 'bg-red-100/60' : '')}
                   />
                 )}
               </div>
@@ -741,21 +738,21 @@ const DemonstrativesPage = () => {
 
   const demonstrativesColumns = [
     { field: 'periodo', headerName: 'Período', width: 150 },
-    { field: 'total_procedures', headerName: 'Total Procedimentos', width: 170, renderCell: ({ value }: { value: any }) => (<span className="font-medium">{value}</span>) },
-    { field: 'total_presented', headerName: 'Apresentado', width: 150, valueFormatter: (params: any) => formatCurrency(params.value) },
-    { field: 'total_approved', headerName: 'Liberado', width: 150, valueFormatter: (params: any) => formatCurrency(params.value) },
-    { field: 'total_glosa', headerName: 'Glosa', width: 150, valueFormatter: (params: any) => formatCurrency(params.value) },
+    { field: 'total_procedures', headerName: 'Total Procedimentos', width: 170, renderCell: ({ value }) => (<span className="font-medium">{value}</span>) },
+    { field: 'total_presented', headerName: 'Apresentado', width: 150, valueFormatter: (params) => formatCurrency(params.value) },
+    { field: 'total_approved', headerName: 'Liberado', width: 150, valueFormatter: (params) => formatCurrency(params.value) },
+    { field: 'total_glosa', headerName: 'Glosa', width: 150, valueFormatter: (params) => formatCurrency(params.value) },
     {
       field: 'delta_value',
       headerName: 'Delta R$',
       width: 130,
       description: 'Diferença entre o valor liberado e o apresentado',
-      valueGetter: (params: any) => {
+      valueGetter: (params) => {
         const liberado = Number(params.row.total_approved) || 0;
         const apresentado = Number(params.row.total_presented) || 0;
         return liberado - apresentado;
       },
-      renderCell: ({ value }: { value: any }) => (
+      renderCell: ({ value }) => (
         <span className={value < 0 ? "text-danger font-medium" : value > 0 ? "text-success font-medium" : "text-muted-foreground"}>
           {formatCurrency(value)}
         </span>
@@ -765,7 +762,7 @@ const DemonstrativesPage = () => {
       field: 'actions', 
       headerName: 'Ações', 
       width: 180,
-      renderCell: ({ row }: { row: any }) => (
+      renderCell: ({ row }) => (
         <div className="flex gap-2">
           <DemonstrativeDetailDialog demonstrative={row} />
           <Button variant="destructive" size="sm" className="ml-2 h-9 px-4 font-medium bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors" onClick={async () => {
@@ -784,127 +781,124 @@ const DemonstrativesPage = () => {
       title="Demonstrativos"
       description="Gerencie seus demonstrativos de pagamento"
     >
-      <PageContainer>
-        <PageHeader
-          title="Demonstrativos"
-          icon={<FileBarChart size={28} />}
-          actions={userProfile ? (
-            <UserMenu
-              name={userProfile.name || 'Usuário'}
-              email={userProfile.email || 'sem-email@exemplo.com'}
-              specialty={userProfile.crm || ''}
-              avatarUrl={userProfile.avatarUrl || undefined}
-              onLogout={signOut}
+      <PageHeader
+        title="Demonstrativos"
+        icon={<FileBarChart size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
+      <div className="space-y-6">
+        {/* Painel de Insights Clínico-Financeiros - Global */}
+        <section aria-label="Painel de Insights Clínico-Financeiros" className="mb-6">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
+            <InfoCard
+              icon={<ArrowUpRight className="h-6 w-6" />}
+              title={<span className="text-xs font-semibold">Total Recebido</span>}
+              value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalProcessado)}</span>}
+              description={<span className="text-xs">Recebido nos últimos 30 dias</span>}
+              variant="success"
             />
-          ) : null}
-        />
-        <main className="page-shell">
-          <section className="section-spacing">
-            <div className="card-grid">
-              <InfoCard
-                icon={<ArrowUpRight className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Total Recebido</span>}
-                value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalProcessado)}</span>}
-                description={<span className="text-xs">Recebido nos últimos 30 dias</span>}
-                variant="success"
-              />
-              <InfoCard
-                icon={<AlertCircle className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Total Glosado</span>}
-                value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalGlosa)}</span>}
-                description={<span className="text-xs">Glosado nos últimos 30 dias</span>}
-                variant="danger"
-              />
-              <InfoCard
-                icon={<FileText className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Procedimentos</span>}
-                value={<span className="text-2xl md:text-3xl font-bold">{summaryStats.totalProcedimentos}</span>}
-                description={<span className="text-xs">Analisados nos últimos 30 dias</span>}
-                variant="info"
-              />
-              <InfoCard
-                icon={<ClipboardList className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Auditorias Pendentes</span>}
-                value={<span className="text-2xl md:text-3xl font-bold">{pendingAudits}</span>}
-                description={<span className="text-xs">Uploads aguardando revisão</span>}
-                variant="warning"
-              />
-            </div>
-          </section>
-          <section className="section-spacing">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList>
-                <TabsTrigger value="list">Lista</TabsTrigger>
-                <TabsTrigger value="upload">Upload</TabsTrigger>
-              </TabsList>
+            <InfoCard
+              icon={<AlertCircle className="h-6 w-6" />}
+              title={<span className="text-xs font-semibold">Total Glosado</span>}
+              value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalGlosa)}</span>}
+              description={<span className="text-xs">Glosado nos últimos 30 dias</span>}
+              variant="danger"
+            />
+            <InfoCard
+              icon={<FileText className="h-6 w-6" />}
+              title={<span className="text-xs font-semibold">Procedimentos</span>}
+              value={<span className="text-2xl md:text-3xl font-bold">{summaryStats.totalProcedimentos}</span>}
+              description={<span className="text-xs">Analisados nos últimos 30 dias</span>}
+              variant="info"
+            />
+            <InfoCard
+              icon={<ClipboardList className="h-6 w-6" />}
+              title={<span className="text-xs font-semibold">Auditorias Pendentes</span>}
+              value={<span className="text-2xl md:text-3xl font-bold">{pendingAudits}</span>}
+              description={<span className="text-xs">Uploads aguardando revisão</span>}
+              variant="warning"
+            />
+          </div>
+        </section>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="list">Lista</TabsTrigger>
+            <TabsTrigger value="upload">Upload</TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="list">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Demonstrativos</CardTitle>
-                    <CardDescription>
-                      Lista de demonstrativos processados
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <DataGrid
-                      rows={demonstratives}
-                      columns={demonstrativesColumns.map(col => {
-                        // Adiciona tooltip nos headers técnicos
-                        if (["Liberado", "Glosa", "Delta R$"].includes(col.headerName)) {
-                          return {
-                            ...col,
-                            headerName: col.headerName,
-                            headerTooltip: col.headerName === "Liberado" ? "Valor efetivamente liberado pelo convênio." : col.headerName === "Glosa" ? "Valor glosado pelo convênio." : "Diferença entre liberado e apresentado."
-                          };
-                        }
-                        return col;
-                      })}
-                      pageSize={10}
-                      className="min-h-[400px]"
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
+          <TabsContent value="list">
+            <Card>
+              <CardHeader>
+                <CardTitle>Demonstrativos</CardTitle>
+                <CardDescription>
+                  Lista de demonstrativos processados
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DataGrid
+                  rows={demonstratives}
+                  columns={demonstrativesColumns.map(col => {
+                    // Adiciona tooltip nos headers técnicos
+                    if (["Liberado", "Glosa", "Delta R$"].includes(col.headerName)) {
+                      return {
+                        ...col,
+                        headerName: col.headerName,
+                        headerTooltip: col.headerName === "Liberado" ? "Valor efetivamente liberado pelo convênio." : col.headerName === "Glosa" ? "Valor glosado pelo convênio." : "Diferença entre liberado e apresentado."
+                      };
+                    }
+                    return col;
+                  })}
+                  pageSize={10}
+                  className="min-h-[400px]"
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-              <TabsContent value="upload">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Upload de Demonstrativos</CardTitle>
-                    <CardDescription>
-                      Faça upload de novos demonstrativos para processamento
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <FileDropZone
-                      onDropFiles={handleFileDrop}
-                      type="demonstrativo"
-                      disabled={isUploading}
-                    />
-                    <FileList
-                      files={files}
-                      onRemove={removeFile}
-                      disabled={isUploading}
-                    />
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleUploadDemonstrativos}
-                        disabled={isUploading || !files.length}
-                        size="sm"
-                        variant="primary"
-                        className="h-9 px-5 font-semibold flex items-center bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
-                      >
-                        <Upload className="h-4 w-4 mr-2" />
-                        {isUploading ? 'Processando...' : 'Processar'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </section>
-        </main>
-      </PageContainer>
+          <TabsContent value="upload">
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload de Demonstrativos</CardTitle>
+                <CardDescription>
+                  Faça upload de novos demonstrativos para processamento
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FileDropZone
+                  onDropFiles={handleFileDrop}
+                  type="demonstrativo"
+                  disabled={isUploading}
+                />
+                <FileList
+                  files={files}
+                  onRemove={removeFile}
+                  disabled={isUploading}
+                />
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleUploadDemonstrativos}
+                    disabled={isUploading || !files.length}
+                    size="sm"
+                    variant="primary"
+                    className="h-9 px-5 font-semibold flex items-center bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploading ? 'Processando...' : 'Processar'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </AuthenticatedLayout>
   );
 };

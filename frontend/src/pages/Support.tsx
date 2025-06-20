@@ -6,7 +6,7 @@ import { TicketList } from '../components/support/TicketList';
 import { TicketDetail } from '../components/support/TicketDetail';
 import { NewTicketForm } from '../components/support/NewTicketForm';
 import { useTickets } from '../hooks/useTickets';
-import { PageHeader } from "../components/layout/PageHeader";
+import PageHeader from "../components/layout/PageHeader";
 import { UserMenu } from "../components/navbar/UserMenu";
 import { HelpCircle } from "lucide-react";
 

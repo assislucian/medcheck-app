@@ -1,5 +1,4 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { PageContainer } from "../components/layout/PageContainer";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { DataGrid } from "../components/ui/data-grid";
 import { Button } from "../components/ui/button";
@@ -8,14 +7,14 @@ import { Badge } from "../components/ui/badge";
 import { useState, useEffect } from "react";
 import { ResourceDialog } from "../components/unpaid-procedures/ResourceDialog";
 import { formatCurrency } from "../utils/format";
-import { PageHeader } from "../components/layout/PageHeader";
+import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
 import InfoCard from "../components/ui/InfoCard";
 import axios from "axios";
 import { differenceInCalendarDays, parse } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function calcularDiasParaContestar(data: string) {
   // data no formato DD/MM/YYYY ou YYYY-MM-DD
@@ -247,9 +246,9 @@ const UnpaidProceduresPage = () => {
           );
         }
         if (motivo) {
-          return <Badge variant="destructive">{motivo}</Badge>;
+          return <Badge variant="danger">{motivo}</Badge>;
         }
-        return <Badge variant="destructive">Glosa</Badge>;
+        return <Badge variant="danger">Glosa</Badge>;
       }
     },
     { 
@@ -275,135 +274,129 @@ const UnpaidProceduresPage = () => {
 
   return (
     <AuthenticatedLayout title="Procedimentos Não Pagos">
-      <PageContainer>
-        <PageHeader
-          title="Procedimentos Não Pagos"
-          icon={<FileX size={28} />}
-          actions={userProfile ? (
-            <UserMenu
-              name={userProfile.name || 'Usuário'}
-              email={userProfile.email || 'sem-email@exemplo.com'}
-              specialty={userProfile.crm || ''}
-              avatarUrl={userProfile.avatarUrl || undefined}
-              onLogout={signOut}
-            />
-          ) : null}
+      <PageHeader
+        title="Procedimentos Não Pagos"
+        icon={<FileX size={28} />}
+        actions={userProfile ? (
+          <UserMenu
+            name={userProfile.name || 'Usuário'}
+            email={userProfile.email || 'sem-email@exemplo.com'}
+            specialty={userProfile.crm || ''}
+            avatarUrl={userProfile.avatarUrl || undefined}
+            onLogout={signOut}
+          />
+        ) : null}
+      />
+      <div className="space-y-6">
+        <InfoCard
+          icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
+          title={`Existem ${unpaidProcedures.length} procedimentos que podem ser contestados`}
+          description="Conteste em até 30 dias para garantir a análise pelo convênio"
+          variant="warning"
+          className="w-full mb-4"
         />
-        <main className="page-shell">
-          <section className="section-spacing">
-            <InfoCard
-              icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
-              title={`Existem ${unpaidProcedures.length} procedimentos que podem ser contestados`}
-              description="Conteste em até 30 dias para garantir a análise pelo convênio"
-              variant="warning"
-              className="w-full mb-4"
-            />
-          </section>
-          <section className="section-spacing">
-            <div className="flex gap-2 self-end">
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filtrar
-              </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Exportar
-              </Button>
+        
+        <div className="flex gap-2 self-end">
+          <Button variant="outline" size="sm">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtrar
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Exportar
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileX className="w-5 h-5 text-primary" />
+              <h3 className="font-medium">Lista de Procedimentos Não Pagos</h3>
             </div>
-          </section>
-          <section className="section-spacing">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <FileX className="w-5 h-5 text-primary" />
-                  <h3 className="font-medium">Lista de Procedimentos Não Pagos</h3>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="flex items-center justify-center min-h-[200px]">
-                    <Loader2 className="animate-spin text-blue-500 w-8 h-8" aria-label="Carregando..." />
-                    <span className="ml-3 text-blue-600 font-medium">Carregando procedimentos...</span>
-                  </div>
-                ) : error ? (
-                  <div className="text-danger font-medium p-4">{error}</div>
-                ) : (
-                  <table className="w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        {unpaidColumns.map((col) => (
-                          <th
-                            key={col.field}
-                            className="px-4 py-3 text-left font-semibold text-gray-800 text-sm border-b border-gray-200"
-                          >
-                            {col.headerName}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {unpaidProcedures.map((row, idx) => [
-                        <tr
-                          key={row.id}
-                          className={
-                            idx % 2 === 0
-                              ? "bg-white hover:bg-blue-50 transition-colors"
-                              : "bg-gray-50 hover:bg-blue-50 transition-colors"
-                          }
-                        >
-                          {unpaidColumns.map((col, colIdx) => (
-                            <td key={col.field} className="py-2 px-3 align-top">
-                              {col.renderCell ? col.renderCell({ row, id: idx }) : row[col.field]}
-                            </td>
-                          ))}
-                        </tr>,
-                        expandedRow === idx && (
-                          <tr key={row.id + "-expanded"}>
-                            <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
-                              <div className="flex justify-start">
-                                <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 mt-2 mb-4 w-full">
-                                  <div className="flex items-center mb-2">
-                                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                                    <span className="font-semibold text-gray-800 text-base">Detalhes Oficiais da Glosa</span>
-                                  </div>
-                                  {glosaLoading ? (
-                                    <div className="text-gray-600">Carregando detalhes da glosa...</div>
-                                  ) : glosaError ? (
-                                    <div className="text-danger">{glosaError}</div>
-                                  ) : glosaDetail ? (
-                                    <table className="w-full text-sm mt-2">
-                                      <thead>
-                                        <tr className="bg-gray-50">
-                                          <th className="px-3 py-2 text-left font-semibold text-gray-700">Grupo</th>
-                                          <th className="px-3 py-2 text-left font-semibold text-gray-700">Código</th>
-                                          <th className="px-3 py-2 text-left font-semibold text-gray-700">Descrição</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <td className="px-3 py-2 text-gray-900">{glosaDetail.grupo}</td>
-                                          <td className="px-3 py-2 text-gray-900">{glosaDetail.codigo}</td>
-                                          <td className="px-3 py-2 text-gray-900">{glosaDetail.descricao}</td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  ) : (
-                                    <div className="text-gray-600">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
-                                  )}
-                                </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center min-h-[200px]">
+                <Loader2 className="animate-spin text-blue-500 w-8 h-8" aria-label="Carregando..." />
+                <span className="ml-3 text-blue-600 font-medium">Carregando procedimentos...</span>
+              </div>
+            ) : error ? (
+              <div className="text-danger font-medium p-4">{error}</div>
+            ) : (
+              <table className="w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <thead>
+                  <tr className="bg-gray-50">
+                    {unpaidColumns.map((col) => (
+                      <th
+                        key={col.field}
+                        className="px-4 py-3 text-left font-semibold text-gray-800 text-sm border-b border-gray-200"
+                      >
+                        {col.headerName}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {unpaidProcedures.map((row, idx) => [
+                    <tr
+                      key={row.id}
+                      className={
+                        idx % 2 === 0
+                          ? "bg-white hover:bg-blue-50 transition-colors"
+                          : "bg-gray-50 hover:bg-blue-50 transition-colors"
+                      }
+                    >
+                      {unpaidColumns.map((col, colIdx) => (
+                        <td key={col.field} className="py-2 px-3 align-top">
+                          {col.renderCell ? col.renderCell({ row, id: idx }) : row[col.field]}
+                        </td>
+                      ))}
+                    </tr>,
+                    expandedRow === idx && (
+                      <tr key={row.id + "-expanded"}>
+                        <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
+                          <div className="flex justify-start">
+                            <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 mt-2 mb-4 w-full">
+                              <div className="flex items-center mb-2">
+                                <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                                <span className="font-semibold text-gray-800 text-base">Detalhes Oficiais da Glosa</span>
                               </div>
-                            </td>
-                          </tr>
-                        )
-                      ])}
-                    </tbody>
-                  </table>
-                )}
-              </CardContent>
-            </Card>
-          </section>
-        </main>
-      </PageContainer>
+                              {glosaLoading ? (
+                                <div className="text-gray-600">Carregando detalhes da glosa...</div>
+                              ) : glosaError ? (
+                                <div className="text-danger">{glosaError}</div>
+                              ) : glosaDetail ? (
+                                <table className="w-full text-sm mt-2">
+                                  <thead>
+                                    <tr className="bg-gray-50">
+                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Grupo</th>
+                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Código</th>
+                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Descrição</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.grupo}</td>
+                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.codigo}</td>
+                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.descricao}</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              ) : (
+                                <div className="text-gray-600">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  ])}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </AuthenticatedLayout>
   );
 };

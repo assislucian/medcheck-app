@@ -55,7 +55,7 @@ function MainLayoutContent({
           >
             <div className="page-shell">
               <GlobalHeader actions={<SidebarTriggerWrapper />} />
-              <div className="content-layout">
+              <div className="content-layout px-4 md:px-8 max-w-7xl mx-auto w-full">
                 {children}
               </div>
             </div>

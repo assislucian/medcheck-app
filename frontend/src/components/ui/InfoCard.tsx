@@ -44,7 +44,7 @@ const InfoCard = ({
 }: InfoCardProps) => {
   return (
     <div className={cn(
-      "rounded-xl border p-4 shadow-sm transition-all hover:shadow-md",
+      "w-full rounded-xl border p-4 shadow-sm transition-all hover:shadow-md",
       variantStyles[variant],
       elevationStyles[elevation],
       className
