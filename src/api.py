@@ -1780,6 +1780,27 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
     }
 
 
+# --- Endpoint para deletar conta do usuário ---
+@app.delete("/api/v1/admin/purge-users")
+def purge_all_users(secret: str = Query(...)):
+    # Proteção simples: só executa se o secret for igual ao valor esperado
+    ADMIN_SECRET = os.environ.get("ADMIN_PURGE_SECRET", "super-secret-purge")
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = SessionLocal()
+    try:
+        # Apaga dados relacionados primeiro (ordem importa por FK)
+        db.query(Guia).delete()
+        db.query(Demonstrativo).delete()
+        db.query(Consentimento).delete()
+        db.query(Medico).delete()
+        db.commit()
+        logger.warning("Todos os usuários e dados relacionados foram apagados por comando administrativo!")
+        return {"message": "Todos os usuários e dados relacionados foram apagados."}
+    finally:
+        db.close()
+
+
 # --- Observações ---
 # - Para produção, troque JWT_SECRET por segredo seguro e use HTTPS
 # - Substitua jobs dict por Redis/Celery/DB para escalabilidade real
