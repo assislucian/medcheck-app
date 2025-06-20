@@ -234,6 +234,8 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # --- CORS seguro ---
+# Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
+# Isso garante que apenas os domínios autorizados possam acessar a API.
 FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
 if FRONTEND_ORIGINS:
     allowed_origins = [o.strip() for o in FRONTEND_ORIGINS.split(",") if o.strip()]
@@ -246,6 +248,7 @@ else:
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
         "https://medcheck-9hff69jkl-assislucians-projects.vercel.app",  # Vercel deploy
     ]
+logging.info(f"CORS: allowed_origins = {allowed_origins}")  # Loga as origens permitidas
 
 app.add_middleware(
     CORSMiddleware,
