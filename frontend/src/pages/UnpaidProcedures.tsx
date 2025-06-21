@@ -11,7 +11,6 @@ import PageHeader from "../components/layout/PageHeader";
 import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
 import InfoCard from "../components/ui/InfoCard";
-import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 import axios from "axios";
 import { differenceInCalendarDays, parse } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
@@ -288,7 +287,7 @@ const UnpaidProceduresPage = () => {
         <InfoCard
           icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
           title={<span className="text-xs font-semibold">Procedimentos Contestáveis</span>}
-          value={<AnimatedNumber value={unpaidProcedures.length} className="text-2xl md:text-3xl font-bold" />}
+          value={<span className="text-2xl md:text-3xl font-bold">{unpaidProcedures.length}</span>}
           description="Conteste em até 30 dias para garantir a análise pelo convênio"
           variant="warning"
           className="w-full mb-4"
