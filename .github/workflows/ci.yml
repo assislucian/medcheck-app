@@ -1,85 +1,58 @@
-name: CI/CD
+name: CI
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-  python-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Run pytest
-        run: |
-          PYTHONPATH=. pytest -v tests/
-
-  test:
+  backend_frontend:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:15-alpine
+        image: postgres:16
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          POSTGRES_PASSWORD: secret
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgres://postgres:secret@localhost:5432/postgres
+      PYTHON_VERSION: "3.11"
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Generate Prisma client
-        run: npx prisma generate
-      - name: Run migrations
-        run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      - name: Run linting
-        run: npm run lint
-      - name: Run type checking
-        run: npm run typecheck
-      - name: Run tests
-        run: npm test
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+      - uses: actions/checkout@v4
 
-  build:
-    needs: [python-test, test]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v4
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python dependencies & run tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pre-commit run --all-files --show-diff-on-failure
+          pytest -q --asyncio-mode=auto
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/medical-honorarium-validator:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/medical-honorarium-validator:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/medical-honorarium-validator:buildcache,mode=max 
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend deps
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint Frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Test Frontend
+        working-directory: frontend
+        run: npm run test -- --run 
