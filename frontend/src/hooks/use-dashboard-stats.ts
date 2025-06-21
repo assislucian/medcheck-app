@@ -33,15 +33,14 @@ export function useDashboardStats() {
 
         // Depois busca os detalhes do primeiro demonstrativo
         const detalhesRes = await fetch(`${apiUrl}/api/v1/demonstrativos/1/detalhes`, { headers });
-        if (!detalhesRes.ok) {
-          if (detalhesRes.status === 401) {
-            const error: any = new Error('Não autenticado');
-            error.isUnauthorized = true;
-            throw error;
-          }
-          throw new Error('Erro ao buscar detalhes');
-        }
-        const detalhes = await detalhesRes.json();
+        let detalhes: any = { procedures: [], glosas: [] };
+        if (detalhesRes.ok) {
+          detalhes = await detalhesRes.json();
+        } else if (detalhesRes.status === 401) {
+          const error: any = new Error('Não autenticado');
+          error.isUnauthorized = true;
+          throw error;
+        } // Se 404 ou outro erro, apenas continua com arrays vazios
 
         // Combina os dados
         return {
