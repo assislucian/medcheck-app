@@ -241,22 +241,33 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
 # Isso garante que apenas os domínios autorizados possam acessar a API.
 FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
+# Novo: padrão regex para permitir subdomínios dinâmicos do Vercel (ex.: *.vercel.app)
+FRONTEND_ORIGIN_REGEX = os.environ.get("FRONTEND_ORIGIN_REGEX")
+
 if FRONTEND_ORIGINS:
     allowed_origins = [o.strip() for o in FRONTEND_ORIGINS.split(",") if o.strip()]
 else:
     allowed_origins = [
         "http://localhost:8080",  # Frontend local
-        "http://localhost:8081",  # Frontend local alternativo
-        "http://localhost:8082",  # Frontend local alternativo
-        "http://localhost:3000",  # Alternativo local
+        "http://localhost:8081",
+        "http://localhost:3000",
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
-        "https://medcheck-9hff69jkl-assislucians-projects.vercel.app",  # Vercel deploy
     ]
-logging.info(f"CORS: allowed_origins = {allowed_origins}")  # Loga as origens permitidas
+
+# Se nenhum regex for definido mas queremos permitir *.vercel.app por padrão
+if not FRONTEND_ORIGIN_REGEX:
+    # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)
+    # Ex.: https://medcheck-xxxxx-assislucians-projects.vercel.app
+    FRONTEND_ORIGIN_REGEX = r"https:\/\/medcheck-[a-z0-9-]+\.vercel\.app"
+
+logging.info(
+    f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX}"
+)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
+    allow_origin_regex=FRONTEND_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
