@@ -1,4 +1,0 @@
-{
-  "build": { "command": "docker build -t backend ." },
-  "deploy": { "command": "docker run -p 8000:8000 backend" }
-} 
