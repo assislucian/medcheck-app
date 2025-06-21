@@ -229,46 +229,42 @@ const UnpaidProceduresPage = () => {
       field: 'valorApresentado', 
       headerName: 'Valor Apresentado', 
       width: 150,
-      valueFormatter: (params: any) => formatValor(params.value)
+      valueFormatter: ({ value }: { value: number }) => formatValor(value)
     },
     { 
       field: 'motivoNaoPagamento', 
       headerName: 'Motivo', 
       width: 260,
-      renderCell: ({ row, id }: { row: any, id: number }) => {
+      renderCell: ({ row }: { row: any }) => {
         const codigo = row.codigo_glosa;
         const motivo = row.motivo_glosa || row.motivoNaoPagamento;
         if (codigo) {
           return (
-            <span className="cursor-pointer text-danger underline" onClick={() => handleExpandRow(row, row.id)} title="Expandir detalhes da glosa">
+            <span
+              className="cursor-pointer text-danger underline"
+              onClick={() => handleExpandRow(row, row.id)}
+              title="Expandir detalhes da glosa"
+            >
               {`${codigo} - ${motivo}`}
             </span>
           );
         }
-        if (motivo) {
-          return <Badge variant="danger">{motivo}</Badge>;
-        }
-        return <Badge variant="danger">Glosa</Badge>;
+        return (
+          <Badge variant="danger">{motivo || 'Glosa'}</Badge>
+        );
       }
     },
     { 
       field: 'diasParaContestar', 
       headerName: 'Dias para Contestação', 
       width: 200,
-      renderCell: ({ row }: { row: any }) => {
-        const dias = calcularDiasParaContestar(row.data);
-        return (
-          <PrazoBadge dias={dias} />
-        );
-      }
+      renderCell: ({ row }: { row: any }) => <PrazoBadge dias={calcularDiasParaContestar(row.data)} />
     },
     {
       field: 'actions',
       headerName: 'Ações',
       width: 120,
-      renderCell: ({ row }: { row: any }) => (
-        <ResourceDialog procedure={row} />
-      )
+      renderCell: ({ row }: { row: any }) => <ResourceDialog procedure={row} />
     }
   ];
 
@@ -323,76 +319,52 @@ const UnpaidProceduresPage = () => {
             ) : error ? (
               <div className="text-danger font-medium p-4">{error}</div>
             ) : (
-              <table className="w-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <thead>
-                  <tr className="bg-gray-50">
-                    {unpaidColumns.map((col) => (
-                      <th
-                        key={col.field}
-                        className="px-4 py-3 text-left font-semibold text-gray-800 text-sm border-b border-gray-200"
-                      >
-                        {col.headerName}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {unpaidProcedures.map((row, idx) => [
-                    <tr
-                      key={row.id}
-                      className={
-                        idx % 2 === 0
-                          ? "bg-white hover:bg-blue-50 transition-colors"
-                          : "bg-gray-50 hover:bg-blue-50 transition-colors"
-                      }
-                    >
-                      {unpaidColumns.map((col, colIdx) => (
-                        <td key={col.field} className="py-2 px-3 align-top">
-                          {col.renderCell ? col.renderCell({ row, id: idx }) : row[col.field]}
-                        </td>
-                      ))}
-                    </tr>,
-                    expandedRow === idx && (
-                      <tr key={row.id + "-expanded"}>
-                        <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
-                          <div className="flex justify-start">
-                            <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-4 mt-2 mb-4 w-full">
-                              <div className="flex items-center mb-2">
-                                <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                                <span className="font-semibold text-gray-800 text-base">Detalhes Oficiais da Glosa</span>
-                              </div>
-                              {glosaLoading ? (
-                                <div className="text-gray-600">Carregando detalhes da glosa...</div>
-                              ) : glosaError ? (
-                                <div className="text-danger">{glosaError}</div>
-                              ) : glosaDetail ? (
-                                <table className="w-full text-sm mt-2">
-                                  <thead>
-                                    <tr className="bg-gray-50">
-                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Grupo</th>
-                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Código</th>
-                                      <th className="px-3 py-2 text-left font-semibold text-gray-700">Descrição</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr>
-                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.grupo}</td>
-                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.codigo}</td>
-                                      <td className="px-3 py-2 text-gray-900">{glosaDetail.descricao}</td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              ) : (
-                                <div className="text-gray-600">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
-                              )}
+              <DataGrid
+                rows={unpaidProcedures}
+                columns={unpaidColumns}
+                className="rounded-xl border border-border shadow-sm"
+                renderExpandedRow={(row) => {
+                  if (expandedRow !== row.id) return null;
+                  return (
+                    <tr>
+                      <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
+                        <div className="flex justify-start">
+                          <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
+                            <div className="flex items-center mb-2">
+                              <svg className="w-5 h-5 text-muted-foreground mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                              <span className="font-semibold text-foreground text-base">Detalhes Oficiais da Glosa</span>
                             </div>
+                            {glosaLoading ? (
+                              <div className="text-muted-foreground">Carregando detalhes da glosa...</div>
+                            ) : glosaError ? (
+                              <div className="text-danger">{glosaError}</div>
+                            ) : glosaDetail ? (
+                              <table className="w-full text-sm mt-2">
+                                <thead>
+                                  <tr className="bg-muted/10">
+                                    <th className="px-3 py-2 text-left font-semibold">Grupo</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Código</th>
+                                    <th className="px-3 py-2 text-left font-semibold">Descrição</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="px-3 py-2">{glosaDetail.grupo}</td>
+                                    <td className="px-3 py-2">{glosaDetail.codigo}</td>
+                                    <td className="px-3 py-2">{glosaDetail.descricao}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            ) : (
+                              <div className="text-muted-foreground">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
+                            )}
                           </div>
-                        </td>
-                      </tr>
-                    )
-                  ])}
-                </tbody>
-              </table>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }}
+              />
             )}
           </CardContent>
         </Card>
