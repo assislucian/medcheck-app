@@ -50,12 +50,23 @@ export function useDashboardStats() {
           };
         });
 
+        let totals = payload.totals || {};
+        if (!totals.totalRecebido && mappedProcedures.length) {
+          totals.totalRecebido = mappedProcedures.reduce((acc, p) => acc + (p.valorPago || 0), 0);
+        }
+        if (!totals.totalProcedimentos) {
+          totals.totalProcedimentos = mappedProcedures.length;
+        }
+        if (!totals.totalGlosado && Array.isArray(payload.glosas)) {
+          totals.totalGlosado = payload.glosas.reduce((acc: number, g: any) => acc + (g.valorGlosa || 0), 0);
+        }
+
         return {
-          totals: payload.totals || {
-            totalRecebido: 0,
-            totalGlosado: 0,
-            totalProcedimentos: 0,
-            auditoriaPendente: 0,
+          totals: {
+            totalRecebido: totals.totalRecebido || 0,
+            totalGlosado: totals.totalGlosado || 0,
+            totalProcedimentos: totals.totalProcedimentos || 0,
+            auditoriaPendente: totals.auditoriaPendente || 0,
           },
           procedures: mappedProcedures,
           glosas: payload.glosas || [],
