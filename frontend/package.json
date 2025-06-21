@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint .",
+    "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}' --fix",
     "preview": "vite preview",
-    "vercel:check": "node -e \"require.resolve('jspdf-autotable');console.log('Autotable OK')\""
+    "vercel:check": "node -e \"require.resolve('jspdf-autotable');console.log('Autotable OK')\"",
+    "test": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -92,6 +93,20 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.3",
+    "@testing-library/react": "^14.2.1",
+    "@types/jest": "^29.5.11",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.5",
+    "vitest": "^1.5.0",
+    "husky": "^9.0.11"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "eslint --fix",
+    "*.{md,json,yml}": "prettier --write"
   }
 }
