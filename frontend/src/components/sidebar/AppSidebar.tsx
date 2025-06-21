@@ -11,7 +11,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const { isOverlay, isOpen } = useSidebarContext();
+  const { isOverlay, isOpen, isCollapsed } = useSidebarContext();
 
   const isActive = (route: string) => location.pathname.startsWith(route);
 
@@ -37,12 +37,11 @@ export function AppSidebar() {
 
   // Classes condicionais baseadas no estado da sidebar
   const sidebarClasses = `
-    fixed inset-y-0 left-0 flex flex-col bg-card border-r border-border px-6 py-6 h-screen z-40
-    transition-all duration-200 ease-linear
-    ${isOverlay 
-      ? 'w-[var(--sidebar-width)] transform' 
-      : 'w-[var(--sidebar-width)]'
-    }
+    fixed inset-y-0 left-0 flex flex-col
+    bg-gradient-to-br from-white/90 via-blue-50/80 to-emerald-50/60 backdrop-blur-md shadow-lg
+    border-r border-slate-200 dark:border-slate-700 px-6 py-6 h-screen z-40
+    transition-transform duration-300 ease-\[cubic-bezier(.4,0,.2,1)\]
+    ${isOverlay ? 'w-[var(--sidebar-width)] transform' : isCollapsed ? 'w-[72px]' : 'w-[var(--sidebar-width)]'}
     ${isOverlay && !isOpen ? '-translate-x-full' : 'translate-x-0'}
   `;
 
@@ -50,20 +49,21 @@ export function AppSidebar() {
     <aside className={sidebarClasses}>
       <Brand />
       {/* Espaço para UserMiniCard futuramente, se necessário */}
-      <nav className="flex-1 mt-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 mt-4 space-y-2 overflow-y-auto scrollbar-hide">
         <h4 className="mt-6 mb-2 text-xs font-semibold text-neutral-400 uppercase">Operações</h4>
         <ul className="space-y-1">
           {mainMenuItems.slice(0, 4).map((item) => (
             <li key={item.href}>
               <button
                 onClick={() => navigate(item.href)}
-                className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+                className={`group flex gap-3 items-center px-4 py-2 rounded-lg font-medium w-full text-left
+                  transition-all duration-150
                   ${isActive(item.href)
-                    ? 'bg-brand-50 text-brand border-l-4 border-brand'
-                    : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+                    ? 'bg-blue-600/10 text-blue-700 dark:text-blue-200 ring-2 ring-blue-600/20'
+                    : 'text-slate-600 hover:text-blue-700 hover:bg-blue-600/5 dark:text-slate-300 dark:hover:bg-slate-700/40'}`}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <item.icon className="h-4 w-4 flex-shrink-0 transition-colors group-hover:scale-105" />
+                <span className={`${isCollapsed ? 'hidden xl:inline' : ''}`}>{item.label}</span>
               </button>
             </li>
           ))}
@@ -74,13 +74,14 @@ export function AppSidebar() {
             <li key={item.href}>
               <button
                 onClick={() => navigate(item.href)}
-                className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+                className={`group flex gap-3 items-center px-4 py-2 rounded-lg font-medium w-full text-left
+                  transition-all duration-150
                   ${isActive(item.href)
-                    ? 'bg-brand-50 text-brand border-l-4 border-brand'
-                    : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+                    ? 'bg-blue-600/10 text-blue-700 dark:text-blue-200 ring-2 ring-blue-600/20'
+                    : 'text-slate-600 hover:text-blue-700 hover:bg-blue-600/5 dark:text-slate-300 dark:hover:bg-slate-700/40'}`}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <item.icon className="h-4 w-4 flex-shrink-0 transition-colors group-hover:scale-105" />
+                <span className={`${isCollapsed ? 'hidden xl:inline' : ''}`}>{item.label}</span>
               </button>
             </li>
           ))}
@@ -90,20 +91,19 @@ export function AppSidebar() {
           <li>
             <button
               onClick={() => navigate('/profile')}
-              className={`flex gap-3 items-center px-4 py-2 rounded transition-colors w-full text-left
+              className={`group flex gap-3 items-center px-4 py-2 rounded-lg font-medium w-full text-left
+                transition-all duration-150
                 ${isActive('/profile')
-                  ? 'bg-brand-50 text-brand border-l-4 border-brand'
-                  : 'text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'}`}
+                  ? 'bg-blue-600/10 text-blue-700 dark:text-blue-200 ring-2 ring-blue-600/20'
+                  : 'text-slate-600 hover:text-blue-700 hover:bg-blue-600/5 dark:text-slate-300 dark:hover:bg-slate-700/40'}`}
             >
-              <User className="h-4 w-4" />
-              <span>Perfil</span>
+              <User className="h-4 w-4 flex-shrink-0 transition-colors group-hover:scale-105" />
+              <span className={`${isCollapsed ? 'hidden xl:inline' : ''}`}>Perfil</span>
             </button>
           </li>
         </ul>
       </nav>
-      <div className="mt-auto pt-4 space-y-3 border-t border-neutral-200">
-        <SidebarFooter />
-      </div>
+      <SidebarFooter />
     </aside>
   );
 }

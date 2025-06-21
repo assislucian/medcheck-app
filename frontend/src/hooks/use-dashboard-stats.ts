@@ -13,13 +13,14 @@ export function useDashboardStats() {
           throw new Error('Não autenticado');
         }
 
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const headers = {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         };
 
         // Primeiro tenta buscar os demonstrativos
-        const demonstrativosRes = await fetch('/api/v1/demonstrativos', { headers });
+        const demonstrativosRes = await fetch(`${apiUrl}/api/v1/demonstrativos`, { headers });
         if (!demonstrativosRes.ok) {
           if (demonstrativosRes.status === 401) {
             const error: any = new Error('Não autenticado');
@@ -31,7 +32,7 @@ export function useDashboardStats() {
         const demonstrativos = await demonstrativosRes.json();
 
         // Depois busca os detalhes do primeiro demonstrativo
-        const detalhesRes = await fetch('/api/v1/demonstrativos/1/detalhes', { headers });
+        const detalhesRes = await fetch(`${apiUrl}/api/v1/demonstrativos/1/detalhes`, { headers });
         if (!detalhesRes.ok) {
           if (detalhesRes.status === 401) {
             const error: any = new Error('Não autenticado');

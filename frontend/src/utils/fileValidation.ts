@@ -1,7 +1,5 @@
 import { FileWithStatus } from "@/types/upload";
 import { toast } from "sonner";
-import * as pdfjsLib from 'pdfjs-dist';
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 // Maximum allowed file size in MB
 const MAX_FILE_SIZE_MB = 10;
@@ -19,6 +17,26 @@ const ALLOWED_FILE_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
   'application/msword' // doc
 ];
+
+// Use dynamic import to load pdfjs-dist only when necessary, enabling tree-shaking/code-splitting.
+// This prevents the ~550 kB library from being bundled into the initial chunk.
+
+let pdfjsPromise: Promise<typeof import('pdfjs-dist')> | null = null;
+
+/**
+ * Lazily loads pdfjs-dist and sets the workerSrc once.
+ * Returns the cached module on subsequent calls.
+ */
+const loadPdfJs = async () => {
+  if (!pdfjsPromise) {
+    pdfjsPromise = import('pdfjs-dist').then((pdfjs) => {
+      // Configure the CDN worker once the module is available.
+      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+      return pdfjs;
+    });
+  }
+  return pdfjsPromise;
+};
 
 /**
  * Validates individual files based on type and size
@@ -122,11 +140,12 @@ export const getFileValidationErrorMessage = (file: File): string => {
 
 export async function isValidDemonstrativo(file: File): Promise<boolean> {
   try {
+    const pdfjsLib = await loadPdfJs();
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
     const textContent = await page.getTextContent();
-    const text = textContent.items.map((item: any) => item.str).join(' ');
+    const text = (textContent.items as any[]).map((item) => item.str).join(' ');
     return text.includes('[PM] HONORÁRIOS') && text.includes('Período:');
   } catch (e) {
     console.error('Erro ao validar demonstrativo:', e);
@@ -136,11 +155,12 @@ export async function isValidDemonstrativo(file: File): Promise<boolean> {
 
 export async function isValidGuia(file: File): Promise<boolean> {
   try {
+    const pdfjsLib = await loadPdfJs();
     const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     const page = await pdf.getPage(1);
     const textContent = await page.getTextContent();
-    const text = textContent.items.map((item: any) => item.str).join(' ');
+    const text = (textContent.items as any[]).map((item) => item.str).join(' ');
     return text.includes('Guia') && text.includes('Beneficiário');
   } catch (e) {
     console.error('Erro ao validar guia:', e);

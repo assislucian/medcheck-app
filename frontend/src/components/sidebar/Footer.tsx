@@ -19,7 +19,7 @@ export default function SidebarFooter() {
   };
 
   return (
-    <div className="mt-auto flex flex-col px-4 py-6 space-y-3 border-t border-neutral-200">
+    <div className="flex flex-col px-4 py-4 space-y-3 border-t border-neutral-200">
       <ThemeToggle />
       <button
         onClick={() => navigate('/tour')}

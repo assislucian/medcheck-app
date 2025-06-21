@@ -16,10 +16,12 @@ interface InfoCardProps {
 
 const variantStyles = {
   default: 'bg-card text-card-foreground',
-  success: 'bg-green-50/50 text-green-900 dark:bg-green-950/50 dark:text-green-100',
-  warning: 'bg-yellow-50/50 text-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-100',
-  info: 'bg-blue-50/50 text-blue-900 dark:bg-blue-950/50 dark:text-blue-100'
-};
+  success: 'bg-green-50/80 text-green-900 dark:bg-green-950/40 dark:text-green-100',
+  warning: 'bg-yellow-50/80 text-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-100',
+  danger: 'bg-red-50/80 text-red-900 dark:bg-red-950/40 dark:text-red-100',
+  info: 'bg-blue-50/80 text-blue-900 dark:bg-blue-950/40 dark:text-blue-100',
+  neutral: 'bg-muted/60 text-muted-foreground dark:bg-muted-800/40 dark:text-muted-foreground'
+} as const;
 
 const elevationStyles = {
   flat: "shadow-none border",

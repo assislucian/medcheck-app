@@ -16,7 +16,8 @@
   },
   "devDependencies": {
     "jscodeshift": "^17.3.0",
-    "prisma": "^6.9.0"
+    "prisma": "^6.9.0",
+    "vitest": "^2.1.9"
   },
   "lint-staged": {
     "*.{ts,tsx,html}": "grep -qE \"bg-(white|black|gray-(50|100|900))\" && (echo '🚫 Evite cores fixas; use tokens surface-*'; exit 1) || true"
