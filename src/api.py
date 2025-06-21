@@ -229,7 +229,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 app = FastAPI(title="Validador de Demonstrativos e Guias Médicas", version="1.0.0")
 
 # --- SlowAPI Rate Limiter ---
-limiter = Limiter(key_func=get_remote_address)
+# Permissivo em desenvolvimento, restrito em produção
+if os.environ.get("ENV", "production") == "development":
+    limiter = Limiter(key_func=get_remote_address, default_limits=["100 per minute"])
+else:
+    limiter = Limiter(key_func=get_remote_address, default_limits=["5 per minute"])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

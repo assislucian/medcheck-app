@@ -50,5 +50,6 @@ Thumbs.db
 
 # Uploads
 uploads/*
-!uploads/.gitkeep logs/*
+!uploads/.gitkeep
+logs/*
 !logs/.gitkeep
