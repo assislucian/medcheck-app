@@ -38,6 +38,7 @@ import { UserMenu } from "../components/navbar/UserMenu";
 import InfoCard from "../components/ui/InfoCard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
 import { useNavigate } from 'react-router-dom';
+import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 
 const mockDetailedProcedures = [
   {
@@ -801,28 +802,28 @@ const DemonstrativesPage = () => {
             <InfoCard
               icon={<ArrowUpRight className="h-6 w-6" />}
               title={<span className="text-xs font-semibold">Total Recebido</span>}
-              value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalProcessado)}</span>}
+              value={<AnimatedNumber value={summaryStats.totalProcessado} format={formatCurrency} className="text-2xl md:text-3xl font-bold" />}
               description={<span className="text-xs">Recebido nos últimos 30 dias</span>}
               variant="success"
             />
             <InfoCard
               icon={<AlertCircle className="h-6 w-6" />}
               title={<span className="text-xs font-semibold">Total Glosado</span>}
-              value={<span className="text-2xl md:text-3xl font-bold">{formatCurrency(summaryStats.totalGlosa)}</span>}
+              value={<AnimatedNumber value={summaryStats.totalGlosa} format={formatCurrency} className="text-2xl md:text-3xl font-bold" />}
               description={<span className="text-xs">Glosado nos últimos 30 dias</span>}
               variant="danger"
             />
             <InfoCard
               icon={<FileText className="h-6 w-6" />}
               title={<span className="text-xs font-semibold">Procedimentos</span>}
-              value={<span className="text-2xl md:text-3xl font-bold">{summaryStats.totalProcedimentos}</span>}
+              value={<AnimatedNumber value={summaryStats.totalProcedimentos} className="text-2xl md:text-3xl font-bold" />}
               description={<span className="text-xs">Analisados nos últimos 30 dias</span>}
               variant="info"
             />
             <InfoCard
               icon={<ClipboardList className="h-6 w-6" />}
               title={<span className="text-xs font-semibold">Auditorias Pendentes</span>}
-              value={<span className="text-2xl md:text-3xl font-bold">{pendingAudits}</span>}
+              value={<AnimatedNumber value={pendingAudits} className="text-2xl md:text-3xl font-bold" />}
               description={<span className="text-xs">Uploads aguardando revisão</span>}
               variant="warning"
             />

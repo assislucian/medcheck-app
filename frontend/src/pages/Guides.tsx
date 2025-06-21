@@ -35,6 +35,7 @@ import { UserMenu } from "../components/navbar/UserMenu";
 import { FiltersToolbar } from "../components/guides/FiltersToolbar";
 import InfoCard from "../components/ui/InfoCard";
 import { GuidesTable } from "../components/guides/GuidesTable";
+import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 // import Fuse from 'fuse.js';
 
 // Mapeamento de cores para cada tipo de papel (igual Demonstratives)
@@ -552,14 +553,14 @@ const GuidesPage = () => {
           <InfoCard
             icon={<User className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">Pacientes Atendidos</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{pacientesUnicos.size}</span>}
+            value={<AnimatedNumber value={pacientesUnicos.size} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Total de pacientes únicos neste período</span>}
             variant="info"
           />
           <InfoCard
             icon={<ClipboardList className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">Procedimentos</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{totalProcedimentos}</span>}
+            value={<AnimatedNumber value={totalProcedimentos} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Extraídos das guias</span>}
             variant="info"
           />
@@ -568,21 +569,21 @@ const GuidesPage = () => {
           <InfoCard
             icon={<User className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">Cirurgião</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['cirurgiao'] || 0}</span>}
+            value={<AnimatedNumber value={papelCounts['cirurgiao'] || 0} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Atuou como cirurgião em <span className="font-bold">{percent(papelCounts['cirurgiao'] || 0)}</span> dos procedimentos</span>}
             variant="success"
           />
           <InfoCard
             icon={<User className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">1º Auxiliar</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['primeiro_auxiliar'] || 0}</span>}
+            value={<AnimatedNumber value={papelCounts['primeiro_auxiliar'] || 0} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Atuou como 1º auxiliar em <span className="font-bold">{percent(papelCounts['primeiro_auxiliar'] || 0)}</span> dos procedimentos</span>}
             variant="success"
           />
           <InfoCard
             icon={<User className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">2º Auxiliar</span>}
-            value={<span className="text-2xl md:text-3xl font-bold">{papelCounts['segundo_auxiliar'] || 0}</span>}
+            value={<AnimatedNumber value={papelCounts['segundo_auxiliar'] || 0} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Atuou como 2º auxiliar em <span className="font-bold">{percent(papelCounts['segundo_auxiliar'] || 0)}</span> dos procedimentos</span>}
             variant="success"
           />
