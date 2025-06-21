@@ -21,6 +21,7 @@ export const RevenuePieChart = ({
   height = 280,
   className
 }: RevenuePieChartProps) => {
+  const total = totalRecebido + totalGlosado;
   const data = [
     { name: 'Pago', value: totalRecebido },
     { name: 'Glosado', value: totalGlosado },
@@ -42,6 +43,8 @@ export const RevenuePieChart = ({
               outerRadius={85}
               paddingAngle={4}
               dataKey="value"
+              label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+              labelLine={false}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -49,6 +52,15 @@ export const RevenuePieChart = ({
             </Pie>
             <Tooltip formatter={(val:number)=>`R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2})}`} />
             <Legend verticalAlign="bottom" height={36} />
+            <text
+              x="50%"
+              y="50%"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-base font-semibold"
+            >
+              R$ {total.toLocaleString('pt-BR')}
+            </text>
           </PieChart>
         </ResponsiveContainer>
       ) : (

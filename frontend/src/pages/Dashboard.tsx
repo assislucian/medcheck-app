@@ -11,7 +11,7 @@ import { formatCurrency } from "../utils/format";
 import { useDashboardStats } from "../hooks/use-dashboard-stats";
 import { Loader2 } from "lucide-react";
 import { Procedure } from "../types/medical";
-import { GamificationCard } from "../components/dashboard/GamificationCard";
+import { RecoveryProgressCard } from "../components/dashboard/RecoveryProgressCard";
 import { Button } from "../components/ui/button";
 import { SkeletonInfoCard } from "../components/ui/SkeletonInfoCard";
 import { RevenuePieChart } from "../components/dashboard/RevenuePieChart";
@@ -20,17 +20,17 @@ import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 const DashboardPage = () => {
   const { userProfile, signOut } = useAuth();
   const { data: stats, isLoading, isError } = useDashboardStats();
-  // Fallback mock caso backend não traga todos campos ainda
-  const totals = stats?.totals || {
-    totalRecebido: 12597,
-    totalGlosado: 1438,
-    totalProcedimentos: 284,
-    auditoriaPendente: 8,
-    potencialRecuperacao: 1438, // default = valor glosado
-    taxaSucesso: 0.85 // default value
+  const backendTotals = stats?.totals;
+  // Defaults se ainda não houver dados no backend (primeiro uso)
+  const totals = {
+    totalRecebido: backendTotals?.totalRecebido ?? 0,
+    totalGlosado: backendTotals?.totalGlosado ?? 0,
+    totalProcedimentos: backendTotals?.totalProcedimentos ?? 0,
+    auditoriaPendente: backendTotals?.auditoriaPendente ?? 0,
   };
-  // Valor apresentado é a soma do que foi pago + glosado
   const valorApresentado = totals.totalRecebido + totals.totalGlosado;
+  const potencialRecuperacao = totals.totalGlosado; // por enquanto
+  const taxaSucesso = valorApresentado > 0 ? ((totals.totalRecebido / valorApresentado) * 100) : 0;
   const procedures: Procedure[] = stats?.procedures || [];
   return (
     <AuthenticatedLayout 
@@ -97,14 +97,14 @@ const DashboardPage = () => {
           <InfoCard
             icon={<TrendingUp className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">Potencial de Recuperação</span>}
-            value={<AnimatedNumber value={totals.potencialRecuperacao ?? totals.totalGlosado} format={formatCurrency} className="text-2xl md:text-3xl font-bold" />}
+            value={<AnimatedNumber value={potencialRecuperacao} format={formatCurrency} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Valores contestáveis</span>}
             variant="warning"
           />
           <InfoCard
             icon={<ArrowUpRight className="h-6 w-6" />}
             title={<span className="text-xs font-semibold">Taxa de Sucesso</span>}
-            value={<AnimatedNumber value={totals.taxaSucesso ?? 0} format={(v)=>`${v.toFixed(0)}%`} className="text-2xl md:text-3xl font-bold" />}
+            value={<AnimatedNumber value={taxaSucesso} format={(v)=>`${v.toFixed(0)}%`} className="text-2xl md:text-3xl font-bold" />}
             description={<span className="text-xs">Procedimentos pagos</span>}
             variant="success"
           />
@@ -115,8 +115,9 @@ const DashboardPage = () => {
         isLoading ? (
           <div className="mb-6 h-24 w-full animate-pulse rounded-xl bg-muted/20" />
         ) : (
-          <GamificationCard
-            recovered={totals.totalRecebido - totals.totalGlosado}
+          <RecoveryProgressCard
+            presented={valorApresentado}
+            received={totals.totalRecebido}
             className="mb-6"
           />
         )
