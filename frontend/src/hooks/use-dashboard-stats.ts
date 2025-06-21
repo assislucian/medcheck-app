@@ -19,41 +19,46 @@ export function useDashboardStats() {
           'Content-Type': 'application/json'
         };
 
-        // Primeiro tenta buscar os demonstrativos
-        const demonstrativosRes = await fetch(`${apiUrl}/api/v1/demonstrativos`, { headers });
-        if (!demonstrativosRes.ok) {
-          if (demonstrativosRes.status === 401) {
+        // Nova rota consolidada
+        const res = await fetch(`${apiUrl}/api/v1/dashboard`, { headers });
+        if (!res.ok) {
+          if (res.status === 401) {
             const error: any = new Error('Não autenticado');
             error.isUnauthorized = true;
             throw error;
           }
-          throw new Error('Erro ao buscar demonstrativos');
+          throw new Error('Erro ao buscar resumo do dashboard');
         }
-        const demonstrativos = await demonstrativosRes.json();
+        const payload = await res.json();
 
-        // Depois busca os detalhes do primeiro demonstrativo
-        const detalhesRes = await fetch(`${apiUrl}/api/v1/demonstrativos/1/detalhes`, { headers });
-        let detalhes: any = { procedures: [], glosas: [] };
-        if (detalhesRes.ok) {
-          detalhes = await detalhesRes.json();
-        } else if (detalhesRes.status === 401) {
-          const error: any = new Error('Não autenticado');
-          error.isUnauthorized = true;
-          throw error;
-        } // Se 404 ou outro erro, apenas continua com arrays vazios
+        const mappedProcedures = (payload.procedures || []).map((p: any): any => {
+          const valorCBHPM = p.valorTabela2015 ?? p.valorCBHPM ?? 0;
+          const valorPago = p.valorPago ?? p.liberado ?? 0;
+          const diferenca = valorCBHPM > 0 ? ((valorPago - valorCBHPM) / valorCBHPM) * 100 : 0;
+          return {
+            id: p.id ?? `${p.codigo}-${p.guia}`,
+            codigo: p.codigo,
+            procedimento: p.descricao || p.procedimento || '',
+            papel: p.funcao || p.papel || '--',
+            valorCBHPM,
+            valorPago,
+            diferenca,
+            pago: !!p.pago,
+            guia: p.guia,
+            beneficiario: p.beneficiario || '',
+            doctors: [],
+          };
+        });
 
-        // Combina os dados
         return {
-          totals: {
-            totalRecebido: demonstrativos.totalRecebido || 0,
-            totalGlosado: demonstrativos.totalGlosado || 0,
-            totalRecuperado: demonstrativos.totalRecuperado || 11159.00, // Valor fixo temporário
-            potencialRecuperacao: demonstrativos.potencialRecuperacao || 167.68, // Valor da glosa pendente
-            tempoEconomizado: 80,
-            taxaSucesso: 99
+          totals: payload.totals || {
+            totalRecebido: 0,
+            totalGlosado: 0,
+            totalProcedimentos: 0,
+            auditoriaPendente: 0,
           },
-          procedures: detalhes.procedures || [],
-          glosas: detalhes.glosas || []
+          procedures: mappedProcedures,
+          glosas: payload.glosas || [],
         };
       } catch (error: any) {
         console.error('Erro ao carregar dados:', error);

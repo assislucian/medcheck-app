@@ -107,8 +107,12 @@ export const ProceduresGrid = ({ procedures }: ProceduresGridProps) => {
             value < 0 && "text-destructive",
             value === 0 && "text-muted-foreground"
           )}>
-            {value > 0 && '+'}
-            {value.toFixed(1)}%
+            {value !== null && value !== undefined ? (
+              <>
+                {value > 0 && '+'}
+                {value.toFixed(1)}%
+              </>
+            ) : '--'}
           </div>
         );
       }
