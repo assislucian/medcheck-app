@@ -2,6 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface DataGridProps {
   rows: any[];
@@ -38,10 +39,10 @@ export function DataGrid({
   };
   
   return (
-    <div className={className}>
+    <div className={cn("w-full overflow-x-auto", className)}>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {columns.map((column) => {
               let headerContent = column.headerName;
               if (["CBHPM", "Liberado", "Diferença", "Delta %"].includes(column.headerName)) {
@@ -70,7 +71,7 @@ export function DataGrid({
                 <TableHead
                   key={column.field}
                   style={{ width: column.width, flex: column.flex }}
-                  className="text-center align-middle text-base font-semibold bg-background border-b border-border text-foreground sm:px-2 sm:py-2 sm:text-[0.92rem]"
+                  className="text-center align-middle text-base font-semibold border-b border-border text-foreground sm:px-2 sm:py-2 sm:text-[0.92rem]"
                 >
                   {headerContent}
                 </TableHead>
@@ -82,7 +83,11 @@ export function DataGrid({
           {safeRows.slice(0, pageSize).map((row, rowIndex) => [
             <TableRow
               key={row?.id || rowIndex}
-              className={Number(row.glosa) > 0 ? 'bg-red-200/80' : ''}
+              className={cn(
+                rowIndex % 2 === 0 ? "even:bg-muted/40" : "odd:bg-muted/20",
+                "hover:bg-accent/60 transition-colors",
+                Number(row?.glosa) > 0 && "bg-red-200/80 hover:bg-red-200"
+              )}
             >
               {columns.map((column) => {
                 const cellValue = getCellValue(row, column.field);
@@ -91,7 +96,10 @@ export function DataGrid({
                 return (
                   <TableCell
                     key={`${row?.id || rowIndex}-${column.field}`}
-                    className={(isNumeric ? "text-right" : "text-left") + " align-middle py-3 px-4 text-base font-normal text-gray-800 dark:text-gray-100 sm:px-2 sm:py-2 sm:text-[0.92rem]"}
+                    className={cn(
+                      isNumeric ? "text-right font-mono tabular-nums whitespace-nowrap" : "text-left truncate",
+                      "align-middle py-3 px-4 text-base font-normal text-gray-800 dark:text-gray-100 sm:px-2 sm:py-2 sm:text-[0.92rem]"
+                    )}
                   >
                     {column.renderCell ? (
                       column.renderCell({ value: cellValue, row })
