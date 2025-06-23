@@ -1,8 +1,8 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { DataGrid } from "../components/ui/data-grid";
 import { Button } from "../components/ui/button";
-import { AlertCircle, Download, FileX, Filter, Loader2, AlertTriangle } from "lucide-react";
+import { AlertCircle, Download, FileX, Filter, Loader2 } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { useState, useEffect } from "react";
 import { ResourceDialog } from "../components/unpaid-procedures/ResourceDialog";
@@ -304,14 +304,8 @@ const UnpaidProceduresPage = () => {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <FileX className="w-5 h-5 text-primary" />
-              <h3 className="font-medium">Lista de Procedimentos Não Pagos</h3>
-            </div>
-          </CardHeader>
-          <CardContent>
+        <Card className="overflow-hidden">
+          <CardContent className="pt-6">
             {loading ? (
               <div className="flex items-center justify-center min-h-[200px]">
                 <Loader2 className="animate-spin text-blue-500 w-8 h-8" aria-label="Carregando..." />
