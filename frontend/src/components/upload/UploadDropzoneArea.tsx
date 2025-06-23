@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Upload } from 'lucide-react';
@@ -53,9 +52,9 @@ const FileDropZone = ({ onDropFiles, type, disabled = false }: FileDropZoneProps
     <div
       className={cn(
         "border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer",
-        isDragging 
-          ? "border-blue-400 bg-blue-50" 
-          : "border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50",
+        isDragging
+          ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500/40"
+          : "border-gray-200 bg-surface-1/50 hover:border-gray-300 hover:bg-surface-1 dark:border-border dark:bg-surface-2/40 dark:hover:bg-surface-2",
         disabled && "opacity-60 cursor-not-allowed"
       )}
       onDragOver={handleDragOver}

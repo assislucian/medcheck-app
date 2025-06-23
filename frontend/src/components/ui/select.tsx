@@ -17,8 +17,8 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors duration-200",
-      "dark:bg-[#18181b] dark:text-[#f4f4f5] dark:placeholder:text-[#a1a1aa] bg-[#fff] text-[#18181b] placeholder:text-[#71717a]",
+      "flex h-10 w-full items-center justify-between rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-colors duration-200",
+      "bg-[#fff] text-[#18181b] placeholder:text-[#71717a] dark:bg-[#18181b] dark:text-[#f4f4f5] dark:placeholder:text-[#a1a1aa]",
       className
     )}
     {...props}
@@ -75,7 +75,7 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md transition-colors duration-200",
-        "dark:bg-[#18181b] dark:text-[#f4f4f5] bg-[#fff] text-[#18181b]",
+        "bg-[#fff] text-[#18181b] dark:bg-[#18181b] dark:text-[#f4f4f5]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -119,7 +119,7 @@ const SelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors duration-200",
-      "dark:bg-[#18181b] dark:text-[#f4f4f5] bg-[#fff] text-[#18181b] focus:bg-[#232326] focus:text-[#fff]",
+      "bg-[#fff] text-[#18181b] focus:bg-[#232326] focus:text-[#fff] dark:bg-[#18181b] dark:text-[#f4f4f5]",
       className
     )}
     {...props}

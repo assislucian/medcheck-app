@@ -11,26 +11,9 @@ import { useAuth } from "../contexts/auth/AuthContext";
 import { UserMenu } from "../components/navbar/UserMenu";
 import InfoCard from "../components/ui/InfoCard";
 import axios from "axios";
-import { differenceInCalendarDays, parse } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
-function calcularDiasParaContestar(data: string) {
-  // data no formato DD/MM/YYYY ou YYYY-MM-DD
-  let dataBase: Date;
-  if (/\d{2}\/\d{2}\/\d{4}/.test(data)) {
-    const [dia, mes, ano] = data.split("/");
-    dataBase = new Date(Number(ano), Number(mes) - 1, Number(dia));
-  } else if (/\d{4}-\d{2}-\d{2}/.test(data)) {
-    const [ano, mes, dia] = data.split("-");
-    dataBase = new Date(Number(ano), Number(mes) - 1, Number(dia));
-  } else {
-    dataBase = new Date(data);
-  }
-  const hoje = new Date();
-  const diff = differenceInCalendarDays(hoje, dataBase);
-  return Math.max(0, 30 - diff);
-}
+import { calcularDiasParaContestar } from "@/utils/date";
 
 function GlosaDetailModal({ codigo, open, onClose }: { codigo: string, open: boolean, onClose: () => void }) {
   const [glosa, setGlosa] = useState<any>(null);
@@ -359,4 +342,4 @@ const UnpaidProceduresPage = () => {
 
 export default UnpaidProceduresPage;
 
-export { calcularDiasParaContestar };
+export { PrazoBadge, TruncatedCell };

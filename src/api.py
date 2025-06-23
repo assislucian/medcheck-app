@@ -1752,12 +1752,11 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
     demos = db.query(Demonstrativo).filter(Demonstrativo.crm == crm, Demonstrativo.upload_time >= data_limite).all()
     for demo in demos:
         try:
-            valor_recebido = float(str(demo.liberado).replace("R$", "").replace(",", ".").strip())
+            # Conversão robusta considerando formato brasileiro (milhar com ponto, decimal com vírgula)
+            valor_recebido = brl_to_float(demo.liberado)
+            valor_glosado = brl_to_float(demo.glosa)
         except Exception:
             valor_recebido = 0.0
-        try:
-            valor_glosado = float(str(demo.glosa).replace("R$", "").replace(",", ".").strip())
-        except Exception:
             valor_glosado = 0.0
         total_recebido += valor_recebido
         total_glosado += valor_glosado
@@ -1833,3 +1832,37 @@ def purge_all_users(secret: str = Query(...)):
 # - Para Prometheus, adicione instrumentação com prometheus_fastapi_instrumentator
 # - Para rate-limiting, use slowapi/starlette-limiter
 # - Para logs estruturados, use structlog
+
+# --- Utilitário para conversão de valores monetários BRL em float ---
+def brl_to_float(value: str | float | int) -> float:
+    """Converte uma string no formato 'R$ 5.539,90' para float 5539.90.
+
+    A função é resiliente a variações (com ou sem símbolo, separador de milhar
+    com ponto ou espaço) e falhas de parse, sempre retornando *0.0* em caso de
+    erro.
+    """
+    try:
+        # Se já for numérico, devolve como float
+        if isinstance(value, (int, float)):
+            return float(value)
+        if not value:
+            return 0.0
+        # Remove tudo que não seja dígito, vírgula ou ponto
+        cleaned = re.sub(r"[^0-9,\.]", "", str(value))
+
+        # Existem PDFs/rotinas que geram formato com vírgula duplicada, ex.:
+        #   5,372,22   (milhar + decimal)
+        # A regra abaixo converte para 5372.22 antes do cast para float.
+        if cleaned.count(",") > 1:
+            # As vírgulas da esquerda representam milhares, a última é o separador decimal
+            parts = cleaned.split(",")
+            cleaned = "".join(parts[:-1]) + "." + parts[-1]
+        else:
+            # Primeiro elimina separador de milhar (ponto). Ex.: 5.539,90 -> 5539,90
+            cleaned = cleaned.replace(".", "")
+            # Agora trocamos vírgula por ponto para obter notação decimal padrão
+            cleaned = cleaned.replace(",", ".")
+
+        return float(cleaned) if cleaned else 0.0
+    except Exception:
+        return 0.0

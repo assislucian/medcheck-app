@@ -1,4 +1,4 @@
-import { calcularDiasParaContestar } from '../UnpaidProcedures';
+import { calcularDiasParaContestar } from '../../utils/date';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PrazoBadge, TruncatedCell } from '../UnpaidProcedures';

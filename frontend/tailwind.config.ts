@@ -18,6 +18,19 @@ export default {
     },
     extend: {
       colors: {
+        /* --- Semantic tokens already mapped above --- */
+        /* Surface scale (0–3) – used for subtle background elevations.
+           Allows utility classes like bg-surface-1 or border-surface-3 to
+           compile correctly in both light and dark themes (values come from
+           CSS variables declared in index.css) */
+        "surface-0": "rgb(var(--surface-0) / <alpha-value>)",
+        "surface-1": "rgb(var(--surface-1) / <alpha-value>)",
+        "surface-2": "rgb(var(--surface-2) / <alpha-value>)",
+        "surface-3": "rgb(var(--surface-3) / <alpha-value>)",
+        /* Additional alias for text-body if used as text-body class */
+        "body": {
+          DEFAULT: "rgb(var(--text-body) / <alpha-value>)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
