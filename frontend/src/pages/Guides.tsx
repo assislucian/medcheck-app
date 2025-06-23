@@ -623,51 +623,49 @@ const GuidesPage = () => {
                 {loading ? (
                   <LoaderTable />
                 ) : (
-                  <div className="max-w-7xl mx-auto px-6 md:px-8">
-                    <GuidesTable
-                      rows={filteredMacroRows}
-                      columns={macroColumns}
-                      selectedRows={selectedRows}
-                      onSelectRow={handleSelectRow}
-                      onSelectAll={handleSelectAll}
-                      onExpand={id => setExpandedRow(expandedRow === id ? null : id)}
-                      expandedRow={expandedRow}
-                      renderExpandedRow={(row) => (
-                        <div className="w-full">
-                          <div className="overflow-x-auto w-full">
-                            <table className="w-full text-sm min-w-[600px]">
-                              <thead>
-                                <tr>
-                                  {['Data', 'Código', 'Descrição', 'Participação', 'Qtd', 'Prestador'].map(h => (
-                                    <th
-                                      key={h}
-                                      className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
-                                    >
-                                      {h}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {row.detalhes.map((proc: any) => (
-                                  <tr key={proc.codigo} className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10">
-                                    <td className="py-2 px-3 whitespace-nowrap">{proc.data}</td>
-                                    <td className="py-2 px-3 whitespace-nowrap font-mono">{proc.codigo}</td>
-                                    <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.descricao}>{proc.descricao}</td>
-                                    <td className="py-2 px-3 whitespace-nowrap">
-                                      <Badge variant="participacao">{proc.papel}</Badge>
-                                    </td>
-                                    <td className="py-2 px-3 whitespace-nowrap text-center">{proc.qtd}</td>
-                                    <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.prestador}>{proc.prestador}</td>
-                                  </tr>
+                  <GuidesTable
+                    rows={filteredMacroRows}
+                    columns={macroColumns}
+                    selectedRows={selectedRows}
+                    onSelectRow={handleSelectRow}
+                    onSelectAll={handleSelectAll}
+                    onExpand={id => setExpandedRow(expandedRow === id ? null : id)}
+                    expandedRow={expandedRow}
+                    renderExpandedRow={(row) => (
+                      <div className="w-full">
+                        <div className="overflow-x-auto w-full">
+                          <table className="w-full text-sm min-w-[600px]">
+                            <thead>
+                              <tr>
+                                {['Data', 'Código', 'Descrição', 'Participação', 'Qtd', 'Prestador'].map(h => (
+                                  <th
+                                    key={h}
+                                    className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
+                                  >
+                                    {h}
+                                  </th>
                                 ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {row.detalhes.map((proc: any) => (
+                                <tr key={proc.codigo} className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10">
+                                  <td className="py-2 px-3 whitespace-nowrap">{proc.data}</td>
+                                  <td className="py-2 px-3 whitespace-nowrap font-mono">{proc.codigo}</td>
+                                  <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.descricao}>{proc.descricao}</td>
+                                  <td className="py-2 px-3 whitespace-nowrap">
+                                    <Badge variant="participacao">{proc.papel}</Badge>
+                                  </td>
+                                  <td className="py-2 px-3 whitespace-nowrap text-center">{proc.qtd}</td>
+                                  <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate" title={proc.prestador}>{proc.prestador}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      )}
-                    />
-                  </div>
+                      </div>
+                    )}
+                  />
                 )}
                 {selectedGuia && (
                   <DetalhesGuia
