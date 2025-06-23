@@ -40,7 +40,7 @@ export function DataGrid({
   
   return (
     <div className={cn("w-full overflow-x-auto", className)}>
-      <Table scrollable={false} className="table-fixed">
+      <Table scrollable={false} className="table-auto w-full">
         <TableHeader>
           <TableRow className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {columns.map((column) => {

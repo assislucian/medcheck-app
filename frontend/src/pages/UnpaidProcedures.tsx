@@ -222,26 +222,26 @@ const UnpaidProceduresPage = () => {
   };
 
   const unpaidColumns = [
-    { field: 'guia', headerName: 'Nº Guia', width: 120 },
-    { field: 'procedimento', headerName: 'Procedimento', flex: 1 },
-    { field: 'data', headerName: 'Data', width: 120 },
+    { field: 'guia', headerName: 'Nº Guia', width: 100 },
+    { field: 'procedimento', headerName: 'Procedimento', flex: 2 },
+    { field: 'data', headerName: 'Data', width: 100 },
     { 
       field: 'valorApresentado', 
-      headerName: 'Valor Apresentado', 
-      width: 150,
+      headerName: 'Valor', 
+      width: 120,
       valueFormatter: ({ value }: { value: number }) => formatValor(value)
     },
     { 
       field: 'motivoNaoPagamento', 
       headerName: 'Motivo', 
-      width: 260,
+      flex: 3,
       renderCell: ({ row }: { row: any }) => {
         const codigo = row.codigo_glosa;
         const motivo = row.motivo_glosa || row.motivoNaoPagamento;
         if (codigo) {
           return (
             <span
-              className="cursor-pointer text-danger underline"
+              className="cursor-pointer text-danger underline truncate max-w-[220px]"
               onClick={() => handleExpandRow(row, row.id)}
               title="Expandir detalhes da glosa"
             >
@@ -250,20 +250,20 @@ const UnpaidProceduresPage = () => {
           );
         }
         return (
-          <Badge variant="danger">{motivo || 'Glosa'}</Badge>
+          <Badge variant="danger" className="truncate max-w-[200px]" title={motivo}>{motivo || 'Glosa'}</Badge>
         );
       }
     },
     { 
       field: 'diasParaContestar', 
-      headerName: 'Dias para Contestação', 
-      width: 200,
+      headerName: 'Dias', 
+      width: 110,
       renderCell: ({ row }: { row: any }) => <PrazoBadge dias={calcularDiasParaContestar(row.data)} />
     },
     {
       field: 'actions',
       headerName: 'Ações',
-      width: 120,
+      width: 90,
       renderCell: ({ row }: { row: any }) => <ResourceDialog procedure={row} />
     }
   ];
