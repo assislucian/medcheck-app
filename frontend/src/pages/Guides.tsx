@@ -609,17 +609,8 @@ const GuidesPage = () => {
           </TabsList>
 
           <TabsContent value="list">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-bold md:text-xl flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" />
-                  Guias Médicas
-                </CardTitle>
-                <CardDescription>
-                  Liste e gerencie as suas guias processadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+            <Card className="overflow-hidden">
+              <CardContent className="pt-6">
                 {loading ? (
                   <LoaderTable />
                 ) : (
