@@ -1,5 +1,4 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { Card, CardContent } from "../components/ui/card";
 import { DataGrid } from "../components/ui/data-grid";
 import { Button } from "../components/ui/button";
 import { AlertCircle, Download, FileX, Filter, Loader2 } from "lucide-react";
@@ -304,65 +303,64 @@ const UnpaidProceduresPage = () => {
           </Button>
         </div>
 
-        <Card className="overflow-hidden">
-          <CardContent className="pt-6">
-            {loading ? (
-              <div className="flex items-center justify-center min-h-[200px]">
-                <Loader2 className="animate-spin text-blue-500 w-8 h-8" aria-label="Carregando..." />
-                <span className="ml-3 text-blue-600 font-medium">Carregando procedimentos...</span>
-              </div>
-            ) : error ? (
-              <div className="text-danger font-medium p-4">{error}</div>
-            ) : (
-              <DataGrid
-                rows={unpaidProcedures}
-                columns={unpaidColumns}
-                className="rounded-xl border border-border shadow-sm"
-                renderExpandedRow={(row) => {
-                  if (expandedRow !== row.id) return null;
-                  return (
-                    <tr>
-                      <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
-                        <div className="flex justify-start">
-                          <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
-                            <div className="flex items-center mb-2">
-                              <svg className="w-5 h-5 text-muted-foreground mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                              <span className="font-semibold text-foreground text-base">Detalhes Oficiais da Glosa</span>
-                            </div>
-                            {glosaLoading ? (
-                              <div className="text-muted-foreground">Carregando detalhes da glosa...</div>
-                            ) : glosaError ? (
-                              <div className="text-danger">{glosaError}</div>
-                            ) : glosaDetail ? (
-                              <table className="w-full text-sm mt-2">
-                                <thead>
-                                  <tr className="bg-muted/10">
-                                    <th className="px-3 py-2 text-left font-semibold">Grupo</th>
-                                    <th className="px-3 py-2 text-left font-semibold">Código</th>
-                                    <th className="px-3 py-2 text-left font-semibold">Descrição</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td className="px-3 py-2">{glosaDetail.grupo}</td>
-                                    <td className="px-3 py-2">{glosaDetail.codigo}</td>
-                                    <td className="px-3 py-2">{glosaDetail.descricao}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            ) : (
-                              <div className="text-muted-foreground">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
-                            )}
+        <div className="rounded-xl border border-border bg-card shadow-sm pt-6">
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[200px]">
+              <Loader2 className="animate-spin text-blue-500 w-8 h-8" aria-label="Carregando..." />
+              <span className="ml-3 text-blue-600 font-medium">Carregando procedimentos...</span>
+            </div>
+          ) : error ? (
+            <div className="text-danger font-medium p-4">{error}</div>
+          ) : (
+            <DataGrid
+              rows={unpaidProcedures}
+              columns={unpaidColumns}
+              className="rounded-xl border border-border shadow-sm"
+              wrapperScrollable={false}
+              renderExpandedRow={(row) => {
+                if (expandedRow !== row.id) return null;
+                return (
+                  <tr>
+                    <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
+                      <div className="flex justify-start">
+                        <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
+                          <div className="flex items-center mb-2">
+                            <svg className="w-5 h-5 text-muted-foreground mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
+                            <span className="font-semibold text-foreground text-base">Detalhes Oficiais da Glosa</span>
                           </div>
+                          {glosaLoading ? (
+                            <div className="text-muted-foreground">Carregando detalhes da glosa...</div>
+                          ) : glosaError ? (
+                            <div className="text-danger">{glosaError}</div>
+                          ) : glosaDetail ? (
+                            <table className="w-full text-sm mt-2">
+                              <thead>
+                                <tr className="bg-muted/10">
+                                  <th className="px-3 py-2 text-left font-semibold">Grupo</th>
+                                  <th className="px-3 py-2 text-left font-semibold">Código</th>
+                                  <th className="px-3 py-2 text-left font-semibold">Descrição</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="px-3 py-2">{glosaDetail.grupo}</td>
+                                  <td className="px-3 py-2">{glosaDetail.codigo}</td>
+                                  <td className="px-3 py-2">{glosaDetail.descricao}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          ) : (
+                            <div className="text-muted-foreground">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                }}
-              />
-            )}
-          </CardContent>
-        </Card>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }}
+            />
+          )}
+        </div>
       </div>
     </AuthenticatedLayout>
   );

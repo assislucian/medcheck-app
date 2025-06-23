@@ -20,6 +20,7 @@ interface DataGridProps {
   disableSelectionOnClick?: boolean;
   className?: string;
   renderExpandedRow?: (row: any) => React.ReactNode;
+  wrapperScrollable?: boolean;
 }
 
 export function DataGrid({
@@ -28,6 +29,7 @@ export function DataGrid({
   pageSize = 10,
   className = "",
   renderExpandedRow,
+  wrapperScrollable = true,
 }: DataGridProps) {
   // Make sure rows is always an array, even if undefined is passed
   const safeRows = Array.isArray(rows) ? rows : [];
@@ -39,7 +41,7 @@ export function DataGrid({
   };
   
   return (
-    <div className={cn("w-full overflow-x-auto", className)}>
+    <div className={cn("w-full", wrapperScrollable ? "overflow-x-auto" : "overflow-visible", className)}>
       <Table scrollable={false} className="table-auto w-full">
         <TableHeader>
           <TableRow className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
