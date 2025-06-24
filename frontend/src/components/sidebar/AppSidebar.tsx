@@ -41,7 +41,7 @@ export function AppSidebar() {
     bg-gradient-to-br from-white/90 via-blue-50/80 to-emerald-50/60 backdrop-blur-md shadow-lg
     border-r border-slate-200 dark:border-slate-700 px-6 py-6 h-screen z-40
     transition-transform duration-300 ease-\[cubic-bezier(.4,0,.2,1)\]
-    ${isOverlay ? 'w-[var(--sidebar-width)] transform' : isCollapsed ? 'w-[72px]' : 'w-[var(--sidebar-width)]'}
+    ${isOverlay ? 'w-4/5 max-w-[320px] transform' : isCollapsed ? 'w-[72px]' : 'w-[var(--sidebar-width)]'}
     ${isOverlay && !isOpen ? '-translate-x-full' : 'translate-x-0'}
   `;
 
