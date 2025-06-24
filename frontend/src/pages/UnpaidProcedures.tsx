@@ -291,7 +291,8 @@ const UnpaidProceduresPage = () => {
             rows={unpaidProcedures}
             columns={unpaidColumns}
             className="w-full"
-            wrapperScrollable={false}
+            /* Permite scroll horizontal apenas quando necessário em telas estreitas */
+            wrapperScrollable
             renderExpandedRow={(row) => {
               if (expandedRow !== row.id) return null;
               return (
@@ -342,4 +343,4 @@ const UnpaidProceduresPage = () => {
 
 export default UnpaidProceduresPage;
 
-export { PrazoBadge, TruncatedCell };
+export { PrazoBadge, TruncatedCell, calcularDiasParaContestar };
