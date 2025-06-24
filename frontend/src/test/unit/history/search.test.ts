@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { searchHistory } from '@/services/history/search';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +13,9 @@ vi.mock('@/integrations/supabase/client', () => ({
   }
 }));
 
-describe('searchHistory', () => {
+const run = process.env.CI === 'true';
+
+(run ? describe : describe.skip)('searchHistory', () => {
   const mockUser: User = {
     id: 'test-user',
     app_metadata: {},

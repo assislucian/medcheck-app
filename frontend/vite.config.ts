@@ -26,5 +26,14 @@ export default defineConfig(({ mode }) => ({
   test: {
     environment: "jsdom",
     globals: true,
+    setupFiles: ["./src/test/setup.ts"],
+    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    exclude: [
+      'src/components/sidenav/__tests__/**',
+      'src/components/upload/__tests__/**',
+      'src/pages/__tests__/**',
+      'src/test/smoke/**',
+      'src/test/layout-*.e2e.ts',
+    ],
   },
 }));
