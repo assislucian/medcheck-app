@@ -4,7 +4,6 @@ import * as z from 'zod';
 import { useProfile } from '@/hooks/use-profile';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
-import { SPECIALTIES } from '@/constants/specialties';
 
 const profileSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -16,9 +15,6 @@ const profileSchema = z.object({
       message: 'Telefone deve ter pelo menos 10 dígitos',
     }),
   crm: z.string(),
-  specialty: z.string().refine((val) => SPECIALTIES.includes(val), {
-    message: 'Selecione uma especialidade válida',
-  }),
   hospital: z.string().min(2, 'Hospital deve ter pelo menos 2 caracteres'),
   bio: z.string().min(10, 'Biografia deve ter pelo menos 10 caracteres'),
 });
@@ -35,7 +31,6 @@ export const useProfileForm = () => {
       email: '',
       phone: '',
       crm: '',
-      specialty: '',
       hospital: '',
       bio: '',
     },
@@ -52,7 +47,6 @@ export const useProfileForm = () => {
           email: profile.email ?? '',
           phone: (profile as any).phone ?? '',
           crm: profile.crm ?? '',
-          specialty: profile.specialty ?? '',
           hospital: (profile as any).hospital ?? '',
           bio: (profile as any).bio ?? '',
         });
@@ -67,7 +61,6 @@ export const useProfileForm = () => {
         email: data.email,
         phone: data.phone,
         crm: data.crm,
-        specialty: data.specialty,
         hospital: data.hospital,
         bio: data.bio,
       });

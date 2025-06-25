@@ -6,16 +6,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { SPECIALTIES } from '@/constants/specialties';
-import { UseFormReturn } from 'react-hook-form';
-import { ProfileFormValues } from '@/hooks/use-profile-form';
 
 interface ProfessionalFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -24,31 +14,6 @@ interface ProfessionalFieldsProps {
 export const ProfessionalFields = ({ form }: ProfessionalFieldsProps) => {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
-      <FormField
-        control={form.control}
-        name="specialty"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Especialidade</FormLabel>
-            <FormControl>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SPECIALTIES.map((spec) => (
-                    <SelectItem key={spec} value={spec}>
-                      {spec}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={form.control}
         name="hospital"
