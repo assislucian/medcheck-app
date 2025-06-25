@@ -6,13 +6,12 @@
  */
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { Profile } from '@/types';
 import { toast } from 'sonner';
-import { getProfile, updateProfile as updateProfileHelper } from '@/utils/supabase';
 import { useProfileAvatar } from './use-profile-avatar';
-import { Json } from '@/integrations/supabase/types';
+import { fetchProfileREST } from '@/services/profile/fetchProfile';
+import { updateProfileREST } from '@/services/profile/updateProfile';
 
 /**
  * Interface que define a estrutura dos dados do perfil
@@ -42,7 +41,7 @@ export const useProfileData = () => {
       if (!user?.crm) {
         throw new Error('Usuário sem CRM');
       }
-      const profileData = await getProfile(supabase, user.crm);
+      const profileData = await fetchProfileREST();
       return profileData as Profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -74,7 +73,7 @@ export const useProfileData = () => {
         }
 
         // Obtém dados atuais do perfil para preservar preferências
-        const profileData = await getProfile(supabase, user.crm);
+        const profileData = await fetchProfileREST();
 
         const currentNotificationPrefs =
           profileData && profileData.notification_preferences
@@ -102,11 +101,9 @@ export const useProfileData = () => {
         }
 
         // Atualiza o perfil com os novos dados
-        const success = await updateProfileHelper(supabase, user.crm, {
-          name: data.name,
-          email: data.email,
-          specialty: data.especialidade,
-          notification_preferences: updatedNotificationPrefs as Json,
+        const success = await updateProfileREST({
+          ...data,
+          avatar_url: avatarUrl,
         });
 
         if (!success) {

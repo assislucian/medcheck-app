@@ -1,3 +1,4 @@
+# flake8: noqa
 import io
 import json
 import logging
@@ -18,8 +19,19 @@ from uuid import uuid4
 import bcrypt
 import jwt
 import pandas as pd
-from fastapi import (APIRouter, BackgroundTasks, Body, Depends, FastAPI, File,
-                     Form, HTTPException, Query, Request, UploadFile)
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Body,
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -27,12 +39,20 @@ from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from sqlalchemy import (Column, DateTime, ForeignKey, Integer, String,
-                        create_engine, desc, func)
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    create_engine,
+    desc,
+    func,
+)
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from src.services.parse import parse_demonstrativo, parse_guide_pdf
 from src.parsers.cbhpm_parser import CBHPMParser
+from src.services.parse import parse_demonstrativo, parse_guide_pdf
 
 # --- Configurações ---
 UPLOAD_DIR = "uploads"
@@ -55,8 +75,8 @@ else:
     engine = create_engine(
         DATABASE_URL,
         pool_pre_ping=True,  # Evita erros de conexão morta
-        pool_size=10,        # Ajuste conforme limite do Railway
-        max_overflow=20      # Ajuste conforme necessidade
+        pool_size=10,  # Ajuste conforme limite do Railway
+        max_overflow=20,  # Ajuste conforme necessidade
     )
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -275,6 +295,7 @@ app.add_middleware(
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---
 from backend.knowledge_base.glosas_api import router as glosas_router
+
 app.include_router(glosas_router, prefix="/api/v1")
 
 # --- Logging estruturado ---
@@ -363,6 +384,11 @@ class UpdateProfileRequest(BaseModel):
     nome: str = Field(None, description="Nome completo")
     uf: str = Field(None, description="UF do CRM")
     senha: str = Field(None, description="Nova senha (opcional)")
+    email: str | None = Field(None, description="E-mail de contato")
+    specialty: str | None = Field(None, description="Especialidade médica")
+    hospital: str | None = Field(None, description="Hospital/Clínica principal")
+    phone: str | None = Field(None, description="Telefone de contato")
+    bio: str | None = Field(None, description="Biografia/Descrição")
 
 
 class UpdateProfileResponse(BaseModel):
@@ -772,6 +798,7 @@ def upload_demonstrativos(
                     shutil.copyfileobj(file.file, f)
                 try:
                     from src.parsers.demonstrativo_parser import DemonstrativoParser
+
                     parser = DemonstrativoParser(file_path)
                     summary = parser.get_summary()
                     total_procedimentos = summary["total_procedures"]
@@ -789,9 +816,13 @@ def upload_demonstrativos(
                 if "period" in summary:
                     summary["period"] = sanitize_text(summary["period"])
                 if "total_presented" in summary:
-                    summary["total_presented"] = sanitize_text(str(summary["total_presented"]))
+                    summary["total_presented"] = sanitize_text(
+                        str(summary["total_presented"])
+                    )
                 if "total_approved" in summary:
-                    summary["total_approved"] = sanitize_text(str(summary["total_approved"]))
+                    summary["total_approved"] = sanitize_text(
+                        str(summary["total_approved"])
+                    )
                 if "total_glosa" in summary:
                     summary["total_glosa"] = sanitize_text(str(summary["total_glosa"]))
                 # Log detalhado do upload
@@ -803,28 +834,34 @@ def upload_demonstrativos(
                     logger.error(
                         f"[UPLOAD] Falha: demonstrativo sem período extraído! Arquivo: {filename}"
                     )
-                    results.append({
-                        "filename": file.filename,
-                        "success": False,
-                        "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF."
-                    })
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
+                        }
+                    )
                     continue
                 # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, período e lote (ou filename se lote não informado)
                 unique_lote = lote or filename
                 exists = (
                     db.query(Demonstrativo)
-                    .filter_by(crm=user["crm"], periodo=periodo_extracted, lote=unique_lote)
+                    .filter_by(
+                        crm=user["crm"], periodo=periodo_extracted, lote=unique_lote
+                    )
                     .first()
                 )
                 if exists:
                     logger.warning(
                         f"[UPLOAD] Duplicidade detectada: CRM={user['crm']} | periodo={periodo_extracted} | lote={unique_lote}"
                     )
-                    results.append({
-                        "filename": file.filename,
-                        "success": False,
-                        "error": "Já existe demonstrativo para este período e lote."
-                    })
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": "Já existe demonstrativo para este período e lote.",
+                        }
+                    )
                     continue
                 demonstrativo = Demonstrativo(
                     crm=user["crm"],
@@ -838,24 +875,24 @@ def upload_demonstrativos(
                 )
                 db.add(demonstrativo)
                 db.commit()
-                results.append({
-                    "filename": file.filename,
-                    "success": True,
-                    "id": demonstrativo.id,
-                    "periodo": demonstrativo.periodo,
-                    "lote": demonstrativo.lote,
-                    "total_procedimentos": demonstrativo.total_procedimentos,
-                    "apresentado": demonstrativo.apresentado,
-                    "liberado": demonstrativo.liberado,
-                    "glosa": demonstrativo.glosa,
-                })
+                results.append(
+                    {
+                        "filename": file.filename,
+                        "success": True,
+                        "id": demonstrativo.id,
+                        "periodo": demonstrativo.periodo,
+                        "lote": demonstrativo.lote,
+                        "total_procedimentos": demonstrativo.total_procedimentos,
+                        "apresentado": demonstrativo.apresentado,
+                        "liberado": demonstrativo.liberado,
+                        "glosa": demonstrativo.glosa,
+                    }
+                )
             except Exception as e:
                 logger.error(f"[UPLOAD] Erro ao processar arquivo {file.filename}: {e}")
-                results.append({
-                    "filename": file.filename,
-                    "success": False,
-                    "error": str(e)
-                })
+                results.append(
+                    {"filename": file.filename, "success": False, "error": str(e)}
+                )
         return {"results": results}
     finally:
         db.close()
@@ -942,17 +979,19 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
                 status_code=404, detail="Arquivo do demonstrativo não encontrado"
             )
         from src.parsers.demonstrativo_parser import DemonstrativoParser
+
         parser = DemonstrativoParser(file_path)
         payments = parser.get_payments()
 
         # --- Associação de participações médicas ---
         # Busca todas as guias do usuário (PDFs no UPLOAD_DIR com CRM do usuário)
         from src.parsers.guia_parser import parse_guia_pdf
+
         participacoes_map = {}
         for fname in os.listdir(UPLOAD_DIR):
-            if not fname.lower().endswith('.pdf'):
+            if not fname.lower().endswith(".pdf"):
                 continue
-            if 'guia' not in fname.lower():
+            if "guia" not in fname.lower():
                 continue
             guia_path = os.path.join(UPLOAD_DIR, fname)
             try:
@@ -982,22 +1021,28 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
 
 # --- Endpoint de upload de guia TISS ---
 @app.post("/api/v1/guias/upload")
-def upload_guias(files: List[UploadFile] = File(...), user: dict = Depends(get_current_user)):
+def upload_guias(
+    files: List[UploadFile] = File(...), user: dict = Depends(get_current_user)
+):
     """
     Recebe múltiplos PDFs de guias TISS, processa cada um individualmente,
     salva no banco e retorna uma lista de resultados por arquivo.
     Exige autenticação e filtra automaticamente por CRM do usuário logado.
     """
     import tempfile
+
     from src.parsers.guia_parser import parse_guia_pdf
+
     results = []
     for file in files:
         if not file.filename.lower().endswith(".pdf"):
-            results.append({
-                "filename": file.filename,
-                "success": False,
-                "error": "Apenas arquivos PDF são aceitos."
-            })
+            results.append(
+                {
+                    "filename": file.filename,
+                    "success": False,
+                    "error": "Apenas arquivos PDF são aceitos.",
+                }
+            )
             continue
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             try:
@@ -1007,14 +1052,18 @@ def upload_guias(files: List[UploadFile] = File(...), user: dict = Depends(get_c
                 logger.info(f"Processando guia para CRM {crm}")
                 procedures = parse_guia_pdf(tmp_path, crm_filter=crm)
                 if not procedures:
-                    logger.warning(f"Nenhum procedimento encontrado para o CRM {crm} nesta guia")
-                    results.append({
-                        "filename": file.filename,
-                        "success": True,
-                        "message": "Guia processada, mas nenhum procedimento encontrado para o seu CRM",
-                        "crm": crm,
-                        "procedures": []
-                    })
+                    logger.warning(
+                        f"Nenhum procedimento encontrado para o CRM {crm} nesta guia"
+                    )
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": True,
+                            "message": "Guia processada, mas nenhum procedimento encontrado para o seu CRM",
+                            "crm": crm,
+                            "procedures": [],
+                        }
+                    )
                     continue
                 # Sanitizar campos livres
                 for proc in procedures:
@@ -1038,10 +1087,38 @@ def upload_guias(files: List[UploadFile] = File(...), user: dict = Depends(get_c
                             "qtd": proc.get("quantidade", 1),
                             "status": "Gerado pela execução",
                             "prestador": proc.get("prestador", ""),
-                            "nome_medico": next((p.get("nome", "") for p in proc.get("participacoes", []) if p.get("crm") == crm), ""),
-                            "dt_inicio": next((p.get("inicio", "") for p in proc.get("participacoes", []) if p.get("crm") == crm), ""),
-                            "dt_fim": next((p.get("fim", "") for p in proc.get("participacoes", []) if p.get("crm") == crm), ""),
-                            "status_part": next((p.get("status", "") for p in proc.get("participacoes", []) if p.get("crm") == crm), ""),
+                            "nome_medico": next(
+                                (
+                                    p.get("nome", "")
+                                    for p in proc.get("participacoes", [])
+                                    if p.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "dt_inicio": next(
+                                (
+                                    p.get("inicio", "")
+                                    for p in proc.get("participacoes", [])
+                                    if p.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "dt_fim": next(
+                                (
+                                    p.get("fim", "")
+                                    for p in proc.get("participacoes", [])
+                                    if p.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "status_part": next(
+                                (
+                                    p.get("status", "")
+                                    for p in proc.get("participacoes", [])
+                                    if p.get("crm") == crm
+                                ),
+                                "",
+                            ),
                         }
                         existing = (
                             db.query(Guia)
@@ -1086,31 +1163,63 @@ def upload_guias(files: List[UploadFile] = File(...), user: dict = Depends(get_c
                             "qtd": p.get("quantidade", 1),
                             "status": "Gerado pela execução",
                             "prestador": p.get("prestador", ""),
-                            "nome_medico": next((part.get("nome", "") for part in p.get("participacoes", []) if part.get("crm") == crm), ""),
-                            "dt_inicio": next((part.get("inicio", "") for part in p.get("participacoes", []) if part.get("crm") == crm), ""),
-                            "dt_fim": next((part.get("fim", "") for part in p.get("participacoes", []) if part.get("crm") == crm), ""),
-                            "status_part": next((part.get("status", "") for part in p.get("participacoes", []) if part.get("crm") == crm), ""),
+                            "nome_medico": next(
+                                (
+                                    part.get("nome", "")
+                                    for part in p.get("participacoes", [])
+                                    if part.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "dt_inicio": next(
+                                (
+                                    part.get("inicio", "")
+                                    for part in p.get("participacoes", [])
+                                    if part.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "dt_fim": next(
+                                (
+                                    part.get("fim", "")
+                                    for part in p.get("participacoes", [])
+                                    if part.get("crm") == crm
+                                ),
+                                "",
+                            ),
+                            "status_part": next(
+                                (
+                                    part.get("status", "")
+                                    for part in p.get("participacoes", [])
+                                    if part.get("crm") == crm
+                                ),
+                                "",
+                            ),
                         }
                         for p in procedures
                     ]
-                    logger.info(f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados")
-                    results.append({
-                        "filename": file.filename,
-                        "success": True,
-                        "message": f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados",
-                        "crm": crm,
-                        "procedures": formatted_procedures,
-                        "novos_adicionados": guias_adicionadas
-                    })
+                    logger.info(
+                        f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados"
+                    )
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": True,
+                            "message": f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados",
+                            "crm": crm,
+                            "procedures": formatted_procedures,
+                            "novos_adicionados": guias_adicionadas,
+                        }
+                    )
                 finally:
                     db.close()
             except Exception as e:
-                logger.error(f"Erro ao processar guia {file.filename}: {e}", exc_info=True)
-                results.append({
-                    "filename": file.filename,
-                    "success": False,
-                    "error": str(e)
-                })
+                logger.error(
+                    f"Erro ao processar guia {file.filename}: {e}", exc_info=True
+                )
+                results.append(
+                    {"filename": file.filename, "success": False, "error": str(e)}
+                )
             finally:
                 os.unlink(tmp_path)
     return {"results": results}
@@ -1662,24 +1771,38 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
         file_path = os.path.join(UPLOAD_DIR, demo.filename)
         if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="Arquivo do demonstrativo não encontrado")
-        from src.parsers.demonstrativo_parser import DemonstrativoParser
+            raise HTTPException(
+                status_code=404, detail="Arquivo do demonstrativo não encontrado"
+            )
         from src.parsers.cbhpm_parser import CBHPMParser
+        from src.parsers.demonstrativo_parser import DemonstrativoParser
         from src.services.participacao import papel_do_procedimento
+
         cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
         parser = DemonstrativoParser(file_path)
         detalhes = []
         for item in parser.get_payments():
-            papel = papel_do_procedimento(
-                db,
-                guia=item.get("guia"),
-                codigo=item.get("code") or item.get("codigo"),
-                data=item.get("date") or item.get("data_execucao"),
-                crm=user["crm"],
-            ) or item.get("papel") or "--"
+            papel = (
+                papel_do_procedimento(
+                    db,
+                    guia=item.get("guia"),
+                    codigo=item.get("code") or item.get("codigo"),
+                    data=item.get("date") or item.get("data_execucao"),
+                    crm=user["crm"],
+                )
+                or item.get("papel")
+                or "--"
+            )
             # Padronizar papel
             papel_norm = str(papel).strip().lower()
-            if papel_norm in ('', '--', 'não identificado', 'nao identificado', 'none', 'null'):
+            if papel_norm in (
+                "",
+                "--",
+                "não identificado",
+                "nao identificado",
+                "none",
+                "null",
+            ):
                 papel_key = None
             elif "cirurgiao" in papel_norm:
                 papel_key = "cirurgiao"
@@ -1702,30 +1825,34 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
             # Busca motivo/código detalhado se não vier direto do item
             codigo_glosa = item.get("codigo_glosa")
             motivo_glosa = item.get("motivo_glosa")
-            if (not codigo_glosa or not motivo_glosa) and hasattr(parser, 'get_glosa_detalhada'):
+            if (not codigo_glosa or not motivo_glosa) and hasattr(
+                parser, "get_glosa_detalhada"
+            ):
                 key = (item.get("guia"), item.get("code"), item.get("date"))
                 detalhada = parser.get_glosa_detalhada(*key)
                 if detalhada:
                     codigo_glosa = detalhada.get("codigo_glosa")
                     motivo_glosa = detalhada.get("motivo_glosa")
-            detalhes.append({
-                "guia": item.get("guia"),
-                "data": item.get("date"),
-                "paciente": item.get("patient"),
-                "codigo": item.get("code"),
-                "descricao": item.get("description"),
-                "participacao": papel,
-                "qtd": item.get("quantity"),
-                "cbhpm": cbhpm_valor,
-                "liberado": item.get("financial", {}).get("approved_value"),
-                "apresentado": item.get("financial", {}).get("presented_value"),
-                "glosa": item.get("financial", {}).get("glosa"),
-                "pro_rata": item.get("financial", {}).get("pro_rata"),
-                "codigo_glosa": codigo_glosa,
-                "motivo_glosa": motivo_glosa,
-                "beneficiario": item.get("patient") or item.get("beneficiario"),
-                "hospital": item.get("prestador") or item.get("hospital")
-            })
+            detalhes.append(
+                {
+                    "guia": item.get("guia"),
+                    "data": item.get("date"),
+                    "paciente": item.get("patient"),
+                    "codigo": item.get("code"),
+                    "descricao": item.get("description"),
+                    "participacao": papel,
+                    "qtd": item.get("quantity"),
+                    "cbhpm": cbhpm_valor,
+                    "liberado": item.get("financial", {}).get("approved_value"),
+                    "apresentado": item.get("financial", {}).get("presented_value"),
+                    "glosa": item.get("financial", {}).get("glosa"),
+                    "pro_rata": item.get("financial", {}).get("pro_rata"),
+                    "codigo_glosa": codigo_glosa,
+                    "motivo_glosa": motivo_glosa,
+                    "beneficiario": item.get("patient") or item.get("beneficiario"),
+                    "hospital": item.get("prestador") or item.get("hospital"),
+                }
+            )
         return detalhes
     finally:
         db.close()
@@ -1749,7 +1876,11 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
     procedures = []
     glosas = []
     # Buscar demonstrativos do usuário
-    demos = db.query(Demonstrativo).filter(Demonstrativo.crm == crm, Demonstrativo.upload_time >= data_limite).all()
+    demos = (
+        db.query(Demonstrativo)
+        .filter(Demonstrativo.crm == crm, Demonstrativo.upload_time >= data_limite)
+        .all()
+    )
     for demo in demos:
         try:
             # Conversão robusta considerando formato brasileiro (milhar com ponto, decimal com vírgula)
@@ -1765,41 +1896,49 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
         except Exception:
             pass
     # Auditorias pendentes: demonstrativos sem liberação
-    auditoria_pendente = db.query(Demonstrativo).filter(Demonstrativo.crm == crm, Demonstrativo.liberado == "R$ 0,00").count()
+    auditoria_pendente = (
+        db.query(Demonstrativo)
+        .filter(Demonstrativo.crm == crm, Demonstrativo.liberado == "R$ 0,00")
+        .count()
+    )
     # Procedimentos detalhados (últimos 30 dias)
     guias = db.query(Guia).filter(Guia.crm == crm, Guia.data >= data_limite).all()
     for guia in guias:
-        procedures.append({
-            "id": guia.id,
-            "codigo": guia.codigo,
-            "descricao": guia.descricao,
-            "funcao": guia.papel,
-            "pago": guia.status == "Pago",
-            "valorPago": None,  # Pode ser enriquecido se necessário
-            "valorTabela2015": None,
-            "diferenca": None,
-            "guia": guia.numero_guia,
-            "beneficiario": guia.paciente,
-        })
-    # Glosas (mock: pegar guias não pagas ou status glosado)
-    for guia in guias:
-        if guia.status and "glosa" in guia.status.lower():
-            glosas.append({
+        procedures.append(
+            {
                 "id": guia.id,
                 "codigo": guia.codigo,
                 "descricao": guia.descricao,
-                "motivo": guia.status,
-                "valorGlosa": None
-            })
+                "funcao": guia.papel,
+                "pago": guia.status == "Pago",
+                "valorPago": None,  # Pode ser enriquecido se necessário
+                "valorTabela2015": None,
+                "diferenca": None,
+                "guia": guia.numero_guia,
+                "beneficiario": guia.paciente,
+            }
+        )
+    # Glosas (mock: pegar guias não pagas ou status glosado)
+    for guia in guias:
+        if guia.status and "glosa" in guia.status.lower():
+            glosas.append(
+                {
+                    "id": guia.id,
+                    "codigo": guia.codigo,
+                    "descricao": guia.descricao,
+                    "motivo": guia.status,
+                    "valorGlosa": None,
+                }
+            )
     return {
         "totals": {
             "totalRecebido": round(total_recebido, 2),
             "totalGlosado": round(total_glosado, 2),
             "totalProcedimentos": total_procedimentos,
-            "auditoriaPendente": auditoria_pendente
+            "auditoriaPendente": auditoria_pendente,
         },
         "procedures": procedures,
-        "glosas": glosas
+        "glosas": glosas,
     }
 
 
@@ -1818,7 +1957,9 @@ def purge_all_users(secret: str = Query(...)):
         db.query(Consentimento).delete()
         db.query(Medico).delete()
         db.commit()
-        logger.warning("Todos os usuários e dados relacionados foram apagados por comando administrativo!")
+        logger.warning(
+            "Todos os usuários e dados relacionados foram apagados por comando administrativo!"
+        )
         return {"message": "Todos os usuários e dados relacionados foram apagados."}
     finally:
         db.close()
@@ -1832,6 +1973,7 @@ def purge_all_users(secret: str = Query(...)):
 # - Para Prometheus, adicione instrumentação com prometheus_fastapi_instrumentator
 # - Para rate-limiting, use slowapi/starlette-limiter
 # - Para logs estruturados, use structlog
+
 
 # --- Utilitário para conversão de valores monetários BRL em float ---
 def brl_to_float(value: str | float | int) -> float:
@@ -1866,3 +2008,128 @@ def brl_to_float(value: str | float | int) -> float:
         return float(cleaned) if cleaned else 0.0
     except Exception:
         return 0.0
+
+
+# --- Endpoint para obter perfil do usuário ---
+class ProfileResponse(BaseModel):
+    crm: str
+    uf: str
+    nome: str
+    email: str | None = None
+    specialty: str | None = None
+    hospital: str | None = None
+    phone: str | None = None
+    bio: str | None = None
+
+
+@app.get("/api/v1/profile", response_model=ProfileResponse)
+def get_profile(user: dict = Depends(get_current_user)):
+    """Retorna os dados do médico autenticado."""
+    db = SessionLocal()
+    try:
+        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
+        if not medico:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+        # Tenta obter detalhes adicionais de perfil
+        perfil = db.query(PerfilMedico).filter_by(crm=user["crm"]).first()
+
+        return ProfileResponse(
+            crm=medico.crm,
+            uf=medico.uf,
+            nome=medico.nome,
+            email=perfil.email if perfil else None,
+            specialty=perfil.specialty if perfil else None,
+            hospital=perfil.hospital if perfil else None,
+            phone=perfil.phone if perfil else None,
+            bio=perfil.bio if perfil else None,
+        )
+    finally:
+        db.close()
+
+
+# --- Novo: detalhes estendidos de perfil ---
+class PerfilMedico(Base):
+    """Tabela separada para dados adicionais do perfil que podem mudar com mais frequência.
+    Mantemos separado de `medicos` para evitar migrações de colunas sensíveis (senha, consentimentos).
+    """
+
+    __tablename__ = "perfis_medico"
+    crm = Column(String, ForeignKey("medicos.crm"), primary_key=True)
+    email = Column(String, nullable=True)
+    specialty = Column(String, nullable=True)
+    hospital = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    bio = Column(String, nullable=True)
+
+
+def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
+    # Sanitizar nome
+    if data.nome:
+        data.nome = sanitize_text(data.nome)
+    db = SessionLocal()
+    try:
+        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
+        if not medico:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+        # Cria ou recupera registro de detalhes de perfil
+        perfil = db.query(PerfilMedico).filter_by(crm=user["crm"]).first()
+        if not perfil:
+            perfil = PerfilMedico(crm=user["crm"])
+            db.add(perfil)
+
+        updated = False
+
+        # Campos na tabela Medico
+        if data.uf:
+            medico.uf = data.uf
+            updated = True
+        if data.nome:
+            medico.nome = data.nome
+            updated = True
+        if data.senha:
+            if len(data.senha) < 8:
+                raise HTTPException(
+                    status_code=400, detail="A senha deve ter pelo menos 8 caracteres."
+                )
+            medico.senha_hash = bcrypt.hashpw(
+                data.senha.encode(), bcrypt.gensalt()
+            ).decode()
+            updated = True
+
+        # Campos na tabela PerfilMedico
+        if data.email is not None:
+            perfil.email = data.email
+            updated = True
+        if data.specialty is not None:
+            perfil.specialty = data.specialty
+            updated = True
+        if data.hospital is not None:
+            perfil.hospital = data.hospital
+            updated = True
+        if data.phone is not None:
+            perfil.phone = data.phone
+            updated = True
+        if data.bio is not None:
+            perfil.bio = data.bio
+            updated = True
+
+        if updated:
+            log_audit(
+                "update_profile",
+                user_crm=user["crm"],
+                ip=None,
+                details=data.dict(exclude_unset=True),
+            )
+            db.commit()
+            logger.info(f"Perfil atualizado para CRM {user['crm']}")
+            return UpdateProfileResponse(message="Perfil atualizado com sucesso.")
+        else:
+            return UpdateProfileResponse(message="Nenhuma alteração realizada.")
+    finally:
+        db.close()
+
+
+# Garante que a nova tabela seja criada em bancos já existentes sem rodar migração
+Base.metadata.create_all(bind=engine)
