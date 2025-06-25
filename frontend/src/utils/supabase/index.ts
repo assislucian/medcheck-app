@@ -16,7 +16,7 @@ export async function fetchAnalysisById(analysisId: string) {
       .select('*')
       .eq('id', analysisId)
       .single();
-    
+
     if (error) throw error;
     return data;
   } catch (error) {
@@ -32,17 +32,19 @@ export async function fetchAnalysisById(analysisId: string) {
 export async function fetchAllAnalyses() {
   try {
     // Fetch user information
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       throw new Error('User not authenticated');
     }
-    
+
     const { data, error } = await supabase
       .from('analysis_results')
       .select('*')
       .eq('user_id', user.id);
-    
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -56,13 +58,15 @@ export async function fetchAllAnalyses() {
  * @param analysisId The ID of the analysis
  * @returns Array of procedures
  */
-export async function fetchProceduresByAnalysisId(analysisId: string): Promise<ProcedureData[]> {
+export async function fetchProceduresByAnalysisId(
+  analysisId: string
+): Promise<ProcedureData[]> {
   try {
     const { data, error } = await supabase
       .from('procedures')
       .select('*')
       .eq('analysis_id', analysisId);
-    
+
     if (error) throw error;
     return data || [];
   } catch (error) {
@@ -82,7 +86,7 @@ export async function saveAnalysis(analysisData: any) {
       .from('analysis_results')
       .insert(analysisData)
       .select();
-    
+
     if (error) throw error;
     return data ? data[0] : null;
   } catch (error) {
@@ -98,10 +102,8 @@ export async function saveAnalysis(analysisData: any) {
  */
 export async function saveProcedures(proceduresData: any[]) {
   try {
-    const { error } = await supabase
-      .from('procedures')
-      .insert(proceduresData);
-    
+    const { error } = await supabase.from('procedures').insert(proceduresData);
+
     if (error) throw error;
     return true;
   } catch (error) {
@@ -123,7 +125,7 @@ export async function updateAnalysis(id: string, analysisData: any) {
       .update(analysisData)
       .eq('id', id)
       .select();
-    
+
     if (error) throw error;
     return data ? data[0] : null;
   } catch (error) {
@@ -144,15 +146,12 @@ export async function deleteAnalysis(id: string) {
       .from('procedures')
       .delete()
       .eq('analysis_id', id);
-    
+
     if (procError) throw procError;
-    
+
     // Then delete the analysis
-    const { error } = await supabase
-      .from('analysis_results')
-      .delete()
-      .eq('id', id);
-    
+    const { error } = await supabase.from('analysis_results').delete().eq('id', id);
+
     if (error) throw error;
     return true;
   } catch (error) {
@@ -161,9 +160,11 @@ export async function deleteAnalysis(id: string) {
   }
 }
 
-export const getProfile = async () => ({});
-export const updateProfile = async () => {};
-export const fetchUserTickets = async () => [];
-export const fetchTicketMessages = async () => [];
-export const createSupportTicket = async () => {};
-export const sendTicketMessage = async () => {};
+export {
+  getProfile,
+  updateProfile,
+  fetchUserTickets,
+  fetchTicketMessages,
+  createSupportTicket,
+  sendTicketMessage,
+} from './supabaseHelpers';

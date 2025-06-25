@@ -1,17 +1,17 @@
-
 /**
  * use-profile-data.ts
- * 
+ *
  * Custom hook para gerenciar os dados do perfil do usuário.
  * Fornece funcionalidades para buscar e atualizar informações do perfil.
  */
 
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types";
-import { toast } from "sonner";
-import { getProfile, updateProfile as updateProfileHelper } from "@/utils/supabase";
-import { useProfileAvatar } from "./use-profile-avatar";
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/auth/AuthContext';
+import { Profile } from '@/types';
+import { toast } from 'sonner';
+import { getProfile, updateProfile as updateProfileHelper } from '@/utils/supabase';
+import { useProfileAvatar } from './use-profile-avatar';
 import { Json } from '@/integrations/supabase/types';
 
 /**
@@ -31,6 +31,7 @@ interface ProfileData {
 export const useProfileData = () => {
   const [loading, setLoading] = useState(false);
   const { uploadAvatar } = useProfileAvatar();
+  const { user } = useAuth();
 
   /**
    * Busca os dados do perfil do usuário atual
@@ -38,13 +39,11 @@ export const useProfileData = () => {
    */
   const fetchProfile = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Não autenticado');
+      if (!user?.crm) {
+        throw new Error('Usuário sem CRM');
       }
-      
-      const profileData = await getProfile(supabase, session.user.id);
+
+      const profileData = await getProfile(supabase, user.crm);
       return profileData as Profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -58,15 +57,16 @@ export const useProfileData = () => {
    * @param avatarFile Arquivo de avatar opcional
    * @returns Boolean indicando sucesso ou falha
    */
-  const updateProfile = async (data: ProfileData, avatarFile?: File | null): Promise<boolean> => {
+  const updateProfile = async (
+    data: ProfileData,
+    avatarFile?: File | null
+  ): Promise<boolean> => {
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Não autenticado');
+      if (!user?.crm) {
+        throw new Error('Usuário sem CRM');
       }
-      
+
       // Processa o upload do avatar se fornecido
       let avatarUrl = null;
       if (avatarFile) {
@@ -75,52 +75,57 @@ export const useProfileData = () => {
           throw new Error('Falha ao fazer upload da imagem');
         }
       }
-      
+
       // Obtém dados atuais do perfil para preservar preferências
-      const profileData = await getProfile(supabase, session.user.id);
-      
-      const currentNotificationPrefs = profileData && 
-        profileData.notification_preferences 
-        ? profileData.notification_preferences
-        : {};
-      
+      const profileData = await getProfile(supabase, user.crm);
+
+      const currentNotificationPrefs =
+        profileData && profileData.notification_preferences
+          ? profileData.notification_preferences
+          : {};
+
       // Create properly typed object without spread
       const updatedNotificationPrefs: Record<string, any> = {};
-      
-      if (typeof currentNotificationPrefs === 'object' && currentNotificationPrefs !== null) {
+
+      if (
+        typeof currentNotificationPrefs === 'object' &&
+        currentNotificationPrefs !== null
+      ) {
         // Use Object.entries to safely copy properties
-        Object.entries(currentNotificationPrefs as Record<string, any>).forEach(([key, value]) => {
-          updatedNotificationPrefs[key] = value;
-        });
+        Object.entries(currentNotificationPrefs as Record<string, any>).forEach(
+          ([key, value]) => {
+            updatedNotificationPrefs[key] = value;
+          }
+        );
       }
-      
+
       // Add avatar_url if available
       if (avatarUrl) {
         updatedNotificationPrefs.avatar_url = avatarUrl;
       }
-      
+
       // Atualiza o perfil com os novos dados
-      const success = await updateProfileHelper(supabase, session.user.id, {
+      const success = await updateProfileHelper(supabase, user.crm, {
         name: data.name,
         email: data.email,
         specialty: data.especialidade,
-        notification_preferences: updatedNotificationPrefs as Json
+        notification_preferences: updatedNotificationPrefs as Json,
       });
-      
+
       if (!success) {
         throw new Error('Erro ao atualizar o perfil');
       }
-      
+
       // Notifica o usuário sobre o sucesso
-      toast.success("Perfil atualizado", {
-        description: "Suas informações foram atualizadas com sucesso."
+      toast.success('Perfil atualizado', {
+        description: 'Suas informações foram atualizadas com sucesso.',
       });
-      
+
       return true;
     } catch (error) {
       // Notifica o usuário sobre o erro
-      toast.error("Erro ao atualizar", {
-        description: "Não foi possível atualizar suas informações. Tente novamente."
+      toast.error('Erro ao atualizar', {
+        description: 'Não foi possível atualizar suas informações. Tente novamente.',
       });
       return false;
     } finally {
@@ -131,6 +136,6 @@ export const useProfileData = () => {
   return {
     loading,
     fetchProfile,
-    updateProfile
+    updateProfile,
   };
 };
