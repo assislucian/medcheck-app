@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
 import ComparisonView from './ComparisonView';
@@ -31,7 +30,7 @@ const UploadSection = () => {
     showComparison,
     processingStage,
     processingMsg,
-    handleFileChangeByType
+    handleFileChangeByType,
   } = fileUpload;
 
   const [error, setError] = useState<string | null>(null);
@@ -51,14 +50,14 @@ const UploadSection = () => {
       toast.error('Selecione pelo menos um tipo de documento');
       return;
     }
-    
+
     try {
       const result = await processUploadedFiles();
-      
+
       if (result && typeof result === 'object') {
         setShowSuccess(result.success || false);
         setAnalysisId(result.analysisId || null);
-        
+
         if (!result.success) {
           setError('Erro ao processar os arquivos.');
         }
@@ -86,9 +85,9 @@ const UploadSection = () => {
   const showDemonstrativoAlert = hasFile('guia') && !hasFile('demonstrativo');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6">
           {error && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-red-700 text-sm">
               {error}
@@ -122,7 +121,7 @@ const UploadSection = () => {
             hasValidFilesForProcessing={hasValidFilesForProcessing()}
           />
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex-col sm:flex-row gap-3 sm:gap-0">
           <UploadActionButtons
             isUploading={isUploading}
             filesLength={files.length}
@@ -136,7 +135,7 @@ const UploadSection = () => {
       {showSuccess && (
         <div className="mt-4 rounded border border-green-300 bg-green-50 text-green-800 px-4 py-3 text-sm flex flex-col gap-2">
           <span>Processamento concluído com sucesso.</span>
-          <button 
+          <button
             onClick={handleViewComparison}
             className="underline font-medium text-green-800 text-left hover:text-green-700"
           >

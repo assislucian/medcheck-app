@@ -6,6 +6,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { UseFormReturn } from 'react-hook-form';
+import { ProfileFormValues } from '@/hooks/use-profile-form';
 
 interface ProfessionalFieldsProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -22,6 +24,20 @@ export const ProfessionalFields = ({ form }: ProfessionalFieldsProps) => {
             <FormLabel>Hospital/Clínica Principal</FormLabel>
             <FormControl>
               <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="specialty"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Especialidade</FormLabel>
+            <FormControl>
+              <Input {...field} disabled />
             </FormControl>
             <FormMessage />
           </FormItem>

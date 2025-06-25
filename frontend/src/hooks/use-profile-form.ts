@@ -16,6 +16,7 @@ const profileSchema = z.object({
     }),
   crm: z.string(),
   hospital: z.string().min(2, 'Hospital deve ter pelo menos 2 caracteres'),
+  specialty: z.string().optional(),
   bio: z.string().min(10, 'Biografia deve ter pelo menos 10 caracteres'),
 });
 
@@ -32,6 +33,7 @@ export const useProfileForm = () => {
       phone: '',
       crm: '',
       hospital: '',
+      specialty: '',
       bio: '',
     },
   });
@@ -43,12 +45,13 @@ export const useProfileForm = () => {
       const profile = await fetchProfile();
       if (profile) {
         form.reset({
-          name: profile.name ?? '',
-          email: profile.email ?? '',
-          phone: (profile as any).phone ?? '',
-          crm: profile.crm ?? '',
-          hospital: (profile as any).hospital ?? '',
-          bio: (profile as any).bio ?? '',
+          name: profile.nome || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          crm: profile.crm || '',
+          hospital: profile.hospital || '',
+          specialty: profile.specialty || '',
+          bio: profile.bio || '',
         });
       }
     })();
@@ -57,11 +60,12 @@ export const useProfileForm = () => {
   const onSubmit = async (data: ProfileFormValues) => {
     try {
       await updateProfile({
-        name: data.name,
+        nome: data.name,
         email: data.email,
         phone: data.phone,
         crm: data.crm,
         hospital: data.hospital,
+        specialty: data.specialty,
         bio: data.bio,
       });
       toast.success('Perfil atualizado com sucesso');
