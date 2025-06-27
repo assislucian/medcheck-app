@@ -76,12 +76,27 @@ if (
 ):
     raise ValueError("JWT_SECRET deve ser configurado em produção!")
 
+# --- Configuração de logging (precisa ser antes do ADMIN_SECRET) ---
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger("api")
+
 # Configurações de segurança aprimoradas
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET")
 if not ADMIN_SECRET:
-    ADMIN_SECRET = "admin-secret-change-in-production"
-    if os.environ.get("ENV", "development") == "production":
-        raise ValueError("ADMIN_SECRET deve ser configurado em produção!")
+    # Em ambiente Railway, gera um secret temporário se não configurado
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        import secrets
+
+        ADMIN_SECRET = secrets.token_urlsafe(32)
+        logger.warning(
+            "ADMIN_SECRET not configured in Railway. Generated temporary secret."
+        )
+    else:
+        ADMIN_SECRET = "admin-secret-change-in-production"
+        if os.environ.get("ENV", "development") == "production":
+            raise ValueError("ADMIN_SECRET deve ser configurado em produção!")
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -361,11 +376,6 @@ from backend.knowledge_base.glosas_api import router as glosas_router
 app.include_router(glosas_router, prefix="/api/v1")
 
 # --- Logging estruturado ---
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger("api")
-
 # --- Logging estruturado para auditoria ---
 AUDIT_LOG_PATH = os.path.join("logs", "medcheck_audit.log")
 os.makedirs("logs", exist_ok=True)
