@@ -11,15 +11,21 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       // Redireciona todas as chamadas da API para o backend
       '/api': {
-        target: 'http://localhost:8000',
+        target:
+          mode === 'production'
+            ? 'https://medcheck-app-medcheck.up.railway.app'
+            : 'http://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
       // Redireciona chamada de token para o backend
       '/token': {
-        target: 'http://localhost:8000',
+        target:
+          mode === 'production'
+            ? 'https://medcheck-app-medcheck.up.railway.app'
+            : 'http://localhost:8000',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },
@@ -29,9 +35,34 @@ export default defineConfig(({ mode }) => ({
     // componentTagger(),
   ].filter(Boolean),
 
+  // Configurações de build otimizadas para Vercel
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            'lucide-react',
+          ],
+          router: ['react-router-dom'],
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          pdf: ['jspdf', 'jspdf-autotable'],
+        },
+      },
+    },
+  },
+
   // 🆕 Diretivas para evitar erro de resolução
-  optimizeDeps: { include: ['jspdf', 'jspdf-autotable'] },
-  ssr: { noExternal: ['jspdf', 'jspdf-autotable'] },
+  optimizeDeps: {
+    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom'],
+  },
+  ssr: {
+    noExternal: ['jspdf', 'jspdf-autotable'],
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
