@@ -31,6 +31,7 @@ from fastapi import (
     Query,
     Request,
     UploadFile,
+    status,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -54,15 +55,34 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from src.parsers.cbhpm_parser import CBHPMParser
 from src.services.parse import parse_demonstrativo, parse_guide_pdf
 
-# --- Configurações ---
+# --- Configurações de Segurança ---
 UPLOAD_DIR = "uploads"
 RESULTS_DIR = "results"
 CBHPM_VERSION = "2015"
-MAX_UPLOAD_SIZE_MB = 10
-# Centraliza o segredo JWT em variável de ambiente para segurança
-JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me")  # Troque em produção
-JWT_ALGORITHM = os.environ.get("ALGORITHM", "HS256")
-JWT_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 480))
+MAX_UPLOAD_SIZE_MB = 50  # Aumentado de 10MB para suportar arquivos maiores
+MAX_UPLOAD_FILES = 10  # Limite de arquivos por upload
+
+# Configurações JWT mais seguras
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-me")
+JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
+JWT_EXPIRE_MINUTES = int(
+    os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 60)
+)  # Reduzido de 480 para 60 minutos
+
+# Validação do segredo JWT em produção
+if (
+    os.environ.get("ENV", "development") == "production"
+    and JWT_SECRET == "dev-secret-change-me"
+):
+    raise ValueError("JWT_SECRET deve ser configurado em produção!")
+
+# Configurações de segurança aprimoradas
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET")
+if not ADMIN_SECRET:
+    ADMIN_SECRET = "admin-secret-change-in-production"
+    if os.environ.get("ENV", "development") == "production":
+        raise ValueError("ADMIN_SECRET deve ser configurado em produção!")
+
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
@@ -245,15 +265,57 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return {"crm": payload.get("crm"), "nome": payload.get("nome")}
 
 
-# --- FastAPI app ---
-app = FastAPI(title="Validador de Demonstrativos e Guias Médicas", version="1.0.0")
+# --- FastAPI app com configurações de segurança ---
+app = FastAPI(
+    title="MedCheck - Validador de Demonstrativos e Guias Médicas",
+    version="1.0.0",
+    docs_url="/docs" if os.environ.get("ENV", "development") == "development" else None,
+    redoc_url=(
+        "/redoc" if os.environ.get("ENV", "development") == "development" else None
+    ),
+)
 
-# --- SlowAPI Rate Limiter ---
-# Permissivo em desenvolvimento, restrito em produção
+
+# --- Middleware de Segurança ---
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+
+    # Cabeçalhos de segurança
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+
+    # Content Security Policy
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' https:; "
+        "connect-src 'self' https:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
+    response.headers["Content-Security-Policy"] = csp
+
+    # Strict Transport Security (HTTPS only)
+    if request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=31536000; includeSubDomains"
+        )
+
+    return response
+
+
+# --- Rate Limiting aprimorado ---
 if os.environ.get("ENV", "production") == "development":
     limiter = Limiter(key_func=get_remote_address, default_limits=["100 per minute"])
 else:
-    limiter = Limiter(key_func=get_remote_address, default_limits=["5 per minute"])
+    limiter = Limiter(key_func=get_remote_address, default_limits=["10 per minute"])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -440,29 +502,45 @@ BLOCK_TIME_SECONDS = 600  # 10 minutos
 WINDOW_SECONDS = 600  # 10 minutos
 
 
-# --- Endpoint de cadastro de médico (persistente) ---
+# --- Endpoint de cadastro com validação aprimorada ---
 @app.post("/api/v1/register", response_model=RegisterResponse)
-@limiter.limit("5/minute")
+@limiter.limit("3/minute")  # Limite mais restritivo para cadastros
 def register_medico(req: RegisterRequest, request: Request):
-    # Sanitizar nome
-    req.nome = sanitize_text(req.nome)
+    # Validação de entrada
+    if not validate_crm(req.crm):
+        raise HTTPException(
+            status_code=400, detail="CRM deve conter apenas números (4-6 dígitos)"
+        )
 
+    if not validate_uf(req.uf):
+        raise HTTPException(status_code=400, detail="UF inválida")
+
+    # Sanitizar dados
+    req.nome = sanitize_text(req.nome, max_length=200)
+    req.crm = sanitize_text(req.crm, max_length=10)
+    req.uf = req.uf.upper().strip()
+
+    # Validação de senha forte
     def senha_forte(s):
         if len(s) < 8:
-            return False
-        if not re.search(r"[A-Za-z]", s):
-            return False
+            return False, "A senha deve ter pelo menos 8 caracteres"
+        if not re.search(r"[A-Z]", s):
+            return False, "A senha deve conter pelo menos uma letra maiúscula"
+        if not re.search(r"[a-z]", s):
+            return False, "A senha deve conter pelo menos uma letra minúscula"
         if not re.search(r"[0-9]", s):
-            return False
+            return False, "A senha deve conter pelo menos um número"
         if not re.search(r"[^A-Za-z0-9]", s):
-            return False
-        return True
+            return False, "A senha deve conter pelo menos um caractere especial"
+        # Verificar sequências comuns
+        if any(seq in s.lower() for seq in ["123", "abc", "qwe", "asd"]):
+            return False, "A senha não pode conter sequências comuns"
+        return True, ""
 
-    if not senha_forte(req.senha):
-        raise HTTPException(
-            status_code=400,
-            detail="A senha deve ter pelo menos 8 caracteres, incluir letra, número e caractere especial.",
-        )
+    is_strong, msg = senha_forte(req.senha)
+    if not is_strong:
+        raise HTTPException(status_code=400, detail=msg)
+
     db = SessionLocal()
     try:
         if db.query(Medico).filter_by(crm=req.crm).first():
@@ -509,42 +587,84 @@ def register_medico(req: RegisterRequest, request: Request):
 
 # --- Endpoint de login/token (persistente) ---
 @app.post("/token", response_model=TokenResponse)
-@limiter.limit("5/minute")
+@limiter.limit("3/minute")  # Limite mais restritivo para login
 def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     crm = form_data.username
     senha = form_data.password
     uf = form_data.scopes[0] if form_data.scopes else None
-    ip = request.client.host if request and request.client else None
+    ip = request.client.host if request and request.client else "unknown"
+
+    # Validação de entrada
+    if not crm or not senha:
+        raise HTTPException(status_code=400, detail="CRM e senha são obrigatórios")
+
+    if not validate_crm(crm):
+        raise HTTPException(status_code=400, detail="Formato de CRM inválido")
+
+    if not validate_uf(uf) if uf else False:
+        raise HTTPException(status_code=400, detail="UF inválida")
+
+    # Sanitizar inputs
+    crm = sanitize_text(crm, max_length=10)
+    if uf:
+        uf = uf.upper().strip()
+
+    # Rate limiting por IP + CRM
     key = (crm, ip)
     now = time.time()
+
     # Checar bloqueio
     if key in BLOCKED_LOGINS and BLOCKED_LOGINS[key] > now:
         raise HTTPException(
             status_code=429,
             detail="Muitas tentativas de login. Tente novamente em alguns minutos.",
         )
+
     # Limpar tentativas antigas
     FAILED_LOGINS[key] = [t for t in FAILED_LOGINS[key] if now - t < WINDOW_SECONDS]
+
     if not uf:
         raise HTTPException(status_code=400, detail="UF obrigatória para login")
+
     db = SessionLocal()
     try:
         medico = db.query(Medico).filter_by(crm=crm, uf=uf).first()
         if not medico or not bcrypt.checkpw(senha.encode(), medico.senha_hash.encode()):
-            log_audit("login_failed", user_crm=crm, ip=ip, details={"uf": uf})
+            log_audit(
+                "login_failed",
+                user_crm=crm,
+                ip=ip,
+                details={"uf": uf, "reason": "invalid_credentials"},
+            )
             FAILED_LOGINS[key].append(now)
             if len(FAILED_LOGINS[key]) >= MAX_FAILED_ATTEMPTS:
                 BLOCKED_LOGINS[key] = now + BLOCK_TIME_SECONDS
                 FAILED_LOGINS[key] = []
+                log_audit(
+                    "login_blocked",
+                    user_crm=crm,
+                    ip=ip,
+                    details={"uf": uf, "duration": BLOCK_TIME_SECONDS},
+                )
             raise HTTPException(status_code=401, detail="CRM, UF ou senha inválidos")
+
         # Resetar tentativas após sucesso
         FAILED_LOGINS[key] = []
         if key in BLOCKED_LOGINS:
             del BLOCKED_LOGINS[key]
+
+        # Atualizar último login
         medico.last_login_at = datetime.utcnow()
         db.commit()
+
+        # Criar token com expiração mais curta
+        access_token = create_access_token(
+            {"crm": crm, "uf": uf, "nome": medico.nome},
+            expires_delta=timedelta(minutes=JWT_EXPIRE_MINUTES),
+        )
+
         log_audit("login_success", user_crm=crm, ip=ip, details={"uf": uf})
-        access_token = create_access_token({"crm": crm, "uf": uf, "nome": medico.nome})
+
         return {"access_token": access_token, "token_type": "bearer"}
     finally:
         db.close()
@@ -773,7 +893,52 @@ def download_cross_report(job_id: str, user: dict = Depends(get_current_user)):
     )
 
 
-# --- Endpoint de upload de demonstrativos ---
+# --- Validação de arquivos aprimorada ---
+def validate_upload_file(file: UploadFile) -> tuple[bool, str]:
+    """Valida arquivo de upload."""
+    # Verificar se o arquivo existe
+    if not file or not file.filename:
+        return False, "Arquivo não fornecido"
+
+    # Verificar tamanho do arquivo
+    file.file.seek(0, 2)  # Ir para o final
+    file_size = file.file.tell()
+    file.file.seek(0)  # Voltar ao início
+
+    if file_size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        return False, f"Arquivo muito grande. Máximo: {MAX_UPLOAD_SIZE_MB}MB"
+
+    if file_size == 0:
+        return False, "Arquivo vazio"
+
+    # Verificar extensão
+    allowed_extensions = {".pdf", ".xlsx", ".xls", ".csv"}
+    file_ext = os.path.splitext(file.filename)[1].lower()
+    if file_ext not in allowed_extensions:
+        return (
+            False,
+            f"Tipo de arquivo não permitido. Permitidos: {', '.join(allowed_extensions)}",
+        )
+
+    # Verificar tipo MIME
+    allowed_mimes = {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
+        "text/csv",
+        "application/csv",
+    }
+    if file.content_type not in allowed_mimes:
+        return False, f"Tipo MIME não permitido: {file.content_type}"
+
+    # Verificar nome do arquivo contra path traversal
+    if ".." in file.filename or "/" in file.filename or "\\" in file.filename:
+        return False, "Nome de arquivo inválido"
+
+    return True, ""
+
+
+# --- Upload de arquivos com validação aprimorada ---
 @app.post("/api/v1/demonstrativos/upload")
 def upload_demonstrativos(
     files: List[UploadFile] = File(...),
@@ -781,11 +946,26 @@ def upload_demonstrativos(
     lote: str = Form(None),
     user: dict = Depends(get_current_user),
 ):
-    """
-    Recebe múltiplos PDFs de demonstrativos, processa cada um individualmente,
-    salva no banco e retorna uma lista de resultados por arquivo.
-    Exige autenticação e filtra automaticamente por CRM do usuário logado.
-    """
+    # Validar número de arquivos
+    if len(files) > MAX_UPLOAD_FILES:
+        raise HTTPException(
+            status_code=400, detail=f"Muitos arquivos. Máximo: {MAX_UPLOAD_FILES}"
+        )
+
+    # Sanitizar inputs
+    if periodo:
+        periodo = sanitize_text(periodo, max_length=50)
+    if lote:
+        lote = sanitize_text(lote, max_length=50)
+
+    # Validar cada arquivo
+    for file in files:
+        is_valid, error_msg = validate_upload_file(file)
+        if not is_valid:
+            raise HTTPException(
+                status_code=400, detail=f"Arquivo '{file.filename}': {error_msg}"
+            )
+
     db = SessionLocal()
     results = []
     try:
@@ -899,9 +1079,6 @@ def upload_demonstrativos(
 
 
 # --- Endpoint para deletar demonstrativo ---
-from fastapi import status
-
-
 @app.delete("/api/v1/demonstrativos/{demo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_demonstrativo(demo_id: int, user: dict = Depends(get_current_user)):
     db = SessionLocal()
@@ -1344,9 +1521,6 @@ def list_guias(
 
 
 # --- Endpoint para deletar guia ---
-from fastapi import status
-
-
 @app.delete("/api/v1/guias/{numero_guia}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
     db = SessionLocal()
@@ -2134,3 +2308,279 @@ def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_
 
 # Garante que a nova tabela seja criada em bancos já existentes sem rodar migração
 Base.metadata.create_all(bind=engine)
+
+
+# --- Autenticação administrativa segura ---
+def verify_admin_secret(secret: str) -> bool:
+    """Verifica se o segredo administrativo está correto."""
+    if not secret or not ADMIN_SECRET:
+        return False
+    # Comparação segura contra timing attacks
+    return hmac.compare_digest(secret.encode(), ADMIN_SECRET.encode())
+
+
+def get_admin_user(secret: str = Query(...)) -> dict:
+    """Dependência para endpoints administrativos."""
+    if not verify_admin_secret(secret):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado. Credenciais administrativas inválidas.",
+        )
+    return {"role": "admin"}
+
+
+# --- Sanitização de inputs melhorada ---
+def sanitize_text(text, max_length: int = 1000):
+    """Sanitiza texto removendo scripts e limitando tamanho."""
+    import html
+    import re
+
+    if not text:
+        return text
+
+    # Limitar tamanho
+    text = str(text)[:max_length]
+
+    # Escapar HTML
+    text = html.escape(text)
+
+    # Remover tags HTML restantes
+    text = re.sub(r"<.*?>", "", text)
+
+    # Remover scripts
+    text = re.sub(r"script", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"javascript:", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"on\w+\s*=", "", text, flags=re.IGNORECASE)
+
+    return text.strip()
+
+
+def validate_crm(crm: str) -> bool:
+    """Valida formato do CRM."""
+    if not crm:
+        return False
+    # CRM deve ser numérico com 4-6 dígitos
+    return re.match(r"^\d{4,6}$", crm) is not None
+
+
+def validate_uf(uf: str) -> bool:
+    """Valida UF brasileira."""
+    ufs_validas = {
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MT",
+        "MS",
+        "MG",
+        "PA",
+        "PB",
+        "PR",
+        "PE",
+        "PI",
+        "RJ",
+        "RN",
+        "RS",
+        "RO",
+        "RR",
+        "SC",
+        "SP",
+        "SE",
+        "TO",
+    }
+    return uf and uf.upper() in ufs_validas
+
+
+import hmac
+
+# --- Endpoints administrativos PROTEGIDOS ---
+
+
+@app.get("/api/v1/incidents", response_model=list[IncidentListItem])
+def list_incidents(admin: dict = Depends(get_admin_user)):
+    """Lista incidentes - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
+    db = SessionLocal()
+    try:
+        incidents = db.query(Incident).order_by(Incident.occurred_at.desc()).all()
+        return [
+            IncidentListItem(
+                id=i.id,
+                type=i.type,
+                description=i.description,
+                occurred_at=i.occurred_at.isoformat(),
+                user_crm=i.user_crm,
+                ip=i.ip,
+                status=i.status,
+            )
+            for i in incidents
+        ]
+    finally:
+        db.close()
+
+
+@app.get("/api/v1/inactive-accounts", response_model=list[InactiveAccountItem])
+def list_inactive_accounts(
+    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
+):
+    """Lista contas inativas - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(days=365 * years)
+        inativos = (
+            db.query(Medico)
+            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
+            .all()
+        )
+        return [
+            InactiveAccountItem(
+                crm=m.crm,
+                nome=m.nome,
+                uf=m.uf,
+                last_login_at=m.last_login_at.isoformat() if m.last_login_at else None,
+                created_at=(
+                    m.terms_accepted_at.isoformat() if m.terms_accepted_at else None
+                ),
+            )
+            for m in inativos
+        ]
+    finally:
+        db.close()
+
+
+@app.post("/api/v1/notify-inactive", response_model=NotifyInactiveResponse)
+def notify_inactive_accounts(
+    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
+):
+    """Notifica usuários inativos - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(days=365 * years)
+        inativos = (
+            db.query(Medico)
+            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
+            .all()
+        )
+        notified = []
+        for m in inativos:
+            logger.info(
+                f"[NOTIFY] Conta inativa: CRM={m.crm}, nome={m.nome}, UF={m.uf}, last_login={m.last_login_at}"
+            )
+            notified.append(m.crm)
+
+        # Log da ação administrativa
+        log_audit(
+            "admin_notify_inactive",
+            user_crm="ADMIN",
+            ip=None,
+            details={"years": years, "count": len(notified)},
+        )
+
+        return NotifyInactiveResponse(
+            message=f"Notificações simuladas para {len(notified)} contas inativas.",
+            notified_crms=notified,
+        )
+    finally:
+        db.close()
+
+
+@app.delete("/api/v1/delete-inactive", response_model=BulkDeleteResponse)
+def delete_inactive_accounts(
+    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
+):
+    """Deleta contas inativas - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
+    db = SessionLocal()
+    try:
+        cutoff = datetime.utcnow() - timedelta(days=365 * years)
+        inativos = (
+            db.query(Medico)
+            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
+            .all()
+        )
+        deleted = []
+        for m in inativos:
+            # Anonimizar antes de deletar (boa prática LGPD)
+            m.nome = "ANONIMIZADO"
+            m.senha_hash = "ANONIMIZADO"
+            # Anonimizar guias
+            guias = db.query(Guia).filter_by(user_id=m.crm).all()
+            for g in guias:
+                g.paciente = "ANONIMIZADO"
+                g.nome_medico = "ANONIMIZADO"
+            # Anonimizar demonstrativos
+            demonstrativos = db.query(Demonstrativo).filter_by(crm=m.crm).all()
+            for d in demonstrativos:
+                d.lote = "ANONIMIZADO"
+            deleted.append(m.crm)
+            # Opcional: deletar o médico após anonimização
+            db.delete(m)
+        db.commit()
+
+        # Log crítico da ação administrativa
+        log_audit(
+            "admin_delete_inactive",
+            user_crm="ADMIN",
+            ip=None,
+            details={
+                "years": years,
+                "deleted_count": len(deleted),
+                "deleted_crms": deleted,
+            },
+        )
+        logger.warning(
+            f"ADMIN: {len(deleted)} contas inativas foram anonimizadas e removidas."
+        )
+
+        return BulkDeleteResponse(
+            message=f"{len(deleted)} contas inativas anonimizadas e removidas.",
+            deleted_crms=deleted,
+        )
+    finally:
+        db.close()
+
+
+@app.delete("/api/v1/admin/purge-users")
+def purge_all_users(admin: dict = Depends(get_admin_user)):
+    """OPERAÇÃO EXTREMAMENTE PERIGOSA - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
+    db = SessionLocal()
+    try:
+        # Log crítico antes da operação
+        log_audit(
+            "admin_purge_all_users",
+            user_crm="ADMIN",
+            ip=None,
+            details={"warning": "ALL_DATA_WILL_BE_DELETED"},
+        )
+
+        # Contar registros antes da exclusão
+        count_guias = db.query(Guia).count()
+        count_demos = db.query(Demonstrativo).count()
+        count_medicos = db.query(Medico).count()
+
+        # Apaga dados relacionados primeiro (ordem importa por FK)
+        db.query(Guia).delete()
+        db.query(Demonstrativo).delete()
+        db.query(Consentimento).delete()
+        db.query(Medico).delete()
+        db.commit()
+
+        logger.critical(
+            f"ADMIN PURGE: Todos os dados foram apagados! "
+            f"Removidos: {count_medicos} médicos, {count_demos} demonstrativos, {count_guias} guias"
+        )
+
+        return {
+            "message": "Todos os usuários e dados relacionados foram apagados.",
+            "deleted": {
+                "medicos": count_medicos,
+                "demonstrativos": count_demos,
+                "guias": count_guias,
+            },
+        }
+    finally:
+        db.close()
