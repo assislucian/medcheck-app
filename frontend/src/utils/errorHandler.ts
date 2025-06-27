@@ -100,6 +100,45 @@ export const processApiResponse = async (response: Response): Promise<any> => {
 };
 
 /**
+ * Wrapper para fetch com autenticação automática
+ */
+export const fetchWithAuth = async (
+  url: string,
+  options?: RequestInit
+): Promise<Response> => {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options?.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorDetails: ApiErrorDetails = {
+      status: response.status,
+      message:
+        response.status === 401
+          ? 'Sessão expirada. Faça login novamente.'
+          : response.status === 403
+            ? 'Acesso negado.'
+            : response.status === 404
+              ? 'Recurso não encontrado.'
+              : 'Erro na comunicação com o servidor.',
+      isAuthError: response.status === 401 || response.status === 403,
+      isNetworkError: false,
+    };
+
+    throw new Error(JSON.stringify(errorDetails));
+  }
+
+  return response;
+};
+
+/**
  * Wrapper para fetch com tratamento de erro robusto
  */
 export const safeFetch = async (url: string, options?: RequestInit): Promise<any> => {
@@ -128,6 +167,20 @@ export const safeFetch = async (url: string, options?: RequestInit): Promise<any
 
     // Re-lança outros erros
     throw error;
+  }
+};
+
+/**
+ * Função para tratar erros de API de forma amigável
+ */
+export const handleApiError = (error: Error): string => {
+  try {
+    // Tenta parsear como erro estruturado
+    const errorDetails = JSON.parse(error.message) as ApiErrorDetails;
+    return errorDetails.message;
+  } catch {
+    // Se não conseguir parsear, retorna mensagem genérica
+    return error.message || 'Erro desconhecido';
   }
 };
 
