@@ -51,6 +51,7 @@ export default defineConfig(({ mode }) => ({
           router: ['react-router-dom'],
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
           pdf: ['jspdf', 'jspdf-autotable'],
+          excel: ['xlsx'],
         },
       },
     },
@@ -58,10 +59,10 @@ export default defineConfig(({ mode }) => ({
 
   // 🆕 Diretivas para evitar erro de resolução
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom'],
+    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'xlsx'],
   },
   ssr: {
-    noExternal: ['jspdf', 'jspdf-autotable'],
+    noExternal: ['jspdf', 'jspdf-autotable', 'xlsx'],
   },
   resolve: {
     alias: {
