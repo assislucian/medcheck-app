@@ -1,21 +1,40 @@
-import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { DataGrid } from "../components/ui/data-grid";
-import { Button } from "../components/ui/button";
-import { AlertCircle, Download, FileX, Filter, Loader2 } from "lucide-react";
-import { Badge } from "../components/ui/badge";
-import { useState, useEffect } from "react";
-import { ResourceDialog } from "../components/unpaid-procedures/ResourceDialog";
-import { formatCurrency } from "../utils/format";
-import PageHeader from "../components/layout/PageHeader";
-import { useAuth } from "../contexts/auth/AuthContext";
-import { UserMenu } from "../components/navbar/UserMenu";
-import InfoCard from "../components/ui/InfoCard";
-import axios from "axios";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { calcularDiasParaContestar } from "@/utils/date";
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
+import { DataGrid } from '../components/ui/data-grid';
+import { Button } from '../components/ui/button';
+import { AlertCircle, Download, FileX, Filter, Loader2 } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { useState, useEffect } from 'react';
+import { ResourceDialog } from '../components/unpaid-procedures/ResourceDialog';
+import { formatCurrency } from '../utils/format';
+import PageHeader from '../components/layout/PageHeader';
+import { useAuth } from '../contexts/auth/AuthContext';
+import { UserMenu } from '../components/navbar/UserMenu';
+import { InfoCard } from '../components/ui/InfoCard';
+import axios from 'axios';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { calcularDiasParaContestar } from '@/utils/date';
 
-function GlosaDetailModal({ codigo, open, onClose }: { codigo: string, open: boolean, onClose: () => void }) {
+function GlosaDetailModal({
+  codigo,
+  open,
+  onClose,
+}: {
+  codigo: string;
+  open: boolean;
+  onClose: () => void;
+}) {
   const [glosa, setGlosa] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +43,13 @@ function GlosaDetailModal({ codigo, open, onClose }: { codigo: string, open: boo
     if (!open || !codigo) return;
     setLoading(true);
     setError(null);
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/glosas?codigo=${codigo}`)
-      .then(res => res.json())
-      .then(data => {
+    fetch(
+      `${
+        import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      }/api/v1/glosas?codigo=${codigo}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) setGlosa(data[0]);
         else setGlosa(null);
       })
@@ -46,9 +69,15 @@ function GlosaDetailModal({ codigo, open, onClose }: { codigo: string, open: boo
           <div className="text-danger">{error}</div>
         ) : glosa ? (
           <div className="space-y-2">
-            <div><b>Grupo:</b> {glosa.grupo}</div>
-            <div><b>Código:</b> {glosa.codigo}</div>
-            <div><b>Descrição:</b> {glosa.descricao}</div>
+            <div>
+              <b>Grupo:</b> {glosa.grupo}
+            </div>
+            <div>
+              <b>Código:</b> {glosa.codigo}
+            </div>
+            <div>
+              <b>Descrição:</b> {glosa.descricao}
+            </div>
           </div>
         ) : (
           <div>Nenhuma informação encontrada para a glosa {codigo}.</div>
@@ -59,23 +88,23 @@ function GlosaDetailModal({ codigo, open, onClose }: { codigo: string, open: boo
 }
 
 function getPrazoStatus(dias: number) {
-  if (dias > 5) return "success";
-  if (dias > 0) return "warning";
-  return "destructive";
+  if (dias > 5) return 'success';
+  if (dias > 0) return 'warning';
+  return 'destructive';
 }
 
 function PrazoBadge({ dias }: { dias: number }) {
   const status = getPrazoStatus(dias);
-  let label = dias > 1 ? `${dias} dias` : dias === 1 ? "1 dia" : "Expirado";
+  let label = dias > 1 ? `${dias} dias` : dias === 1 ? '1 dia' : 'Expirado';
   return (
     <Badge
       variant={status}
       className={
-        status === "success"
-          ? "bg-green-100 text-green-800 border border-green-200 font-medium"
-          : status === "warning"
-          ? "bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium"
-          : "bg-red-100 text-red-800 border border-red-200 font-medium"
+        status === 'success'
+          ? 'bg-green-100 text-green-800 border border-green-200 font-medium'
+          : status === 'warning'
+            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium'
+            : 'bg-red-100 text-red-800 border border-red-200 font-medium'
       }
       aria-label={label}
       tabIndex={0}
@@ -108,7 +137,9 @@ function TruncatedCell({ text }: { text: string }) {
 }
 
 function formatValor(valor: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+    valor
+  );
 }
 
 const UnpaidProceduresPage = () => {
@@ -128,17 +159,27 @@ const UnpaidProceduresPage = () => {
       try {
         const token = localStorage.getItem('token');
         // 1. Buscar todos os demonstrativos
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await axios.get(
+          `${
+            import.meta.env.VITE_API_URL || 'http://localhost:8000'
+          }/api/v1/demonstrativos`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const demonstrativos = res.data || [];
         // 2. Buscar detalhes de cada demonstrativo (em paralelo)
         const detalhesAll = await Promise.all(
           demonstrativos.map(async (d: any) => {
             try {
-              const resDetalhes = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/${d.id}/detalhes`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
+              const resDetalhes = await axios.get(
+                `${
+                  import.meta.env.VITE_API_URL || 'http://localhost:8000'
+                }/api/v1/demonstrativos/${d.id}/detalhes`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
               return resDetalhes.data || [];
             } catch {
               return [];
@@ -157,7 +198,8 @@ const UnpaidProceduresPage = () => {
           procedimento: p.descricao ?? p.description ?? '',
           data: p.data ?? p.date ?? '',
           valorApresentado: Number(p.financial?.presented_value ?? p.apresentado) || 0,
-          motivoNaoPagamento: p.motivo_glosa ?? p.motivoNaoPagamento ?? p.motivo ?? 'Glosa',
+          motivoNaoPagamento:
+            p.motivo_glosa ?? p.motivoNaoPagamento ?? p.motivo ?? 'Glosa',
           codigo_glosa: p.codigo_glosa ?? '',
           motivo_glosa: p.motivo_glosa ?? '',
           beneficiario: p.beneficiario ?? p.paciente ?? '',
@@ -188,7 +230,11 @@ const UnpaidProceduresPage = () => {
     setGlosaDetail(null);
     if (row.codigo_glosa) {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/glosas?codigo=${row.codigo_glosa}`);
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL || 'http://localhost:8000'
+          }/api/v1/glosas?codigo=${row.codigo_glosa}`
+        );
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) setGlosaDetail(data[0]);
         else setGlosaDetail(null);
@@ -207,15 +253,15 @@ const UnpaidProceduresPage = () => {
     { field: 'guia', headerName: 'Nº Guia', width: 100 },
     { field: 'procedimento', headerName: 'Procedimento', flex: 2 },
     { field: 'data', headerName: 'Data', width: 100 },
-    { 
-      field: 'valorApresentado', 
-      headerName: 'Valor', 
+    {
+      field: 'valorApresentado',
+      headerName: 'Valor',
       width: 120,
-      valueFormatter: ({ value }: { value: number }) => formatValor(value)
+      valueFormatter: ({ value }: { value: number }) => formatValor(value),
     },
-    { 
-      field: 'motivoNaoPagamento', 
-      headerName: 'Motivo', 
+    {
+      field: 'motivoNaoPagamento',
+      headerName: 'Motivo',
       flex: 3,
       renderCell: ({ row }: { row: any }) => {
         const codigo = row.codigo_glosa;
@@ -232,22 +278,26 @@ const UnpaidProceduresPage = () => {
           );
         }
         return (
-          <Badge variant="danger" className="truncate max-w-[200px]" title={motivo}>{motivo || 'Glosa'}</Badge>
+          <Badge variant="danger" className="truncate max-w-[200px]" title={motivo}>
+            {motivo || 'Glosa'}
+          </Badge>
         );
-      }
+      },
     },
-    { 
-      field: 'diasParaContestar', 
-      headerName: 'Dias', 
+    {
+      field: 'diasParaContestar',
+      headerName: 'Dias',
       width: 110,
-      renderCell: ({ row }: { row: any }) => <PrazoBadge dias={calcularDiasParaContestar(row.data)} />
+      renderCell: ({ row }: { row: any }) => (
+        <PrazoBadge dias={calcularDiasParaContestar(row.data)} />
+      ),
     },
     {
       field: 'actions',
       headerName: 'Ações',
       width: 90,
-      renderCell: ({ row }: { row: any }) => <ResourceDialog procedure={row} />
-    }
+      renderCell: ({ row }: { row: any }) => <ResourceDialog procedure={row} />,
+    },
   ];
 
   return (
@@ -255,26 +305,44 @@ const UnpaidProceduresPage = () => {
       <PageHeader
         title="Procedimentos Não Pagos"
         icon={<FileX size={28} />}
-        actions={userProfile ? (
-          <UserMenu
-            name={userProfile.name || 'Usuário'}
-            email={userProfile.email || 'sem-email@exemplo.com'}
-            specialty={userProfile.crm || ''}
-            avatarUrl={userProfile.avatarUrl || undefined}
-            onLogout={signOut}
-          />
-        ) : null}
+        actions={
+          userProfile ? (
+            <UserMenu
+              name={userProfile.name || 'Usuário'}
+              email={userProfile.email || 'sem-email@exemplo.com'}
+              specialty={userProfile.crm || ''}
+              avatarUrl={userProfile.avatarUrl || undefined}
+              onLogout={signOut}
+            />
+          ) : null
+        }
       />
       <div className="space-y-6">
-        <InfoCard
-          icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
-          title={<span className="text-xs font-semibold">Procedimentos Contestáveis</span>}
-          value={<span className="text-2xl md:text-3xl font-bold">{unpaidProcedures.length}</span>}
-          description="Conteste em até 30 dias para garantir a análise pelo convênio"
-          variant="warning"
-          className="w-full mb-4"
-        />
-        
+        {/* Painel de Insights de Procedimentos Contestáveis - seguindo padrão da página de Demonstrativos */}
+        <section aria-label="Painel de Procedimentos Contestáveis" className="mb-6">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
+            <InfoCard
+              icon={<AlertCircle className="h-6 w-6" />}
+              title={
+                <span className="text-xs font-semibold">
+                  Procedimentos Contestáveis
+                </span>
+              }
+              value={
+                <span className="text-2xl md:text-3xl font-bold">
+                  {unpaidProcedures.length}
+                </span>
+              }
+              description={
+                <span className="text-xs">
+                  Conteste em até 30 dias para garantir análise
+                </span>
+              }
+              variant="warning"
+            />
+          </div>
+        </section>
+
         <div className="flex gap-2 self-end">
           <Button variant="outline" size="sm">
             <Filter className="w-4 h-4 mr-2" />
@@ -297,24 +365,49 @@ const UnpaidProceduresPage = () => {
               if (expandedRow !== row.id) return null;
               return (
                 <tr>
-                  <td colSpan={unpaidColumns.length} className="bg-transparent p-0 border-t-0">
+                  <td
+                    colSpan={unpaidColumns.length}
+                    className="bg-transparent p-0 border-t-0"
+                  >
                     <div className="flex justify-start">
                       <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
                         <div className="flex items-center mb-2">
-                          <svg className="w-5 h-5 text-muted-foreground mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z" /></svg>
-                          <span className="font-semibold text-foreground text-base">Detalhes Oficiais da Glosa</span>
+                          <svg
+                            className="w-5 h-5 text-muted-foreground mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+                            />
+                          </svg>
+                          <span className="font-semibold text-foreground text-base">
+                            Detalhes Oficiais da Glosa
+                          </span>
                         </div>
                         {glosaLoading ? (
-                          <div className="text-muted-foreground">Carregando detalhes da glosa...</div>
+                          <div className="text-muted-foreground">
+                            Carregando detalhes da glosa...
+                          </div>
                         ) : glosaError ? (
                           <div className="text-danger">{glosaError}</div>
                         ) : glosaDetail ? (
                           <table className="w-full text-sm mt-2">
                             <thead>
                               <tr className="bg-muted/10">
-                                <th className="px-3 py-2 text-left font-semibold">Grupo</th>
-                                <th className="px-3 py-2 text-left font-semibold">Código</th>
-                                <th className="px-3 py-2 text-left font-semibold">Descrição</th>
+                                <th className="px-3 py-2 text-left font-semibold">
+                                  Grupo
+                                </th>
+                                <th className="px-3 py-2 text-left font-semibold">
+                                  Código
+                                </th>
+                                <th className="px-3 py-2 text-left font-semibold">
+                                  Descrição
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -326,7 +419,10 @@ const UnpaidProceduresPage = () => {
                             </tbody>
                           </table>
                         ) : (
-                          <div className="text-muted-foreground">Nenhuma informação encontrada para a glosa {row.codigo_glosa}.</div>
+                          <div className="text-muted-foreground">
+                            Nenhuma informação encontrada para a glosa{' '}
+                            {row.codigo_glosa}.
+                          </div>
                         )}
                       </div>
                     </div>
