@@ -1,63 +1,73 @@
-
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { 
-  LineChart, 
-  FileText, 
-  FileBarChart, 
-  FileQuestion, 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import {
+  LineChart,
+  Brain,
+  FileText,
+  FileBarChart,
+  FileQuestion,
   History,
   HelpCircle,
   Bell,
-  User
-} from "lucide-react";
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+  User,
+} from 'lucide-react';
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function MainNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const navItems = [
     {
-      name: "Dashboard",
-      href: "/dashboard",
+      name: 'Dashboard',
+      href: '/dashboard',
       icon: LineChart,
     },
     {
-      name: "Guias",
-      href: "/guides",
+      name: 'Intelligence Hub',
+      href: '/intelligence',
+      icon: Brain,
+    },
+    {
+      name: 'Guias',
+      href: '/guides',
       icon: FileText,
     },
     {
-      name: "Demonstrativos",
-      href: "/demonstratives",
+      name: 'Demonstrativos',
+      href: '/demonstratives',
       icon: FileBarChart,
     },
     {
-      name: "Não Pagos",
-      href: "/unpaid-procedures",
+      name: 'Não Pagos',
+      href: '/unpaid-procedures',
       icon: FileQuestion,
     },
     {
-      name: "Histórico",
-      href: "/history",
+      name: 'Histórico',
+      href: '/history',
       icon: History,
     },
     {
-      name: "Suporte",
-      href: "/support",
+      name: 'Suporte',
+      href: '/support',
       icon: HelpCircle,
     },
     {
-      name: "Notificações",
-      href: "/notifications",
+      name: 'Notificações',
+      href: '/notifications',
       icon: Bell,
     },
     {
-      name: "Perfil",
-      href: "/profile",
+      name: 'Perfil',
+      href: '/profile',
       icon: User,
-    }
+    },
   ];
 
   const handleNavigate = (href: string) => {
@@ -75,7 +85,7 @@ export function MainNavigation() {
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
                 <Button
-                  variant={location.pathname === item.href ? "secondary" : "ghost"}
+                  variant={location.pathname === item.href ? 'secondary' : 'ghost'}
                   size="sm"
                   className="w-full justify-start"
                   onClick={() => handleNavigate(item.href)}

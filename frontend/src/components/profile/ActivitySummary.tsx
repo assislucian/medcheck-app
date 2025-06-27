@@ -14,12 +14,9 @@ export const ActivitySummary = () => {
     }).format(value);
   };
 
-  const calculateDivergenceRate = () => {
-    if (!dashboardData) return 0;
-    const total =
-      dashboardData.totals.totalRecebido + dashboardData.totals.totalGlosado;
-    if (total === 0) return 0;
-    return Math.round((dashboardData.totals.totalGlosado / total) * 100);
+  const getTaxaGlosa = () => {
+    if (!dashboardData?.totals?.taxaGlosa) return 0;
+    return dashboardData.totals.taxaGlosa;
   };
 
   if (loading) {
@@ -79,7 +76,7 @@ export const ActivitySummary = () => {
     );
   }
 
-  const divergenceRate = calculateDivergenceRate();
+  const taxaGlosa = getTaxaGlosa();
 
   return (
     <Card>
@@ -107,7 +104,7 @@ export const ActivitySummary = () => {
               Glosas Detectadas:
             </dt>
             <dd className="font-semibold text-orange-600">
-              {dashboardData.glosas.length}
+              {dashboardData.totals.glosasDetectadas || 0}
             </dd>
           </div>
 
@@ -118,14 +115,14 @@ export const ActivitySummary = () => {
             </dt>
             <dd
               className={`font-semibold ${
-                divergenceRate > 20
+                getTaxaGlosa() > 20
                   ? 'text-red-600'
-                  : divergenceRate > 10
+                  : getTaxaGlosa() > 10
                     ? 'text-orange-600'
                     : 'text-green-600'
               }`}
             >
-              {divergenceRate}%
+              {getTaxaGlosa().toFixed(2)}%
             </dd>
           </div>
 

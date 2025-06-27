@@ -1,26 +1,91 @@
-import * as React from "react"
+import * as React from 'react';
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input"> & { as?: string }>(
-  ({ className, type, as, ...props }, ref) => {
-    const Comp = as || "input";
-    return (
-      <Comp
-        type={type}
-        className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm transition-colors duration-200",
-          as === "select"
-            ? "dark:bg-card-dark bg-card text-body dark:text-body-dark dark:border-border-dark border-border placeholder:text-muted-foreground dark:placeholder:text-muted-foreground"
-            : "bg-[#fff] text-[#18181b] placeholder:text-[#71717a] border-[#e5e7eb] dark:bg-[#18181b] dark:text-[#f4f4f5] dark:placeholder:text-[#a1a1aa] dark:border-[#232326]",
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
+const Input = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<'input'> & {
+    as?: string;
+    icon?: React.ReactNode;
+    error?: boolean;
+    helperText?: string;
+    loading?: boolean;
   }
-);
-Input.displayName = "Input";
+>(({ className, type, as, icon, error, helperText, loading, ...props }, ref) => {
+  const Comp = as || 'input';
 
-export { Input }
+  return (
+    <div className="w-full">
+      <div className="relative">
+        {icon && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none z-10">
+            {icon}
+          </div>
+        )}
+        <Comp
+          type={type}
+          className={cn(
+            // Base styles with improved visual hierarchy
+            'flex h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm transition-all duration-200',
+            'file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground',
+            'placeholder:text-gray-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+
+            // Enhanced focus and interaction states
+            'focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 hover:border-gray-400',
+            'shadow-sm hover:shadow-md focus:shadow-md',
+
+            // Icon spacing
+            icon && 'pl-10',
+
+            // Error states
+            error
+              ? 'border-red-300 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500 focus:ring-red-500/20'
+              : 'border-gray-300 text-gray-900',
+
+            // Dark mode support
+            'dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:placeholder:text-gray-400',
+            'dark:focus:border-blue-400 dark:hover:border-gray-500',
+            error && 'dark:border-red-600 dark:bg-red-900/20 dark:text-red-100',
+
+            // Loading state
+            loading && 'opacity-70 cursor-wait',
+
+            // Custom styles for select elements
+            as === 'select' && [
+              'cursor-pointer appearance-none bg-no-repeat bg-right',
+              "bg-[url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E')]",
+              'pr-10',
+            ],
+
+            className
+          )}
+          ref={ref}
+          disabled={props.disabled || loading}
+          {...props}
+        />
+
+        {loading && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-blue-500" />
+          </div>
+        )}
+      </div>
+
+      {helperText && (
+        <p
+          className={cn(
+            'mt-1 text-xs transition-colors duration-200',
+            error
+              ? 'text-red-600 dark:text-red-400'
+              : 'text-gray-500 dark:text-gray-400'
+          )}
+        >
+          {helperText}
+        </p>
+      )}
+    </div>
+  );
+});
+Input.displayName = 'Input';
+
+export { Input };

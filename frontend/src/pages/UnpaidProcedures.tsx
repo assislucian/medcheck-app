@@ -1,7 +1,15 @@
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
 import { DataGrid } from '../components/ui/data-grid';
 import { Button } from '../components/ui/button';
-import { AlertCircle, Download, FileX, Filter, Loader2 } from 'lucide-react';
+import {
+  AlertCircle,
+  Download,
+  FileX,
+  Filter,
+  Loader2,
+  Clock,
+  XCircle,
+} from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { useState, useEffect } from 'react';
 import { ResourceDialog } from '../components/unpaid-procedures/ResourceDialog';
@@ -25,6 +33,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { calcularDiasParaContestar } from '@/utils/date';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
 
 function GlosaDetailModal({
   codigo,
@@ -143,7 +153,17 @@ function formatValor(valor: number) {
 }
 
 const UnpaidProceduresPage = () => {
+  // SEO e Título Premium
+  usePageTitle({
+    title: 'Glosas e Contestações',
+    description:
+      'Central de gestão de glosas médicas e contestações com análise inteligente de prazos e estratégias de recuperação',
+    keywords:
+      'glosas médicas, contestações médicas, recuperação glosas, auditoria glosas, gestão glosas',
+  });
+
   const [unpaidProcedures, setUnpaidProcedures] = useState<any[]>([]);
+  const [filteredProcedures, setFilteredProcedures] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { userProfile, signOut } = useAuth();
@@ -151,6 +171,9 @@ const UnpaidProceduresPage = () => {
   const [glosaDetail, setGlosaDetail] = useState<any>(null);
   const [glosaLoading, setGlosaLoading] = useState(false);
   const [glosaError, setGlosaError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'contestable' | 'expired'>(
+    'all'
+  );
 
   useEffect(() => {
     const fetchUnpaidProcedures = async () => {
@@ -207,15 +230,30 @@ const UnpaidProceduresPage = () => {
           status: 'Pendente',
         }));
         setUnpaidProcedures(mapped);
+        setFilteredProcedures(mapped);
       } catch (err) {
-        setError('Erro ao carregar procedimentos não pagos.');
+        setError('Erro ao carregar glosas e contestações.');
         setUnpaidProcedures([]);
+        setFilteredProcedures([]);
       } finally {
         setLoading(false);
       }
     };
     fetchUnpaidProcedures();
   }, []);
+
+  // Aplicar filtros
+  useEffect(() => {
+    let filtered = unpaidProcedures;
+
+    if (statusFilter === 'contestable') {
+      filtered = filtered.filter((p) => calcularDiasParaContestar(p.data) > 0);
+    } else if (statusFilter === 'expired') {
+      filtered = filtered.filter((p) => calcularDiasParaContestar(p.data) === 0);
+    }
+
+    setFilteredProcedures(filtered);
+  }, [unpaidProcedures, statusFilter]);
 
   const handleExpandRow = async (row: any, idx: number) => {
     if (expandedRow === idx) {
@@ -250,14 +288,55 @@ const UnpaidProceduresPage = () => {
   };
 
   const unpaidColumns = [
-    { field: 'guia', headerName: 'Nº Guia', width: 100 },
-    { field: 'procedimento', headerName: 'Procedimento', flex: 2 },
-    { field: 'data', headerName: 'Data', width: 100 },
+    {
+      field: 'guia',
+      headerName: 'Nº Guia',
+      width: 100,
+      renderCell: ({ row }: { row: any }) => {
+        const diasRestantes = calcularDiasParaContestar(row.data);
+        const isExpired = diasRestantes === 0;
+        return (
+          <span className={isExpired ? 'text-gray-400 line-through' : ''}>
+            {row.guia}
+          </span>
+        );
+      },
+    },
+    {
+      field: 'procedimento',
+      headerName: 'Procedimento',
+      flex: 2,
+      renderCell: ({ row }: { row: any }) => {
+        const diasRestantes = calcularDiasParaContestar(row.data);
+        const isExpired = diasRestantes === 0;
+        return (
+          <span className={isExpired ? 'text-gray-400' : ''}>{row.procedimento}</span>
+        );
+      },
+    },
+    {
+      field: 'data',
+      headerName: 'Data',
+      width: 100,
+      renderCell: ({ row }: { row: any }) => {
+        const diasRestantes = calcularDiasParaContestar(row.data);
+        const isExpired = diasRestantes === 0;
+        return <span className={isExpired ? 'text-gray-400' : ''}>{row.data}</span>;
+      },
+    },
     {
       field: 'valorApresentado',
       headerName: 'Valor',
       width: 120,
-      valueFormatter: ({ value }: { value: number }) => formatValor(value),
+      renderCell: ({ row }: { row: any }) => {
+        const diasRestantes = calcularDiasParaContestar(row.data);
+        const isExpired = diasRestantes === 0;
+        return (
+          <span className={isExpired ? 'text-gray-400 line-through' : 'font-semibold'}>
+            {formatValor(row.valorApresentado)}
+          </span>
+        );
+      },
     },
     {
       field: 'motivoNaoPagamento',
@@ -296,144 +375,279 @@ const UnpaidProceduresPage = () => {
       field: 'actions',
       headerName: 'Ações',
       width: 90,
-      renderCell: ({ row }: { row: any }) => <ResourceDialog procedure={row} />,
+      renderCell: ({ row }: { row: any }) => {
+        const diasRestantes = calcularDiasParaContestar(row.data);
+        const podeContestar = diasRestantes > 0;
+
+        return (
+          <div className="flex items-center gap-2">
+            {podeContestar ? (
+              <ResourceDialog procedure={row} />
+            ) : (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      className="opacity-50 cursor-not-allowed"
+                    >
+                      Expirado
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Prazo de contestação expirado</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        );
+      },
     },
   ];
 
   return (
-    <AuthenticatedLayout title="Procedimentos Não Pagos">
-      <PageHeader
-        title="Procedimentos Não Pagos"
-        icon={<FileX size={28} />}
-        actions={
-          userProfile ? (
-            <UserMenu
-              name={userProfile.name || 'Usuário'}
-              email={userProfile.email || 'sem-email@exemplo.com'}
-              specialty={userProfile.crm || ''}
-              avatarUrl={userProfile.avatarUrl || undefined}
-              onLogout={signOut}
-            />
-          ) : null
-        }
-      />
-      <div className="space-y-6">
-        {/* Painel de Insights de Procedimentos Contestáveis - seguindo padrão da página de Demonstrativos */}
-        <section aria-label="Painel de Procedimentos Contestáveis" className="mb-6">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
-            <InfoCard
-              icon={<AlertCircle className="h-6 w-6" />}
-              title={
-                <span className="text-xs font-semibold">
-                  Procedimentos Contestáveis
-                </span>
-              }
-              value={
-                <span className="text-2xl md:text-3xl font-bold">
-                  {unpaidProcedures.length}
-                </span>
-              }
-              description={
-                <span className="text-xs">
-                  Conteste em até 30 dias para garantir análise
-                </span>
-              }
-              variant="warning"
+    <>
+      <Helmet>
+        <title>Glosas e Contestações | MedCheck</title>
+        <meta
+          name="description"
+          content="Central de gestão de glosas médicas e contestações com análise inteligente de prazos e estratégias de recuperação"
+        />
+        <meta
+          name="keywords"
+          content="glosas médicas, contestações médicas, recuperação glosas, auditoria glosas"
+        />
+      </Helmet>
+
+      <AuthenticatedLayout title="Glosas e Contestações">
+        <PageHeader
+          title="Glosas e Contestações"
+          icon={<FileX size={28} />}
+          description="Central de gestão de glosas com análise inteligente de prazos"
+          actions={
+            userProfile ? (
+              <UserMenu
+                name={userProfile.name || 'Usuário'}
+                email={userProfile.email || 'sem-email@exemplo.com'}
+                specialty={userProfile.crm || ''}
+                avatarUrl={userProfile.avatarUrl || undefined}
+                onLogout={signOut}
+              />
+            ) : null
+          }
+        />
+        <div className="space-y-6">
+          {/* Painel de Insights de Glosas - com lógica correta por prazo */}
+          <section aria-label="Painel de Glosas por Status" className="mb-6">
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
+              <InfoCard
+                icon={<AlertCircle className="h-6 w-6" />}
+                title={
+                  <span className="text-xs font-semibold">
+                    Procedimentos Contestáveis
+                  </span>
+                }
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {
+                      unpaidProcedures.filter(
+                        (p) => calcularDiasParaContestar(p.data) > 0
+                      ).length
+                    }
+                  </span>
+                }
+                description={
+                  <span className="text-xs">Com prazo válido para contestação</span>
+                }
+                variant="warning"
+              />
+
+              <InfoCard
+                icon={<FileX className="h-6 w-6" />}
+                title={
+                  <span className="text-xs font-semibold">Procedimentos Expirados</span>
+                }
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {
+                      unpaidProcedures.filter(
+                        (p) => calcularDiasParaContestar(p.data) === 0
+                      ).length
+                    }
+                  </span>
+                }
+                description={
+                  <span className="text-xs">Prazo de contestação expirado</span>
+                }
+                variant="destructive"
+              />
+
+              <InfoCard
+                icon={<Download className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">Valor Contestável</span>}
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {formatCurrency(
+                      unpaidProcedures
+                        .filter((p) => calcularDiasParaContestar(p.data) > 0)
+                        .reduce((sum, p) => sum + p.valorApresentado, 0)
+                    )}
+                  </span>
+                }
+                description={
+                  <span className="text-xs">Valor total ainda contestável</span>
+                }
+                variant="success"
+              />
+
+              <InfoCard
+                icon={<Loader2 className="h-6 w-6" />}
+                title={<span className="text-xs font-semibold">Valor Perdido</span>}
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {formatCurrency(
+                      unpaidProcedures
+                        .filter((p) => calcularDiasParaContestar(p.data) === 0)
+                        .reduce((sum, p) => sum + p.valorApresentado, 0)
+                    )}
+                  </span>
+                }
+                description={<span className="text-xs">Valor com prazo expirado</span>}
+                variant="secondary"
+              />
+            </div>
+          </section>
+
+          {/* Filtros inteligentes por status do prazo */}
+          <div className="flex flex-wrap gap-2 items-center justify-between">
+            <div className="flex gap-2">
+              <Button
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('all')}
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Todos ({unpaidProcedures.length})
+              </Button>
+              <Button
+                variant={statusFilter === 'contestable' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('contestable')}
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Contestáveis (
+                {
+                  unpaidProcedures.filter((p) => calcularDiasParaContestar(p.data) > 0)
+                    .length
+                }
+                )
+              </Button>
+              <Button
+                variant={statusFilter === 'expired' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('expired')}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Expirados (
+                {
+                  unpaidProcedures.filter(
+                    (p) => calcularDiasParaContestar(p.data) === 0
+                  ).length
+                }
+                )
+              </Button>
+            </div>
+
+            <Button variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Filtrados
+            </Button>
+          </div>
+
+          <div className="pt-2">
+            <DataGrid
+              rows={filteredProcedures}
+              columns={unpaidColumns}
+              className="w-full"
+              /* Permite scroll horizontal apenas quando necessário em telas estreitas */
+              wrapperScrollable
+              renderExpandedRow={(row) => {
+                if (expandedRow !== row.id) return null;
+                return (
+                  <tr>
+                    <td
+                      colSpan={unpaidColumns.length}
+                      className="bg-transparent p-0 border-t-0"
+                    >
+                      <div className="flex justify-start">
+                        <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
+                          <div className="flex items-center mb-2">
+                            <svg
+                              className="w-5 h-5 text-muted-foreground mr-2"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
+                              />
+                            </svg>
+                            <span className="font-semibold text-foreground text-base">
+                              Detalhes Oficiais da Glosa
+                            </span>
+                          </div>
+                          {glosaLoading ? (
+                            <div className="text-muted-foreground">
+                              Carregando detalhes da glosa...
+                            </div>
+                          ) : glosaError ? (
+                            <div className="text-danger">{glosaError}</div>
+                          ) : glosaDetail ? (
+                            <table className="w-full text-sm mt-2">
+                              <thead>
+                                <tr className="bg-muted/10">
+                                  <th className="px-3 py-2 text-left font-semibold">
+                                    Grupo
+                                  </th>
+                                  <th className="px-3 py-2 text-left font-semibold">
+                                    Código
+                                  </th>
+                                  <th className="px-3 py-2 text-left font-semibold">
+                                    Descrição
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td className="px-3 py-2">{glosaDetail.grupo}</td>
+                                  <td className="px-3 py-2">{glosaDetail.codigo}</td>
+                                  <td className="px-3 py-2">{glosaDetail.descricao}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          ) : (
+                            <div className="text-muted-foreground">
+                              Nenhuma informação encontrada para a glosa{' '}
+                              {row.codigo_glosa}.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }}
             />
           </div>
-        </section>
-
-        <div className="flex gap-2 self-end">
-          <Button variant="outline" size="sm">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtrar
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
         </div>
-
-        <div className="pt-2">
-          <DataGrid
-            rows={unpaidProcedures}
-            columns={unpaidColumns}
-            className="w-full"
-            /* Permite scroll horizontal apenas quando necessário em telas estreitas */
-            wrapperScrollable
-            renderExpandedRow={(row) => {
-              if (expandedRow !== row.id) return null;
-              return (
-                <tr>
-                  <td
-                    colSpan={unpaidColumns.length}
-                    className="bg-transparent p-0 border-t-0"
-                  >
-                    <div className="flex justify-start">
-                      <div className="rounded-lg border border-border bg-card shadow-sm p-4 mt-2 mb-4 w-full">
-                        <div className="flex items-center mb-2">
-                          <svg
-                            className="w-5 h-5 text-muted-foreground mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z"
-                            />
-                          </svg>
-                          <span className="font-semibold text-foreground text-base">
-                            Detalhes Oficiais da Glosa
-                          </span>
-                        </div>
-                        {glosaLoading ? (
-                          <div className="text-muted-foreground">
-                            Carregando detalhes da glosa...
-                          </div>
-                        ) : glosaError ? (
-                          <div className="text-danger">{glosaError}</div>
-                        ) : glosaDetail ? (
-                          <table className="w-full text-sm mt-2">
-                            <thead>
-                              <tr className="bg-muted/10">
-                                <th className="px-3 py-2 text-left font-semibold">
-                                  Grupo
-                                </th>
-                                <th className="px-3 py-2 text-left font-semibold">
-                                  Código
-                                </th>
-                                <th className="px-3 py-2 text-left font-semibold">
-                                  Descrição
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td className="px-3 py-2">{glosaDetail.grupo}</td>
-                                <td className="px-3 py-2">{glosaDetail.codigo}</td>
-                                <td className="px-3 py-2">{glosaDetail.descricao}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        ) : (
-                          <div className="text-muted-foreground">
-                            Nenhuma informação encontrada para a glosa{' '}
-                            {row.codigo_glosa}.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              );
-            }}
-          />
-        </div>
-      </div>
-    </AuthenticatedLayout>
+      </AuthenticatedLayout>
+    </>
   );
 };
 

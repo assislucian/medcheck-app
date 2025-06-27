@@ -36,22 +36,25 @@ function MainLayoutContent({
         {showSideNav && <AppSidebar />}
         <AppTour />
 
-        {/* Overlay para mobile quando sidebar está aberta */}
+        {/* Overlay melhorado para mobile quando sidebar está aberta */}
         {isOverlay && isOpen && (
           <div
-            className="fixed inset-0 bg-black/20 z-30 lg:hidden"
+            className="fixed inset-0 bg-gradient-to-r from-black/30 via-black/20 to-black/5 z-30 lg:hidden backdrop-blur-sm"
             onClick={() => {
               // Fechar sidebar ao clicar no overlay
               const event = new CustomEvent('closeSidebar');
               window.dispatchEvent(event);
             }}
+            style={{
+              animation: 'fadeIn 0.3s ease-out',
+            }}
           />
         )}
 
         <main
-          className={`flex-1 min-w-0 bg-background overflow-y-auto sidebar-offset ${
+          className={`flex-1 min-w-0 bg-background/95 backdrop-blur-sm overflow-y-auto sidebar-offset transition-all duration-300 ease-out ${
             isStatic ? 'static' : ''
-          }`}
+          } ${isOverlay && isOpen ? 'transform scale-[0.98] rounded-l-2xl' : ''}`}
         >
           <div className="page-shell">
             <GlobalHeader actions={<SidebarTriggerWrapper />} />

@@ -7,6 +7,8 @@ import { useState } from 'react';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
 import { UserMenu } from '../components/navbar/UserMenu';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
 
 // Mock data for demonstration purposes
 const mockHistory = [
@@ -67,62 +69,106 @@ const HistoryPage = () => {
   const [history] = useState<any[]>(mockHistory);
   const { userProfile, signOut } = useAuth();
 
+  // SEO e Título Premium
+  usePageTitle({
+    title: 'Histórico de Análises',
+    description:
+      'Visualize e gerencie o histórico completo de análises médicas realizadas com rastreabilidade e insights históricos',
+    keywords:
+      'histórico análises médicas, rastreabilidade auditoria, relatórios históricos, análises realizadas',
+  });
+
   return (
-    <AuthenticatedLayout title="Histórico">
-      <PageHeader
-        title="Histórico"
-        icon={<FileText size={28} />}
-        actions={
-          userProfile ? (
-            <UserMenu
-              name={userProfile.name || 'Usuário'}
-              email={userProfile.email || 'sem-email@exemplo.com'}
-              specialty={userProfile.crm || ''}
-              avatarUrl={userProfile.avatarUrl || undefined}
-              onLogout={signOut}
-            />
-          ) : null
-        }
-      />
-      <div className="space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <FileText className="w-4 h-4 mr-2" />
-              Relatório
-            </Button>
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button>
-          </div>
-        </div>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <FileText className="w-5 h-5 text-primary mb-2" />
-                <h3 className="font-medium text-base sm:text-lg">
-                  Análises Realizadas
-                </h3>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <DataGrid
-                rows={history}
-                columns={historyColumns}
-                pageSize={10}
-                rowsPerPageOptions={[10, 25, 50]}
-                disableSelectionOnClick
-                className="min-h-[400px] sm:min-h-[500px]"
+    <>
+      <Helmet>
+        <title>Histórico de Análises | MedCheck</title>
+        <meta
+          name="description"
+          content="Visualize e gerencie o histórico completo de análises médicas realizadas com rastreabilidade e insights históricos"
+        />
+        <meta
+          name="keywords"
+          content="histórico análises médicas, rastreabilidade auditoria, relatórios históricos"
+        />
+
+        {/* Open Graph para compartilhamento */}
+        <meta property="og:title" content="Histórico de Análises | MedCheck" />
+        <meta
+          property="og:description"
+          content="Visualize e gerencie o histórico completo de análises médicas"
+        />
+        <meta property="og:type" content="website" />
+
+        {/* Schema.org para SEO */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'MedCheck Histórico',
+            description: 'Sistema de histórico e rastreabilidade de análises médicas',
+            applicationCategory: 'HealthApplication',
+            operatingSystem: 'Web',
+          })}
+        </script>
+      </Helmet>
+
+      <AuthenticatedLayout title="Histórico de Análises">
+        <PageHeader
+          title="Histórico de Análises"
+          icon={<FileText size={28} />}
+          description="Rastreabilidade completa de análises e relatórios"
+          actions={
+            userProfile ? (
+              <UserMenu
+                name={userProfile.name || 'Usuário'}
+                email={userProfile.email || 'sem-email@exemplo.com'}
+                specialty={userProfile.crm || ''}
+                avatarUrl={userProfile.avatarUrl || undefined}
+                onLogout={signOut}
               />
+            ) : null
+          }
+        />
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <FileText className="w-4 h-4 mr-2" />
+                Relatório
+              </Button>
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar
+              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </AuthenticatedLayout>
+          </div>
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <FileText className="w-5 h-5 text-primary mb-2" />
+                  <h3 className="font-medium text-base sm:text-lg">
+                    Análises Realizadas
+                  </h3>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <DataGrid
+                  rows={history}
+                  columns={historyColumns}
+                  pageSize={10}
+                  rowsPerPageOptions={[10, 25, 50]}
+                  disableSelectionOnClick
+                  className="min-h-[400px] sm:min-h-[500px]"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthenticatedLayout>
+    </>
   );
 };
 

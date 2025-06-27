@@ -67,6 +67,8 @@ import { UserMenu } from '../components/navbar/UserMenu';
 import { FiltersToolbar } from '../components/guides/FiltersToolbar';
 import { InfoCard } from '../components/ui/InfoCard';
 import { GuidesTable } from '../components/guides/GuidesTable';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
 
 // Mapeamento de cores para cada tipo de papel (igual Demonstratives)
 // const papelColors = {
@@ -175,6 +177,15 @@ function formatDateToISO(dateStr: string) {
 }
 
 const GuidesPage = () => {
+  // SEO e Título Premium
+  usePageTitle({
+    title: 'Central de Guias Médicas',
+    description:
+      'Sistema avançado de gestão e análise de guias médicas TISS com processamento automatizado e insights de performance',
+    keywords:
+      'guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias',
+  });
+
   const [activeTab, setActiveTab] = useState<'list' | 'upload'>('list');
   const [extractedGuides, setExtractedGuides] = useState<GuideProcedure[]>([]);
   const [allGuides, setAllGuides] = useState<GuideProcedure[]>([]); // Para totais globais
@@ -667,515 +678,578 @@ const GuidesPage = () => {
   );
 
   return (
-    <AuthenticatedLayout
-      title="Guias"
-      description="Gerencie e consulte suas guias médicas processadas"
-    >
-      <PageHeader
-        title={
-          <span className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-gray-900">
-            Guias Médicas
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    to="/help"
-                    className="ml-2 text-brand hover:underline flex items-center"
-                    aria-label="Central de Ajuda"
-                  >
-                    <HelpCircle className="w-5 h-5" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Central de Ajuda: tutoriais, vídeos e perguntas frequentes
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </span>
-        }
-        icon={<FileText size={28} />}
-        actions={
-          userProfile ? (
-            <UserMenu
-              name={userProfile.name || 'Usuário'}
-              email={userProfile.email || 'sem-email@exemplo.com'}
-              specialty={userProfile.crm || ''}
-              avatarUrl={userProfile.avatarUrl || undefined}
-              onLogout={signOut}
-            />
-          ) : null
-        }
-      />
-      <div className="space-y-6">
-        {/* Visão Geral - Dados Gerais */}
-        <section aria-label="Visão Geral dos Dados" className="mb-6">
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Visão Geral
-            </h3>
-          </div>
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 mb-2">
-            <InfoCard
-              icon={<User className="h-6 w-6" />}
-              title={<span className="text-xs font-semibold">Pacientes Atendidos</span>}
-              value={
-                <span className="text-2xl md:text-3xl font-bold">
-                  {pacientesUnicos.size}
-                </span>
-              }
-              description={
-                <span className="text-xs">Total de pacientes únicos neste período</span>
-              }
-              variant="info"
-            />
-            <InfoCard
-              icon={<ClipboardList className="h-6 w-6" />}
-              title={<span className="text-xs font-semibold">Procedimentos</span>}
-              value={
-                <span className="text-2xl md:text-3xl font-bold">
-                  {totalProcedimentos}
-                </span>
-              }
-              description={<span className="text-xs">Extraídos das guias</span>}
-              variant="info"
-            />
-          </div>
-        </section>
+    <>
+      <Helmet>
+        <title>Central de Guias Médicas | MedCheck</title>
+        <meta
+          name="description"
+          content="Sistema avançado de gestão e análise de guias médicas TISS com processamento automatizado e insights de performance"
+        />
+        <meta
+          name="keywords"
+          content="guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias"
+        />
 
-        {/* Participação Médica - Apenas papéis identificados no histórico */}
-        {Object.keys(papelCounts).some((papel) => papelCounts[papel] > 0) && (
-          <section aria-label="Participação Médica" className="mb-6">
+        {/* Open Graph para compartilhamento */}
+        <meta property="og:title" content="Central de Guias Médicas | MedCheck" />
+        <meta
+          property="og:description"
+          content="Sistema avançado de gestão e análise de guias médicas TISS"
+        />
+        <meta property="og:type" content="website" />
+
+        {/* Schema.org para SEO */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'MedCheck Guias Médicas',
+            description: 'Sistema de gestão e análise de guias médicas TISS',
+            applicationCategory: 'HealthApplication',
+            operatingSystem: 'Web',
+          })}
+        </script>
+      </Helmet>
+
+      <AuthenticatedLayout
+        title="Central de Guias Médicas"
+        description="Sistema avançado de gestão e análise de guias médicas TISS"
+      >
+        <PageHeader
+          title={
+            <span className="flex items-center gap-2 text-xl md:text-2xl font-semibold text-gray-900">
+              Central de Guias Médicas
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to="/help"
+                      className="ml-2 text-brand hover:underline flex items-center"
+                      aria-label="Central de Ajuda"
+                    >
+                      <HelpCircle className="w-5 h-5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Central de Ajuda: tutoriais, vídeos e perguntas frequentes
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </span>
+          }
+          icon={<FileText size={28} />}
+          description="Gestão inteligente de guias TISS com análise automatizada"
+          actions={
+            userProfile ? (
+              <UserMenu
+                name={userProfile.name || 'Usuário'}
+                email={userProfile.email || 'sem-email@exemplo.com'}
+                specialty={userProfile.crm || ''}
+                avatarUrl={userProfile.avatarUrl || undefined}
+                onLogout={signOut}
+              />
+            ) : null
+          }
+        />
+        <div className="space-y-6">
+          {/* Visão Geral - Dados Gerais */}
+          <section aria-label="Visão Geral dos Dados" className="mb-6">
             <div className="mb-3">
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <UserCheck className="h-4 w-4" />
-                Participação Médica
+                <BarChart3 className="h-4 w-4" />
+                Visão Geral
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Papéis identificados no seu histórico de procedimentos
+                Dados gerais de todo o sistema
               </p>
             </div>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-2">
-              {papelCounts['cirurgiao'] > 0 && (
-                <InfoCard
-                  icon={<Stethoscope className="h-6 w-6" />}
-                  title={<span className="text-xs font-semibold">Cirurgião</span>}
-                  value={
-                    <span className="text-2xl md:text-3xl font-bold">
-                      {papelCounts['cirurgiao']}
-                    </span>
-                  }
-                  description={
-                    <span className="text-xs">
-                      Atuou como cirurgião em{' '}
-                      <span className="font-bold">
-                        {percent(papelCounts['cirurgiao'])}
-                      </span>{' '}
-                      dos procedimentos
-                    </span>
-                  }
-                  variant="success"
-                />
-              )}
-              {papelCounts['primeiro_auxiliar'] > 0 && (
-                <InfoCard
-                  icon={<UserPlus className="h-6 w-6" />}
-                  title={<span className="text-xs font-semibold">1º Auxiliar</span>}
-                  value={
-                    <span className="text-2xl md:text-3xl font-bold">
-                      {papelCounts['primeiro_auxiliar']}
-                    </span>
-                  }
-                  description={
-                    <span className="text-xs">
-                      Atuou como 1º auxiliar em{' '}
-                      <span className="font-bold">
-                        {percent(papelCounts['primeiro_auxiliar'])}
-                      </span>{' '}
-                      dos procedimentos
-                    </span>
-                  }
-                  variant="success"
-                />
-              )}
-              {papelCounts['segundo_auxiliar'] > 0 && (
-                <InfoCard
-                  icon={<UserPlus2 className="h-6 w-6" />}
-                  title={<span className="text-xs font-semibold">2º Auxiliar</span>}
-                  value={
-                    <span className="text-2xl md:text-3xl font-bold">
-                      {papelCounts['segundo_auxiliar']}
-                    </span>
-                  }
-                  description={
-                    <span className="text-xs">
-                      Atuou como 2º auxiliar em{' '}
-                      <span className="font-bold">
-                        {percent(papelCounts['segundo_auxiliar'])}
-                      </span>{' '}
-                      dos procedimentos
-                    </span>
-                  }
-                  variant="success"
-                />
-              )}
-              {papelCounts['anestesista'] > 0 && (
-                <InfoCard
-                  icon={<Activity className="h-6 w-6" />}
-                  title={<span className="text-xs font-semibold">Anestesista</span>}
-                  value={
-                    <span className="text-2xl md:text-3xl font-bold">
-                      {papelCounts['anestesista']}
-                    </span>
-                  }
-                  description={
-                    <span className="text-xs">
-                      Atuou como anestesista em{' '}
-                      <span className="font-bold">
-                        {percent(papelCounts['anestesista'])}
-                      </span>{' '}
-                      dos procedimentos
-                    </span>
-                  }
-                  variant="success"
-                />
-              )}
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 mb-2">
+              <InfoCard
+                icon={<User className="h-6 w-6" />}
+                title={
+                  <span className="text-xs font-semibold">Beneficiários Únicos</span>
+                }
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {pacientesUnicos.size}
+                  </span>
+                }
+                description={
+                  <span className="text-xs">
+                    Total de beneficiários únicos no sistema
+                  </span>
+                }
+                variant="info"
+              />
+              <InfoCard
+                icon={<ClipboardList className="h-6 w-6" />}
+                title={
+                  <span className="text-xs font-semibold">Total de Procedimentos</span>
+                }
+                value={
+                  <span className="text-2xl md:text-3xl font-bold">
+                    {totalProcedimentos}
+                  </span>
+                }
+                description={
+                  <span className="text-xs">Procedimentos processados no sistema</span>
+                }
+                variant="info"
+              />
             </div>
           </section>
-        )}
-        <div>
-          <FiltersToolbar
-            search={search}
-            onSearch={(val) => {
-              setSearch(val);
-              setPage(1);
-            }}
-            date={formatDateToISO(data)}
-            onDateChange={(val) => {
-              setData(formatDateToBR(val));
-              setPage(1);
-            }}
-            status={status || 'ALL'}
-            onStatusChange={(val) => {
-              setStatus(val);
-              setPage(1);
-            }}
-            pendingCount={
-              filteredMacroRows.filter((row) => row.status === 'Pendente').length
-            }
-            onClear={() => {
-              setSearch('');
-              setData('');
-              setStatus('ALL');
-              setPage(1);
-            }}
-            onExportCsv={() => exportToCSV(filteredMacroRows)}
-            onExportProcedures={() => exportProceduresToCSV(grouped)}
-            onNewGuide={() => setActiveTab('upload')}
-          />
-        </div>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => setActiveTab(v as 'list' | 'upload')}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="list">Lista de Guias</TabsTrigger>
-            <TabsTrigger value="upload">Upload de Guias</TabsTrigger>
-          </TabsList>
+          {/* Participação Médica - Apenas papéis identificados no histórico */}
+          {Object.keys(papelCounts).some((papel) => papelCounts[papel] > 0) && (
+            <section aria-label="Participação Médica" className="mb-6">
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Participação Médica
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Distribuição global de papéis no sistema
+                </p>
+              </div>
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-2">
+                {papelCounts['cirurgiao'] > 0 && (
+                  <InfoCard
+                    icon={<Stethoscope className="h-6 w-6" />}
+                    title={<span className="text-xs font-semibold">Cirurgião</span>}
+                    value={
+                      <span className="text-2xl md:text-3xl font-bold">
+                        {papelCounts['cirurgiao']}
+                      </span>
+                    }
+                    description={
+                      <span className="text-xs">
+                        <span className="font-bold">
+                          {percent(papelCounts['cirurgiao'])}
+                        </span>{' '}
+                        do total de procedimentos
+                      </span>
+                    }
+                    variant="success"
+                  />
+                )}
+                {papelCounts['primeiro_auxiliar'] > 0 && (
+                  <InfoCard
+                    icon={<UserPlus className="h-6 w-6" />}
+                    title={<span className="text-xs font-semibold">1º Auxiliar</span>}
+                    value={
+                      <span className="text-2xl md:text-3xl font-bold">
+                        {papelCounts['primeiro_auxiliar']}
+                      </span>
+                    }
+                    description={
+                      <span className="text-xs">
+                        <span className="font-bold">
+                          {percent(papelCounts['primeiro_auxiliar'])}
+                        </span>{' '}
+                        do total de procedimentos
+                      </span>
+                    }
+                    variant="success"
+                  />
+                )}
+                {papelCounts['segundo_auxiliar'] > 0 && (
+                  <InfoCard
+                    icon={<UserPlus2 className="h-6 w-6" />}
+                    title={<span className="text-xs font-semibold">2º Auxiliar</span>}
+                    value={
+                      <span className="text-2xl md:text-3xl font-bold">
+                        {papelCounts['segundo_auxiliar']}
+                      </span>
+                    }
+                    description={
+                      <span className="text-xs">
+                        <span className="font-bold">
+                          {percent(papelCounts['segundo_auxiliar'])}
+                        </span>{' '}
+                        do total de procedimentos
+                      </span>
+                    }
+                    variant="success"
+                  />
+                )}
+                {papelCounts['anestesista'] > 0 && (
+                  <InfoCard
+                    icon={<Activity className="h-6 w-6" />}
+                    title={<span className="text-xs font-semibold">Anestesista</span>}
+                    value={
+                      <span className="text-2xl md:text-3xl font-bold">
+                        {papelCounts['anestesista']}
+                      </span>
+                    }
+                    description={
+                      <span className="text-xs">
+                        <span className="font-bold">
+                          {percent(papelCounts['anestesista'])}
+                        </span>{' '}
+                        do total de procedimentos
+                      </span>
+                    }
+                    variant="success"
+                  />
+                )}
+              </div>
+            </section>
+          )}
+          <div>
+            <FiltersToolbar
+              search={search}
+              onSearch={(val) => {
+                setSearch(val);
+                setPage(1);
+              }}
+              date={formatDateToISO(data)}
+              onDateChange={(val) => {
+                setData(formatDateToBR(val));
+                setPage(1);
+              }}
+              status={status || 'ALL'}
+              onStatusChange={(val) => {
+                setStatus(val);
+                setPage(1);
+              }}
+              pendingCount={(() => {
+                // Calcula pendentes usando todos os dados globais
+                const allGrouped = allGuides.reduce<Record<string, GuideProcedure[]>>(
+                  (grp, p) => {
+                    grp[p.numero_guia] = grp[p.numero_guia] || [];
+                    grp[p.numero_guia].push(p);
+                    return grp;
+                  },
+                  {}
+                );
+                return Object.entries(allGrouped).filter(([_, procs]) => {
+                  const statusCount = procs.reduce(
+                    (statusAcc, p) => {
+                      statusAcc[p.status] = (statusAcc[p.status] || 0) + 1;
+                      return statusAcc;
+                    },
+                    {} as Record<string, number>
+                  );
+                  const statusComum =
+                    Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+                    '-';
+                  return statusComum === 'Pendente';
+                }).length;
+              })()}
+              onClear={() => {
+                setSearch('');
+                setData('');
+                setStatus('ALL');
+                setPage(1);
+              }}
+              onExportCsv={() => exportToCSV(filteredMacroRows)}
+              onExportProcedures={() => exportProceduresToCSV(grouped)}
+              onNewGuide={() => setActiveTab('upload')}
+            />
+          </div>
 
-          <TabsContent value="list">
-            <Card className="overflow-hidden">
-              <CardContent className="pt-6">
-                {loading ? (
-                  <LoaderTable />
-                ) : (
-                  <GuidesTable
-                    rows={filteredMacroRows}
-                    columns={macroColumns}
-                    selectedRows={selectedRows}
-                    onSelectRow={handleSelectRow}
-                    onSelectAll={handleSelectAll}
-                    onExpand={(id) => setExpandedRow(expandedRow === id ? null : id)}
-                    expandedRow={expandedRow}
-                    renderExpandedRow={(row) => (
-                      <div className="w-full">
-                        <div className="overflow-x-auto w-full">
-                          <table className="w-full text-sm min-w-[600px]">
-                            <thead>
-                              <tr>
-                                {[
-                                  'Data',
-                                  'Código',
-                                  'Descrição',
-                                  'Participação',
-                                  'Qtd',
-                                  'Prestador',
-                                ].map((h) => (
-                                  <th
-                                    key={h}
-                                    className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
-                                  >
-                                    {h}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {row.detalhes.map((proc: any) => (
-                                <tr
-                                  key={proc.codigo}
-                                  className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
-                                >
-                                  <td className="py-2 px-3 whitespace-nowrap">
-                                    {proc.data}
-                                  </td>
-                                  <td className="py-2 px-3 whitespace-nowrap font-mono">
-                                    {proc.codigo}
-                                  </td>
-                                  <td
-                                    className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                    title={proc.descricao}
-                                  >
-                                    {proc.descricao}
-                                  </td>
-                                  <td className="py-2 px-3 whitespace-nowrap">
-                                    <Badge variant="participacao">{proc.papel}</Badge>
-                                  </td>
-                                  <td className="py-2 px-3 whitespace-nowrap text-center">
-                                    {proc.qtd}
-                                  </td>
-                                  <td
-                                    className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                    title={proc.prestador}
-                                  >
-                                    {proc.prestador}
-                                  </td>
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as 'list' | 'upload')}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="list">Lista de Guias</TabsTrigger>
+              <TabsTrigger value="upload">Upload de Guias</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="list">
+              <Card className="overflow-hidden">
+                <CardContent className="pt-6">
+                  {loading ? (
+                    <LoaderTable />
+                  ) : (
+                    <GuidesTable
+                      rows={filteredMacroRows}
+                      columns={macroColumns}
+                      selectedRows={selectedRows}
+                      onSelectRow={handleSelectRow}
+                      onSelectAll={handleSelectAll}
+                      onExpand={(id) => setExpandedRow(expandedRow === id ? null : id)}
+                      expandedRow={expandedRow}
+                      renderExpandedRow={(row) => (
+                        <div className="w-full">
+                          <div className="overflow-x-auto w-full">
+                            <table className="w-full text-sm min-w-[600px]">
+                              <thead>
+                                <tr>
+                                  {[
+                                    'Data',
+                                    'Código',
+                                    'Descrição',
+                                    'Participação',
+                                    'Qtd',
+                                    'Prestador',
+                                  ].map((h) => (
+                                    <th
+                                      key={h}
+                                      className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-ink-low dark:text-slate-400"
+                                    >
+                                      {h}
+                                    </th>
+                                  ))}
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {row.detalhes.map((proc: any) => (
+                                  <tr
+                                    key={proc.codigo}
+                                    className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
+                                  >
+                                    <td className="py-2 px-3 whitespace-nowrap">
+                                      {proc.data}
+                                    </td>
+                                    <td className="py-2 px-3 whitespace-nowrap font-mono">
+                                      {proc.codigo}
+                                    </td>
+                                    <td
+                                      className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
+                                      title={proc.descricao}
+                                    >
+                                      {proc.descricao}
+                                    </td>
+                                    <td className="py-2 px-3 whitespace-nowrap">
+                                      <Badge variant="participacao">{proc.papel}</Badge>
+                                    </td>
+                                    <td className="py-2 px-3 whitespace-nowrap text-center">
+                                      {proc.qtd}
+                                    </td>
+                                    <td
+                                      className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
+                                      title={proc.prestador}
+                                    >
+                                      {proc.prestador}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  />
-                )}
-                {selectedGuia && (
-                  <DetalhesGuia
-                    guia={selectedGuia}
-                    procedimentos={grouped[selectedGuia]}
-                    onClose={() => setSelectedGuia(null)}
-                  />
-                )}
-                {activeTab === 'list' && (
-                  <div className="bg-white rounded-lg border border-gray-200/60 shadow-sm p-4 mt-4 backdrop-blur-sm dark:bg-gray-800/90 dark:border-gray-700/60">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                      {/* Results info */}
-                      <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-                        <Badge
-                          variant="secondary"
-                          className="font-mono bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
-                        >
-                          {(page - 1) * pageSize + 1}-
-                          {Math.min(page * pageSize, totalBeneficiarios)} de{' '}
-                          {totalBeneficiarios}
-                        </Badge>
-                        <span>beneficiários encontrados</span>
-                        <div className="hidden sm:block h-4 w-px bg-gray-300 dark:bg-gray-600" />
-                        <span className="hidden sm:inline">
-                          Página {page} de{' '}
-                          {Math.ceil(totalBeneficiarios / pageSize) || 1}
-                        </span>
-                      </div>
-
-                      {/* Actions and Controls */}
-                      <div className="flex items-center gap-3">
-                        {/* Delete selected */}
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                disabled={selectedRows.length === 0}
-                                onClick={handleDeleteSelected}
-                                aria-label="Remover selecionadas"
-                                className="h-8 px-3 text-xs font-medium"
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Remover ({selectedRows.length})
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              Remove todas as guias selecionadas da sua lista
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        {/* Page size selector */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                            Itens por página:
+                      )}
+                    />
+                  )}
+                  {selectedGuia && (
+                    <DetalhesGuia
+                      guia={selectedGuia}
+                      procedimentos={grouped[selectedGuia]}
+                      onClose={() => setSelectedGuia(null)}
+                    />
+                  )}
+                  {activeTab === 'list' && (
+                    <div className="bg-white rounded-lg border border-gray-200/60 shadow-sm p-4 mt-4 backdrop-blur-sm dark:bg-gray-800/90 dark:border-gray-700/60">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Results info */}
+                        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                          <Badge
+                            variant="secondary"
+                            className="font-mono bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700"
+                          >
+                            {(page - 1) * pageSize + 1}-
+                            {Math.min(page * pageSize, totalBeneficiarios)} de{' '}
+                            {totalBeneficiarios}
+                          </Badge>
+                          <span>beneficiários encontrados</span>
+                          <div className="hidden sm:block h-4 w-px bg-gray-300 dark:bg-gray-600" />
+                          <span className="hidden sm:inline">
+                            Página {page} de{' '}
+                            {Math.ceil(totalBeneficiarios / pageSize) || 1}
                           </span>
-                          <Select
-                            value={String(pageSize)}
-                            onValueChange={(value) => {
-                              setPageSize(Number(value));
-                              setPage(1);
-                            }}
-                          >
-                            <SelectTrigger className="w-[100px] h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[10, 20, 50, 100].map((size) => (
-                                <SelectItem key={size} value={String(size)}>
-                                  {size}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
                         </div>
 
-                        {/* Navigation */}
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setPage(1)}
-                            disabled={page === 1}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronsLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={page === 1}
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={page * pageSize >= totalBeneficiarios}
-                            onClick={() => setPage((p) => p + 1)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setPage(Math.ceil(totalBeneficiarios / pageSize) || 1)
-                            }
-                            disabled={page * pageSize >= totalBeneficiarios}
-                            className="h-8 w-8 p-0"
-                          >
-                            <ChevronsRight className="h-4 w-4" />
-                          </Button>
+                        {/* Actions and Controls */}
+                        <div className="flex items-center gap-3">
+                          {/* Delete selected */}
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={selectedRows.length === 0}
+                                  onClick={handleDeleteSelected}
+                                  aria-label="Remover selecionadas"
+                                  className="h-8 px-3 text-xs font-medium"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Remover ({selectedRows.length})
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Remove todas as guias selecionadas da sua lista
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          {/* Page size selector */}
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                              Itens por página:
+                            </span>
+                            <Select
+                              value={String(pageSize)}
+                              onValueChange={(value) => {
+                                setPageSize(Number(value));
+                                setPage(1);
+                              }}
+                            >
+                              <SelectTrigger className="w-[100px] h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[10, 20, 50, 100].map((size) => (
+                                  <SelectItem key={size} value={String(size)}>
+                                    {size}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Navigation */}
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setPage(1)}
+                              disabled={page === 1}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={page === 1}
+                              onClick={() => setPage((p) => Math.max(1, p - 1))}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={page * pageSize >= totalBeneficiarios}
+                              onClick={() => setPage((p) => p + 1)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setPage(Math.ceil(totalBeneficiarios / pageSize) || 1)
+                              }
+                              disabled={page * pageSize >= totalBeneficiarios}
+                              className="h-8 w-8 p-0"
+                            >
+                              <ChevronsRight className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="upload">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Upload de Guias</CardTitle>
+                  <CardDescription>
+                    Faça upload de guias TISS para processamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <FileDropZone
+                    type="guia"
+                    onDropFiles={handleFileDrop}
+                    disabled={isUploading || loading}
+                    hasFiles={files.some((f) => f.type === 'guia')}
+                  />
+                  <FileList
+                    files={files.filter((f) => f.type === 'guia')}
+                    onRemove={removeFile}
+                    disabled={isUploading || loading}
+                  />
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={resetFiles}
+                      disabled={!files.length || isUploading || loading}
+                      className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 dark:hover:bg-border/20 border-border"
+                    >
+                      Limpar
+                    </Button>
+                    <Button
+                      onClick={handleUploadGuias}
+                      disabled={!files.length || isUploading || loading}
+                      className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
+                    >
+                      {isUploading || loading ? 'Processando...' : 'Processar Guias'}
+                    </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload de Guias</CardTitle>
-                <CardDescription>
-                  Faça upload de guias TISS para processamento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FileDropZone
-                  type="guia"
-                  onDropFiles={handleFileDrop}
-                  disabled={isUploading || loading}
-                  hasFiles={files.some((f) => f.type === 'guia')}
-                />
-                <FileList
-                  files={files.filter((f) => f.type === 'guia')}
-                  onRemove={removeFile}
-                  disabled={isUploading || loading}
-                />
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={resetFiles}
-                    disabled={!files.length || isUploading || loading}
-                    className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 dark:hover:bg-border/20 border-border"
-                  >
-                    Limpar
-                  </Button>
-                  <Button
-                    onClick={handleUploadGuias}
-                    disabled={!files.length || isUploading || loading}
-                    className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
-                  >
-                    {isUploading || loading ? 'Processando...' : 'Processar Guias'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {loading && (
-          <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center min-h-screen">
-            <div className="bg-body dark:bg-body rounded-lg shadow-lg p-8 flex flex-col items-center gap-4">
-              <svg
-                className="animate-spin h-8 w-8 text-primary"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                ></path>
-              </svg>
-              <span className="text-lg font-medium">Processando guias...</span>
+          {loading && (
+            <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center min-h-screen">
+              <div className="bg-body dark:bg-body rounded-lg shadow-lg p-8 flex flex-col items-center gap-4">
+                <svg
+                  className="animate-spin h-8 w-8 text-primary"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  ></path>
+                </svg>
+                <span className="text-lg font-medium">Processando guias...</span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-      {/* Aviso de Privacidade - rodapé simples, por extenso */}
-      <div
-        className="w-full text-center text-xs text-gray-500 my-6"
-        role="note"
-        aria-label="Aviso de Privacidade"
-      >
-        Ao inserir dados de pacientes, você declara ter consentimento ou base legal para
-        o tratamento, conforme a{' '}
-        <a
-          href="/privacy"
-          className="underline hover:text-primary transition-colors"
-          target="_blank"
-          rel="noopener noreferrer"
+          )}
+        </div>
+        {/* Aviso de Privacidade - rodapé simples, por extenso */}
+        <div
+          className="w-full text-center text-xs text-gray-500 my-6"
+          role="note"
+          aria-label="Aviso de Privacidade"
         >
-          Política de Privacidade
-        </a>
-        . O uso indevido pode gerar responsabilidade legal.
-      </div>
-    </AuthenticatedLayout>
+          Ao inserir dados de pacientes, você declara ter consentimento ou base legal
+          para o tratamento, conforme a{' '}
+          <a
+            href="/privacy"
+            className="underline hover:text-primary transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Política de Privacidade
+          </a>
+          . O uso indevido pode gerar responsabilidade legal.
+        </div>
+      </AuthenticatedLayout>
+    </>
   );
 };
 

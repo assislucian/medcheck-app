@@ -15,7 +15,8 @@ interface InfoCardProps {
     | 'neutral'
     | 'default'
     | 'medical'
-    | 'primary';
+    | 'primary'
+    | 'professional';
   className?: string;
   children?: ReactNode;
   trend?: {
@@ -42,6 +43,8 @@ const variantStyles = {
     'bg-gradient-to-br from-gray-50/90 via-gray-100/60 to-gray-200/40 border-gray-200/60 text-gray-900 hover:from-gray-100/90 hover:via-gray-200/60 hover:to-gray-300/40 dark:from-gray-900/30 dark:via-gray-800/40 dark:to-gray-700/20 dark:border-gray-700/60 dark:text-gray-100',
   medical:
     'bg-gradient-to-br from-blue-50/80 via-white/90 to-emerald-50/60 border-blue-200/50 text-gray-900 hover:from-blue-100/80 hover:via-blue-50/90 hover:to-emerald-100/60 dark:from-blue-900/20 dark:via-gray-800/90 dark:to-emerald-900/30 dark:border-blue-700/50 dark:text-gray-100',
+  professional:
+    'bg-gradient-to-br from-slate-50 via-white to-slate-100/50 border-slate-200 text-slate-900 hover:from-slate-100 hover:via-slate-50 hover:to-slate-200/50 shadow-sm dark:from-slate-800 dark:via-slate-700 dark:to-slate-800/50 dark:border-slate-600 dark:text-slate-100',
 } as const;
 
 const iconVariantStyles = {
@@ -60,6 +63,8 @@ const iconVariantStyles = {
     'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 shadow-sm dark:from-gray-700 dark:to-gray-800 dark:text-gray-300',
   medical:
     'bg-gradient-to-br from-blue-100 via-blue-50 to-emerald-100 text-blue-600 shadow-sm dark:from-blue-900/40 dark:via-blue-800/60 dark:to-emerald-900/40 dark:text-blue-400',
+  professional:
+    'bg-gradient-to-br from-slate-600 to-slate-700 text-white shadow-md dark:from-slate-500 dark:to-slate-600 dark:text-slate-50',
 } as const;
 
 /**

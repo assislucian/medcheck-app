@@ -13,7 +13,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const performLogout = () => {
+    setToken(null);
+    setUser(null);
+    setUserProfile(null);
+
+    // Limpa todos os dados locais relacionados ao usuário
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('guias_activity_log_')) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
   useEffect(() => {
+    // Configura interceptador para capturar erros 401 globalmente
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error?.response?.status === 401 && token) {
+          console.log('Token expirado detectado globalmente, fazendo logout...');
+          performLogout();
+          toast.error('Sessão expirada. Faça login novamente.');
+          // Redireciona para login se não estiver na página de login
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
       setToken(savedToken);
@@ -22,16 +57,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Decodifica JWT para obter dados básicos do usuário
       try {
         const payload = JSON.parse(atob(savedToken.split('.')[1]));
+
+        // Verifica se o token não está expirado
+        const currentTime = Date.now() / 1000;
+        if (payload.exp && payload.exp < currentTime) {
+          console.log('Token expirado encontrado no localStorage');
+          performLogout();
+          setLoading(false);
+          return;
+        }
+
         setUser(payload);
 
         // Carrega perfil completo da API
         loadUserProfile(savedToken);
       } catch (e) {
         console.error('Erro ao decodificar token:', e);
-        logout();
+        performLogout();
       }
     }
     setLoading(false);
+
+    // Cleanup do interceptador quando o componente for desmontado
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   const loadUserProfile = async (authToken?: string) => {
@@ -55,9 +105,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           bio: response.data.bio,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar perfil completo:', error);
-      // Não fazer logout em caso de erro do perfil, apenas logar
+
+      // Se for erro 401, o token expirou - fazer logout
+      if (error?.response?.status === 401) {
+        console.log('Token expirado, fazendo logout automático...');
+        performLogout();
+        toast.error('Sessão expirada. Faça login novamente.');
+        return;
+      }
+
+      // Para outros erros, apenas logar sem fazer logout
     }
   };
 
@@ -105,22 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    setUserProfile(null);
-
-    // Limpa todos os dados locais relacionados ao usuário
-    Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('guias_activity_log_')) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
-    delete axios.defaults.headers.common['Authorization'];
-
+    performLogout();
     toast.info('Logout realizado com sucesso!');
   };
 

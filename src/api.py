@@ -95,8 +95,8 @@ if not ADMIN_SECRET:
         )
     else:
         ADMIN_SECRET = "admin-secret-change-in-production"
-        if os.environ.get("ENV", "development") == "production":
-            raise ValueError("ADMIN_SECRET deve ser configurado em produção!")
+    if os.environ.get("ENV", "development") == "production":
+        raise ValueError("ADMIN_SECRET deve ser configurado em produção!")
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -349,6 +349,8 @@ else:
         "http://localhost:8081",
         "http://localhost:8082",  # Porta adicional para desenvolvimento
         "http://localhost:8083",  # Porta adicional para desenvolvimento
+        "http://localhost:8084",  # Porta adicional para desenvolvimento
+        "http://localhost:8085",  # Porta adicional para desenvolvimento
         "http://localhost:3000",  # Create React App padrão
         "http://localhost:3001",  # Porta adicional React
         "http://localhost:5173",  # Vite padrão
@@ -466,6 +468,9 @@ class UpdateProfileRequest(BaseModel):
     hospital: str | None = Field(None, description="Hospital/Clínica principal")
     phone: str | None = Field(None, description="Telefone de contato")
     bio: str | None = Field(None, description="Biografia/Descrição")
+    avatar_url: str | None = Field(
+        None, description="URL da foto do médico (base64 compactada)"
+    )
 
 
 class UpdateProfileResponse(BaseModel):
@@ -1969,8 +1974,12 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
 
         cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
         parser = DemonstrativoParser(file_path)
+        payments = parser.get_payments()
+        print(
+            f"[DEBUG] Total de procedimentos extraídos do demonstrativo {demo_id}: {len(payments)}"
+        )
         detalhes = []
-        for item in parser.get_payments():
+        for item in payments:
             papel = (
                 papel_do_procedimento(
                     db,
@@ -2107,7 +2116,22 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
                 "beneficiario": guia.paciente,
             }
         )
-    # Glosas (mock: pegar guias não pagas ou status glosado)
+    # Glosas: calcular baseado no valor glosado real dos demonstrativos
+    glosas_detectadas = 0
+    for demo in demos:
+        valor_glosado_demo = brl_to_float(demo.glosa)
+        if valor_glosado_demo > 0:
+            glosas_detectadas += 1
+
+    # Taxa de glosa (percentual com 2 casas decimais)
+    total_apresentado = total_recebido + total_glosado
+    taxa_glosa = (
+        round((total_glosado / total_apresentado * 100), 2)
+        if total_apresentado > 0
+        else 0.0
+    )
+
+    # Glosas detalhadas (baseadas em status de guias)
     for guia in guias:
         if guia.status and "glosa" in guia.status.lower():
             glosas.append(
@@ -2125,6 +2149,8 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
             "totalGlosado": round(total_glosado, 2),
             "totalProcedimentos": total_procedimentos,
             "auditoriaPendente": auditoria_pendente,
+            "glosasDetectadas": glosas_detectadas,
+            "taxaGlosa": taxa_glosa,
         },
         "procedures": procedures,
         "glosas": glosas,
@@ -2209,6 +2235,7 @@ class ProfileResponse(BaseModel):
     hospital: str | None = None
     phone: str | None = None
     bio: str | None = None
+    avatar_url: str | None = None
 
 
 @app.get("/api/v1/profile", response_model=ProfileResponse)
@@ -2232,6 +2259,7 @@ def get_profile(user: dict = Depends(get_current_user)):
             hospital=perfil.hospital if perfil else None,
             phone=perfil.phone if perfil else None,
             bio=perfil.bio if perfil else None,
+            avatar_url=perfil.avatar_url if perfil else None,
         )
     finally:
         db.close()
@@ -2250,75 +2278,9 @@ class PerfilMedico(Base):
     hospital = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     bio = Column(String, nullable=True)
-
-
-@app.patch("/api/v1/profile", response_model=UpdateProfileResponse)
-def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
-    # Sanitizar nome
-    if data.nome:
-        data.nome = sanitize_text(data.nome)
-    db = SessionLocal()
-    try:
-        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
-        if not medico:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
-        # Cria ou recupera registro de detalhes de perfil
-        perfil = db.query(PerfilMedico).filter_by(crm=user["crm"]).first()
-        if not perfil:
-            perfil = PerfilMedico(crm=user["crm"])
-            db.add(perfil)
-
-        updated = False
-
-        # Campos na tabela Medico
-        if data.uf:
-            medico.uf = data.uf
-            updated = True
-        if data.nome:
-            medico.nome = data.nome
-            updated = True
-        if data.senha:
-            if len(data.senha) < 8:
-                raise HTTPException(
-                    status_code=400, detail="A senha deve ter pelo menos 8 caracteres."
-                )
-            medico.senha_hash = bcrypt.hashpw(
-                data.senha.encode(), bcrypt.gensalt()
-            ).decode()
-            updated = True
-
-        # Campos na tabela PerfilMedico
-        if data.email is not None:
-            perfil.email = data.email
-            updated = True
-        if data.specialty is not None:
-            perfil.specialty = data.specialty
-            updated = True
-        if data.hospital is not None:
-            perfil.hospital = data.hospital
-            updated = True
-        if data.phone is not None:
-            perfil.phone = data.phone
-            updated = True
-        if data.bio is not None:
-            perfil.bio = data.bio
-            updated = True
-
-        if updated:
-            log_audit(
-                "update_profile",
-                user_crm=user["crm"],
-                ip=None,
-                details=data.dict(exclude_unset=True),
-            )
-            db.commit()
-            logger.info(f"Perfil atualizado para CRM {user['crm']}")
-            return UpdateProfileResponse(message="Perfil atualizado com sucesso.")
-        else:
-            return UpdateProfileResponse(message="Nenhuma alteração realizada.")
-    finally:
-        db.close()
+    avatar_url = Column(
+        String, nullable=True
+    )  # URL da foto do médico (base64 compactada)
 
 
 # Garante que a nova tabela seja criada em bancos já existentes sem rodar migração
@@ -2599,3 +2561,431 @@ def purge_all_users(admin: dict = Depends(get_admin_user)):
         }
     finally:
         db.close()
+
+
+# --- Endpoint para analytics avançado ---
+@app.get("/api/v1/analytics")
+def advanced_analytics(
+    user: dict = Depends(get_current_user), period: str = Query("6m")
+):
+    """
+    Endpoint de analytics avançado que gera insights estratégicos profundos
+    para o médico baseado em todo o histórico de dados disponível.
+    """
+    db = SessionLocal()
+    crm = user.get("crm")
+    if not crm:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    try:
+        import calendar
+        from collections import Counter, defaultdict
+        from datetime import datetime, timedelta
+
+        # Buscar TODOS os dados históricos (não apenas 30 dias)
+        all_demos = db.query(Demonstrativo).filter(Demonstrativo.crm == crm).all()
+        all_guias = db.query(Guia).filter(Guia.crm == crm).all()
+
+        # === 1. ANALYTICS TEMPORAIS AVANÇADOS ===
+        monthly_performance = defaultdict(
+            lambda: {
+                "recebido": 0,
+                "glosado": 0,
+                "apresentado": 0,
+                "procedimentos": 0,
+                "demos": 0,
+                "taxa_glosa": 0,
+            }
+        )
+
+        quarterly_trends = defaultdict(
+            lambda: {"recebido": 0, "glosado": 0, "procedimentos": 0}
+        )
+        yearly_summary = defaultdict(
+            lambda: {"recebido": 0, "glosado": 0, "procedimentos": 0}
+        )
+
+        for demo in all_demos:
+            if demo.upload_time:
+                month_key = demo.upload_time.strftime("%Y-%m")
+                quarter_key = (
+                    f"{demo.upload_time.year}-Q{(demo.upload_time.month-1)//3 + 1}"
+                )
+                year_key = str(demo.upload_time.year)
+
+                recebido = brl_to_float(demo.liberado)
+                glosado = brl_to_float(demo.glosa)
+                apresentado = brl_to_float(demo.apresentado)
+                procedimentos = int(demo.total_procedimentos or 0)
+
+                # Monthly
+                monthly_performance[month_key]["recebido"] += recebido
+                monthly_performance[month_key]["glosado"] += glosado
+                monthly_performance[month_key]["apresentado"] += apresentado
+                monthly_performance[month_key]["procedimentos"] += procedimentos
+                monthly_performance[month_key]["demos"] += 1
+
+                # Quarterly
+                quarterly_trends[quarter_key]["recebido"] += recebido
+                quarterly_trends[quarter_key]["glosado"] += glosado
+                quarterly_trends[quarter_key]["procedimentos"] += procedimentos
+
+                # Yearly
+                yearly_summary[year_key]["recebido"] += recebido
+                yearly_summary[year_key]["glosado"] += glosado
+                yearly_summary[year_key]["procedimentos"] += procedimentos
+
+        # Calcular taxas de glosa mensais
+        for month_key in monthly_performance:
+            data = monthly_performance[month_key]
+            total_apresentado = data["recebido"] + data["glosado"]
+            data["taxa_glosa"] = (
+                round((data["glosado"] / total_apresentado * 100), 2)
+                if total_apresentado > 0
+                else 0
+            )
+
+        # === 2. ANALYTICS DE PERFORMANCE POR CATEGORIA ===
+
+        # Performance por Procedimento
+        procedure_stats = defaultdict(
+            lambda: {
+                "count": 0,
+                "recebido_total": 0,
+                "glosado_total": 0,
+                "hospitais": set(),
+                "roles": set(),
+                "descricao": "",
+            }
+        )
+
+        # Performance por Hospital/Prestador
+        hospital_stats = defaultdict(
+            lambda: {
+                "procedimentos": 0,
+                "recebido": 0,
+                "glosado": 0,
+                "demos": 0,
+                "codigos_unicos": set(),
+            }
+        )
+
+        # Performance por Papel/Função
+        role_performance = defaultdict(
+            lambda: {"procedimentos": 0, "recebido_estimado": 0, "hospitais": set()}
+        )
+
+        # Processar guias para analytics de performance
+        for guia in all_guias:
+            codigo = guia.codigo
+            hospital = guia.prestador or "Não identificado"
+            papel = guia.papel or "Não identificado"
+
+            procedure_stats[codigo]["count"] += guia.qtd or 1
+            procedure_stats[codigo]["hospitais"].add(hospital)
+            procedure_stats[codigo]["roles"].add(papel)
+            procedure_stats[codigo]["descricao"] = guia.descricao or ""
+
+            hospital_stats[hospital]["procedimentos"] += guia.qtd or 1
+            hospital_stats[hospital]["codigos_unicos"].add(codigo)
+
+            role_performance[papel]["procedimentos"] += guia.qtd or 1
+            role_performance[papel]["hospitais"].add(hospital)
+
+        # Enriquecer com dados financeiros dos demonstrativos
+        for demo in all_demos:
+            if demo.periodo:
+                # Aproximação: distribuir valores proporcionalmente
+                total_proc = demo.total_procedimentos or 1
+                recebido_por_proc = brl_to_float(demo.liberado) / total_proc
+                glosado_por_proc = brl_to_float(demo.glosa) / total_proc
+
+                # Tentar vincular aos procedimentos do mesmo período
+                periodo_guias = [
+                    g
+                    for g in all_guias
+                    if demo.periodo.lower() in (g.data or "").lower()
+                ]
+                for guia in periodo_guias:
+                    qtd = guia.qtd or 1
+                    procedure_stats[guia.codigo]["recebido_total"] += (
+                        recebido_por_proc * qtd
+                    )
+                    procedure_stats[guia.codigo]["glosado_total"] += (
+                        glosado_por_proc * qtd
+                    )
+
+        # === 3. INSIGHTS FINANCEIROS AVANÇADOS ===
+
+        total_recebido_historico = sum(brl_to_float(d.liberado) for d in all_demos)
+        total_glosado_historico = sum(brl_to_float(d.glosa) for d in all_demos)
+        total_apresentado_historico = total_recebido_historico + total_glosado_historico
+
+        # Taxa de recuperação média
+        taxa_recuperacao_media = (
+            round((total_recebido_historico / total_apresentado_historico * 100), 2)
+            if total_apresentado_historico > 0
+            else 0
+        )
+
+        # Projeção anual baseada nos últimos 3 meses
+        ultimos_3_meses = [
+            d
+            for d in all_demos
+            if d.upload_time and d.upload_time >= datetime.now() - timedelta(days=90)
+        ]
+        recebido_3m = sum(brl_to_float(d.liberado) for d in ultimos_3_meses)
+        projecao_anual = recebido_3m * 4 if ultimos_3_meses else 0
+
+        # Valor médio por procedimento
+        total_procedimentos_historico = sum(
+            int(d.total_procedimentos or 0) for d in all_demos
+        )
+        valor_medio_procedimento = (
+            round(total_recebido_historico / total_procedimentos_historico, 2)
+            if total_procedimentos_historico > 0
+            else 0
+        )
+
+        # === 4. IDENTIFICAÇÃO DE PADRÕES E ANOMALIAS ===
+
+        # Mês de melhor performance
+        melhor_mes = (
+            max(monthly_performance.items(), key=lambda x: x[1]["recebido"])
+            if monthly_performance
+            else None
+        )
+
+        # Procedimento mais lucrativo
+        procedimento_top = (
+            max(procedure_stats.items(), key=lambda x: x[1]["recebido_total"])
+            if procedure_stats
+            else None
+        )
+
+        # Hospital com melhor eficiência (menor taxa de glosa)
+        hospital_eficiente = None
+        if hospital_stats:
+            for hospital, stats in hospital_stats.items():
+                if stats["procedimentos"] >= 5:  # Mínimo para ser relevante
+                    # Buscar demos relacionadas a este hospital
+                    demos_hospital = [
+                        d
+                        for d in all_demos
+                        if hospital.lower() in (d.filename or "").lower()
+                    ]
+                    if demos_hospital:
+                        total_rec = sum(
+                            brl_to_float(d.liberado) for d in demos_hospital
+                        )
+                        total_glo = sum(brl_to_float(d.glosa) for d in demos_hospital)
+                        taxa_glosa = (
+                            (total_glo / (total_rec + total_glo) * 100)
+                            if (total_rec + total_glo) > 0
+                            else 100
+                        )
+                        stats["taxa_glosa"] = round(taxa_glosa, 2)
+
+            hospital_eficiente = min(
+                [h for h in hospital_stats.items() if h[1].get("taxa_glosa", 100) < 50],
+                key=lambda x: x[1].get("taxa_glosa", 100),
+                default=None,
+            )
+
+        # === 5. ALERTAS E RECOMENDAÇÕES INTELIGENTES ===
+
+        alerts = []
+        recommendations = []
+
+        # Alerta: Taxa de glosa muito alta
+        if monthly_performance:
+            ultimos_meses = sorted(monthly_performance.items(), key=lambda x: x[0])[-3:]
+            taxa_media_recente = sum(m[1]["taxa_glosa"] for m in ultimos_meses) / len(
+                ultimos_meses
+            )
+            if taxa_media_recente > 15:
+                alerts.append(
+                    {
+                        "type": "warning",
+                        "title": "Taxa de Glosa Elevada",
+                        "message": f"Sua taxa de glosa média dos últimos meses é {taxa_media_recente:.1f}%. Considere revisar os procedimentos mais glosados.",
+                        "action": "Ver Análise de Glosas",
+                    }
+                )
+
+        # Recomendação: Foco em procedimento lucrativo
+        if procedimento_top and procedimento_top[1]["recebido_total"] > 1000:
+            recommendations.append(
+                {
+                    "type": "growth",
+                    "title": "Oportunidade de Crescimento",
+                    "message": f'O procedimento {procedimento_top[0]} ({procedimento_top[1]["descricao"][:50]}) tem ótima performance. Considere expandi-lo.',
+                    "metric": f'R$ {procedimento_top[1]["recebido_total"]:.2f} recebidos',
+                }
+            )
+
+        # Recomendação: Hospital eficiente
+        if hospital_eficiente:
+            recommendations.append(
+                {
+                    "type": "efficiency",
+                    "title": "Hospital Eficiente Identificado",
+                    "message": f'O hospital {hospital_eficiente[0]} tem baixa taxa de glosa ({hospital_eficiente[1].get("taxa_glosa", 0):.1f}%). Considere aumentar o volume lá.',
+                    "metric": f'{hospital_eficiente[1]["procedimentos"]} procedimentos',
+                }
+            )
+
+        # === 6. BENCHMARKS E COMPARAÇÕES ===
+
+        # Benchmark interno: comparar com própria média
+        if len(monthly_performance) >= 6:  # Pelo menos 6 meses de dados
+            meses_sorted = sorted(monthly_performance.items(), key=lambda x: x[0])
+            primeiros_6m = meses_sorted[:6]
+            ultimos_6m = meses_sorted[-6:]
+
+            media_inicial = sum(m[1]["recebido"] for m in primeiros_6m) / len(
+                primeiros_6m
+            )
+            media_recente = sum(m[1]["recebido"] for m in ultimos_6m) / len(ultimos_6m)
+
+            crescimento_percentual = (
+                round(((media_recente - media_inicial) / media_inicial * 100), 2)
+                if media_inicial > 0
+                else 0
+            )
+        else:
+            crescimento_percentual = 0
+
+        # === 7. FORMATAÇÃO DOS DADOS PARA RESPOSTA ===
+
+        # Top 5 procedimentos por valor
+        top_procedures = sorted(
+            procedure_stats.items(), key=lambda x: x[1]["recebido_total"], reverse=True
+        )[:5]
+        top_procedures_formatted = [
+            {
+                "codigo": proc[0],
+                "descricao": (
+                    proc[1]["descricao"][:60] + "..."
+                    if len(proc[1]["descricao"]) > 60
+                    else proc[1]["descricao"]
+                ),
+                "count": proc[1]["count"],
+                "recebido_total": round(proc[1]["recebido_total"], 2),
+                "taxa_sucesso": (
+                    round(
+                        (
+                            proc[1]["recebido_total"]
+                            / (proc[1]["recebido_total"] + proc[1]["glosado_total"])
+                            * 100
+                        ),
+                        2,
+                    )
+                    if (proc[1]["recebido_total"] + proc[1]["glosado_total"]) > 0
+                    else 0
+                ),
+                "hospitais_count": len(proc[1]["hospitais"]),
+            }
+            for proc in top_procedures
+        ]
+
+        # Dados mensais para gráficos (últimos 12 meses)
+        monthly_chart_data = []
+        if monthly_performance:
+            sorted_months = sorted(monthly_performance.items(), key=lambda x: x[0])[
+                -12:
+            ]
+            for month_key, data in sorted_months:
+                try:
+                    year, month = map(int, month_key.split("-"))
+                    month_name = calendar.month_name[month][:3]
+                    monthly_chart_data.append(
+                        {
+                            "name": f"{month_name}/{year}",
+                            "recebido": round(data["recebido"], 2),
+                            "glosado": round(data["glosado"], 2),
+                            "taxa_glosa": data["taxa_glosa"],
+                            "procedimentos": data["procedimentos"],
+                        }
+                    )
+                except:
+                    continue
+
+        # Performance por papel (roles)
+        roles_formatted = []
+        for role, data in role_performance.items():
+            if data["procedimentos"] > 0:
+                roles_formatted.append(
+                    {
+                        "papel": role,
+                        "procedimentos": data["procedimentos"],
+                        "hospitais_count": len(data["hospitais"]),
+                        "recebido_estimado": round(data["recebido_estimado"], 2),
+                    }
+                )
+
+        return {
+            "summary": {
+                "total_recebido_historico": round(total_recebido_historico, 2),
+                "total_glosado_historico": round(total_glosado_historico, 2),
+                "taxa_recuperacao_media": taxa_recuperacao_media,
+                "projecao_anual": round(projecao_anual, 2),
+                "valor_medio_procedimento": valor_medio_procedimento,
+                "total_procedimentos_historico": total_procedimentos_historico,
+                "crescimento_percentual": crescimento_percentual,
+                "demonstrativos_processados": len(all_demos),
+                "periodo_analise": f"{len(monthly_performance)} meses",
+            },
+            "temporal_analytics": {
+                "monthly_performance": monthly_chart_data,
+                "melhor_mes": {
+                    "mes": melhor_mes[0] if melhor_mes else None,
+                    "recebido": (
+                        round(melhor_mes[1]["recebido"], 2) if melhor_mes else 0
+                    ),
+                },
+            },
+            "performance_analytics": {
+                "top_procedures": top_procedures_formatted,
+                "role_performance": roles_formatted,
+                "hospital_stats": [
+                    {
+                        "nome": hospital,
+                        "procedimentos": stats["procedimentos"],
+                        "codigos_unicos": len(stats["codigos_unicos"]),
+                        "taxa_glosa": stats.get("taxa_glosa", 0),
+                    }
+                    for hospital, stats in sorted(
+                        hospital_stats.items(),
+                        key=lambda x: x[1]["procedimentos"],
+                        reverse=True,
+                    )[:10]
+                ],
+            },
+            "insights": {
+                "alerts": alerts,
+                "recommendations": recommendations,
+                "key_insights": [
+                    f"Você processou {len(all_demos)} demonstrativos até agora",
+                    f"Sua taxa de recuperação média é {taxa_recuperacao_media}%",
+                    f"Valor médio por procedimento: R$ {valor_medio_procedimento}",
+                    f"Projeção anual baseada no trimestre: R$ {projecao_anual:.2f}",
+                ],
+            },
+        }
+
+    except Exception as e:
+        # Log do erro para debug
+        print(f"Erro no analytics: {str(e)}")
+        return {
+            "error": "Erro ao processar analytics",
+            "summary": {"total_recebido_historico": 0},
+            "temporal_analytics": {"monthly_performance": []},
+            "performance_analytics": {"top_procedures": []},
+            "insights": {"alerts": [], "recommendations": [], "key_insights": []},
+        }
+    finally:
+        db.close()
+
+
+# --- Endpoint para obter resumo do dashboard ---
