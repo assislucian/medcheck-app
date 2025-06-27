@@ -1,8 +1,7 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import axios from 'axios';
 import { AuthContextProps } from './types';
-// import { toast } from 'sonner'; // TODO: Reintroduzir quando forem adicionados toasts de feedback
-import { getProfileData } from '@/utils/supabase/profileHelpers';
+import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -19,25 +18,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (savedToken) {
       setToken(savedToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-      // Decodifica JWT para obter dados do usuário
+
+      // Decodifica JWT para obter dados básicos do usuário
       try {
         const payload = JSON.parse(atob(savedToken.split('.')[1]));
         setUser(payload);
-        // Carrega perfil adicional do Supabase
-        getProfileData(payload.sub || payload.id).then((supabaseProfile) => {
-          if (supabaseProfile) {
-            setUserProfile({ ...payload, ...supabaseProfile });
-          } else {
-            setUserProfile(payload);
-          }
-        });
+
+        // Carrega perfil completo da API
+        loadUserProfile(savedToken);
       } catch (e) {
-        setUser(null);
-        setUserProfile(null);
+        console.error('Erro ao decodificar token:', e);
+        logout();
       }
     }
     setLoading(false);
   }, []);
+
+  const loadUserProfile = async (authToken?: string) => {
+    try {
+      const tokenToUse = authToken || token;
+      if (!tokenToUse) return;
+
+      const response = await axios.get(`${API_URL}/api/v1/profile`, {
+        headers: { Authorization: `Bearer ${tokenToUse}` },
+      });
+
+      if (response.data) {
+        setUserProfile({
+          ...user,
+          ...response.data,
+          name: response.data.nome,
+          email: response.data.email,
+          specialty: response.data.specialty,
+          hospital: response.data.hospital,
+          phone: response.data.phone,
+          bio: response.data.bio,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar perfil completo:', error);
+      // Não fazer logout em caso de erro do perfil, apenas logar
+    }
+  };
 
   const login = async (uf: string, crm: string, senha: string) => {
     try {
@@ -45,20 +67,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       params.append('username', crm);
       params.append('password', senha);
       params.append('scope', uf);
+
       const res = await axios.post(`${API_URL}/token`, params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       });
-      setToken(res.data.access_token);
-      localStorage.setItem('token', res.data.access_token);
-      axios.defaults.headers.common['Authorization'] =
-        `Bearer ${res.data.access_token}`;
-      // Decodifica JWT para obter dados do usuário
+
+      const newToken = res.data.access_token;
+      setToken(newToken);
+      localStorage.setItem('token', newToken);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+
+      // Decodifica JWT para obter dados básicos
       try {
-        const payload = JSON.parse(atob(res.data.access_token.split('.')[1]));
+        const payload = JSON.parse(atob(newToken.split('.')[1]));
         setUser(payload);
-        const supabaseProfile = await getProfileData(payload.sub || payload.id);
-        setUserProfile({ ...payload, ...(supabaseProfile || {}) });
+
+        // Carrega perfil completo
+        await loadUserProfile(newToken);
+
+        toast.success('Login realizado com sucesso!');
       } catch (e) {
+        console.error('Erro ao processar dados do usuário:', e);
         setUser(null);
         setUserProfile(null);
       }
@@ -68,7 +97,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
       setUserProfile(null);
-      throw new Error(error?.response?.data?.detail || 'Erro ao fazer login.');
+
+      const errorMessage = error?.response?.data?.detail || 'Erro ao fazer login.';
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -76,19 +108,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setUser(null);
     setUserProfile(null);
-    // Limpa todos os logs locais segmentados por CRM
+
+    // Limpa todos os dados locais relacionados ao usuário
     Object.keys(localStorage).forEach((key) => {
-      if (key.startsWith('guias_activity_log_')) localStorage.removeItem(key);
+      if (key.startsWith('guias_activity_log_')) {
+        localStorage.removeItem(key);
+      }
     });
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     sessionStorage.clear();
     delete axios.defaults.headers.common['Authorization'];
+
+    toast.info('Logout realizado com sucesso!');
+  };
+
+  const getProfile = async () => {
+    try {
+      await loadUserProfile();
+      return userProfile || user;
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      return user; // Fallback para dados básicos do JWT
+    }
+  };
+
+  const updateProfile = async (profileData: any) => {
+    try {
+      const response = await axios.patch(`${API_URL}/api/v1/profile`, profileData);
+
+      if (response.data) {
+        // Recarrega o perfil após atualização
+        await loadUserProfile();
+        toast.success('Perfil atualizado com sucesso!');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.detail || 'Erro ao atualizar perfil.';
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
+    }
   };
 
   const contextValue: AuthContextProps = {
     user,
-    userProfile,
+    userProfile: userProfile || user,
     session: token ? { access_token: token } : null,
     isAuthenticated: !!token,
     loading,
@@ -105,10 +171,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error('Not implemented');
     },
     signOut: logout,
-    getProfile: async () => user,
-    updateProfile: async () => {
-      throw new Error('Not implemented');
-    },
+    getProfile,
+    updateProfile,
     resetPassword: async () => {
       throw new Error('Not implemented');
     },
