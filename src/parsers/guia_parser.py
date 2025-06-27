@@ -166,7 +166,8 @@ def _associate_participations(data: Dict[str, Any]) -> None:
 def parse_guia_pdf(pdf_path: str | Path, crm_filter: str) -> List[Dict[str, Any]]:
     """
     Lê o PDF e devolve **apenas** os procedimentos em que `crm_filter` participou.
-    Suporta PDFs onde cada campo do procedimento e da participação está em uma linha separada.
+    Suporta PDFs onde cada campo do procedimento e da participação está
+    em uma linha separada.
     """
     text = _extract_text(pdf_path)
     lines = [line.strip() for line in text.splitlines() if line.strip()]
@@ -185,82 +186,206 @@ def parse_guia_pdf(pdf_path: str | Path, crm_filter: str) -> List[Dict[str, Any]
                 prestador = m.group("prestador").strip()
                 break
 
+    # Captura do beneficiário
     beneficiario = ""
+    for line in lines:
+        m = HEAD_BENEF_RE.search(line)
+        if m:
+            beneficiario = m.group("beneficiario").strip()
+            break
+
     procedimentos: List[Dict[str, Any]] = []
-    current_proc = None
     i = 0
-    papel_set = {"Anestesista", "Cirurgiao", "Primeiro Auxiliar", "Segundo Auxiliar", "Auxiliar"}
+    papel_set = {
+        "Anestesista",
+        "Cirurgiao",
+        "Primeiro Auxiliar",
+        "Segundo Auxiliar",
+        "Auxiliar",
+    }
+
+    # Títulos e linhas a serem ignoradas durante o parsing
+    skip_lines = {
+        "Participação",
+        "Participacao",
+        "Médico",
+        "Medico",
+        "Dt início",
+        "Dt inicio",
+        "Dt fim",
+        "Status",
+        "Guia",
+        "Dt execução",
+        "Dt execucao",
+        "Código",
+        "Codigo",
+        "Descrição",
+        "Descricao",
+        "Qtd",
+        "Execução finalizada",
+        "Execucao finalizada",
+        "Filtro",
+        "CRM / profissional:",
+        "Consultar",
+        "Beneficiário:",
+        "Beneficiario:",
+        "Prestador:",
+        "Voltar",
+    }
+
+    def is_guia_number(line_text: str) -> bool:
+        """Verifica se a linha contém um número de guia (7-8 dígitos)"""
+        return bool(re.match(r"^\d{7,8}$", line_text))
+
+    def is_date(line_text: str) -> bool:
+        """Verifica se a linha contém uma data no formato DD/MM/AAAA"""
+        return bool(re.match(r"^\d{2}/\d{2}/\d{4}$", line_text))
+
+    def is_code(line_text: str) -> bool:
+        """Verifica se a linha contém um código de procedimento (8 dígitos)"""
+        return bool(re.match(r"^\d{8}$", line_text))
+
+    def is_quantity(line_text: str) -> bool:
+        """Verifica se a linha contém uma quantidade (número simples)"""
+        return bool(
+            re.match(r"^\d+$", line_text) and int(line_text) < 100
+        )  # limite razoável para quantidade
+
+    def next_non_skip(idx: int) -> int:
+        """Pula linhas que devem ser ignoradas"""
+        while idx < len(lines) and (lines[idx] in skip_lines or not lines[idx].strip()):
+            idx += 1
+        return idx
+
     while i < len(lines):
         line = lines[i]
-        # Prestador
-        m = HEAD_PREST_RE.search(line)
-        if m:
-            prestador = m.group("prestador").strip()
+
+        # Pular linhas irrelevantes
+        if line in skip_lines or not line.strip():
             i += 1
             continue
-        # Beneficiário
-        if not beneficiario:
-            m = HEAD_BENEF_RE.search(line)
-            if m:
-                beneficiario = m.group("beneficiario").strip()
-                i += 1
-                continue
-        # Procedimento por bloco
-        if re.match(r"^\d{8}$", line):  # número da guia
+
+        # Identificar início de procedimento (número da guia)
+        if is_guia_number(line):
             try:
                 guia = line
-                data_execucao = lines[i+1]
-                codigo = lines[i+2]
-                descricao = lines[i+3]
-                j = i+4
-                while not re.match(r"^\d+$", lines[j]):
-                    descricao += " " + lines[j]
-                    j += 1
-                quantidade = int(lines[j])
-                status = lines[j+1]
-                current_proc = {
-                    "guia": guia,
-                    "data_execucao": datetime.strptime(data_execucao, "%d/%m/%Y").strftime("%d/%m/%Y"),
-                    "codigo": codigo,
-                    "descricao": descricao.strip(),
-                    "quantidade": quantidade,
-                    "beneficiario": beneficiario,
-                    "prestador": prestador,
-                    "participacoes": [],
-                }
-                procedimentos.append(current_proc)
-                i = j+2
-                continue
+                current_proc = None
+
+                # Buscar próximos campos do procedimento
+                j = next_non_skip(i + 1)
+                if j >= len(lines):
+                    break
+
+                # Data de execução
+                if is_date(lines[j]):
+                    data_execucao = lines[j]
+                    j = next_non_skip(j + 1)
+
+                    # Código do procedimento
+                    if j < len(lines) and is_code(lines[j]):
+                        codigo = lines[j]
+                        j = next_non_skip(j + 1)
+
+                        # Descrição (pode ser em múltiplas linhas)
+                        descricao = ""
+                        while (
+                            j < len(lines)
+                            and not is_quantity(lines[j])
+                            and lines[j] not in skip_lines
+                        ):
+                            if descricao:
+                                descricao += " "
+                            descricao += lines[j]
+                            j = next_non_skip(j + 1)
+
+                        # Quantidade
+                        if j < len(lines) and is_quantity(lines[j]):
+                            quantidade = int(lines[j])
+                            j = next_non_skip(j + 1)
+
+                            # Status (próxima linha após quantidade) - não usado
+                            _ = lines[j] if j < len(lines) else "Gerado pela execução"
+
+                            current_proc = {
+                                "guia": guia,
+                                "data_execucao": datetime.strptime(
+                                    data_execucao, "%d/%m/%Y"
+                                ).strftime("%d/%m/%Y"),
+                                "codigo": codigo,
+                                "descricao": descricao.strip(),
+                                "quantidade": quantidade,
+                                "beneficiario": beneficiario,
+                                "prestador": prestador,
+                                "participacoes": [],
+                            }
+                            procedimentos.append(current_proc)
+                            i = j + 1
+
+                            # Ler participações subsequentes
+                            while i < len(lines):
+                                line = lines[i]
+                                if line in skip_lines or not line.strip():
+                                    i += 1
+                                    continue
+
+                                if is_guia_number(line):
+                                    # Novo procedimento encontrado
+                                    break
+
+                                if line in papel_set and current_proc is not None:
+                                    # Participação encontrada
+                                    papel = line
+                                    i = next_non_skip(i + 1)
+
+                                    if i < len(lines):
+                                        crm_nome = lines[i]
+                                        i = next_non_skip(i + 1)
+
+                                        if i < len(lines):
+                                            data_ini = lines[i]
+                                            i = next_non_skip(i + 1)
+
+                                            if i < len(lines):
+                                                data_fim = lines[i]
+                                                i = next_non_skip(i + 1)
+
+                                                if i < len(lines):
+                                                    status_part = lines[i]
+
+                                                    # Extrair CRM e nome
+                                                    m_crm = re.match(
+                                                        r"(\d+)\s*-\s*(.+)", crm_nome
+                                                    )
+                                                    if m_crm:
+                                                        crm = m_crm.group(1)
+                                                        nome = m_crm.group(2).strip()
+                                                    else:
+                                                        crm = ""
+                                                        nome = crm_nome.strip()
+
+                                                    participacao = {
+                                                        "papel": papel,
+                                                        "crm": crm,
+                                                        "nome": nome,
+                                                        "inicio": data_ini,
+                                                        "fim": data_fim,
+                                                        "status": status_part,
+                                                    }
+                                                    current_proc[
+                                                        "participacoes"
+                                                    ].append(participacao)
+                                                    i += 1
+                                                    continue
+                                i += 1
+                            continue
+
+                i += 1
             except Exception:
+                # Em caso de erro, continuar para próxima linha
                 i += 1
                 continue
-        # Participação por bloco de 5 linhas
-        if line in papel_set and current_proc is not None and i+4 < len(lines):
-            papel = line
-            crm_nome = lines[i+1]
-            data_ini = lines[i+2]
-            data_fim = lines[i+3]
-            status = lines[i+4]
-            # crm e nome
-            m_crm = re.match(r"(\d+)\s*-\s*(.+)", crm_nome)
-            if m_crm:
-                crm = m_crm.group(1)
-                nome = m_crm.group(2).strip()
-            else:
-                crm = ""
-                nome = crm_nome.strip()
-            participacao = {
-                "papel": papel,
-                "crm": crm,
-                "nome": nome,
-                "inicio": data_ini,
-                "fim": data_fim,
-                "status": status,
-            }
-            current_proc["participacoes"].append(participacao)
-            i += 5
-            continue
-        i += 1
+        else:
+            i += 1
 
     # Filtra apenas os procedimentos em que o CRM participou
     result: List[Dict[str, Any]] = []
@@ -275,9 +400,8 @@ def parse_guia_pdf(pdf_path: str | Path, crm_filter: str) -> List[Dict[str, Any]
                     "Auxiliar": 2,
                     "Anestesista": 1,
                 }
-                if (
-                    papel_exercido is None
-                    or prioridade[part["papel"]] > prioridade.get(papel_exercido, 0)
+                if papel_exercido is None or prioridade[part["papel"]] > prioridade.get(
+                    papel_exercido, 0
                 ):
                     papel_exercido = part["papel"]
         if papel_exercido:

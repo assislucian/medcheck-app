@@ -2063,6 +2063,7 @@ class PerfilMedico(Base):
     bio = Column(String, nullable=True)
 
 
+@app.patch("/api/v1/profile", response_model=UpdateProfileResponse)
 def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
     # Sanitizar nome
     if data.nome:
