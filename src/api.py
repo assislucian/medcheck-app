@@ -347,7 +347,12 @@ else:
     allowed_origins = [
         "http://localhost:8080",  # Frontend local
         "http://localhost:8081",
-        "http://localhost:3000",
+        "http://localhost:8082",  # Porta adicional para desenvolvimento
+        "http://localhost:8083",  # Porta adicional para desenvolvimento
+        "http://localhost:3000",  # Create React App padrão
+        "http://localhost:3001",  # Porta adicional React
+        "http://localhost:5173",  # Vite padrão
+        "http://localhost:5174",  # Vite porta adicional
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
     ]
 
