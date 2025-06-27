@@ -1,65 +1,62 @@
 #!/bin/bash
 
-# Script para configurar o Railway com as variáveis corretas para o MedCheck
+# Setup script para Railway deployment
 echo "🚀 Configurando Railway para MedCheck..."
 
-# Verifica se o Railway CLI está instalado
+# Verifica se railway CLI está instalado
 if ! command -v railway &> /dev/null; then
     echo "❌ Railway CLI não encontrado. Instale com:"
-    echo "npm install -g @railway/cli"
+    echo "   npm install -g @railway/cli"
     exit 1
 fi
 
-# Função para gerar secrets seguros
-generate_secret() {
-    python3 -c "import secrets; print(secrets.token_urlsafe(32))"
-}
+# Login check
+echo "🔐 Verificando login..."
+if ! railway whoami &> /dev/null; then
+    echo "❌ Faça login primeiro: railway login"
+    exit 1
+fi
 
 echo "🔧 Configurando variáveis de ambiente..."
 
-# Gera secrets se não existirem
-if [ -z "$(railway variables get JWT_SECRET 2>/dev/null)" ]; then
-    JWT_SECRET=$(generate_secret)
-    echo "🔐 Configurando JWT_SECRET..."
-    railway variables set JWT_SECRET="$JWT_SECRET"
-fi
+# Gera secrets seguros
+JWT_SECRET=$(openssl rand -base64 32)
+ADMIN_SECRET=$(openssl rand -base64 32)
 
-if [ -z "$(railway variables get ADMIN_SECRET 2>/dev/null)" ]; then
-    ADMIN_SECRET=$(generate_secret)
-    echo "🔐 Configurando ADMIN_SECRET..."
-    railway variables set ADMIN_SECRET="$ADMIN_SECRET"
-fi
+echo "🔐 Configurando JWT_SECRET..."
+railway variables --set JWT_SECRET="$JWT_SECRET"
 
-# Configura outras variáveis essenciais
+echo "🔐 Configurando ADMIN_SECRET..."
+railway variables --set ADMIN_SECRET="$ADMIN_SECRET"
+
 echo "🌍 Configurando ENV=production..."
-railway variables set ENV="production"
+railway variables --set ENV=production
 
 echo "🔗 Configurando CORS para Vercel..."
-railway variables set FRONTEND_ORIGINS="https://medcheck-app.vercel.app,https://www.medcheck-app.vercel.app,https://medcheck.app"
+railway variables --set FRONTEND_ORIGINS="https://medcheck-app.vercel.app,https://www.medcheck-app.vercel.app,https://medcheck.app"
 
 echo "🎯 Configurando CORS Regex para preview deployments..."
-railway variables set FRONTEND_ORIGIN_REGEX="https://medcheck-app-[a-z0-9-]+\.vercel\.app"
+railway variables --set FRONTEND_ORIGIN_REGEX="https://medcheck-app-[a-z0-9-]+\.vercel\.app"
 
 echo "📁 Configurando diretórios..."
-railway variables set UPLOAD_DIR="./uploads"
-railway variables set RESULTS_DIR="./results"
+railway variables --set UPLOAD_DIR="/app/uploads"
+railway variables --set RESULTS_DIR="/app/results"
 
-# Verifica se o banco está configurado
-if [ -z "$(railway variables get DATABASE_URL 2>/dev/null)" ]; then
-    echo "⚠️  DATABASE_URL não configurada. Configure manualmente:"
-    echo "   railway add postgresql"
-    echo "   ou"
-    echo "   railway variables set DATABASE_URL='postgresql://user:pass@host:port/db'"
-fi
+echo "⚠️  DATABASE_URL não configurada. Configure manualmente:"
+echo "   railway add postgresql"
+echo "   ou"
+echo "   railway variables --set DATABASE_URL='postgresql://user:pass@host:port/db'"
 
 echo "📤 Fazendo deploy..."
-railway up
+railway up --detach
 
 echo "✅ Deploy concluído! Verifique em:"
 echo "   https://railway.app/dashboard"
+
 echo ""
 echo "📋 Para testar a aplicação:"
 echo "   curl https://[seu-app].railway.app/healthz"
+
 echo ""
 echo "🔧 URLs importantes:"
 echo "   Health Check: https://[seu-app].railway.app/healthz"
