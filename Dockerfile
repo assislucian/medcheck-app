@@ -30,12 +30,15 @@ COPY ./backend ./backend
 COPY ./logs ./logs
 COPY ./uploads ./uploads
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
+# Set default port for Railway
+ENV PORT=8000
 
-# Expose port (Railway will set $PORT)
-EXPOSE $PORT
+# Health check using the app's health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
 
-# Use bash to properly handle environment variable substitution
-CMD ["bash", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"] 
+# Expose the port
+EXPOSE ${PORT}
+
+# Start the application with proper port handling
+CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT} --workers 1 

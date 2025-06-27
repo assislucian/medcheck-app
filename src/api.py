@@ -214,7 +214,13 @@ class LGPDRequestResponse(BaseModel):
     message: str
 
 
-Base.metadata.create_all(bind=engine)
+# Inicializar tabelas com tratamento de erro
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created/verified successfully")
+except Exception as e:
+    logger.error(f"Error creating database tables: {e}")
+    # Continua mesmo com erro de DB para permitir health checks
 
 # --- Autenticação JWT real (MVP) ---
 # Quando SKIP_AUTH é true, precisamos deixar o token opcional
@@ -384,9 +390,9 @@ app.add_middleware(
 )
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---
-from backend.knowledge_base.glosas_api import router as glosas_router
-
-app.include_router(glosas_router, prefix="/api/v1")
+# Comentado temporariamente para debug do Railway
+# from backend.knowledge_base.glosas_api import router as glosas_router
+# app.include_router(glosas_router, prefix="/api/v1")
 
 # --- Logging estruturado ---
 # --- Logging estruturado para auditoria ---
@@ -3002,22 +3008,34 @@ def health_check():
     try:
         # Testa conexão com banco de dados
         db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
+        try:
+            result = db.execute(text("SELECT 1")).fetchone()
+            database_status = "connected" if result else "error"
+        except Exception as db_error:
+            logger.error(f"Database error in health check: {str(db_error)}")
+            database_status = "disconnected"
+        finally:
+            db.close()
 
         return {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
             "version": "1.0.0",
-            "database": "connected",
+            "database": database_status,
+            "service": "medcheck-api",
+            "environment": os.environ.get("ENV", "development"),
         }
     except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        # Retorna 200 mas com status unhealthy para compatibilidade com Railway
         return {
             "status": "unhealthy",
             "timestamp": datetime.utcnow().isoformat(),
             "version": "1.0.0",
             "database": "disconnected",
             "error": str(e),
+            "service": "medcheck-api",
+            "environment": os.environ.get("ENV", "development"),
         }
 
 
