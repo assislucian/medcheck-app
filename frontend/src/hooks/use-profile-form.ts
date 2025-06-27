@@ -4,6 +4,7 @@ import * as z from 'zod';
 import { useAuth } from '@/contexts/auth/AuthContext';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
+import { fetchWithAuth } from '@/utils/errorHandler';
 
 const profileSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
@@ -45,25 +46,16 @@ export const useProfileForm = () => {
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/v1/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+        const response = await fetchWithAuth('/api/v1/profile');
+        const profile = await response.json();
+        form.reset({
+          name: profile.nome || '',
+          email: profile.email || '',
+          phone: profile.phone || '',
+          hospital: profile.hospital || '',
+          specialty: profile.specialty || '',
+          bio: profile.bio || '',
         });
-
-        if (response.ok) {
-          const profile = await response.json();
-          form.reset({
-            name: profile.nome || '',
-            email: profile.email || '',
-            phone: profile.phone || '',
-            hospital: profile.hospital || '',
-            specialty: profile.specialty || '',
-            bio: profile.bio || '',
-          });
-        }
       } catch (error) {
         console.error('Erro ao carregar perfil:', error);
         toast.error('Erro ao carregar dados do perfil');
