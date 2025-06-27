@@ -1,0 +1,163 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { ChevronRight, Home } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  icon?: React.ReactNode;
+}
+
+interface BreadcrumbsProps {
+  items?: BreadcrumbItem[];
+  className?: string;
+}
+
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
+  items: customItems,
+  className,
+}) => {
+  const location = useLocation();
+
+  // Mapear rotas para breadcrumbs automaticamente
+  const routeMap: Record<string, BreadcrumbItem[]> = {
+    '/dashboard': [{ label: 'Centro de Comando', icon: <Home className="h-4 w-4" /> }],
+    '/intelligence': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Intelligence Hub' },
+    ],
+    '/guides': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Gestão Médica', href: '/guides' },
+      { label: 'Guias Médicas' },
+    ],
+    '/demonstratives': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Gestão Médica', href: '/guides' },
+      { label: 'Demonstrativos' },
+    ],
+    '/unpaid-procedures': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Gestão Crítica' },
+      { label: 'Glosas Pendentes' },
+    ],
+    '/history': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Análises' },
+      { label: 'Histórico' },
+    ],
+    '/reports': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Análises' },
+      { label: 'Relatórios' },
+    ],
+    '/profile': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Configurações' },
+      { label: 'Perfil' },
+    ],
+    '/settings': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Configurações' },
+      { label: 'Preferências' },
+    ],
+    '/notifications': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Sistema' },
+      { label: 'Notificações' },
+    ],
+    '/help': [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+      { label: 'Suporte' },
+      { label: 'Central de Ajuda' },
+    ],
+  };
+
+  // Usar items customizados ou gerar automaticamente baseado na rota
+  const items = customItems ||
+    routeMap[location.pathname] || [
+      {
+        label: 'Centro de Comando',
+        href: '/dashboard',
+        icon: <Home className="h-4 w-4" />,
+      },
+    ];
+
+  if (items.length <= 1) return null;
+
+  return (
+    <nav
+      className={cn(
+        'flex items-center space-x-1 text-sm text-muted-foreground py-2 px-1',
+        className
+      )}
+      aria-label="Breadcrumb"
+    >
+      <div className="flex items-center space-x-1">
+        {items.map((item, index) => (
+          <React.Fragment key={index}>
+            {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground/60" />}
+            {item.href ? (
+              <Link
+                to={item.href}
+                className="flex items-center space-x-1 hover:text-primary transition-colors rounded px-2 py-1 hover:bg-muted/50"
+                aria-label={`Ir para ${item.label}`}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
+            ) : (
+              <div className="flex items-center space-x-1 font-medium text-foreground px-2 py-1">
+                {item.icon}
+                <span>{item.label}</span>
+              </div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
+export default Breadcrumbs;

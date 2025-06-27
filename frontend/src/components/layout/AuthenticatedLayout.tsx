@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth/AuthContext';
 import { MainLayout } from './MainLayout';
+import { SidebarProvider } from '../../contexts/SidebarContext';
 
 interface AuthenticatedLayoutProps {
   children: ReactNode;
@@ -23,21 +24,23 @@ export function AuthenticatedLayout({
   loadingMessage,
 }: AuthenticatedLayoutProps) {
   const { session, loading } = useAuth();
-  
+
   // Se a autenticação é necessária e o usuário não está autenticado, redirecione para o login
   if (requireAuth && !loading && !session) {
     return <Navigate to="/login" replace />;
   }
 
   return (
-    <MainLayout
-      title={title}
-      description={description}
-      showSideNav={showSidebar}
-      isLoading={loading || isLoading}
-      loadingMessage={loadingMessage}
-    >
-      {children}
-    </MainLayout>
+    <SidebarProvider>
+      <MainLayout
+        title={title}
+        description={description}
+        showSideNav={showSidebar}
+        isLoading={loading || isLoading}
+        loadingMessage={loadingMessage}
+      >
+        {children}
+      </MainLayout>
+    </SidebarProvider>
   );
 }

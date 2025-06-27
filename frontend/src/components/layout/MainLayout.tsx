@@ -1,77 +1,93 @@
-import { ReactNode } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
 import { AppSidebar } from '../sidebar/AppSidebar';
-import GlobalHeader from './GlobalHeader';
-import { SidebarProvider, useSidebarContext } from '../../contexts/SidebarContext';
-import { SidebarTriggerWrapper } from '../ui/SidebarTriggerWrapper';
-import { AppTour } from '../tour/AppTour';
+import { useSidebarContext } from '../../contexts/SidebarContext';
+import { Breadcrumbs } from '../navigation/Breadcrumbs';
+import GlobalSearch from '../ui/GlobalSearch';
+import QuickActions from '../ui/QuickActions';
+import { useAuth } from '../../contexts/auth/AuthContext';
 
-interface MainLayoutProps {
-  children: ReactNode;
-  title: string;
-  description?: string;
-  showSideNav?: boolean;
-  isLoading?: boolean;
-  loadingMessage?: string;
-}
+export function MainLayout() {
+  const { isOpen, isOverlay } = useSidebarContext();
+  const { user } = useAuth();
 
-function MainLayoutContent({
-  children,
-  title,
-  description,
-  showSideNav = true,
-  isLoading = false,
-  loadingMessage,
-}: MainLayoutProps) {
-  const { isStatic, isOverlay, isOpen } = useSidebarContext();
+  useEffect(() => {
+    // Definir variáveis CSS para o layout responsivo
+    const updateLayoutVariables = () => {
+      const root = document.documentElement;
+
+      if (isOverlay) {
+        // Mobile: sidebar overlay
+        root.style.setProperty('--sidebar-width', '0px');
+      } else {
+        // Desktop: sidebar fixa
+        root.style.setProperty('--sidebar-width', isOpen ? '280px' : '70px');
+      }
+    };
+
+    updateLayoutVariables();
+  }, [isOpen, isOverlay]);
 
   return (
-    <>
-      <Helmet>
-        <title>MedCheck</title>
-        {/* Mantém SEO, mas não renderiza título/descrição visualmente */}
-      </Helmet>
+    <div className="min-h-screen bg-background font-sans antialiased">
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar */}
+        <AppSidebar />
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50/80 via-white/90 to-green-50/80 backdrop-blur-md flex relative">
-        {showSideNav && <AppSidebar />}
-        <AppTour />
-
-        {/* Overlay melhorado para mobile quando sidebar está aberta */}
-        {isOverlay && isOpen && (
-          <div
-            className="fixed inset-0 bg-gradient-to-r from-black/30 via-black/20 to-black/5 z-30 lg:hidden backdrop-blur-sm"
-            onClick={() => {
-              // Fechar sidebar ao clicar no overlay
-              const event = new CustomEvent('closeSidebar');
-              window.dispatchEvent(event);
-            }}
-            style={{
-              animation: 'fadeIn 0.3s ease-out',
-            }}
-          />
-        )}
-
-        <main
-          className={`flex-1 min-w-0 bg-background/95 backdrop-blur-sm overflow-y-auto sidebar-offset transition-all duration-300 ease-out ${
-            isStatic ? 'static' : ''
-          } ${isOverlay && isOpen ? 'transform scale-[0.98] rounded-l-2xl' : ''}`}
+        {/* Main Content Area */}
+        <div
+          className={`
+            flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out
+            ${isOverlay ? 'ml-0' : isOpen ? 'ml-[280px]' : 'ml-[70px]'}
+          `}
         >
-          <div className="page-shell">
-            <GlobalHeader actions={<SidebarTriggerWrapper />} />
-            <div className="content-layout px-3 sm:px-4 md:px-8 max-w-7xl mx-auto w-full">
-              {children}
-            </div>
-          </div>
-        </main>
-      </div>
-    </>
-  );
-}
+          {/* Header com Breadcrumbs e Busca */}
+          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+            <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+              {/* Breadcrumbs */}
+              <div className="flex items-center space-x-4 flex-1">
+                <Breadcrumbs />
+              </div>
 
-export function MainLayout(props: MainLayoutProps) {
-  return (
-    <SidebarProvider>
-      <MainLayoutContent {...props} />
-    </SidebarProvider>
+              {/* Search e User Actions */}
+              <div className="flex items-center space-x-4">
+                <GlobalSearch className="hidden sm:flex" />
+
+                {/* User info (opcional) */}
+                {user && (
+                  <div className="hidden lg:flex items-center space-x-2 text-sm">
+                    <span className="text-muted-foreground">Olá,</span>
+                    <span className="font-medium">
+                      {user.user_metadata?.nome_completo || user.email}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="flex-1 overflow-auto bg-muted/5">
+            <div className="h-full">
+              <Outlet />
+            </div>
+          </main>
+        </div>
+      </div>
+
+      {/* Floating Action Button */}
+      <QuickActions />
+
+      {/* Mobile Overlay */}
+      {isOverlay && isOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => {
+            const event = new CustomEvent('closeSidebar');
+            window.dispatchEvent(event);
+          }}
+        />
+      )}
+    </div>
   );
 }

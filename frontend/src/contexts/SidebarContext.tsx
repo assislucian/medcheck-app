@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 interface SidebarContextType {
   isOverlay: boolean;
@@ -37,7 +43,7 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
 
     checkOverlay();
     window.addEventListener('resize', checkOverlay);
-    
+
     return () => window.removeEventListener('resize', checkOverlay);
   }, []);
 
@@ -50,7 +56,7 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     };
 
     window.addEventListener('closeSidebar', handleCloseSidebar);
-    
+
     return () => window.removeEventListener('closeSidebar', handleCloseSidebar);
   }, [isOverlay]);
 
@@ -78,21 +84,17 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     toggleSidebar,
   };
 
-  // Sincronizar largura da sidebar via CSS var
+  // Sincronizar largura da sidebar via CSS var - OTIMIZADO para o novo design
   useEffect(() => {
     if (!isOverlay) {
       const root = document.documentElement;
       if (isCollapsed) {
         root.style.setProperty('--sidebar-width', '72px');
       } else {
-        root.style.setProperty('--sidebar-width', '256px');
+        root.style.setProperty('--sidebar-width', '280px'); // Nova largura premium
       }
     }
   }, [isCollapsed, isOverlay]);
 
-  return (
-    <SidebarContext.Provider value={value}>
-      {children}
-    </SidebarContext.Provider>
-  );
-} 
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
+}

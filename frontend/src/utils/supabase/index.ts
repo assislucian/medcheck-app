@@ -163,6 +163,7 @@ export async function deleteAnalysis(id: string) {
 export {
   getProfile,
   updateProfile,
+  toJson,
   fetchUserTickets,
   fetchTicketMessages,
   createSupportTicket,

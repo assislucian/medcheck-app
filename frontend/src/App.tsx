@@ -9,6 +9,8 @@ import CompareContracheque from './pages/CompareContracheque';
 import HistoryPage from './pages/History';
 import HelpPage from './pages/Help';
 import NotificationsPage from './pages/Notifications';
+import ReportsPage from './pages/Reports';
+import SettingsPage from './pages/Settings';
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
@@ -95,6 +97,22 @@ function App() {
                 element={
                   <PrivateRoute>
                     <UnpaidProceduresPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <PrivateRoute>
+                    <ReportsPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <SettingsPage />
                   </PrivateRoute>
                 }
               />

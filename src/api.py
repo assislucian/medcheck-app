@@ -356,13 +356,15 @@ else:
         "http://localhost:5173",  # Vite padrão
         "http://localhost:5174",  # Vite porta adicional
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
+        "https://medcheck-app.vercel.app",  # Vercel produção
+        "https://www.medcheck-app.vercel.app",  # Vercel produção com www
     ]
 
 # Se nenhum regex for definido mas queremos permitir *.vercel.app por padrão
 if not FRONTEND_ORIGIN_REGEX:
     # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)
-    # Ex.: https://medcheck-xxxxx-assislucians-projects.vercel.app
-    FRONTEND_ORIGIN_REGEX = r"https:\/\/medcheck-[a-z0-9-]+\.vercel\.app"
+    # Ex.: https://medcheck-app-xxxxx-assislucians-projects.vercel.app
+    FRONTEND_ORIGIN_REGEX = r"https://medcheck-app-[a-z0-9-]+\.vercel\.app"
 
 logging.info(
     f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX}"
@@ -2988,4 +2990,42 @@ def advanced_analytics(
         db.close()
 
 
-# --- Endpoint para obter resumo do dashboard ---
+# --- Health Check Endpoint ---
+@app.get("/healthz")
+@app.get("/health")
+def health_check():
+    """Endpoint de verificação de saúde da aplicação"""
+    try:
+        # Testa conexão com banco de dados
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "database": "connected",
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "database": "disconnected",
+            "error": str(e),
+        }
+
+
+# --- Root endpoint ---
+@app.get("/")
+def root():
+    """Endpoint raiz da API"""
+    return {
+        "message": "MedCheck API",
+        "version": "1.0.0",
+        "docs": (
+            "/docs" if os.environ.get("ENV", "development") == "development" else None
+        ),
+        "status": "running",
+    }
