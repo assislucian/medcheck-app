@@ -364,7 +364,10 @@ else:
 if not FRONTEND_ORIGIN_REGEX:
     # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)
     # Ex.: https://medcheck-app-xxxxx-assislucians-projects.vercel.app
-    FRONTEND_ORIGIN_REGEX = r"https://medcheck-app-[a-z0-9-]+\.vercel\.app"
+    # Ex.: https://medcheck-prddbw64p-assislucians-projects.vercel.app
+    FRONTEND_ORIGIN_REGEX = (
+        r"https://medcheck-[a-z0-9-]+-assislucians-projects\.vercel\.app"
+    )
 
 logging.info(
     f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX}"
