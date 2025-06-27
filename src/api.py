@@ -49,6 +49,7 @@ from sqlalchemy import (
     create_engine,
     desc,
     func,
+    text,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -3001,7 +3002,7 @@ def health_check():
     try:
         # Testa conexão com banco de dados
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
 
         return {
