@@ -1,44 +1,30 @@
-# Dockerfile para FastAPI Backend (Railway)
 FROM python:3.11-slim
 
-# Install system dependencies needed for some Python packages
+WORKDIR /app
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-
-# Copy requirements first for better caching
-COPY requirements.txt ./
-
-# Install Python dependencies with optimizations for Railway
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Create necessary directories
-RUN mkdir -p ./logs ./uploads ./results
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY ./src ./src
+COPY . .
 
-# Copy backend directory if it exists
-COPY ./backend ./backend
+# Create directories
+RUN mkdir -p logs uploads results
 
-# Copy other files and directories
-COPY ./logs ./logs
-COPY ./uploads ./uploads
+# Health check – Railway always maps container port 8080
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
 
-# Set default port for Railway
-ENV PORT=8000
+# Expose default port used by Railway
+EXPOSE 8080
 
-# Health check using the app's health endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/health || exit 1
-
-# Expose the port
-EXPOSE ${PORT}
-
-# Start the application with proper port handling
-CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT} --workers 1 
+# Start application; fallback to 8080 if $PORT não definido (execução local)
+CMD sh -c "uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8080}" 

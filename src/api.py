@@ -365,6 +365,7 @@ else:
         "https://medcheck.app",  # Produção (ajuste para seu domínio real)
         "https://medcheck-app.vercel.app",  # Vercel produção
         "https://www.medcheck-app.vercel.app",  # Vercel produção com www
+        "https://medcheck-app-assislucians-projects.vercel.app",
     ]
 
 # Se nenhum regex for definido mas queremos permitir *.vercel.app por padrão
