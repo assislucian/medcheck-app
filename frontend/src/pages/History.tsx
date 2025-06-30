@@ -6,7 +6,7 @@ import { FileText, Download } from 'lucide-react';
 import { useState } from 'react';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
-import { UserMenu } from '../components/navbar/UserMenu';
+
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Helmet } from 'react-helmet-async';
 
@@ -117,17 +117,6 @@ const HistoryPage = () => {
           title="Histórico de Análises"
           icon={<FileText size={28} />}
           description="Rastreabilidade completa de análises e relatórios"
-          actions={
-            userProfile ? (
-              <UserMenu
-                name={userProfile.name || 'Usuário'}
-                email={userProfile.email || 'sem-email@exemplo.com'}
-                specialty={userProfile.crm || ''}
-                avatarUrl={userProfile.avatarUrl || undefined}
-                onLogout={signOut}
-              />
-            ) : null
-          }
         />
         <div className="space-y-4 sm:space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">

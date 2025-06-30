@@ -1,18 +1,18 @@
-import { useAuth } from "../contexts/auth/AuthContext";
-import { MainLayout } from "../components/layout/MainLayout";
-import { Card, CardContent, CardHeader } from "../components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { useAuth } from '../contexts/auth/AuthContext';
+import { MainLayout } from '../components/layout/MainLayout';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { TicketList } from '../components/support/TicketList';
 import { TicketDetail } from '../components/support/TicketDetail';
 import { NewTicketForm } from '../components/support/NewTicketForm';
 import { useTickets } from '../hooks/useTickets';
-import PageHeader from "../components/layout/PageHeader";
-import { UserMenu } from "../components/navbar/UserMenu";
-import { HelpCircle } from "lucide-react";
+import PageHeader from '../components/layout/PageHeader';
+
+import { HelpCircle } from 'lucide-react';
 
 const Support = () => {
   const { user, userProfile, signOut } = useAuth();
-  
+
   const {
     tickets,
     messages,
@@ -45,7 +45,7 @@ const Support = () => {
           onCreateTicket={navigateToNewTicket}
         />
       </div>
-      
+
       <div className="lg:col-span-2">
         <TicketDetail
           ticket={selectedTicket}
@@ -62,47 +62,33 @@ const Support = () => {
       <CardHeader>
         <h3 className="text-lg font-medium">Criar Novo Ticket</h3>
         <p className="text-sm text-muted-foreground">
-          Descreva seu problema ou dúvida em detalhes para que possamos ajudar você melhor.
+          Descreva seu problema ou dúvida em detalhes para que possamos ajudar você
+          melhor.
         </p>
       </CardHeader>
       <CardContent>
-        <NewTicketForm
-          onSubmit={handleCreateTicket}
-          submitting={submitting}
-        />
+        <NewTicketForm onSubmit={handleCreateTicket} submitting={submitting} />
       </CardContent>
     </Card>
   );
 
   return (
     <MainLayout title="Suporte Técnico">
-      <PageHeader
-        title="Suporte"
-        icon={<HelpCircle size={28} />}
-        actions={userProfile ? (
-          <UserMenu
-            name={userProfile.name || 'Usuário'}
-            email={userProfile.email || 'sem-email@exemplo.com'}
-            specialty={userProfile.crm || ''}
-            avatarUrl={userProfile.avatarUrl || undefined}
-            onLogout={signOut}
-          />
-        ) : null}
-      />
+      <PageHeader title="Suporte" icon={<HelpCircle size={28} />} />
       <div className="space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full">
-            <TabsTrigger value="my-tickets" className="flex-1">Meus Tickets</TabsTrigger>
-            <TabsTrigger value="new-ticket" className="flex-1">Novo Ticket</TabsTrigger>
+            <TabsTrigger value="my-tickets" className="flex-1">
+              Meus Tickets
+            </TabsTrigger>
+            <TabsTrigger value="new-ticket" className="flex-1">
+              Novo Ticket
+            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="my-tickets">
-            {TicketsContent}
-          </TabsContent>
-          
-          <TabsContent value="new-ticket">
-            {NewTicketContent}
-          </TabsContent>
+
+          <TabsContent value="my-tickets">{TicketsContent}</TabsContent>
+
+          <TabsContent value="new-ticket">{NewTicketContent}</TabsContent>
         </Tabs>
       </div>
     </MainLayout>

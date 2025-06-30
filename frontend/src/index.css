@@ -69,10 +69,10 @@
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 224 71.4% 4.1%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217.2 91.2% 59.8%;
@@ -103,17 +103,17 @@
     --sidebar-border: 240 4% 16%;
     --sidebar-ring: 217 91% 60%;
 
-    --color-card: 29 29 31; /* #1D1D1F */
+    --color-card: 31 31 35; /* #1F1F23 - Melhor contraste */
     --color-body: 245 247 250; /* #F5F7FA */
-    --color-border: 55 65 81; /* #374151 */
-    --color-success: 56 239 125; /* #38EF7D */
-    --color-warning: 250 204 21; /* #FACC15 */
-    --color-danger: 248 113 113; /* #F87171 */
-    --surface-0: 15 17 23;
-    --surface-1: 20 23 29;
-    --surface-2: 26 29 36;
-    --surface-3: 32 36 44;
-    --text-body: 229 231 235;
+    --color-border: 63 73 89; /* #3F4959 - Melhor contraste */
+    --color-success: 72 187 120; /* #48BB78 */
+    --color-warning: 246 173 85; /* #F6AD55 */
+    --color-danger: 245 101 101; /* #F56565 */
+    --surface-0: 17 19 26; /* #111317 */
+    --surface-1: 22 25 33; /* #161921 */
+    --surface-2: 28 32 41; /* #1C2029 */
+    --surface-3: 35 40 50; /* #232832 */
+    --text-body: 241 245 249; /* #F1F5F9 */
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -142,6 +142,13 @@
     backdrop-filter: blur(6px);
     border: 1px solid rgba(0, 0, 0, 0.04);
     box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.07);
+  }
+
+  .dark .glass-card {
+    background: rgba(31, 31, 35, 0.9);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.4);
   }
 
   .bg-grid-pattern {
@@ -188,6 +195,73 @@
 
   .content-layout {
     @apply flex-1 py-6;
+  }
+
+  /* Premium Spacing System */
+  .premium-container {
+    @apply max-w-7xl mx-auto px-8 sm:px-10;
+  }
+
+  .premium-section {
+    @apply space-y-8 py-12;
+  }
+
+  .premium-grid {
+    @apply grid gap-8;
+  }
+
+  .premium-card {
+    @apply p-8 rounded-xl border border-gray-200/60 bg-white/95 shadow-sm backdrop-blur-sm;
+    @apply dark:border-gray-700/60 dark:bg-gray-900/95;
+  }
+
+  .premium-header {
+    @apply space-y-4 pb-8 border-b border-gray-200/60 dark:border-gray-700/60;
+  }
+
+  .premium-title {
+    @apply text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100;
+  }
+
+  .premium-subtitle {
+    @apply text-lg text-gray-600 dark:text-gray-400 leading-relaxed;
+  }
+
+  /* Enhanced Button Styles */
+  .btn-premium {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    @apply hover:scale-105 hover:shadow-lg active:scale-95;
+  }
+
+  /* Enhanced Table Styles */
+  .table-premium {
+    @apply w-full border-separate border-spacing-0;
+  }
+
+  .table-premium th {
+    @apply px-6 py-4 text-left text-sm font-semibold text-gray-600 dark:text-gray-400;
+    @apply border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50;
+  }
+
+  .table-premium td {
+    @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+  }
+
+  /* Enhanced Form Styles */
+  .form-premium {
+    @apply space-y-6;
+  }
+
+  .form-premium label {
+    @apply block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2;
+  }
+
+  .form-premium input,
+  .form-premium select,
+  .form-premium textarea {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+    @apply focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300;
   }
 
   @keyframes fadeIn {
@@ -548,6 +622,13 @@
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(31, 31, 35, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* Medical Ripple Effect - Enhanced for professional interfaces */

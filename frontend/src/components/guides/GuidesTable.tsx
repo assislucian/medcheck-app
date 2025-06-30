@@ -1,9 +1,10 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Eye } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import React from "react";
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, FileText, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/EmptyState';
+import React from 'react';
 
 interface GuidesTableProps {
   rows: any[];
@@ -14,13 +15,14 @@ interface GuidesTableProps {
   onExpand: (id: string) => void;
   expandedRow: string | null;
   renderExpandedRow?: (row: any) => React.ReactNode;
+  onNewGuide?: () => void;
 }
 
 const statusLabel: Record<string, string> = {
-  Fechada: "Fechada",
-  "Gerado pela execução": "Gerado pela execução",
-  Pendente: "Pendente",
-  Processada: "Processada",
+  Fechada: 'Fechada',
+  'Gerado pela execução': 'Gerado pela execução',
+  Pendente: 'Pendente',
+  Processada: 'Processada',
   // Adicione outros status se necessário
 };
 
@@ -32,17 +34,50 @@ export function GuidesTable({
   onSelectAll,
   onExpand,
   expandedRow,
-  renderExpandedRow
+  renderExpandedRow,
+  onNewGuide,
 }: GuidesTableProps) {
   const allSelected = rows.length > 0 && selectedRows.length === rows.length;
   const someSelected = selectedRows.length > 0 && selectedRows.length < rows.length;
+
+  // Se não há dados, mostra empty state
+  if (!rows || rows.length === 0) {
+    return (
+      <EmptyState
+        icon={<FileText />}
+        title="Nenhuma guia encontrada"
+        description="Você ainda não possui guias médicas processadas. Comece fazendo o upload de suas guias TISS para análise."
+        action={{
+          label: 'Nova Guia',
+          onClick: onNewGuide || (() => {}),
+          variant: 'default',
+        }}
+        secondaryAction={{
+          label: 'Saiba mais',
+          onClick: () => {
+            // Abre página de ajuda para usuários logados
+            window.open('/help/private', '_blank');
+          },
+          variant: 'outline',
+        }}
+        size="md"
+      />
+    );
+  }
 
   return (
     <ScrollArea className="w-full max-h-[70vh] overflow-x-auto scrollbar-gutter-stable">
       <table className="w-full min-w-full table-auto text-sm">
         <thead>
           <tr className="h-12 th-sticky">
-            <th className="w-1/12 text-center" />
+            <th className="w-1/12 text-center">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                onCheckedChange={(checked) => onSelectAll(!!checked)}
+                aria-label="Selecionar todas as guias"
+              />
+            </th>
             <th className="w-1/12 text-center" />
             <th className="w-2/12 text-center px-4">Nº Guia</th>
             <th className="w-2/12 text-center px-4">Data de Execução</th>
@@ -56,45 +91,66 @@ export function GuidesTable({
             <tr
               key={row.numero_guia}
               className={cn(
-                "h-12 transition-colors",
-                idx % 2 === 0 && "table-row-even",
-                "table-row-hover",
-                selectedRows.includes(row.numero_guia) && "bg-primary/10"
+                'h-12 transition-colors',
+                idx % 2 === 0 && 'table-row-even',
+                'table-row-hover',
+                selectedRows.includes(row.numero_guia) && 'bg-primary/10'
               )}
             >
               <td className="w-1/12 text-center p-0 align-middle">
-                <Checkbox checked={selectedRows.includes(row.numero_guia)} onCheckedChange={checked => onSelectRow(row.numero_guia, !!checked)} aria-label={`Selecionar guia ${row.numero_guia}`} />
+                <Checkbox
+                  checked={selectedRows.includes(row.numero_guia)}
+                  onCheckedChange={(checked) => onSelectRow(row.numero_guia, !!checked)}
+                  aria-label={`Selecionar guia ${row.numero_guia}`}
+                />
               </td>
               <td className="w-1/12 text-center p-0 align-middle">
                 <button
                   type="button"
                   className="flex justify-center items-center w-8 h-8 rounded hover:bg-primary/10 focus:outline-none"
                   onClick={() => onExpand(row.numero_guia)}
-                  aria-label={expandedRow === row.numero_guia ? "Colapsar detalhes" : "Expandir detalhes"}
+                  aria-label={
+                    expandedRow === row.numero_guia
+                      ? 'Colapsar detalhes'
+                      : 'Expandir detalhes'
+                  }
                 >
-                  <Eye className={cn("w-5 h-5", expandedRow === row.numero_guia ? "text-primary" : "text-gray-500")} />
+                  <Eye
+                    className={cn(
+                      'w-5 h-5',
+                      expandedRow === row.numero_guia ? 'text-primary' : 'text-gray-500'
+                    )}
+                  />
                 </button>
               </td>
-              <td className="w-2/12 text-center px-4 font-mono whitespace-nowrap">{row.numero_guia}</td>
+              <td className="w-2/12 text-center px-4 font-mono whitespace-nowrap">
+                {row.numero_guia}
+              </td>
               <td className="w-2/12 text-center px-4 whitespace-nowrap">{row.data}</td>
-              <td className="w-3/12 truncate text-left px-4" title={row.beneficiario}>{row.beneficiario}</td>
+              <td className="w-3/12 truncate text-left px-4" title={row.beneficiario}>
+                {row.beneficiario}
+              </td>
               <td className="w-1/12 text-center px-4">{row.qtdProcedimentos}</td>
               <td className="w-2/12 text-center px-4">
-                <Badge variant="success" className="whitespace-nowrap px-3 py-1" title={statusLabel[row.status] || row.status}>
+                <Badge
+                  variant="success"
+                  className="whitespace-nowrap px-3 py-1"
+                  title={statusLabel[row.status] || row.status}
+                >
                   {statusLabel[row.status] || row.status}
                 </Badge>
               </td>
             </tr>,
             renderExpandedRow && expandedRow === row.numero_guia ? (
-              <tr key={row.numero_guia + "-expanded"}>
+              <tr key={row.numero_guia + '-expanded'}>
                 <td colSpan={7} className="bg-muted/30 p-0">
                   {renderExpandedRow(row)}
                 </td>
               </tr>
-            ) : null
+            ) : null,
           ])}
         </tbody>
       </table>
     </ScrollArea>
   );
-} 
+}

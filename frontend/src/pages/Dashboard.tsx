@@ -3,7 +3,7 @@ import { DashboardOverview } from '../components/dashboard/DashboardOverview';
 import { DashboardAlert } from '../components/dashboard/DashboardAlert';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
-import { UserMenu } from '../components/navbar/UserMenu';
+
 import {
   LayoutDashboard,
   ArrowUpRight,
@@ -121,313 +121,288 @@ const DashboardPage = () => {
         title="Centro de Comando"
         description="Dashboard executivo - Insights e performance de sua prática médica"
       >
-        <PageHeader
-          title="Centro de Comando"
-          icon={<LayoutDashboard size={28} />}
-          description="Visão estratégica de sua performance médica"
-          actions={
-            userProfile ? (
-              <UserMenu
-                name={userProfile.name || 'Usuário'}
-                email={userProfile.email || 'sem-email@exemplo.com'}
-                specialty={userProfile.crm || ''}
-                avatarUrl={userProfile.avatarUrl || undefined}
-                onLogout={signOut}
-              />
-            ) : null
-          }
-        />
+        <div className="space-y-10">
+          {/* Page Header Premium */}
+          <PageHeader
+            title="Centro de Comando"
+            icon={<LayoutDashboard size={32} />}
+            description="Visão estratégica de sua performance médica com insights em tempo real"
+          />
 
-        <div className="space-y-6">
-          {isLoading ? (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <SkeletonInfoCard key={idx} />
-              ))}
-            </div>
-          ) : isError ? (
-            <div className="flex flex-col items-center gap-4 py-8 sm:py-10 text-center">
-              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-red-500" />
-              <p className="text-base sm:text-lg font-medium text-red-500">
-                Erro ao carregar dados do dashboard.
-              </p>
-              <Button variant="secondary" onClick={() => window.location.reload()}>
-                Tentar novamente
-              </Button>
-            </div>
-          ) : (
-            <>
-              {/* Visão Geral Financeira Premium */}
-              <section aria-label="Performance Financeira Global" className="mb-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                    Performance Financeira Global
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Dados consolidados e métricas de performance em tempo real
+          {/* Dashboard Content */}
+          <div className="space-y-12">
+            {isLoading ? (
+              <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, idx) => (
+                  <SkeletonInfoCard key={idx} />
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="flex flex-col items-center gap-6 py-16 text-center">
+                <AlertCircle className="h-12 w-12 text-red-500" />
+                <div className="space-y-2">
+                  <p className="text-xl font-semibold text-red-600 dark:text-red-400">
+                    Erro ao carregar dados do dashboard
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Verifique sua conexão e tente novamente
                   </p>
                 </div>
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
-                  <InfoCard
-                    icon={<ArrowUpRight className="h-6 w-6" />}
-                    title={
-                      <span className="text-xs font-semibold">Total Liberado</span>
-                    }
-                    value={
-                      <span className="text-2xl md:text-3xl font-bold">
-                        {formatCurrency(totals.totalRecebido)}
-                      </span>
-                    }
-                    description={
-                      <span className="text-xs">Pagamentos confirmados no sistema</span>
-                    }
-                    variant="success"
-                  />
-                  <InfoCard
-                    icon={<AlertTriangle className="h-6 w-6" />}
-                    title={<span className="text-xs font-semibold">Total Glosado</span>}
-                    value={
-                      <span className="text-2xl md:text-3xl font-bold">
-                        {formatCurrency(totals.totalGlosado)}
-                      </span>
-                    }
-                    description={
-                      <span className="text-xs">Procedimentos contestados</span>
-                    }
-                    variant="danger"
-                  />
-                  <InfoCard
-                    icon={<Activity className="h-6 w-6" />}
-                    title={<span className="text-xs font-semibold">Procedimentos</span>}
-                    value={
-                      <span className="text-2xl md:text-3xl font-bold">
-                        {totals.totalProcedimentos}
-                      </span>
-                    }
-                    description={
-                      <span className="text-xs">Total processados no sistema</span>
-                    }
-                    variant="info"
-                  />
-                  <InfoCard
-                    icon={<Target className="h-6 w-6" />}
-                    title={
-                      <span className="text-xs font-semibold">Taxa de Efetividade</span>
-                    }
-                    value={
-                      <span className="text-2xl md:text-3xl font-bold">
-                        {formatPercentage(taxaSucesso)}
-                      </span>
-                    }
-                    description={
-                      <span className="text-xs">Percentual de aprovação global</span>
-                    }
-                    variant={
-                      taxaSucesso >= 90
-                        ? 'success'
-                        : taxaSucesso >= 80
-                          ? 'warning'
-                          : 'danger'
-                    }
-                  />
-                </div>
-              </section>
-
-              {/* Intelligence Hub Preview - Seção Premium */}
-              <section aria-label="Intelligence Hub" className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-purple-600" />
-                      Intelligence Hub
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Análise avançada de performance e insights estratégicos
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Tentar novamente
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Visão Geral Financeira Premium */}
+                <section
+                  aria-label="Performance Financeira Global"
+                  className="space-y-6"
+                >
+                  <div className="space-y-3">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                      <DollarSign className="h-6 w-6 text-green-600" />
+                      Performance Financeira Global
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg">
+                      Dados consolidados e métricas de performance em tempo real
                     </p>
                   </div>
-                  <Link to="/intelligence">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 hover:bg-purple-50 border-purple-200"
-                    >
-                      Ver Análise Completa
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
 
-                <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
-                  <CardContent className="p-6">
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border">
-                        <div className="text-2xl font-bold text-blue-600">98.0%</div>
-                        <div className="text-sm text-gray-600">Performance Global</div>
-                        <Badge
-                          variant="outline"
-                          className="mt-2 text-xs bg-green-50 text-green-700 border-green-200"
-                        >
-                          +2.1% vs anterior
-                        </Badge>
-                      </div>
-
-                      <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border">
-                        <div className="text-2xl font-bold text-purple-600">
-                          R$ 32.5K
-                        </div>
-                        <div className="text-sm text-gray-600">Projeção Anual</div>
-                        <Badge
-                          variant="outline"
-                          className="mt-2 text-xs bg-blue-50 text-blue-700 border-blue-200"
-                        >
-                          Tendência atual
-                        </Badge>
-                      </div>
-
-                      <div className="text-center p-4 bg-white dark:bg-gray-800 rounded-lg border">
-                        <div className="text-2xl font-bold text-green-600">+15.3%</div>
-                        <div className="text-sm text-gray-600">Crescimento</div>
-                        <Badge
-                          variant="outline"
-                          className="mt-2 text-xs bg-purple-50 text-purple-700 border-purple-200"
-                        >
-                          6 meses
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </section>
-
-              {/* Alertas e Insights Inteligentes */}
-              {(temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados) && (
-                <section aria-label="Alertas Inteligentes" className="mb-6">
-                  <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-amber-600" />
-                      Alertas & Insights
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Recomendações baseadas em análise inteligente dos dados
-                    </p>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-                    {temGlosasCriticas && (
-                      <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-red-900 dark:text-red-300">
-                                Taxa de Glosa Elevada
-                              </h4>
-                              <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                                Glosas representam mais de 15% do faturamento.
-                                Recomendamos revisão de processos.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {taxaSucessoBaixa && (
-                      <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <Clock className="h-5 w-5 text-amber-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-amber-900 dark:text-amber-300">
-                                Efetividade Baixa
-                              </h4>
-                              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                                Taxa de sucesso abaixo de 85%. Verifique conformidade de
-                                documentação.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {poucosAnalisados && (
-                      <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/20">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
-                            <div>
-                              <h4 className="font-medium text-blue-900 dark:text-blue-300">
-                                Poucos Dados
-                              </h4>
-                              <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                                Carregue mais demonstrativos para insights mais
-                                precisos.
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                  {/* Grid de Cards Principal */}
+                  <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    <InfoCard
+                      icon={<ArrowUpRight className="h-6 w-6" />}
+                      title={
+                        <span className="text-sm font-semibold">Total Liberado</span>
+                      }
+                      value={
+                        <span className="text-3xl xl:text-4xl font-bold">
+                          {formatCurrency(totals.totalRecebido)}
+                        </span>
+                      }
+                      description={
+                        <span className="text-sm">
+                          Pagamentos confirmados no sistema
+                        </span>
+                      }
+                      variant="success"
+                    />
+                    <InfoCard
+                      icon={<AlertTriangle className="h-6 w-6" />}
+                      title={
+                        <span className="text-sm font-semibold">Total Glosado</span>
+                      }
+                      value={
+                        <span className="text-3xl xl:text-4xl font-bold">
+                          {formatCurrency(totals.totalGlosado)}
+                        </span>
+                      }
+                      description={
+                        <span className="text-sm">Procedimentos contestados</span>
+                      }
+                      variant="danger"
+                    />
+                    <InfoCard
+                      icon={<Target className="h-6 w-6" />}
+                      title={
+                        <span className="text-sm font-semibold">Taxa de Sucesso</span>
+                      }
+                      value={
+                        <span className="text-3xl xl:text-4xl font-bold">
+                          {formatPercentage(taxaSucesso)}
+                        </span>
+                      }
+                      description={
+                        <span className="text-sm">Aprovação vs total apresentado</span>
+                      }
+                      variant={taxaSucesso >= 85 ? 'success' : 'warning'}
+                    />
+                    <InfoCard
+                      icon={<ClipboardList className="h-6 w-6" />}
+                      title={
+                        <span className="text-sm font-semibold">Total Analisado</span>
+                      }
+                      value={
+                        <span className="text-3xl xl:text-4xl font-bold">
+                          {totals.totalProcedimentos.toLocaleString()}
+                        </span>
+                      }
+                      description={
+                        <span className="text-sm">Procedimentos processados</span>
+                      }
+                      variant="info"
+                    />
                   </div>
                 </section>
-              )}
 
-              {/* Procedimentos Recentes */}
-              {recentProcedures.length > 0 && (
-                <section aria-label="Atividade Recente" className="mb-6">
-                  <div className="mb-3">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5 text-indigo-600" />
-                      Atividade Recente
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Últimos procedimentos analisados no sistema
-                    </p>
-                  </div>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="space-y-3">
-                        {recentProcedures.map((procedure, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  procedure.pago ? 'bg-green-500' : 'bg-red-500'
-                                }`}
-                              />
-                              <div>
-                                <p className="font-medium text-sm">
-                                  {procedure.codigo}
-                                </p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">
-                                  {procedure.descricao?.slice(0, 50)}...
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-sm">
-                                {formatCurrency(procedure.valor)}
-                              </p>
-                              <Badge
-                                variant={procedure.pago ? 'default' : 'destructive'}
-                                className="text-xs"
-                              >
-                                {procedure.pago ? 'Pago' : 'Glosado'}
-                              </Badge>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                {/* Alertas e Insights */}
+                {(temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados) && (
+                  <section aria-label="Alertas Importantes" className="space-y-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                      <AlertTriangle className="h-6 w-6 text-orange-600" />
+                      Alertas & Insights
+                    </h2>
+
+                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                      {temGlosasCriticas && (
+                        <DashboardAlert
+                          title="Taxa de Glosas Elevada"
+                          description={`${formatPercentage(
+                            (totals.totalGlosado / valorApresentado) * 100
+                          )} dos procedimentos foram glosados`}
+                          type="critical"
+                          action="Revisar procedimentos"
+                          href="/unpaid-procedures"
+                        />
+                      )}
+                      {taxaSucessoBaixa && (
+                        <DashboardAlert
+                          title="Taxa de Sucesso Baixa"
+                          description={`Taxa atual: ${formatPercentage(
+                            taxaSucesso
+                          )}. Meta recomendada: 85%+`}
+                          type="warning"
+                          action="Analisar causas"
+                          href="/analytics"
+                        />
+                      )}
+                      {poucosAnalisados && (
+                        <DashboardAlert
+                          title="Poucos Dados Analisados"
+                          description="Faça upload de mais demonstrativos para insights precisos"
+                          type="info"
+                          action="Enviar demonstrativos"
+                          href="/demonstratives"
+                        />
+                      )}
+                    </div>
+                  </section>
+                )}
+
+                {/* Widgets Adicionais */}
+                <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
+                  {/* Recovery Progress */}
+                  <Card className="p-8">
+                    <CardHeader className="pb-6">
+                      <CardTitle className="text-xl font-bold flex items-center gap-3">
+                        <TrendingUp className="h-5 w-5 text-blue-600" />
+                        Progresso de Recuperação
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <RecoveryProgressCard
+                        totalGlosado={totals.totalGlosado}
+                        valorRecuperado={totals.totalRecebido * 0.1} // Mock: 10% recuperado
+                      />
                     </CardContent>
                   </Card>
+
+                  {/* Revenue Chart */}
+                  <Card className="p-8">
+                    <CardHeader className="pb-6">
+                      <CardTitle className="text-xl font-bold flex items-center gap-3">
+                        <Activity className="h-5 w-5 text-green-600" />
+                        Distribuição de Receita
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <RevenuePieChart
+                        recebido={totals.totalRecebido}
+                        glosado={totals.totalGlosado}
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Quick Actions */}
+                <section aria-label="Ações Rápidas" className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                    <Zap className="h-6 w-6 text-purple-600" />
+                    Ações Rápidas
+                  </h2>
+
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                    <Link to="/guides" className="group">
+                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                            <FileText className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                              Enviar Guias
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Upload de novas guias médicas
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-blue-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    <Link to="/demonstratives" className="group">
+                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            <FileText className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                              Demonstrativos
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Analisar demonstrativos
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-green-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    <Link to="/unpaid-procedures" className="group">
+                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                              Glosas Pendentes
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Revisar contestações
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-red-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    <Link to="/reports" className="group">
+                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                            <LayoutDashboard className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                              Relatórios
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Gerar relatórios
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-purple-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+                  </div>
                 </section>
-              )}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </AuthenticatedLayout>
     </>

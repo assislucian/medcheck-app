@@ -16,7 +16,7 @@ import { ResourceDialog } from '../components/unpaid-procedures/ResourceDialog';
 import { formatCurrency } from '../utils/format';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
-import { UserMenu } from '../components/navbar/UserMenu';
+
 import { InfoCard } from '../components/ui/InfoCard';
 import axios from 'axios';
 import {
@@ -427,17 +427,6 @@ const UnpaidProceduresPage = () => {
           title="Glosas e Contestações"
           icon={<FileX size={28} />}
           description="Central de gestão de glosas com análise inteligente de prazos"
-          actions={
-            userProfile ? (
-              <UserMenu
-                name={userProfile.name || 'Usuário'}
-                email={userProfile.email || 'sem-email@exemplo.com'}
-                specialty={userProfile.crm || ''}
-                avatarUrl={userProfile.avatarUrl || undefined}
-                onLogout={signOut}
-              />
-            ) : null
-          }
         />
         <div className="space-y-6">
           {/* Painel de Insights de Glosas - com lógica correta por prazo */}

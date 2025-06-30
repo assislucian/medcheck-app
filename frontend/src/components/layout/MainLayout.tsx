@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AppSidebar } from '../sidebar/AppSidebar';
 import { useSidebarContext } from '../../contexts/SidebarContext';
@@ -6,10 +6,29 @@ import { Breadcrumbs } from '../navigation/Breadcrumbs';
 import GlobalSearch from '../ui/GlobalSearch';
 import QuickActions from '../ui/QuickActions';
 import { useAuth } from '../../contexts/auth/AuthContext';
+import { UserMenu } from '../navbar/UserMenu';
+import { AuthFooter } from './AuthFooter';
+import { Loader2 } from 'lucide-react';
 
-export function MainLayout() {
+interface MainLayoutProps {
+  title?: string;
+  description?: string;
+  showSideNav?: boolean;
+  isLoading?: boolean;
+  loadingMessage?: string;
+  children?: ReactNode;
+}
+
+export function MainLayout({
+  title,
+  description,
+  showSideNav = true,
+  isLoading = false,
+  loadingMessage = 'Carregando...',
+  children,
+}: MainLayoutProps) {
   const { isOpen, isOverlay } = useSidebarContext();
-  const { user } = useAuth();
+  const { user, userProfile, logout } = useAuth();
 
   useEffect(() => {
     // Definir variáveis CSS para o layout responsivo
@@ -28,60 +47,111 @@ export function MainLayout() {
     updateLayoutVariables();
   }, [isOpen, isOverlay]);
 
+  // Consolidar dados do usuário - prioriza userProfile, fallback para user
+  const currentUser = userProfile || user;
+  const displayName = currentUser?.name || currentUser?.nome || 'Usuário';
+  const displayEmail = currentUser?.email || 'Email não informado';
+  const displayCRM = currentUser?.crm || user?.crm;
+  const displayUF = currentUser?.uf || user?.uf;
+  const displaySpecialty = currentUser?.specialty || 'Especialidade não informada';
+  const displayAvatarUrl = currentUser?.avatarUrl;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background font-sans antialiased flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-sm text-gray-600 dark:text-gray-400">{loadingMessage}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
-        <AppSidebar />
+        {showSideNav && <AppSidebar />}
 
         {/* Main Content Area */}
         <div
           className={`
             flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out
-            ${isOverlay ? 'ml-0' : isOpen ? 'ml-[280px]' : 'ml-[70px]'}
+            ${
+              !showSideNav
+                ? 'ml-0'
+                : isOverlay
+                  ? 'ml-0'
+                  : isOpen
+                    ? 'ml-[280px]'
+                    : 'ml-[70px]'
+            }
           `}
         >
-          {/* Header com Breadcrumbs e Busca */}
-          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-            <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-              {/* Breadcrumbs */}
-              <div className="flex items-center space-x-4 flex-1">
+          {/* Header Premium com UserMenu consolidado */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 border-b border-gray-200/60 shadow-sm dark:bg-gray-900/98 dark:border-gray-700/60 dark:shadow-gray-900/20">
+            <div className="flex h-20 items-center justify-between px-8 sm:px-10">
+              {/* Breadcrumbs com mais espaço */}
+              <div className="flex items-center space-x-6 flex-1">
                 <Breadcrumbs />
+                {title && (
+                  <div className="hidden md:block">
+                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {title}
+                    </h1>
+                    {description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {description}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Search e User Actions */}
-              <div className="flex items-center space-x-4">
+              {/* Search e User Menu consolidado */}
+              <div className="flex items-center space-x-6">
                 <GlobalSearch className="hidden sm:flex" />
 
-                {/* User info (opcional) */}
-                {user && (
-                  <div className="hidden lg:flex items-center space-x-2 text-sm">
-                    <span className="text-muted-foreground">Olá,</span>
-                    <span className="font-medium">
-                      {user.user_metadata?.nome_completo || user.email}
-                    </span>
-                  </div>
+                {/* UserMenu Premium - única fonte de informações do usuário */}
+                {currentUser && (
+                  <UserMenu
+                    name={displayName}
+                    email={displayEmail}
+                    specialty={displaySpecialty}
+                    crm={displayCRM}
+                    uf={displayUF}
+                    avatarUrl={displayAvatarUrl}
+                    onLogout={logout}
+                  />
                 )}
               </div>
             </div>
           </header>
 
-          {/* Page Content */}
-          <main className="flex-1 overflow-auto bg-muted/5">
-            <div className="h-full">
-              <Outlet />
-            </div>
-          </main>
+          {/* Main Content Wrapper com Footer */}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Page Content com padding premium e espaçamento adequado */}
+            <main className="flex-1 overflow-auto bg-gray-50/30 dark:bg-gray-950/50">
+              <div className="min-h-full p-8 sm:p-10 pb-16">
+                {/* Renderizar children se fornecido, senão usar Outlet para rotas */}
+                {children || <Outlet />}
+              </div>
+            </main>
+
+            {/* Footer Profissional para páginas autenticadas */}
+            <AuthFooter />
+          </div>
         </div>
       </div>
 
       {/* Floating Action Button */}
-      <QuickActions />
+      {showSideNav && <QuickActions />}
 
-      {/* Mobile Overlay */}
-      {isOverlay && isOpen && (
+      {/* Mobile Overlay com backdrop melhorado */}
+      {showSideNav && isOverlay && isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/25 backdrop-blur-sm lg:hidden transition-opacity duration-300"
           onClick={() => {
             const event = new CustomEvent('closeSidebar');
             window.dispatchEvent(event);

@@ -153,7 +153,8 @@ export function AppSidebar() {
   const sidebarClasses = `
     fixed inset-y-0 left-0 flex flex-col
     bg-gradient-to-br from-white/95 via-blue-50/90 to-emerald-50/80 backdrop-blur-xl shadow-xl
-    border-r border-slate-200/80 dark:border-slate-700/80 px-6 py-6 h-screen z-40
+    dark:bg-gradient-to-br dark:from-gray-900/98 dark:via-gray-800/95 dark:to-gray-900/98
+    border-r border-slate-200/80 dark:border-slate-700/80 h-screen z-40
     transition-all duration-300 ease-[cubic-bezier(.4,0,.2,1)]
     ${
       isOverlay
@@ -205,7 +206,7 @@ export function AppSidebar() {
       <li key={item.href}>
         <button
           onClick={() => navigate(item.href)}
-          className={`group relative flex gap-3 items-center px-4 py-3 rounded-xl font-medium w-full text-left
+          className={`group relative flex gap-3 items-center px-4 py-3.5 rounded-xl font-medium w-full text-left
             transition-all duration-200 ease-out
             ${
               isActive(item.href)
@@ -252,16 +253,20 @@ export function AppSidebar() {
 
   return (
     <aside className={sidebarClasses}>
-      <Brand />
+      {/* Brand com padding melhorado */}
+      <div className="px-8 py-8">
+        <Brand />
+      </div>
 
-      <nav className="flex-1 mt-6 space-y-6 overflow-y-auto scrollbar-hide">
+      {/* Navigation com espaçamentos premium */}
+      <nav className="flex-1 px-6 space-y-8 overflow-y-auto scrollbar-hide">
         {/* 1. VISÃO EXECUTIVA - Mais importante */}
-        <div className="space-y-2">
-          <h4 className="px-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3">
+          <h4 className="px-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <Target className="h-3 w-3" />
             Visão Executiva
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {executiveItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="blue" />
             ))}
@@ -269,25 +274,25 @@ export function AppSidebar() {
         </div>
 
         {/* 2. FLUXO OPERACIONAL */}
-        <div className="space-y-2">
-          <h4 className="px-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3">
+          <h4 className="px-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <Activity className="h-3 w-3" />
             Fluxo Operacional
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {operationalItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="emerald" />
             ))}
           </ul>
         </div>
 
-        {/* 3. GESTÃO CRÍTICA - Destaque especial */}
-        <div className="space-y-2">
-          <h4 className="px-4 text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-2">
+        {/* 3. GESTÃO CRÍTICA - Destaque especial com separação visual */}
+        <div className="space-y-3 p-4 bg-red-50/40 dark:bg-red-900/10 rounded-xl border border-red-200/30 dark:border-red-800/30">
+          <h4 className="px-3 text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className="h-3 w-3 animate-pulse" />
             Gestão Crítica
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {criticalItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="red" />
             ))}
@@ -295,12 +300,12 @@ export function AppSidebar() {
         </div>
 
         {/* 4. ANÁLISE & COMPLIANCE */}
-        <div className="space-y-2">
-          <h4 className="px-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3">
+          <h4 className="px-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <TrendingUp className="h-3 w-3" />
             Análise & Compliance
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {analysisItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="purple" />
             ))}
@@ -308,36 +313,38 @@ export function AppSidebar() {
         </div>
 
         {/* 5. SUPORTE */}
-        <div className="space-y-2">
-          <h4 className="px-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+        <div className="space-y-3">
+          <h4 className="px-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <HelpCircle className="h-3 w-3" />
             Suporte
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {supportItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="orange" />
             ))}
           </ul>
         </div>
+      </nav>
 
-        {/* Spacer flexível para empurrar conta para baixo */}
-        <div className="flex-1"></div>
-
-        {/* 6. CONTA & CONFIGURAÇÕES - Sempre no final */}
-        <div className="space-y-2 mt-auto pt-6 border-t border-slate-200/80 dark:border-slate-700/80">
-          <h4 className="px-4 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+      {/* 6. CONTA & CONFIGURAÇÕES - Sempre no final com separação clara */}
+      <div className="px-6 py-6 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/40 dark:bg-gray-800/60 backdrop-blur-sm">
+        <div className="space-y-3">
+          <h4 className="px-3 text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
             <User className="h-3 w-3" />
             Conta
           </h4>
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {accountItems.map((item) => (
               <MenuItem key={item.href} item={item} colorScheme="indigo" />
             ))}
           </ul>
         </div>
-      </nav>
+      </div>
 
-      <SidebarFooter />
+      {/* Footer com padding adequado */}
+      <div className="px-6 pb-6">
+        <SidebarFooter />
+      </div>
     </aside>
   );
 }

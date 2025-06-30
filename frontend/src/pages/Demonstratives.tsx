@@ -51,7 +51,7 @@ import 'jspdf-autotable';
 import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
-import { UserMenu } from '../components/navbar/UserMenu';
+
 import { InfoCard } from '../components/ui/InfoCard';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Helmet } from 'react-helmet-async';
@@ -1377,17 +1377,6 @@ const DemonstrativesPage = () => {
           title="Gestão de Demonstrativos"
           icon={<FileBarChart size={28} />}
           description="Central de análise financeira e auditoria de demonstrativos"
-          actions={
-            userProfile ? (
-              <UserMenu
-                name={userProfile.name || 'Usuário'}
-                email={userProfile.email || 'sem-email@exemplo.com'}
-                specialty={userProfile.crm || ''}
-                avatarUrl={userProfile.avatarUrl || undefined}
-                onLogout={signOut}
-              />
-            ) : null
-          }
         />
         <div className="space-y-6">
           {/* Painel de Insights Clínico-Financeiros - Global */}

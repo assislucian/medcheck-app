@@ -1,15 +1,12 @@
-
-import { Link, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { useState, useEffect } from "react";
-import { ProfileSection } from "./sidenav/ProfileSection";
-import { MainNavigation } from "./sidenav/MainNavigation";
-import { NotificationsSection } from "./sidenav/NotificationsSection";
-import { AccountSection } from "./sidenav/AccountSection";
-import { HelpSection } from "./sidenav/HelpSection";
-import { FooterSection } from "./sidenav/FooterSection";
+import { Link, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { MainNavigation } from './sidenav/MainNavigation';
+import { NotificationsSection } from './sidenav/NotificationsSection';
+import { AccountSection } from './sidenav/AccountSection';
+import { HelpSection } from './sidenav/HelpSection';
+import { FooterSection } from './sidenav/FooterSection';
 
 interface SideNavProps {
   className?: string;
@@ -17,52 +14,21 @@ interface SideNavProps {
 
 export function SideNav({ className }: SideNavProps) {
   const navigate = useNavigate();
-  const { signOut, user, getProfile } = useAuth();
-  const [profileData, setProfileData] = useState({
-    name: "Carregando...",
-    specialty: "",
-    crm: "",
-    avatarUrl: ""
-  });
-  
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (user) {
-        const profile = await getProfile();
-        if (profile) {
-          let avatarUrl;
-          if (profile.notification_preferences && 
-              typeof profile.notification_preferences === 'object' && 
-              'avatar_url' in profile.notification_preferences) {
-            avatarUrl = profile.notification_preferences.avatar_url;
-          }
-          
-          setProfileData({
-            name: profile.name || "Usuário",
-            specialty: profile.specialty || "",
-            crm: profile.crm || "",
-            avatarUrl: avatarUrl || ""
-          });
-        }
-      }
-    };
-    
-    loadProfile();
-  }, [user, getProfile]);
-  
+  const { signOut } = useAuth();
+
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Logout realizado com sucesso");
-      navigate("/login");
+      toast.success('Logout realizado com sucesso');
+      navigate('/login');
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-      toast.error("Erro ao fazer logout");
+      console.error('Erro ao fazer logout:', error);
+      toast.error('Erro ao fazer logout');
     }
   };
 
   return (
-    <div className={cn("pb-12 h-full flex flex-col", className)}>
+    <div className={cn('pb-12 h-full flex flex-col', className)}>
       <div className="py-4 px-3">
         <Link to="/" className="flex items-center space-x-2">
           <div className="bg-primary rounded-md p-1">
@@ -82,8 +48,7 @@ export function SideNav({ className }: SideNavProps) {
           <span className="font-bold text-xl">MedCheck</span>
         </Link>
       </div>
-      
-      <ProfileSection profileData={profileData} />
+
       <MainNavigation />
       <NotificationsSection />
       <AccountSection />
