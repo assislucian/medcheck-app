@@ -9,9 +9,8 @@
   "devCommand": "npm run dev -- --port $PORT",
   "public": false,
   "regions": ["fra1"],
-  "functions": {},
   "env": {
-    "VITE_API_URL": "https://medcheck-app-medcheck.up.railway.app",
+    "VITE_API_URL": "https://medcheck-backend.onrender.com",
     "VITE_APP_ENV": "production",
     "NODE_ENV": "production"
   },
@@ -73,15 +72,15 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://medcheck-app-medcheck.up.railway.app/api/:path*"
+      "destination": "https://medcheck-backend.onrender.com/api/:path*"
     },
     {
       "source": "/token",
-      "destination": "https://medcheck-app-medcheck.up.railway.app/token"
+      "destination": "https://medcheck-backend.onrender.com/token"
     },
     {
       "source": "/health",
-      "destination": "https://medcheck-app-medcheck.up.railway.app/health"
+      "destination": "https://medcheck-backend.onrender.com/health"
     },
     {
       "source": "/((?!.*\\.).*)",
