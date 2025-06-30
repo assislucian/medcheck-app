@@ -1,12 +1,11 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Clock, DollarSign } from 'lucide-react';
+import { Shield, Clock, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 
-export function HeroSection() {
+export const HeroSection = () => {
   return (
-    <section className="relative overflow-hidden pt-24 pb-16 md:pt-28 md:pb-24 px-6">
+    <section id="hero" className="relative py-12 md:py-24">
       {/* Subtle background gradient */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(49,130,206,0.08),transparent_70%)]" />
@@ -132,4 +131,4 @@ export function HeroSection() {
       </div>
     </section>
   );
-}
+};
