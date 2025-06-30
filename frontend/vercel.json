@@ -5,7 +5,7 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "npm ci --prefer-offline --no-audit",
+  "installCommand": "npm ci",
   "devCommand": "npm run dev -- --port $PORT",
   "public": false,
   "regions": ["fra1"],
