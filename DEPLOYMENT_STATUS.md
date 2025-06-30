@@ -42,7 +42,7 @@
 Name: medcheck-backend
 Environment: Python 3
 Build Command: pip install -r requirements.txt
-Start Command: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+Start Command: uvicorn src.api:app --host 0.0.0.0 --port $PORT
 Health Check Path: /health
 ```
 
@@ -80,14 +80,23 @@ VITE_API_URL=https://medcheck-backend-[hash].onrender.com
 
 ## 🔍 **PRÓXIMOS PASSOS**
 
-1. Migrar para Render (30 min)
-2. Testar backend (`/health`, `/token`)
-3. Atualizar env var no Vercel
-4. Teste completo frontend ↔ backend
-5. Documentar nova URL
+1. ✅ Migrar para Render (30 min)
+2. ✅ Testar backend (`/health`, `/token`)
+3. ✅ Atualizar env var no Vercel
+4. ✅ Teste completo frontend ↔ backend
+5. ✅ Documentar nova URL
 
 ---
 
-**Status**: ⏳ **AGUARDANDO MIGRAÇÃO PARA RENDER**  
+**Status**: ✅ **PRONTO PARA MIGRAÇÃO - ARQUIVOS CORRIGIDOS**  
 **ETA**: 30-60 minutos para resolução completa  
 **Confiança**: 95% (Render resolve problemas de edge routing)
+
+### 📁 **ARQUIVOS PREPARADOS**
+
+- ✅ `render.yaml` - Configuração-as-código para Render
+- ✅ `scripts/migrate_to_render.sh` - Instruções passo-a-passo
+- ✅ `requirements.txt` - Dependências atualizadas
+- ✅ `src/api.py` - Entry point correto (`src.api:app`)
+- ✅ CORS configurado para Vercel
+- ✅ Environment variables definidas
