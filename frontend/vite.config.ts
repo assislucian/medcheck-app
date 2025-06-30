@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     minify: 'esbuild',
+    chunkSizeWarningLimit: 1600,
+    sourcemap: false, // Desabilita sourcemaps em produção para reduzir tamanho
     rollupOptions: {
       output: {
         manualChunks: {
@@ -53,13 +55,18 @@ export default defineConfig(({ mode }) => ({
           pdf: ['jspdf', 'jspdf-autotable'],
           excel: ['xlsx'],
         },
+        // Otimiza nomes de arquivos para cache
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
       },
     },
   },
 
-  // 🆕 Diretivas para evitar erro de resolução
+  // Otimizações para dependências
   optimizeDeps: {
     include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'xlsx'],
+    exclude: ['@vercel/analytics'],
   },
   ssr: {
     noExternal: ['jspdf', 'jspdf-autotable', 'xlsx'],
@@ -69,6 +76,13 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
   },
+
+  // Define configurações específicas para produção
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    __DEV__: mode === 'development',
+  },
+
   test: {
     environment: 'jsdom',
     globals: true,
