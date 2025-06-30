@@ -111,6 +111,12 @@ export function MainLayout({
 
               {/* Search e User Menu consolidado */}
               <div className="flex items-center space-x-6">
+                {/* Deploy Version Indicator */}
+                <div className="hidden xl:flex items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
+                  <span className="mr-1">Build:</span>
+                  <span>30-06-2025 20:25</span>
+                </div>
+
                 <GlobalSearch className="hidden sm:flex" />
 
                 {/* UserMenu Premium - única fonte de informações do usuário */}
