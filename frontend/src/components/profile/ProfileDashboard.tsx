@@ -2,7 +2,6 @@ import { useProfileData } from '@/hooks/useProfileData';
 import { useAuth } from '../../contexts/auth/AuthContext';
 import { ProfileOverview } from './ProfileOverview';
 import { ProfileTabs } from './ProfileTabs';
-import { ActivitySummary } from './ActivitySummary';
 import { Separator } from '../../components/ui/separator';
 import { ErrorMessage } from '../../components/ui/ErrorMessage';
 import { Skeleton } from '../../components/ui/skeleton';
@@ -70,10 +69,15 @@ export const ProfileDashboard = () => {
 
   return (
     <div className="space-y-8">
+      {/* Header do Perfil */}
       <ProfileOverview profile={formattedProfileData} loading={loading} />
-      <ActivitySummary />
+
+      {/* Seção de Configurações Premium */}
       <ProfileTabs />
+
       <Separator />
+
+      {/* Footer informativo */}
       <div className="text-sm text-muted-foreground text-center">
         <p>Última atualização: {new Date().toLocaleString('pt-BR')}</p>
         <p className="text-xs mt-1">Dados sincronizados com a plataforma MedCheck</p>
