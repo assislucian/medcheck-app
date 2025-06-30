@@ -34,13 +34,6 @@ export function MainNavigation() {
       icon: LayoutDashboard,
       category: 'executive',
     },
-    {
-      name: 'Intelligence Hub',
-      href: '/intelligence',
-      icon: Brain,
-      category: 'executive',
-      isPremium: true,
-    },
 
     // Fluxo Operacional
     {
@@ -78,6 +71,13 @@ export function MainNavigation() {
       href: '/reports',
       icon: BarChart3,
       category: 'analysis',
+    },
+    {
+      name: 'Intelligence Hub',
+      href: '/intelligence',
+      icon: Brain,
+      category: 'analysis',
+      isPremium: true,
     },
 
     // Suporte

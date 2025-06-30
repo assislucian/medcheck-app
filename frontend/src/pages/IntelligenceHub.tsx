@@ -46,6 +46,8 @@ import {
 } from 'recharts';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Helmet } from 'react-helmet-async';
+import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
+import PageHeader from '@/components/layout/PageHeader';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
@@ -112,47 +114,37 @@ export default function IntelligenceHub() {
 
   if (isLoading) {
     return (
-      <div className="p-6 space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-8 bg-gray-200 rounded w-64 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
-          </div>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      <AuthenticatedLayout title="Intelligence Hub">
+        <div className="p-6">Carregando...</div>
+      </AuthenticatedLayout>
     );
   }
 
   if (isError || !analytics) {
     return (
-      <div className="p-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-6 text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-red-900 mb-2">
-              Erro ao Carregar Intelligence Hub
-            </h3>
-            <p className="text-red-700">
-              Não foi possível carregar os dados de análise avançada.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthenticatedLayout title="Intelligence Hub">
+        <div className="p-6">
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6 text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-900 mb-2">
+                Erro ao Carregar Intelligence Hub
+              </h3>
+              <p className="text-red-700">
+                Não foi possível carregar os dados de análise avançada.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <>
+    <AuthenticatedLayout
+      title="Intelligence Hub"
+      description="Central de inteligência médica com analytics avançado e insights estratégicos"
+    >
       <Helmet>
         <title>Intelligence Hub | MedCheck</title>
         <meta
@@ -185,26 +177,12 @@ export default function IntelligenceHub() {
         </script>
       </Helmet>
 
-      <div className="p-6 space-y-8">
-        {/* Header Premium */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-                <Brain className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Intelligence Hub
-                </h1>
-                <p className="text-muted-foreground">
-                  Central de inteligência médica com analytics avançado e insights
-                  estratégicos
-                </p>
-              </div>
-            </div>
-          </div>
-
+      <div className="space-y-8">
+        <PageHeader
+          title="Intelligence Hub"
+          icon={<Brain className="h-8 w-8" />}
+          description="Central de inteligência com analytics avançado e insights estratégicos"
+        >
           <div className="flex items-center gap-3">
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="w-32">
@@ -217,15 +195,13 @@ export default function IntelligenceHub() {
                 <SelectItem value="24m">2 anos</SelectItem>
               </SelectContent>
             </Select>
-
             <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
           </div>
-        </div>
+        </PageHeader>
 
-        {/* KPIs Principais */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
             <CardContent className="p-6">
@@ -310,7 +286,6 @@ export default function IntelligenceHub() {
           </Card>
         </div>
 
-        {/* Gráfico de Evolução Temporal */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -359,7 +334,6 @@ export default function IntelligenceHub() {
           </CardContent>
         </Card>
 
-        {/* Insights Rápidos */}
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -408,6 +382,6 @@ export default function IntelligenceHub() {
           </Card>
         </div>
       </div>
-    </>
+    </AuthenticatedLayout>
   );
 }
