@@ -27,7 +27,7 @@ import {
   Search,
   Plus,
   Eye,
-  Heart,
+  Stethoscope,
   Shield,
   TrendingDown,
 } from 'lucide-react';
@@ -127,388 +127,390 @@ const DashboardPage = () => {
         </script>
       </Helmet>
 
-      <AuthenticatedLayout
-        title="Minha Prática Médica"
-        description={`Bem-vindo de volta, ${
-          userProfile?.nome || 'Dr(a)'
-        }! Aqui está o resumo dos seus honorários e pendências.`}
-      >
-        <div className="space-y-10">
-          {/* Page Header Premium */}
-          <PageHeader
-            title="Minha Prática Médica"
-            icon={<Heart size={32} className="text-blue-600" />}
-            description={`Acompanhe seus honorários e demonstrativos de forma simples e organizada. ${
-              needsAttention
-                ? 'Você tem algumas pendências que merecem atenção.'
-                : 'Tudo funcionando bem!'
-            }`}
-          />
-
-          {/* Dashboard Content */}
-          <div className="space-y-12">
-            {isLoading ? (
-              <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, idx) => (
-                  <SkeletonInfoCard key={idx} />
-                ))}
+      {/* Background com Gradiente Âmbar Suave */}
+      <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30">
+        <AuthenticatedLayout
+          title="Minha Prática Médica"
+          description={`Bem-vindo de volta, ${
+            userProfile?.nome || 'Dr(a)'
+          }! Aqui está o resumo dos seus honorários e pendências.`}
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+            {/* Header Humanizado para Médicos Brasileiros */}
+            <div className="text-center space-y-4 pt-8">
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200/50">
+                <Stethoscope className="h-5 w-5 text-amber-700" />
+                <span className="text-sm font-medium text-amber-800">
+                  Sua prática médica em suas mãos
+                </span>
               </div>
-            ) : isError ? (
-              <div className="flex flex-col items-center gap-6 py-16 text-center">
-                <AlertCircle className="h-12 w-12 text-red-500" />
-                <div className="space-y-2">
-                  <p className="text-xl font-semibold text-red-600 dark:text-red-400">
-                    Ops! Não conseguimos carregar seus dados
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Verifique sua conexão com a internet e tente novamente
-                  </p>
+
+              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 bg-clip-text text-transparent">
+                Olá, {userProfile?.nome?.split(' ')[0] || 'Doutor(a)'}!
+              </h1>
+
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                {needsAttention
+                  ? 'Identificamos algumas oportunidades para otimizar seus recebimentos. Vamos analisar juntos?'
+                  : 'Seus honorários estão organizados e tudo está funcionando bem. Continue assim!'}
+              </p>
+            </div>
+
+            {/* Dashboard Content */}
+            <div className="space-y-16">
+              {isLoading ? (
+                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <SkeletonInfoCard key={idx} />
+                  ))}
                 </div>
-                <Button variant="outline" onClick={() => window.location.reload()}>
-                  Tentar novamente
-                </Button>
-              </div>
-            ) : (
-              <>
-                {/* Visão Geral dos Honorários */}
-                <section aria-label="Resumo dos Seus Honorários" className="space-y-6">
-                  <div className="space-y-3">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <DollarSign className="h-6 w-6 text-green-600" />
-                      Resumo dos Seus Honorários
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">
-                      Acompanhe o que você já recebeu, o que está pendente e quais
-                      procedimentos foram glosados pelos planos
-                    </p>
+              ) : isError ? (
+                <div className="flex flex-col items-center gap-6 py-16 text-center">
+                  <div className="p-6 rounded-full bg-gradient-to-br from-red-100 to-red-50">
+                    <AlertCircle className="h-12 w-12 text-red-600" />
                   </div>
-
-                  {/* Grid de Cards Principal */}
-                  <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <InfoCard
-                      icon={<ArrowUpRight className="h-6 w-6" />}
-                      title={
-                        <span className="text-sm font-semibold">
-                          Recebido este Período
-                        </span>
-                      }
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {formatCurrency(totals.totalRecebido)}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          Honorários já pagos pelos planos
-                        </span>
-                      }
-                      variant="success"
-                    />
-                    <InfoCard
-                      icon={<TrendingDown className="h-6 w-6" />}
-                      title={
-                        <span className="text-sm font-semibold">
-                          Glosas e Pendências
-                        </span>
-                      }
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {formatCurrency(totals.totalGlosado)}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          Valores glosados ou em contestação
-                        </span>
-                      }
-                      variant={temGlosasCriticas ? 'destructive' : 'warning'}
-                    />
-                    <InfoCard
-                      icon={<CheckCircle className="h-6 w-6" />}
-                      title={
-                        <span className="text-sm font-semibold">Taxa de Aprovação</span>
-                      }
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {formatPercentage(taxaSucesso)}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          {taxaSucesso >= 90
-                            ? 'Excelente índice!'
-                            : taxaSucesso >= 80
-                              ? 'Boa performance'
-                              : 'Precisa atenção'}
-                        </span>
-                      }
-                      variant={
-                        taxaSucesso >= 85
-                          ? 'success'
-                          : taxaSucesso >= 70
-                            ? 'warning'
-                            : 'destructive'
-                      }
-                    />
-                    <InfoCard
-                      icon={<FileText className="h-6 w-6" />}
-                      title={
-                        <span className="text-sm font-semibold">
-                          Procedimentos Analisados
-                        </span>
-                      }
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          <AnimatedNumber value={totals.totalProcedimentos} />
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          {poucosAnalisados
-                            ? 'Adicione mais demonstrativos'
-                            : 'Total de procedimentos verificados'}
-                        </span>
-                      }
-                      variant={poucosAnalisados ? 'warning' : 'default'}
-                    />
-                  </div>
-                </section>
-
-                {/* Ações Rápidas Reorganizadas */}
-                <section className="space-y-6">
                   <div className="space-y-3">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <Zap className="h-6 w-6 text-blue-600" />
-                      Próximos Passos
+                    <h3 className="text-2xl font-bold text-red-700">
+                      Ops! Algo não funcionou como esperado
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">
-                      Ações importantes para manter sua gestão em dia e recuperar
-                      valores
+                    <p className="text-gray-600 max-w-md">
+                      Não conseguimos carregar seus dados médicos no momento. Verifique
+                      sua conexão e tente novamente.
                     </p>
                   </div>
-
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-                    {/* Guias Médicas - Ação primária */}
-                    <Link
-                      to="/guides"
-                      className="group col-span-1 md:col-span-2 xl:col-span-1"
-                    >
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-green-500 bg-gradient-to-r from-green-50/50 to-transparent dark:from-green-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-xl group-hover:bg-green-500 group-hover:text-white transition-colors">
-                            <FileText className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">Guias Médicas</h4>
-                              <Badge
-                                variant="secondary"
-                                className="bg-green-100 text-green-700 hover:bg-green-200"
-                              >
-                                Workflow principal
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Visualize suas guias TISS e acompanhe o status dos
-                              procedimentos realizados
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.reload()}
+                    className="border-red-200 text-red-700 hover:bg-red-50"
+                  >
+                    Tentar novamente
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {/* Cards Principais - Jornada do Médico */}
+                  <section className="space-y-8">
+                    <div className="text-center space-y-3">
+                      <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
+                          <DollarSign className="h-6 w-6 text-amber-700" />
                         </div>
-                      </Card>
-                    </Link>
-
-                    {/* Demonstrativos - Segunda prioridade */}
-                    <Link to="/demonstratives" className="group">
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                            <Upload className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">Demonstrativos</h4>
-                              {totals.totalProcedimentos < 5 && (
-                                <Badge
-                                  variant="outline"
-                                  className="border-blue-500 text-blue-700"
-                                >
-                                  Carregue mais dados
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Faça upload dos demonstrativos dos planos para acompanhar
-                              seus pagamentos
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    {/* Glosas Pendentes - Terceira prioridade */}
-                    <Link to="/unpaid-procedures" className="group">
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent dark:from-orange-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                            <AlertTriangle className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">
-                                Glosas e Pendências
-                              </h4>
-                              {temGlosasCriticas && (
-                                <Badge variant="destructive">Atenção necessária</Badge>
-                              )}
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Acompanhe e conteste glosas para recuperar seus honorários
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-orange-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    {/* Linha inferior - Ações complementares */}
-
-                    {/* Relatórios Personalizados */}
-                    <Link to="/reports" className="group">
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-transparent dark:from-purple-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-xl group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                            <FileBarChart className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">Relatórios</h4>
-                              <Badge
-                                variant="secondary"
-                                className="bg-purple-100 text-purple-700"
-                              >
-                                Analytics
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Gere relatórios detalhados de performance e lucratividade
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    {/* Intelligence Hub */}
-                    <Link to="/intelligence" className="group">
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50/50 to-transparent dark:from-cyan-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl group-hover:bg-cyan-500 group-hover:text-white transition-colors">
-                            <Brain className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">
-                                Intelligence Hub
-                              </h4>
-                              <Badge
-                                variant="secondary"
-                                className="bg-cyan-100 text-cyan-700"
-                              >
-                                IA Médica
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Insights inteligentes sobre sua prática e tendências do
-                              mercado
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-cyan-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    {/* Análise de Performance */}
-                    <Link to="/compare" className="group">
-                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-900/20">
-                        <div className="flex items-center gap-4">
-                          <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-colors">
-                            <BarChart3 className="h-6 w-6" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-semibold text-lg">
-                                Análise Comparativa
-                              </h4>
-                              <Badge
-                                variant="secondary"
-                                className="bg-emerald-100 text-emerald-700"
-                              >
-                                Benchmarking
-                              </Badge>
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm">
-                              Compare sua performance com referências do mercado médico
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-                  </div>
-                </section>
-
-                {/* Alertas Contextuais */}
-                {(temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados) && (
-                  <section className="space-y-6">
-                    <div className="space-y-3">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                        <Shield className="h-5 w-5 text-amber-600" />
-                        Recomendações Personalizadas
-                      </h3>
+                        Resumo Financeiro da Sua Prática
+                      </h2>
+                      <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                        Seus honorários organizados de forma clara: quanto você já
+                        recebeu, o que ainda está pendente e onde estão as oportunidades
+                        de melhoria.
+                      </p>
                     </div>
 
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                      {temGlosasCriticas && (
-                        <DashboardAlert
-                          type="warning"
-                          title="Taxa de glosas acima do esperado"
-                          message="Você tem uma alta taxa de glosas. Revise os procedimentos contestados e considere recursos de glosa para recuperar esses valores."
-                          actionLabel="Ver glosas pendentes"
-                          actionLink="/unpaid-procedures"
-                        />
-                      )}
+                    {/* Grid de Cards com Gradientes Âmbar Perfeitos */}
+                    <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                      {/* Card 1: Valores Recebidos */}
+                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-green-500"></div>
+                        <CardContent className="relative p-8">
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 w-fit">
+                              <ArrowUpRight className="h-7 w-7 text-emerald-700" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">
+                                Já Recebido
+                              </p>
+                              <p className="text-3xl font-bold text-emerald-800 leading-none">
+                                <AnimatedNumber
+                                  value={totals.totalRecebido}
+                                  prefix="R$ "
+                                />
+                              </p>
+                              <p className="text-sm text-emerald-600">
+                                Valores que já estão na sua conta
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                      {taxaSucessoBaixa && (
-                        <DashboardAlert
-                          type="info"
-                          title="Oportunidade de melhoria"
-                          message="Sua taxa de aprovação pode melhorar. Verifique se as guias estão sendo preenchidas corretamente antes do envio."
-                          actionLabel="Verificar guias"
-                          actionLink="/guides"
-                        />
-                      )}
+                      {/* Card 2: Glosas */}
+                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 to-rose-500"></div>
+                        <CardContent className="relative p-8">
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-red-100 to-rose-100 w-fit">
+                              <AlertTriangle className="h-7 w-7 text-red-700" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-red-700 uppercase tracking-wide">
+                                Glosas Detectadas
+                              </p>
+                              <p className="text-3xl font-bold text-red-800 leading-none">
+                                <AnimatedNumber
+                                  value={totals.totalGlosado}
+                                  prefix="R$ "
+                                />
+                              </p>
+                              <p className="text-sm text-red-600">
+                                Valores contestados pelos planos
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                      {poucosAnalisados && (
-                        <DashboardAlert
-                          type="info"
-                          title="Carregue mais demonstrativos"
-                          message="Para ter uma análise mais completa, adicione mais demonstrativos dos seus atendimentos recentes."
-                          actionLabel="Carregar demonstrativos"
-                          actionLink="/demonstratives"
-                        />
-                      )}
+                      {/* Card 3: Procedimentos */}
+                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
+                        <CardContent className="relative p-8">
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100 w-fit">
+                              <FileBarChart className="h-7 w-7 text-blue-700" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
+                                Procedimentos
+                              </p>
+                              <p className="text-3xl font-bold text-blue-800 leading-none">
+                                <AnimatedNumber value={totals.totalProcedimentos} />
+                              </p>
+                              <p className="text-sm text-blue-600">
+                                Total de atendimentos analisados
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Card 4: Pendências */}
+                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+                        <CardContent className="relative p-8">
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 w-fit">
+                              <Clock className="h-7 w-7 text-amber-700" />
+                            </div>
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-amber-700 uppercase tracking-wide">
+                                Aguardando Análise
+                              </p>
+                              <p className="text-3xl font-bold text-amber-800 leading-none">
+                                <AnimatedNumber value={totals.auditoriaPendente} />
+                              </p>
+                              <p className="text-sm text-amber-600">
+                                Casos que precisam de atenção
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   </section>
-                )}
 
-                {/* Fim do conteúdo principal */}
-              </>
-            )}
+                  {/* Seção de Insights e Ações */}
+                  <section className="space-y-8">
+                    <div className="text-center space-y-3">
+                      <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
+                          <Brain className="h-6 w-6 text-purple-700" />
+                        </div>
+                        Suas Próximas Ações
+                      </h2>
+                      <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                        Baseado na análise dos seus dados, preparamos as ações mais
+                        importantes para otimizar seus recebimentos e reduzir glosas.
+                      </p>
+                    </div>
+
+                    {/* Cards de Ação - Storytelling */}
+                    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                      {/* Guias Médicas - Prioridade 1 */}
+                      <Link to="/guides">
+                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 group-hover:from-blue-100 group-hover:via-indigo-100 group-hover:to-blue-200 transition-all duration-500"></div>
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                          <CardContent className="relative p-8">
+                            <div className="space-y-6">
+                              <div className="flex items-center justify-between">
+                                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 group-hover:scale-110 transition-transform duration-300">
+                                  <Upload className="h-8 w-8 text-blue-700" />
+                                </div>
+                                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                                  Essencial
+                                </Badge>
+                              </div>
+                              <div className="space-y-3">
+                                <h3 className="text-xl font-bold text-blue-800">
+                                  Enviar Guias Médicas
+                                </h3>
+                                <p className="text-blue-600 leading-relaxed">
+                                  O primeiro passo para receber seus honorários.
+                                  Organize e envie suas guias de forma prática e segura.
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 text-blue-700 font-medium group-hover:gap-3 transition-all duration-300">
+                                <span>Começar agora</span>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+
+                      {/* Demonstrativos - Prioridade 2 */}
+                      <Link to="/demonstratives">
+                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 group-hover:from-emerald-100 group-hover:via-green-100 group-hover:to-emerald-200 transition-all duration-500"></div>
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+                          <CardContent className="relative p-8">
+                            <div className="space-y-6">
+                              <div className="flex items-center justify-between">
+                                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 group-hover:scale-110 transition-transform duration-300">
+                                  <FileText className="h-8 w-8 text-emerald-700" />
+                                </div>
+                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                                  Importante
+                                </Badge>
+                              </div>
+                              <div className="space-y-3">
+                                <h3 className="text-xl font-bold text-emerald-800">
+                                  Conferir Demonstrativos
+                                </h3>
+                                <p className="text-emerald-600 leading-relaxed">
+                                  Analise os pagamentos dos planos de saúde e
+                                  identifique discrepâncias nos seus honorários.
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 text-emerald-700 font-medium group-hover:gap-3 transition-all duration-300">
+                                <span>Analisar pagamentos</span>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+
+                      {/* Glosas Pendentes - Prioridade 3 */}
+                      <Link to="/unpaid-procedures">
+                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+                          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 group-hover:from-amber-100 group-hover:via-orange-100 group-hover:to-amber-200 transition-all duration-500"></div>
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
+                          <CardContent className="relative p-8">
+                            <div className="space-y-6">
+                              <div className="flex items-center justify-between">
+                                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 group-hover:scale-110 transition-transform duration-300">
+                                  <Shield className="h-8 w-8 text-amber-700" />
+                                </div>
+                                <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                                  Urgente
+                                </Badge>
+                              </div>
+                              <div className="space-y-3">
+                                <h3 className="text-xl font-bold text-amber-800">
+                                  Contestar Glosas
+                                </h3>
+                                <p className="text-amber-600 leading-relaxed">
+                                  Defenda seus direitos! Conteste glosas indevidas e
+                                  recupere valores que são seus por direito.
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 text-amber-700 font-medium group-hover:gap-3 transition-all duration-300">
+                                <span>Contestar agora</span>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </div>
+                  </section>
+
+                  {/* Seção de Ferramentas Adicionais */}
+                  <section className="space-y-8">
+                    <div className="text-center space-y-3">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Ferramentas Complementares
+                      </h2>
+                      <p className="text-gray-600 max-w-2xl mx-auto">
+                        Recursos adicionais para uma gestão médica ainda mais eficiente
+                      </p>
+                    </div>
+
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+                      {/* Relatórios */}
+                      <Link to="/reports">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-gray-50 to-slate-50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="p-3 rounded-lg bg-gradient-to-br from-gray-100 to-slate-100">
+                                <BarChart3 className="h-6 w-6 text-gray-700" />
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-semibold text-gray-800">
+                                  Relatórios
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  Análises detalhadas
+                                </p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+
+                      {/* Central de Inteligência */}
+                      <Link to="/intelligence">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
+                                <Brain className="h-6 w-6 text-purple-700" />
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-semibold text-purple-800">
+                                  Central de Inteligência
+                                </h3>
+                                <p className="text-sm text-purple-600">
+                                  Insights avançados
+                                </p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-purple-400 ml-auto group-hover:text-purple-600 transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+
+                      {/* Análise Comparativa */}
+                      <Link to="/comparison">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-teal-50 to-cyan-50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="p-3 rounded-lg bg-gradient-to-br from-teal-100 to-cyan-100">
+                                <Search className="h-6 w-6 text-teal-700" />
+                              </div>
+                              <div className="space-y-1">
+                                <h3 className="font-semibold text-teal-800">
+                                  Análise Comparativa
+                                </h3>
+                                <p className="text-sm text-teal-600">Compare tabelas</p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-teal-400 ml-auto group-hover:text-teal-600 transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </div>
+                  </section>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </AuthenticatedLayout>
+        </AuthenticatedLayout>
+      </div>
     </>
   );
 };

@@ -10,8 +10,11 @@ import {
   Clock,
   CheckCircle,
   Loader2,
+  ArrowUpRight,
+  AlertTriangle,
 } from 'lucide-react';
 import { formatCurrency, formatPercentage } from '@/utils/format';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
 
 interface DashboardData {
   totals: {
@@ -63,18 +66,22 @@ export function DashboardOverview() {
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gray-100 rounded-lg animate-pulse">
-                <div className="h-6 w-6 bg-gray-200 rounded"></div>
+          <Card key={i} className="relative overflow-hidden border-0 shadow-lg">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 animate-pulse"></div>
+            <CardContent className="relative p-8">
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 w-fit animate-pulse">
+                  <div className="h-7 w-7 bg-amber-200 rounded"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-amber-200 rounded animate-pulse"></div>
+                  <div className="h-8 bg-amber-200 rounded animate-pulse"></div>
+                  <div className="h-3 bg-amber-200 rounded animate-pulse"></div>
+                </div>
               </div>
-              <div className="space-y-2 flex-1">
-                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-              </div>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -83,12 +90,21 @@ export function DashboardOverview() {
 
   if (error) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="md:col-span-2 lg:col-span-4 p-6">
-          <div className="flex items-center gap-3 text-red-600">
-            <AlertCircle className="h-5 w-5" />
-            <p>{error}</p>
-          </div>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="md:col-span-2 lg:col-span-4 border-0 shadow-lg bg-gradient-to-br from-red-50 to-rose-50">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
+                <AlertCircle className="h-6 w-6 text-red-700" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-red-800 mb-1">
+                  Erro ao carregar dados
+                </h3>
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     );
@@ -96,90 +112,122 @@ export function DashboardOverview() {
 
   if (!data) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="md:col-span-2 lg:col-span-4 p-6">
-          <div className="flex items-center gap-3 text-gray-600">
-            <FileText className="h-5 w-5" />
-            <p>Nenhum dado disponível</p>
-          </div>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="md:col-span-2 lg:col-span-4 border-0 shadow-lg bg-gradient-to-br from-gray-50 to-slate-50">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-xl bg-gradient-to-br from-gray-100 to-slate-100">
+                <FileText className="h-6 w-6 text-gray-700" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">
+                  Nenhum dado disponível
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Carregue seus primeiros demonstrativos para ver os dados
+                </p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
   const { totals } = data;
-  const total_apresentado = totals.totalRecebido + totals.totalGlosado;
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {/* Valor Recebido */}
-      <Card className="border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50/50 to-transparent hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-100 rounded-xl">
-              <DollarSign className="h-6 w-6 text-emerald-600" />
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+      {/* Card 1: Valores Recebidos */}
+      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-green-500"></div>
+        <CardContent className="relative p-8">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 w-fit">
+              <DollarSign className="h-7 w-7 text-emerald-700" />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-emerald-600">Recebido (30 dias)</p>
-              <p className="text-2xl font-bold text-emerald-700">
-                {formatCurrency(totals.totalRecebido)}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">
+                Já Recebido
+              </p>
+              <p className="text-3xl font-bold text-emerald-800 leading-none">
+                <AnimatedNumber value={totals.totalRecebido} prefix="R$ " />
+              </p>
+              <p className="text-sm text-emerald-600">
+                Valores que já estão na sua conta
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Glosas */}
-      <Card className="border-l-4 border-l-red-500 bg-gradient-to-r from-red-50/50 to-transparent hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-red-100 rounded-xl">
-              <AlertCircle className="h-6 w-6 text-red-600" />
+      {/* Card 2: Glosas */}
+      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 to-rose-500"></div>
+        <CardContent className="relative p-8">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-red-100 to-rose-100 w-fit">
+              <AlertTriangle className="h-7 w-7 text-red-700" />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-red-600">Glosas Detectadas</p>
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-red-700 uppercase tracking-wide">
+                Glosas Detectadas
+              </p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-red-700">
-                  {formatCurrency(totals.totalGlosado)}
+                <p className="text-3xl font-bold text-red-800 leading-none">
+                  <AnimatedNumber value={totals.totalGlosado} prefix="R$ " />
                 </p>
-                <span className="text-sm text-red-600">
-                  ({formatPercentage(totals.taxaGlosa)})
+                <span className="text-sm font-medium text-red-600 bg-red-100 px-2 py-1 rounded-full">
+                  {formatPercentage(totals.taxaGlosa)}
                 </span>
               </div>
+              <p className="text-sm text-red-600">Valores contestados pelos planos</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Total de Procedimentos */}
-      <Card className="border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <FileBarChart className="h-6 w-6 text-blue-600" />
+      {/* Card 3: Procedimentos */}
+      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
+        <CardContent className="relative p-8">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100 w-fit">
+              <FileBarChart className="h-7 w-7 text-blue-700" />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-600">Procedimentos</p>
-              <p className="text-2xl font-bold text-blue-700">
-                {totals.totalProcedimentos.toLocaleString()}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
+                Procedimentos
               </p>
+              <p className="text-3xl font-bold text-blue-800 leading-none">
+                <AnimatedNumber value={totals.totalProcedimentos} />
+              </p>
+              <p className="text-sm text-blue-600">Total de atendimentos analisados</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Auditoria Pendente */}
-      <Card className="border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-xl">
-              <Clock className="h-6 w-6 text-orange-600" />
+      {/* Card 4: Auditoria Pendente */}
+      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+        <CardContent className="relative p-8">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 w-fit">
+              <Clock className="h-7 w-7 text-amber-700" />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-orange-600">Auditoria Pendente</p>
-              <p className="text-2xl font-bold text-orange-700">
-                {totals.auditoriaPendente}
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-amber-700 uppercase tracking-wide">
+                Aguardando Análise
               </p>
+              <p className="text-3xl font-bold text-amber-800 leading-none">
+                <AnimatedNumber value={totals.auditoriaPendente} />
+              </p>
+              <p className="text-sm text-amber-600">Casos que precisam de atenção</p>
             </div>
           </div>
         </CardContent>
