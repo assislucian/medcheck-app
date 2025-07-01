@@ -1424,331 +1424,424 @@ const DemonstrativesPage = () => {
         title="Gestão de Demonstrativos"
         description="Central de análise e gerenciamento de demonstrativos de pagamento"
       >
-        <PageHeader
-          title="Gestão de Demonstrativos"
-          icon={<FileBarChart size={28} />}
-          description="Central de análise financeira e auditoria de demonstrativos"
-        />
-        <div className="space-y-6">
-          {/* Painel de Insights Clínico-Financeiros - Global */}
-          <section aria-label="Painel de Insights Clínico-Financeiros" className="mb-6">
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
-              <InfoCard
-                icon={
-                  <TrendingUp className="w-7 h-7 rounded-lg p-1.5 bg-green-100 text-green-700" />
-                }
-                title={
-                  <span className="text-xs font-semibold uppercase tracking-wide text-green-600">
-                    Total Liberado
-                  </span>
-                }
-                value={
-                  <span className="text-xl font-bold leading-none text-green-900">
-                    {formatCurrency(summaryStats.totalProcessado)}
-                  </span>
-                }
-                description={
-                  <span className="text-xs text-green-700">
-                    Valor efetivamente liberado pelos convênios
-                  </span>
-                }
-                variant="success"
-              />
-              <InfoCard
-                icon={
-                  <AlertCircle className="w-7 h-7 rounded-lg p-1.5 bg-red-100 text-red-700" />
-                }
-                title={
-                  <span className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                    Total Glosado
-                  </span>
-                }
-                value={
-                  <span className="text-xl font-bold leading-none text-red-900">
-                    {formatCurrency(summaryStats.totalGlosa)}
-                  </span>
-                }
-                description={
-                  <span className="text-xs text-red-700">
-                    Valor total glosado pelos convênios
-                  </span>
-                }
-                variant="danger"
-              />
-              <InfoCard
-                icon={
-                  <FileText className="w-7 h-7 rounded-lg p-1.5 bg-blue-100 text-blue-700" />
-                }
-                title={
-                  <span className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                    Procedimentos
-                  </span>
-                }
-                value={
-                  <span className="text-xl font-bold leading-none text-blue-900">
-                    {summaryStats.totalProcedimentos}
-                  </span>
-                }
-                description={
-                  <span className="text-xs text-blue-700">
-                    Total de procedimentos processados
-                  </span>
-                }
-                variant="info"
-              />
-              <InfoCard
-                icon={
-                  <ClipboardList className="w-7 h-7 rounded-lg p-1.5 bg-gray-100 text-gray-700" />
-                }
-                title={
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                    Demonstrativos
-                  </span>
-                }
-                value={
-                  <span className="text-xl font-bold leading-none text-gray-900">
-                    {demonstratives.length}
-                  </span>
-                }
-                description={
-                  <span className="text-xs text-gray-700">
-                    {summaryStats.demonstrativosComGlosa} com glosas,{' '}
-                    {summaryStats.demonstrativosSemGlosa} sem glosas
-                  </span>
-                }
-                variant="neutral"
-              />
+        {/* Background com Gradiente Âmbar Suave */}
+        <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30">
+          <div className="px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+            {/* Header Premium Humanizado */}
+            <div className="text-center space-y-6">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-full border border-amber-200/60">
+                <FileBarChart className="h-6 w-6 text-amber-700" />
+                <span className="text-sm font-semibold text-amber-700 uppercase tracking-wide">
+                  Gestão Financeira Médica
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 bg-clip-text text-transparent leading-tight">
+                  Demonstrativos & Honorários
+                </h1>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  Acompanhe seus recebimentos, identifique glosas e otimize sua gestão
+                  financeira com análises inteligentes e insights práticos.
+                </p>
+              </div>
             </div>
-          </section>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="list">Lista</TabsTrigger>
-              <TabsTrigger value="upload">Upload</TabsTrigger>
-            </TabsList>
 
-            <TabsContent value="list">
-              {/* Filtros e Ações */}
-              <Card className="mb-6">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-5 w-5" />
-                    <CardTitle className="text-lg">Filtros e Ações</CardTitle>
-                    {(searchTerm ||
-                      selectedPeriod !== 'all' ||
-                      selectedStatus !== 'all') && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearFilters}
-                        className="ml-auto h-8 px-3"
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Limpar filtros
-                      </Button>
-                    )}
+            {/* Cards de Insights Premium com Gradientes Âmbar */}
+            <section className="space-y-8">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
+                    <TrendingUp className="h-6 w-6 text-amber-700" />
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Buscar</label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Período ou arquivo..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-9"
-                        />
+                  Resumo Financeiro dos Demonstrativos
+                </h2>
+                <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+                  Visão consolidada dos seus honorários: valores liberados, glosas
+                  identificadas e oportunidades de recuperação financeira.
+                </p>
+              </div>
+
+              {/* Grid de Cards com Gradientes Âmbar Perfeitos */}
+              <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                {/* Card Valores Liberados - Verde */}
+                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+                  <CardContent className="relative p-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
+                          <CheckCircle className="h-7 w-7 text-emerald-700" />
+                        </div>
+                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                          Liberado
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
+                          Total Liberado
+                        </p>
+                        <p className="text-3xl font-bold text-emerald-800 leading-none">
+                          {formatCurrency(summaryStats.totalProcessado)}
+                        </p>
+                        <p className="text-sm text-emerald-600">
+                          Valor efetivamente liberado pelos convênios
+                        </p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Período</label>
-                      <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Todos os períodos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos os períodos</SelectItem>
-                          <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                          <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                          <SelectItem value="6m">Últimos 6 meses</SelectItem>
-                          <SelectItem value="1y">Último ano</SelectItem>
-                        </SelectContent>
-                      </Select>
+                {/* Card Glosas - Vermelho */}
+                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
+                  <CardContent className="relative p-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
+                          <AlertCircle className="h-7 w-7 text-red-700" />
+                        </div>
+                        <Badge className="bg-red-100 text-red-700 border-red-200">
+                          Glosas
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-red-600">
+                          Total Glosado
+                        </p>
+                        <p className="text-3xl font-bold text-red-800 leading-none">
+                          {formatCurrency(summaryStats.totalGlosa)}
+                        </p>
+                        <p className="text-sm text-red-600">
+                          Valor total glosado pelos convênios
+                        </p>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Status</label>
-                      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Todos os status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos os status</SelectItem>
-                          <SelectItem value="liberado">Liberado integral</SelectItem>
-                          <SelectItem value="glosado">Com glosas</SelectItem>
-                        </SelectContent>
-                      </Select>
+                {/* Card Procedimentos - Azul */}
+                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
+                  <CardContent className="relative p-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100">
+                          <FileText className="h-7 w-7 text-blue-700" />
+                        </div>
+                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                          Processados
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+                          Procedimentos
+                        </p>
+                        <p className="text-3xl font-bold text-blue-800 leading-none">
+                          {summaryStats.totalProcedimentos}
+                        </p>
+                        <p className="text-sm text-blue-600">
+                          Total de procedimentos processados
+                        </p>
+                      </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Eficiência</label>
-                      <div className="flex gap-1">
+                {/* Card Demonstrativos - Âmbar */}
+                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
+                  <CardContent className="relative p-8">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
+                          <ClipboardList className="h-7 w-7 text-amber-700" />
+                        </div>
+                        <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                          Analisados
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold uppercase tracking-wide text-amber-600">
+                          Demonstrativos
+                        </p>
+                        <p className="text-3xl font-bold text-amber-800 leading-none">
+                          {demonstratives.length}
+                        </p>
+                        <p className="text-sm text-amber-600">
+                          {summaryStats.demonstrativosComGlosa} com glosas,{' '}
+                          {summaryStats.demonstrativosSemGlosa} sem glosas
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
+
+            {/* Seção Principal com Tabs Premium */}
+            <section className="space-y-8">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="flex items-center justify-center mb-8">
+                  <TabsList className="grid w-full max-w-md grid-cols-2 h-12 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-1">
+                    <TabsTrigger
+                      value="list"
+                      className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg font-semibold transition-all duration-300"
+                    >
+                      Lista de Demonstrativos
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="upload"
+                      className="data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg font-semibold transition-all duration-300"
+                    >
+                      Upload de Documentos
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <TabsContent value="list" className="space-y-8">
+                  {/* Filtros e Ações */}
+                  <Card className="mb-6">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-5 w-5" />
+                        <CardTitle className="text-lg">Filtros e Ações</CardTitle>
+                        {(searchTerm ||
+                          selectedPeriod !== 'all' ||
+                          selectedStatus !== 'all') && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={clearFilters}
+                            className="ml-auto h-8 px-3"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Limpar filtros
+                          </Button>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Buscar</label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Período ou arquivo..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="pl-9"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Período</label>
+                          <Select
+                            value={selectedPeriod}
+                            onValueChange={setSelectedPeriod}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Todos os períodos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos os períodos</SelectItem>
+                              <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                              <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                              <SelectItem value="6m">Últimos 6 meses</SelectItem>
+                              <SelectItem value="1y">Último ano</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Status</label>
+                          <Select
+                            value={selectedStatus}
+                            onValueChange={setSelectedStatus}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Todos os status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos os status</SelectItem>
+                              <SelectItem value="liberado">
+                                Liberado integral
+                              </SelectItem>
+                              <SelectItem value="glosado">Com glosas</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Eficiência</label>
+                          <div className="flex gap-1">
+                            <Button
+                              variant={selectedStatus === 'all' ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setSelectedStatus('all')}
+                              className="flex-1 text-xs"
+                            >
+                              Todos ({demonstratives.length})
+                            </Button>
+                            <Button
+                              variant={
+                                selectedStatus === 'liberado' ? 'default' : 'outline'
+                              }
+                              size="sm"
+                              onClick={() => setSelectedStatus('liberado')}
+                              className="flex-1 text-xs text-green-600"
+                            >
+                              100% ({summaryStats.demonstrativosSemGlosa})
+                            </Button>
+                            <Button
+                              variant={
+                                selectedStatus === 'glosado' ? 'default' : 'outline'
+                              }
+                              size="sm"
+                              onClick={() => setSelectedStatus('glosado')}
+                              className="flex-1 text-xs text-red-600"
+                            >
+                              Glosas ({summaryStats.demonstrativosComGlosa})
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
                         <Button
-                          variant={selectedStatus === 'all' ? 'default' : 'outline'}
+                          variant="secondary"
                           size="sm"
-                          onClick={() => setSelectedStatus('all')}
-                          className="flex-1 text-xs"
+                          onClick={handleExportCSV}
+                          disabled={!filteredDemonstratives.length}
+                          className="flex items-center gap-2"
                         >
-                          Todos ({demonstratives.length})
+                          <Download className="h-4 w-4" />
+                          Exportar CSV
                         </Button>
+
                         <Button
-                          variant={
-                            selectedStatus === 'liberado' ? 'default' : 'outline'
+                          variant="secondary"
+                          size="sm"
+                          onClick={handleExportProcedures}
+                          disabled={!filteredDemonstratives.length}
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          Exportar Procedimentos
+                        </Button>
+
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setActiveTab('upload')}
+                          className="flex items-center gap-2 ml-auto"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Novo Demonstrativo
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Lista de Demonstrativos */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Lista de Demonstrativos</CardTitle>
+                      <CardDescription>
+                        {loading ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Carregando demonstrativos...
+                          </span>
+                        ) : (
+                          `${filteredDemonstratives.length} ${
+                            filteredDemonstratives.length === 1
+                              ? 'demonstrativo encontrado'
+                              : 'demonstrativos encontrados'
+                          }`
+                        )}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DataGrid
+                        rows={filteredDemonstratives}
+                        columns={demonstrativesColumns.map((col) => {
+                          // Adiciona tooltip nos headers técnicos
+                          if (
+                            ['Liberado', 'Glosa', 'Delta R$'].includes(col.headerName)
+                          ) {
+                            return {
+                              ...col,
+                              headerName: col.headerName,
+                              headerTooltip:
+                                col.headerName === 'Liberado'
+                                  ? 'Valor efetivamente liberado pelo convênio.'
+                                  : col.headerName === 'Glosa'
+                                    ? 'Valor glosado pelo convênio.'
+                                    : 'Diferença entre liberado e apresentado.',
+                            };
                           }
-                          size="sm"
-                          onClick={() => setSelectedStatus('liberado')}
-                          className="flex-1 text-xs text-green-600"
-                        >
-                          100% ({summaryStats.demonstrativosSemGlosa})
-                        </Button>
+                          return col;
+                        })}
+                        pageSize={10}
+                        className="min-h-[400px] mb-0"
+                        loading={loading}
+                        paginationLabel="Demonstrativos por página:"
+                        emptyMessage={
+                          searchTerm ||
+                          selectedPeriod !== 'all' ||
+                          selectedStatus !== 'all'
+                            ? 'Nenhum demonstrativo encontrado com os filtros aplicados'
+                            : 'Nenhum demonstrativo encontrado'
+                        }
+                      />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="upload">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Upload de Demonstrativos</CardTitle>
+                      <CardDescription>
+                        Faça upload de novos demonstrativos para processamento
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FileDropZone
+                        onDropFiles={handleFileDrop}
+                        type="demonstrativo"
+                        disabled={isUploading}
+                      />
+                      <FileList
+                        files={files}
+                        onRemove={removeFile}
+                        disabled={isUploading}
+                      />
+                      <div className="flex justify-end">
                         <Button
-                          variant={selectedStatus === 'glosado' ? 'default' : 'outline'}
+                          onClick={handleUploadDemonstrativos}
+                          disabled={isUploading || !files.length}
                           size="sm"
-                          onClick={() => setSelectedStatus('glosado')}
-                          className="flex-1 text-xs text-red-600"
+                          variant="primary"
+                          className="h-9 px-5 font-semibold flex items-center bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
                         >
-                          Glosas ({summaryStats.demonstrativosComGlosa})
+                          <Upload className="h-4 w-4 mr-2" />
+                          {isUploading ? 'Processando...' : 'Processar'}
                         </Button>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleExportCSV}
-                      disabled={!filteredDemonstratives.length}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Exportar CSV
-                    </Button>
-
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleExportProcedures}
-                      disabled={!filteredDemonstratives.length}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Exportar Procedimentos
-                    </Button>
-
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setActiveTab('upload')}
-                      className="flex items-center gap-2 ml-auto"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Novo Demonstrativo
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Lista de Demonstrativos */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Lista de Demonstrativos</CardTitle>
-                  <CardDescription>
-                    {loading ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Carregando demonstrativos...
-                      </span>
-                    ) : (
-                      `${filteredDemonstratives.length} ${
-                        filteredDemonstratives.length === 1
-                          ? 'demonstrativo encontrado'
-                          : 'demonstrativos encontrados'
-                      }`
-                    )}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <DataGrid
-                    rows={filteredDemonstratives}
-                    columns={demonstrativesColumns.map((col) => {
-                      // Adiciona tooltip nos headers técnicos
-                      if (['Liberado', 'Glosa', 'Delta R$'].includes(col.headerName)) {
-                        return {
-                          ...col,
-                          headerName: col.headerName,
-                          headerTooltip:
-                            col.headerName === 'Liberado'
-                              ? 'Valor efetivamente liberado pelo convênio.'
-                              : col.headerName === 'Glosa'
-                                ? 'Valor glosado pelo convênio.'
-                                : 'Diferença entre liberado e apresentado.',
-                        };
-                      }
-                      return col;
-                    })}
-                    pageSize={10}
-                    className="min-h-[400px] mb-0"
-                    loading={loading}
-                    paginationLabel="Demonstrativos por página:"
-                    emptyMessage={
-                      searchTerm || selectedPeriod !== 'all' || selectedStatus !== 'all'
-                        ? 'Nenhum demonstrativo encontrado com os filtros aplicados'
-                        : 'Nenhum demonstrativo encontrado'
-                    }
-                  />
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="upload">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload de Demonstrativos</CardTitle>
-                  <CardDescription>
-                    Faça upload de novos demonstrativos para processamento
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FileDropZone
-                    onDropFiles={handleFileDrop}
-                    type="demonstrativo"
-                    disabled={isUploading}
-                  />
-                  <FileList
-                    files={files}
-                    onRemove={removeFile}
-                    disabled={isUploading}
-                  />
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleUploadDemonstrativos}
-                      disabled={isUploading || !files.length}
-                      size="sm"
-                      variant="primary"
-                      className="h-9 px-5 font-semibold flex items-center bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {isUploading ? 'Processando...' : 'Processar'}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </section>
+          </div>
         </div>
       </AuthenticatedLayout>
     </>
