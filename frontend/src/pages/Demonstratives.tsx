@@ -28,6 +28,8 @@ import {
   Search,
   Plus,
   X,
+  CheckCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -188,23 +190,33 @@ function parseBRLToNumber(val) {
 }
 
 const proceduresColumns = [
-  { field: 'guia', headerName: 'Guia', width: 100 },
-  { field: 'data', headerName: 'Data', width: 100 },
-  { field: 'paciente', headerName: 'Paciente', width: 150 },
-  { field: 'codigo', headerName: 'Código', width: 100 },
-  { field: 'descricao', headerName: 'Descrição', flex: 1 },
-  { field: 'quantidade', headerName: 'Qtd', width: 60 },
+  { field: 'guia', headerName: 'Guia', width: 90 },
+  { field: 'data', headerName: 'Data', width: 90 },
+  { field: 'paciente', headerName: 'Paciente', width: 140 },
+  { field: 'codigo', headerName: 'Código', width: 90 },
+  { field: 'descricao', headerName: 'Descrição', flex: 1, minWidth: 200 },
+  { field: 'quantidade', headerName: 'Qtd', width: 50 },
   {
     field: 'apresentado',
     headerName: 'Apresentado',
     width: 120,
     valueFormatter: (params: any) => formatCurrency(params.value),
+    renderCell: ({ value }) => (
+      <span className="font-medium text-slate-700 whitespace-nowrap">
+        {formatCurrency(value)}
+      </span>
+    ),
   },
   {
     field: 'liberado',
     headerName: 'Liberado',
     width: 120,
     valueFormatter: (params: any) => formatCurrency(params.value),
+    renderCell: ({ value }) => (
+      <span className="font-medium text-emerald-700 whitespace-nowrap">
+        {formatCurrency(value)}
+      </span>
+    ),
   },
   {
     field: 'glosa',
@@ -213,16 +225,17 @@ const proceduresColumns = [
     renderCell: ({ value }) => {
       const hasGlosa = value > 0;
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {hasGlosa && (
-            <div
-              className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"
-              title="Glosa identificada"
-            />
+            <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
           )}
           <Badge
-            variant={hasGlosa ? 'warning' : 'success'}
-            className="whitespace-nowrap px-3 py-1 text-xs font-medium"
+            variant={hasGlosa ? 'destructive' : 'default'}
+            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${
+              hasGlosa
+                ? 'bg-red-50 text-red-700 border-red-200'
+                : 'bg-slate-50 text-slate-600 border-slate-200'
+            }`}
           >
             {formatCurrency(value)}
           </Badge>
@@ -233,72 +246,81 @@ const proceduresColumns = [
   {
     field: 'cbhpm',
     headerName: 'CBHPM',
-    minWidth: 110,
-    flex: 0,
+    width: 120,
     valueGetter: (params) => params.row.cbhpm,
     valueFormatter: (params) =>
       params.value && params.value > 0 ? formatCurrency(params.value) : '--',
     renderCell: ({ value }) =>
-      value && value > 0 ? <span>{formatCurrency(value)}</span> : <span>--</span>,
+      value && value > 0 ? (
+        <span className="font-medium text-slate-700 whitespace-nowrap">
+          {formatCurrency(value)}
+        </span>
+      ) : (
+        <span className="text-slate-400 text-xs">--</span>
+      ),
   },
   {
     field: 'diferenca',
     headerName: 'Diferença',
-    minWidth: 110,
-    flex: 0,
+    width: 140,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? params.row.liberado - params.row.cbhpm
         : null,
     renderCell: ({ value, row }) => {
-      if (!row.cbhpm || row.cbhpm <= 0) return <span>--</span>;
-      let variant = 'neutral';
+      if (!row.cbhpm || row.cbhpm <= 0)
+        return <span className="text-slate-400 text-xs">--</span>;
+      let bgClass = 'bg-slate-50 text-slate-700 border-slate-200';
       let Icon = null;
       if (value < 0) {
-        variant = 'danger';
-        Icon = <ArrowDownRight className="inline w-4 h-4 ml-1 text-danger" />;
+        bgClass = 'bg-red-50 text-red-700 border-red-200';
+        Icon = <ArrowDownRight className="w-3 h-3" />;
       } else if (value > 0) {
-        variant = 'success';
-        Icon = <ArrowUpRight className="inline w-4 h-4 ml-1 text-success" />;
+        bgClass = 'bg-blue-50 text-blue-700 border-blue-200';
+        Icon = <ArrowUpRight className="w-3 h-3" />;
       }
       return (
-        <Badge
-          variant={variant}
-          className="whitespace-nowrap px-3 py-1 font-semibold flex items-center gap-1"
-        >
-          {formatCurrency(value)}
+        <div className="flex items-center gap-1">
           {Icon}
-        </Badge>
+          <Badge
+            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
+          >
+            {formatCurrency(value)}
+          </Badge>
+        </div>
       );
     },
   },
   {
     field: 'delta_percent',
     headerName: 'Delta %',
-    minWidth: 90,
-    flex: 0,
-    description: 'Percentual da diferença entre liberado e CBHPM',
+    width: 90,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? ((params.row.liberado - params.row.cbhpm) / params.row.cbhpm) * 100
         : null,
     renderCell: ({ value, row }) => {
-      if (!row.cbhpm || row.cbhpm <= 0) return <span>--</span>;
-      let variant = 'neutral';
-      if (value < 0) variant = 'warning';
-      if (value > 0) variant = 'success';
+      if (!row.cbhpm || row.cbhpm <= 0)
+        return <span className="text-slate-400 text-xs">--</span>;
+      let bgClass = 'bg-slate-50 text-slate-700 border-slate-200';
+      if (value < 0) {
+        bgClass = 'bg-red-50 text-red-700 border-red-200';
+      } else if (value > 0) {
+        bgClass = 'bg-blue-50 text-blue-700 border-blue-200';
+      }
       return (
-        <Badge variant={variant} className="whitespace-nowrap px-3 py-1 font-semibold">
-          {value !== null && value !== undefined ? `${value.toFixed(2)}%` : '--'}
+        <Badge
+          className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
+        >
+          {value !== null && value !== undefined ? `${value.toFixed(1)}%` : '--'}
         </Badge>
       );
     },
   },
   {
     field: 'participacao',
-    headerName: 'Status',
-    minWidth: 140,
-    flex: 0,
+    headerName: 'Participação',
+    width: 130,
     renderCell: ({ value }) => {
       const participacao = String(value || '')
         .trim()
@@ -308,62 +330,22 @@ const proceduresColumns = [
 
       if (isPendente) {
         return (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"
-              title="Aguardando upload de guia"
-            />
-            <Badge variant="warning" className="text-xs font-medium">
-              Aguardando Guia
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+            <Badge className="text-xs font-medium bg-amber-50 text-amber-700 border-amber-200 px-2 py-0.5 whitespace-nowrap">
+              Aguardando
             </Badge>
           </div>
         );
       }
 
       return (
-        <div className="flex items-center gap-2">
-          <div
-            className="w-2 h-2 rounded-full bg-emerald-500"
-            title="Participação confirmada"
-          />
-          <Badge variant="success" className="text-xs font-medium">
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-2 py-0.5 whitespace-nowrap">
             {papelDisplay(value)}
           </Badge>
         </div>
-      );
-    },
-  },
-  {
-    field: 'acao',
-    headerName: 'Ação',
-    minWidth: 80,
-    flex: 0,
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => {
-      const participacao = String(params.row.participacao || '')
-        .trim()
-        .toLowerCase();
-      if (participacao !== 'upload guia') return null;
-      const codigo = encodeURIComponent(params.row.codigo || '');
-      const paciente = encodeURIComponent(params.row.paciente || '');
-      const navigate = useNavigate();
-      return (
-        <Button
-          size="sm"
-          variant="outline"
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            navigate(`/guides?codigo=${codigo}&paciente=${paciente}`);
-          }}
-          title="Clique para enviar a guia TISS referente a este procedimento. Você será redirecionado para a tela de upload de guias."
-          className="text-xs border-slate-300 hover:bg-slate-50"
-        >
-          <Upload className="h-4 w-4 mr-1" />
-          Enviar Guia
-        </Button>
       );
     },
   },
@@ -374,6 +356,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
   const [loading, setLoading] = useState(true);
   const [showGlosas, setShowGlosas] = useState(false);
   const [showOnlyPendentes, setShowOnlyPendentes] = useState(false);
+  const [showOnlyGlosas, setShowOnlyGlosas] = useState(false);
   const navigate = useNavigate();
 
   // Totais calculados a partir dos procedimentos
@@ -602,97 +585,79 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
               insights comparativos com a CBHPM.
             </DialogDescription>
           </DialogHeader>
-          {/* Insights CBHPM - Cards com design médico profissional */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 flex-shrink-0">
-            <Card className="border-slate-200/60 bg-gradient-to-br from-slate-50/80 to-white shadow-sm hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500/60" />
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Divergência CBHPM
-                      </p>
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900 mb-1">
-                      {hasCBHPM ? formatCurrency(Math.abs(totalAbaixoCBHPM)) : '—'}
-                    </p>
-                    <p className="text-xs text-slate-500 leading-tight">
-                      {hasCBHPM
-                        ? 'Valor total em divergência com a tabela CBHPM'
-                        : 'Análise CBHPM indisponível'}
-                    </p>
+          {/* Insights CBHPM - Tipografia otimizada */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <Card className="bg-white border-red-200/50">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                    <AlertCircle className="w-4 h-4 text-red-600" />
                   </div>
-                  <div className="p-2 bg-red-50 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-red-600 uppercase tracking-wide mb-1">
+                      Divergência CBHPM
+                    </p>
+                    <p className="text-lg font-bold text-red-800 leading-none">
+                      {totalAbaixoCBHPM !== null
+                        ? formatCurrency(Math.abs(totalAbaixoCBHPM))
+                        : '--'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200/60 bg-gradient-to-br from-slate-50/80 to-white shadow-sm hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
+            <Card className="bg-white border-emerald-200/50">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-amber-500/60" />
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Taxa Conformidade
-                      </p>
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900 mb-1">
+                    <p className="text-xs font-medium text-emerald-600 uppercase tracking-wide mb-1">
+                      Conformidade
+                    </p>
+                    <p className="text-lg font-bold text-emerald-800 leading-none">
                       {100 - percentAbaixoCBHPM}%
                     </p>
-                    <p className="text-xs text-slate-500 leading-tight">
-                      Procedimentos em conformidade com CBHPM
-                    </p>
-                  </div>
-                  <div className="p-2 bg-emerald-50 rounded-lg">
-                    <ClipboardList className="h-5 w-5 text-emerald-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200/60 bg-gradient-to-br from-slate-50/80 to-white shadow-sm hover:shadow-md transition-all">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between">
+            <Card className="bg-white border-blue-200/50">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-blue-600" />
+                  </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500/60" />
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        Maior Divergência
-                      </p>
-                    </div>
-                    <p className="text-2xl font-bold text-slate-900 mb-1">
+                    <p className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">
+                      Maior Divergência
+                    </p>
+                    <p className="text-lg font-bold text-blue-800 leading-none">
                       {maiorPrejuizoProc && maiorPrejuizoProc.diferenca !== null
                         ? formatCurrency(Math.abs(maiorPrejuizoProc.diferenca))
                         : '--'}
                     </p>
-                    <p className="text-xs text-slate-500 leading-tight">
-                      {maiorPrejuizoProc
-                        ? `Código: ${maiorPrejuizoProc.codigo}`
-                        : 'Nenhuma divergência identificada'}
-                    </p>
-                  </div>
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <FileText className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
           {/* Totais - Cards com design médico profissional */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <Card className="border-l-2 border-l-emerald-400 bg-white border-slate-200/50">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-emerald-600 rounded-md">
-                    <ArrowUpRight className="h-3 w-3 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600">Total Liberado</p>
-                    <p className="text-sm font-bold text-slate-900">
+                  <div>
+                    <p className="text-xs text-emerald-600 font-medium uppercase tracking-wide">
+                      Liberado
+                    </p>
+                    <p className="text-lg font-bold text-emerald-800 leading-none">
                       {formatCurrency(totals.totalLiberado)}
                     </p>
                   </div>
@@ -700,15 +665,19 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-l-2 border-l-blue-400 bg-white border-slate-200/50">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-600 rounded-md">
-                    <FileText className="h-3 w-3 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <span className="text-xs font-bold text-blue-600">
+                      {totals.totalProcedimentos}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600">Procedimentos</p>
-                    <p className="text-sm font-bold text-slate-900">
+                  <div>
+                    <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">
+                      Procedimentos
+                    </p>
+                    <p className="text-lg font-bold text-blue-800 leading-none">
                       {totals.totalProcedimentos}
                     </p>
                   </div>
@@ -716,15 +685,17 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-l-2 border-l-red-400 bg-white border-slate-200/50">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-red-600 rounded-md">
-                    <AlertCircle className="h-3 w-3 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600">Total Glosa</p>
-                    <p className="text-sm font-bold text-slate-900">
+                  <div>
+                    <p className="text-xs text-red-600 font-medium uppercase tracking-wide">
+                      Glosas
+                    </p>
+                    <p className="text-lg font-bold text-red-800 leading-none">
                       {formatCurrency(totals.totalGlosa)}
                     </p>
                   </div>
@@ -732,29 +703,48 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-l-2 border-l-slate-400 bg-white border-slate-200/50">
               <CardContent className="p-3">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-slate-600 rounded-md">
-                    <DollarSign className="h-3 w-3 text-white" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center">
+                    <span className="text-xs font-bold text-slate-600">
+                      {totals.totalApresentado > 0
+                        ? `${Math.round(
+                            (totals.totalLiberado / totals.totalApresentado) * 100
+                          )}%`
+                        : '0%'}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-600">
-                      Total Apresentado
+                  <div>
+                    <p className="text-xs text-slate-600 font-medium uppercase tracking-wide">
+                      Efetividade
                     </p>
-                    <p className="text-sm font-bold text-slate-900">
-                      {formatCurrency(totals.totalApresentado)}
+                    <p className="text-lg font-bold text-slate-800 leading-none">
+                      {totals.totalApresentado > 0
+                        ? `${(
+                            (totals.totalLiberado / totals.totalApresentado) *
+                            100
+                          ).toFixed(1)}%`
+                        : '0%'}
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-          {/* Cabeçalho da tabela com filtros */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0">
-            <h3 className="text-lg font-semibold text-foreground">
-              Detalhamento de Procedimentos
-            </h3>
+          {/* Cabeçalho da tabela com filtros - Versão compacta */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-shrink-0 bg-white p-3 rounded-lg border border-slate-200">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">
+                📋 Procedimentos Detalhados
+              </h3>
+              <p className="text-xs text-slate-600">
+                {procedures.length}{' '}
+                {procedures.length === 1 ? 'procedimento' : 'procedimentos'}
+                {showOnlyPendentes && ' • Filtrado: pendentes'}
+                {showOnlyGlosas && ' • Filtrado: glosas'}
+              </p>
+            </div>
             <div className="flex flex-wrap gap-2 items-center">
               <Button
                 size="sm"
@@ -762,17 +752,23 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                 onClick={() => {
                   setShowOnlyPendentes((v) => {
                     const novo = !v;
+                    // Reset do filtro de glosas quando ativar pendentes
+                    if (novo) setShowOnlyGlosas(false);
                     toast.success(
                       novo
-                        ? 'Mostrando apenas pendentes.'
+                        ? 'Mostrando apenas procedimentos pendentes.'
                         : 'Mostrando todos os procedimentos.'
                     );
                     return novo;
                   });
                 }}
-                title="Mostrar apenas procedimentos pendentes de upload de guia"
+                className={`text-xs ${
+                  showOnlyPendentes
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500'
+                    : 'border-amber-300 text-amber-700 hover:bg-amber-50'
+                }`}
               >
-                {showOnlyPendentes ? 'Mostrar Todos' : 'Mostrar Pendentes'}
+                {showOnlyPendentes ? 'Todos' : 'Pendentes'}
               </Button>
               <Button
                 size="sm"
@@ -781,62 +777,117 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   await handleExportPDF();
                   toast.success('PDF exportado com sucesso.');
                 }}
-                title="Exportar demonstrativo detalhado em PDF"
+                className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs"
               >
-                <Download className="w-4 h-4 mr-2" />
-                Exportar PDF
+                <Download className="w-3 h-3 mr-1" />
+                PDF
               </Button>
-              <Button
-                size="sm"
-                onClick={() => setShowGlosas(true)}
-                disabled={glosas.length === 0}
-                aria-label="Analisar Glosas"
-                className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white border-0 shadow-sm text-xs"
-              >
-                <ChevronRight className="h-4 w-4 mr-2" />
-                Analisar Glosas
-              </Button>
+              {glosas.length > 0 && (
+                <Button
+                  size="sm"
+                  variant={showOnlyGlosas ? 'default' : 'outline'}
+                  onClick={() => {
+                    setShowOnlyGlosas((v) => {
+                      const novo = !v;
+                      // Reset do filtro de pendentes quando ativar glosas
+                      if (novo) setShowOnlyPendentes(false);
+                      toast.success(
+                        novo
+                          ? 'Mostrando apenas procedimentos com glosa.'
+                          : 'Mostrando todos os procedimentos.'
+                      );
+                      return novo;
+                    });
+                  }}
+                  className={`text-xs ${
+                    showOnlyGlosas
+                      ? 'bg-red-600 hover:bg-red-700 text-white border-red-600'
+                      : 'border-red-300 text-red-700 hover:bg-red-50'
+                  }`}
+                >
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  {showOnlyGlosas ? 'Todas' : `Glosas (${glosas.length})`}
+                </Button>
+              )}
             </div>
           </div>
-          {/* Tabela de procedimentos - CORRIGIDA com scroll adequado */}
+          {/* Tabela de procedimentos - Otimizada para máxima visibilidade */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            <Card className="h-full flex flex-col">
-              <CardHeader className="flex-shrink-0 pb-3">
+            <Card className="h-full flex flex-col border-slate-200 shadow-sm">
+              <CardHeader className="flex-shrink-0 pb-2 pt-3 px-4 bg-white border-b border-slate-100">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-semibold text-slate-900">
-                    Lista de Procedimentos ({procedures.length} itens)
+                  <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                    Lista Completa
                   </CardTitle>
-                  <div className="text-xs text-slate-500">
-                    {showOnlyPendentes
-                      ? 'Mostrando apenas pendentes'
-                      : 'Mostrando todos'}
+                  <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                      <span>Confirmado</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                      <span>Pendente</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <span>Glosa</span>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 min-h-0 p-0">
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
-                    <Loader2 className="animate-spin text-primary w-6 h-6" />
-                    <span className="ml-3 text-muted-foreground">
+                    <Loader2 className="animate-spin text-blue-500 w-6 h-6" />
+                    <span className="ml-3 text-slate-600">
                       Carregando procedimentos...
                     </span>
                   </div>
                 ) : (
-                  <div className="h-full overflow-auto border-t">
+                  <div className="h-full overflow-auto">
                     <DataGrid
                       rows={procedures
                         .map((p, idx) => ({ id: idx, ...p }))
-                        .filter(
-                          (row) =>
-                            !showOnlyPendentes ||
-                            String(row.participacao || '')
-                              .trim()
-                              .toLowerCase() === 'upload guia'
-                        )}
+                        .filter((row) => {
+                          // Filtro de pendentes
+                          if (showOnlyPendentes) {
+                            return (
+                              String(row.participacao || '')
+                                .trim()
+                                .toLowerCase() === 'upload guia'
+                            );
+                          }
+
+                          // Filtro de glosas
+                          if (showOnlyGlosas) {
+                            const glosaValue =
+                              Number(row.financial?.glosa ?? row.glosa) || 0;
+                            return glosaValue > 0;
+                          }
+
+                          // Mostrar todos
+                          return true;
+                        })}
                       columns={proceduresColumns}
-                      pageSize={100}
+                      pageSize={150}
                       className="border-0"
                       wrapperScrollable={false}
+                      sx={{
+                        '& .MuiDataGrid-cell': {
+                          fontSize: '0.875rem',
+                          padding: '8px 12px',
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                          backgroundColor: '#f8fafc',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          color: '#475569',
+                        },
+                        '& .MuiDataGrid-row:hover': {
+                          backgroundColor: '#f1f5f9',
+                        },
+                      }}
                     />
                   </div>
                 )}
@@ -1383,56 +1434,84 @@ const DemonstrativesPage = () => {
           <section aria-label="Painel de Insights Clínico-Financeiros" className="mb-6">
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-2">
               <InfoCard
-                icon={<ArrowUpRight className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Total Liberado</span>}
+                icon={
+                  <TrendingUp className="w-7 h-7 rounded-lg p-1.5 bg-green-100 text-green-700" />
+                }
+                title={
+                  <span className="text-xs font-semibold uppercase tracking-wide text-green-600">
+                    Total Liberado
+                  </span>
+                }
                 value={
-                  <span className="text-2xl md:text-3xl font-bold">
+                  <span className="text-xl font-bold leading-none text-green-900">
                     {formatCurrency(summaryStats.totalProcessado)}
                   </span>
                 }
                 description={
-                  <span className="text-xs">
+                  <span className="text-xs text-green-700">
                     Valor efetivamente liberado pelos convênios
                   </span>
                 }
                 variant="success"
               />
               <InfoCard
-                icon={<AlertCircle className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Total Glosado</span>}
+                icon={
+                  <AlertCircle className="w-7 h-7 rounded-lg p-1.5 bg-red-100 text-red-700" />
+                }
+                title={
+                  <span className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                    Total Glosado
+                  </span>
+                }
                 value={
-                  <span className="text-2xl md:text-3xl font-bold">
+                  <span className="text-xl font-bold leading-none text-red-900">
                     {formatCurrency(summaryStats.totalGlosa)}
                   </span>
                 }
                 description={
-                  <span className="text-xs">Valor total glosado pelos convênios</span>
+                  <span className="text-xs text-red-700">
+                    Valor total glosado pelos convênios
+                  </span>
                 }
                 variant="danger"
               />
               <InfoCard
-                icon={<FileText className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Procedimentos</span>}
+                icon={
+                  <FileText className="w-7 h-7 rounded-lg p-1.5 bg-blue-100 text-blue-700" />
+                }
+                title={
+                  <span className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                    Procedimentos
+                  </span>
+                }
                 value={
-                  <span className="text-2xl md:text-3xl font-bold">
+                  <span className="text-xl font-bold leading-none text-blue-900">
                     {summaryStats.totalProcedimentos}
                   </span>
                 }
                 description={
-                  <span className="text-xs">Total de procedimentos processados</span>
+                  <span className="text-xs text-blue-700">
+                    Total de procedimentos processados
+                  </span>
                 }
                 variant="info"
               />
               <InfoCard
-                icon={<ClipboardList className="h-6 w-6" />}
-                title={<span className="text-xs font-semibold">Demonstrativos</span>}
+                icon={
+                  <ClipboardList className="w-7 h-7 rounded-lg p-1.5 bg-gray-100 text-gray-700" />
+                }
+                title={
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+                    Demonstrativos
+                  </span>
+                }
                 value={
-                  <span className="text-2xl md:text-3xl font-bold">
+                  <span className="text-xl font-bold leading-none text-gray-900">
                     {demonstratives.length}
                   </span>
                 }
                 description={
-                  <span className="text-xs">
+                  <span className="text-xs text-gray-700">
                     {summaryStats.demonstrativosComGlosa} com glosas,{' '}
                     {summaryStats.demonstrativosSemGlosa} sem glosas
                   </span>

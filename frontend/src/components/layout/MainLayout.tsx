@@ -70,14 +70,14 @@ export function MainLayout({
 
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex min-h-screen">
         {/* Sidebar */}
         {showSideNav && <AppSidebar />}
 
         {/* Main Content Area */}
         <div
           className={`
-            flex flex-col flex-1 overflow-hidden transition-all duration-300 ease-in-out
+            flex flex-col flex-1 min-h-screen transition-all duration-300 ease-in-out
             ${
               !showSideNav
                 ? 'ml-0'
@@ -135,19 +135,16 @@ export function MainLayout({
             </div>
           </header>
 
-          {/* Main Content Wrapper com Footer */}
-          <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Page Content com padding premium e espaçamento adequado */}
-            <main className="flex-1 overflow-auto bg-gray-50/30 dark:bg-gray-950/50">
-              <div className="min-h-full p-8 sm:p-10 pb-16">
-                {/* Renderizar children se fornecido, senão usar Outlet para rotas */}
-                {children || <Outlet />}
-              </div>
-            </main>
+          {/* Page Content com espaçamento natural */}
+          <main className="flex-1 bg-gray-50/30 dark:bg-gray-950/50">
+            <div className="p-8 sm:p-10">
+              {/* Renderizar children se fornecido, senão usar Outlet para rotas */}
+              {children || <Outlet />}
+            </div>
+          </main>
 
-            {/* Footer Profissional para páginas autenticadas */}
-            <AuthFooter />
-          </div>
+          {/* Footer Natural (não-fixo) */}
+          <AuthFooter />
         </div>
       </div>
 

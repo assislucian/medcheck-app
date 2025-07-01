@@ -1,51 +1,108 @@
-import { ArrowUpRight, Sparkles } from "lucide-react";
-import { formatCurrency } from "../../utils/format";
-import { cn } from "../../lib/utils";
+import React from 'react';
+import { AlertCircle, Info, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '../ui/button';
+import { Card, CardContent } from '../ui/card';
 
 interface DashboardAlertProps {
-  valorRecuperado: number;
+  type: 'info' | 'warning' | 'success' | 'destructive';
+  title: string;
+  message: string;
+  actionLabel?: string;
+  actionLink?: string;
 }
 
-export function DashboardAlert({ valorRecuperado }: DashboardAlertProps) {
-  if (!valorRecuperado) return null;
+export function DashboardAlert({
+  type,
+  title,
+  message,
+  actionLabel,
+  actionLink,
+}: DashboardAlertProps) {
+  const getIcon = () => {
+    switch (type) {
+      case 'info':
+        return <Info className="h-5 w-5" />;
+      case 'warning':
+        return <AlertTriangle className="h-5 w-5" />;
+      case 'success':
+        return <CheckCircle className="h-5 w-5" />;
+      case 'destructive':
+        return <AlertCircle className="h-5 w-5" />;
+      default:
+        return <Info className="h-5 w-5" />;
+    }
+  };
 
-  const isHighValue = valorRecuperado > 10000;
+  const getColors = () => {
+    switch (type) {
+      case 'info':
+        return {
+          border: 'border-blue-200',
+          bg: 'bg-blue-50',
+          icon: 'text-blue-600',
+          title: 'text-blue-800',
+          message: 'text-blue-700',
+        };
+      case 'warning':
+        return {
+          border: 'border-orange-200',
+          bg: 'bg-orange-50',
+          icon: 'text-orange-600',
+          title: 'text-orange-800',
+          message: 'text-orange-700',
+        };
+      case 'success':
+        return {
+          border: 'border-green-200',
+          bg: 'bg-green-50',
+          icon: 'text-green-600',
+          title: 'text-green-800',
+          message: 'text-green-700',
+        };
+      case 'destructive':
+        return {
+          border: 'border-red-200',
+          bg: 'bg-red-50',
+          icon: 'text-red-600',
+          title: 'text-red-800',
+          message: 'text-red-700',
+        };
+      default:
+        return {
+          border: 'border-blue-200',
+          bg: 'bg-blue-50',
+          icon: 'text-blue-600',
+          title: 'text-blue-800',
+          message: 'text-blue-700',
+        };
+    }
+  };
+
+  const colors = getColors();
 
   return (
-    <div className={cn(
-      "relative overflow-hidden rounded-xl p-6",
-      "bg-gradient-to-r from-success/10 via-success/5 to-background",
-      "border border-success/20",
-      "animate-in fade-in-50 slide-in-from-bottom-5"
-    )}>
-      <div className="flex items-start gap-4">
-        <div className={cn(
-          "shrink-0 rounded-lg p-2.5",
-          "bg-gradient-to-br from-success/20 to-success/10",
-          "text-success"
-        )}>
-          <ArrowUpRight className="h-6 w-6" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="font-semibold text-success">
-            Você recuperou {formatCurrency(valorRecuperado)} este mês. Excelente!
-          </h3>
-          <p className="text-sm text-success/80">
-            Continue acompanhando seus demonstrativos para maximizar seus resultados.
-          </p>
-        </div>
-      </div>
-
-      {isHighValue && (
-        <>
-          <div className="absolute top-0 right-0 p-3">
-            <div className="animate-pulse">
-              <Sparkles className="h-5 w-5 text-success" />
-            </div>
+    <Card className={`${colors.border} ${colors.bg} border-l-4`}>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className={`${colors.icon} flex-shrink-0`}>{getIcon()}</div>
+          <div className="flex-1 space-y-2">
+            <h4 className={`font-semibold ${colors.title}`}>{title}</h4>
+            <p className={`text-sm ${colors.message}`}>{message}</p>
+            {actionLabel && actionLink && (
+              <div className="pt-2">
+                <Button
+                  asChild
+                  variant={type === 'destructive' ? 'destructive' : 'default'}
+                  size="sm"
+                >
+                  <Link to={actionLink}>{actionLabel}</Link>
+                </Button>
+              </div>
+            )}
           </div>
-          <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-success/5 rounded-full blur-2xl" />
-        </>
-      )}
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

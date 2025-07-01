@@ -36,18 +36,6 @@ export default function SidebarFooter() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Settings Button */}
-          <button
-            onClick={handleSettings}
-            className={`flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 group ${
-              isCollapsed ? 'w-10 h-10 justify-center' : ''
-            }`}
-            title="Configurações"
-          >
-            <Settings className="h-4 w-4 group-hover:scale-110 transition-transform" />
-            {!isCollapsed && <span className="font-medium">Configurações</span>}
-          </button>
-
           {/* Logout Button */}
           <button
             onClick={handleSignOut}

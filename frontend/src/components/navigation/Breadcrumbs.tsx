@@ -32,22 +32,12 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       { label: 'Intelligence Hub' },
     ],
     '/guides': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Gestão Médica', href: '/guides' },
-      { label: 'Guias Médicas' },
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Guias Médicas', href: '/guides' },
     ],
     '/demonstratives': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Gestão Médica', href: '/guides' },
-      { label: 'Demonstrativos' },
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Demonstrativos', href: '/demonstratives' },
     ],
     '/unpaid-procedures': [
       {
@@ -58,23 +48,9 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       { label: 'Gestão Crítica' },
       { label: 'Glosas Pendentes' },
     ],
-    '/history': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Análises' },
-      { label: 'Histórico' },
-    ],
     '/reports': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Análises' },
-      { label: 'Relatórios' },
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Relatórios', href: '/reports' },
     ],
     '/profile': [
       {
@@ -85,23 +61,9 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       { label: 'Configurações' },
       { label: 'Perfil' },
     ],
-    '/settings': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Configurações' },
-      { label: 'Preferências' },
-    ],
     '/notifications': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Sistema' },
-      { label: 'Notificações' },
+      { name: 'Dashboard', href: '/dashboard' },
+      { name: 'Activity Log', href: '/notifications' },
     ],
     '/help': [
       {

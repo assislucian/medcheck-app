@@ -105,22 +105,45 @@ function getPrazoStatus(dias: number) {
 
 function PrazoBadge({ dias }: { dias: number }) {
   const status = getPrazoStatus(dias);
-  let label = dias > 1 ? `${dias} dias` : dias === 1 ? '1 dia' : 'Expirado';
+  let label: string;
+  let actionLabel: string;
+
+  if (dias > 1) {
+    label = `${dias} dias`;
+    actionLabel = 'Contestar';
+  } else if (dias === 1) {
+    label = '1 dia';
+    actionLabel = 'Urgente!';
+  } else {
+    label = 'Expirado';
+    actionLabel = 'Recurso';
+  }
+
   return (
-    <Badge
-      variant={status}
-      className={
-        status === 'success'
-          ? 'bg-green-100 text-green-800 border border-green-200 font-medium'
-          : status === 'warning'
-            ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium'
-            : 'bg-red-100 text-red-800 border border-red-200 font-medium'
-      }
-      aria-label={label}
-      tabIndex={0}
-    >
-      {label}
-    </Badge>
+    <div className="flex flex-col items-center gap-1">
+      <Badge
+        variant={status}
+        className={
+          status === 'success'
+            ? 'bg-green-100 text-green-800 border border-green-200 font-medium'
+            : status === 'warning'
+              ? 'bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium'
+              : 'bg-red-100 text-red-800 border border-red-200 font-medium'
+        }
+        aria-label={label}
+        tabIndex={0}
+      >
+        {label}
+      </Badge>
+      {dias === 0 && (
+        <Badge
+          variant="outline"
+          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+        >
+          {actionLabel}
+        </Badge>
+      )}
+    </div>
   );
 }
 
@@ -374,15 +397,22 @@ const UnpaidProceduresPage = () => {
     {
       field: 'actions',
       headerName: 'Ações',
-      width: 90,
+      width: 120,
       renderCell: ({ row }: { row: any }) => {
         const diasRestantes = calcularDiasParaContestar(row.data);
         const podeContestar = diasRestantes > 0;
 
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {podeContestar ? (
-              <ResourceDialog procedure={row} />
+              <>
+                <ResourceDialog procedure={row} />
+                {diasRestantes <= 3 && (
+                  <Badge variant="warning" className="text-xs">
+                    Urgente
+                  </Badge>
+                )}
+              </>
             ) : (
               <TooltipProvider>
                 <Tooltip>
@@ -390,14 +420,13 @@ const UnpaidProceduresPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled
-                      className="opacity-50 cursor-not-allowed"
+                      className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                     >
-                      Expirado
+                      Recurso
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Prazo de contestação expirado</p>
+                    <p>Prazo de contestação expirado - Abrir recurso administrativo</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

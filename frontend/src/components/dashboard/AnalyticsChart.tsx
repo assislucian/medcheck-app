@@ -1,8 +1,24 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart2, Award } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts';
-import { useDashboardStats } from "@/hooks/use-dashboard-stats";
-import { useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { BarChart2, Award } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  LabelList,
+} from 'recharts';
+import { useDashboardStats } from '@/hooks/use-dashboard-stats';
+import { useMemo } from 'react';
 
 export function AnalyticsChart() {
   const { data, isLoading } = useDashboardStats();
@@ -10,7 +26,7 @@ export function AnalyticsChart() {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
     }).format(value);
   };
 
@@ -18,92 +34,142 @@ export function AnalyticsChart() {
   const monthlyData = data?.monthlyData || [];
   const bestMonth = useMemo(() => {
     if (!monthlyData.length) return null;
-    return monthlyData.reduce((max, item) => (item.recebido > max.recebido ? item : max), monthlyData[0]);
+    return monthlyData.reduce(
+      (max, item) => (item.recebido > max.recebido ? item : max),
+      monthlyData[0]
+    );
   }, [monthlyData]);
 
   return (
-    <Card className="lg:col-span-2 bg-gradient-to-br from-blue-50/60 via-white/80 to-blue-100/60 backdrop-blur-xl shadow-2xl border-0">
-      <CardHeader>
+    <Card className="border-0 bg-white shadow-lg">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Evolução dos valores recuperados</CardTitle>
-            <CardDescription>Veja como sua recuperação de glosas evoluiu mês a mês</CardDescription>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Progresso de Recuperação
+            </CardTitle>
+            <CardDescription className="text-base text-gray-600">
+              Evolução mensal dos valores recuperados vs glosados
+            </CardDescription>
           </div>
-          <BarChart2 className="h-4 w-4 text-primary" />
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-3 rounded-2xl">
+            <BarChart2 className="h-6 w-6 text-white" />
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="pl-2">
-        <div className="h-[320px]">
+      <CardContent className="pt-2">
+        <div className="h-[380px]">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex flex-col items-center gap-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-amber-200 border-t-amber-500"></div>
+                <p className="text-gray-500">Carregando dados...</p>
+              </div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }} barCategoryGap={24}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-border/50" />
-                <XAxis dataKey="name" className="text-muted-foreground text-xs" />
-                <YAxis 
-                  tickFormatter={(value) => `R$${value/1000}k`} 
-                  domain={['auto', 'auto']} 
-                  className="text-muted-foreground text-xs"
+              <BarChart
+                data={monthlyData}
+                margin={{ top: 40, right: 30, left: 20, bottom: 20 }}
+                barCategoryGap={32}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#f3f4f6"
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 13, fill: '#6b7280' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={(value) => `R$${(value / 1000).toFixed(0)}k`}
+                  domain={['auto', 'auto']}
+                  tick={{ fontSize: 13, fill: '#6b7280' }}
+                  axisLine={false}
+                  tickLine={false}
                 />
                 <Tooltip
-                  formatter={(value: number, key: string, props: any) => [formatCurrency(value), key === 'recebido' ? 'Recuperado' : 'Glosado']}
-                  labelFormatter={(label) => `Mês: ${label}`}
-                  contentStyle={{ 
-                    background: 'rgba(255,255,255,0.95)',
-                    borderRadius: '0.75rem',
-                    border: '1px solid #e0e7ef',
-                    boxShadow: '0 4px 16px 0 rgba(31, 38, 135, 0.10)'
+                  formatter={(value: number, key: string) => [
+                    formatCurrency(value),
+                    key === 'recebido' ? 'Recuperado' : 'Glosado',
+                  ]}
+                  labelFormatter={(label) => `${label}`}
+                  contentStyle={{
+                    background: 'rgba(255,255,255,0.98)',
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    fontSize: '14px',
                   }}
-                  itemStyle={{ fontWeight: 500 }}
+                  itemStyle={{ fontWeight: 600 }}
                 />
-                <ReferenceLine y={0} stroke="#e0e7ef" />
-                <Bar 
-                  dataKey="recebido" 
-                  name="Recuperado" 
+                <ReferenceLine y={0} stroke="#e5e7eb" />
+
+                {/* Barra de Recuperado */}
+                <Bar
+                  dataKey="recebido"
+                  name="Recuperado"
                   fill="url(#recuperado-gradient)"
-                  radius={[8, 8, 0, 0]} 
-                  maxBarSize={48} 
-                  animationDuration={1800}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={60}
+                  animationDuration={1500}
                   isAnimationActive={true}
                 >
-                  <LabelList 
+                  <LabelList
                     dataKey="recebido"
                     position="top"
                     formatter={formatCurrency}
                     content={({ x, y, value, index }) => {
-                      if (!bestMonth || monthlyData[index]?.name !== bestMonth.name) return null;
+                      if (!bestMonth || monthlyData[index]?.name !== bestMonth.name)
+                        return null;
                       return (
                         <g>
-                          <text x={x} y={y - 12} fill="#2563eb" fontWeight="bold" fontSize="13" textAnchor="middle">
-                            <tspan>{formatCurrency(value)}</tspan>
+                          <rect
+                            x={x - 35}
+                            y={y - 45}
+                            width={70}
+                            height={25}
+                            rx={12}
+                            fill="#f59e0b"
+                          />
+                          <text
+                            x={x}
+                            y={y - 28}
+                            fill="white"
+                            fontWeight="600"
+                            fontSize="11"
+                            textAnchor="middle"
+                          >
+                            Melhor mês
                           </text>
-                          <Award x={x - 16} y={y - 32} width={18} height={18} color="#f59e42" />
-                          <text x={x + 12} y={y - 22} fill="#f59e42" fontWeight="bold" fontSize="11" textAnchor="start">Melhor mês</text>
                         </g>
                       );
                     }}
                   />
                 </Bar>
-                <Bar 
-                  dataKey="glosado" 
-                  name="Glosado" 
+
+                {/* Barra de Glosado */}
+                <Bar
+                  dataKey="glosado"
+                  name="Glosado"
                   fill="url(#glosado-gradient)"
-                  radius={[8, 8, 0, 0]} 
-                  maxBarSize={48} 
-                  animationDuration={1800}
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={60}
+                  animationDuration={1500}
                   isAnimationActive={true}
                 />
+
                 <defs>
                   <linearGradient id="recuperado-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.9} />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#059669" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.8} />
                   </linearGradient>
                   <linearGradient id="glosado-gradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.85} />
-                    <stop offset="100%" stopColor="#fca5a5" stopOpacity={0.6} />
+                    <stop offset="0%" stopColor="#dc2626" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#f87171" stopOpacity={0.7} />
                   </linearGradient>
                 </defs>
               </BarChart>

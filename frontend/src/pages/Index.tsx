@@ -1,32 +1,33 @@
-
-import { PublicLayout } from "@/components/layout/PublicLayout";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { ProductFeatures } from "@/components/landing/ProductFeatures";
-import { BenefitsSection } from "@/components/landing/BenefitsSection";
-import { PricingSection } from "@/components/landing/PricingSection";
-import { DemoSection } from "@/components/landing/DemoSection";
-import { motion } from "framer-motion";
+import React from 'react';
+import HeroSection from '@/components/landing/HeroSection';
+import { Helmet } from 'react-helmet-async';
 
 const Index = () => {
   return (
-    <PublicLayout 
-      title="MedCheck | Auditoria médica automatizada"
-      description="A solução definitiva para automatizar a auditoria médica e maximizar a recuperação de valores glosados."
-      showGradientBackground={true}
-    >
-      <motion.div 
-        className="flex flex-col"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <HeroSection />
-        <BenefitsSection />
-        <ProductFeatures />
-        <PricingSection />
-        <DemoSection />
-      </motion.div>
-    </PublicLayout>
+    <>
+      <Helmet>
+        <title>MedCheck | Auditoria Médica Automatizada - Recupere suas Glosas</title>
+        <meta
+          name="description"
+          content="Pare de perder dinheiro com glosas abusivas. Auditoria CBHPM automatizada, contestação inteligente e gestão financeira médica. +2.500 médicos já aumentaram sua receita."
+        />
+        <meta
+          name="keywords"
+          content="auditoria médica, CBHPM, glosas médicas, contestação automática, gestão financeira médica, honorários médicos"
+        />
+        <meta
+          property="og:title"
+          content="MedCheck | Pare de Perder Dinheiro com Glosas Abusivas"
+        />
+        <meta
+          property="og:description"
+          content="A primeira plataforma brasileira que combina auditoria CBHPM, contestação automatizada e gestão financeira médica."
+        />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+      <HeroSection />
+    </>
   );
 };
 

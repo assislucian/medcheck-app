@@ -25,17 +25,17 @@ import {
   Calculator,
   BarChart3,
   Bell,
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SearchItem {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   icon: React.ReactNode;
   href: string;
   category: string;
-  keywords?: string[];
 }
 
 interface GlobalSearchProps {
@@ -49,24 +49,13 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ trigger, className }
 
   // Itens de busca estruturados
   const searchItems: SearchItem[] = [
-    // Páginas Principais
     {
       id: 'dashboard',
-      title: 'Centro de Comando',
+      title: 'Dashboard',
       description: 'Visão geral e métricas principais',
       icon: <LayoutDashboard className="h-4 w-4" />,
       href: '/dashboard',
-      category: 'Páginas',
-      keywords: ['dashboard', 'início', 'resumo', 'métricas'],
-    },
-    {
-      id: 'intelligence',
-      title: 'Intelligence Hub',
-      description: 'Analytics avançado e insights',
-      icon: <Brain className="h-4 w-4" />,
-      href: '/intelligence',
-      category: 'Páginas',
-      keywords: ['analytics', 'inteligência', 'insights', 'ia'],
+      category: 'Principal',
     },
     {
       id: 'guides',
@@ -74,82 +63,55 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ trigger, className }
       description: 'Gestão de guias TISS',
       icon: <FileText className="h-4 w-4" />,
       href: '/guides',
-      category: 'Páginas',
-      keywords: ['guias', 'tiss', 'procedimentos'],
+      category: 'Operacional',
     },
     {
       id: 'demonstratives',
       title: 'Demonstrativos',
-      description: 'Análise de demonstrativos de pagamento',
+      description: 'Análise de demonstrativos',
       icon: <FileBarChart className="h-4 w-4" />,
       href: '/demonstratives',
-      category: 'Páginas',
-      keywords: ['demonstrativo', 'pagamento', 'contracheque'],
+      category: 'Operacional',
     },
     {
-      id: 'unpaid',
+      id: 'unpaid-procedures',
       title: 'Glosas Pendentes',
-      description: 'Procedimentos não pagos e contestações',
+      description: 'Gestão de contestações',
       icon: <FileX className="h-4 w-4" />,
       href: '/unpaid-procedures',
-      category: 'Páginas',
-      keywords: ['glosas', 'não pagos', 'contestar'],
-    },
-    {
-      id: 'history',
-      title: 'Histórico',
-      description: 'Análises realizadas anteriormente',
-      icon: <History className="h-4 w-4" />,
-      href: '/history',
-      category: 'Páginas',
-      keywords: ['histórico', 'análises', 'anteriores'],
+      category: 'Crítico',
     },
     {
       id: 'reports',
       title: 'Relatórios',
-      description: 'Relatórios detalhados e exportações',
+      description: 'Relatórios customizados',
       icon: <BarChart3 className="h-4 w-4" />,
       href: '/reports',
-      category: 'Páginas',
-      keywords: ['relatórios', 'export', 'dados'],
-    },
-
-    // Configurações
-    {
-      id: 'profile',
-      title: 'Perfil',
-      description: 'Dados pessoais e configurações médicas',
-      icon: <User className="h-4 w-4" />,
-      href: '/profile',
-      category: 'Configurações',
-      keywords: ['perfil', 'dados', 'crm'],
-    },
-    {
-      id: 'settings',
-      title: 'Configurações',
-      description: 'Preferências do sistema',
-      icon: <Settings className="h-4 w-4" />,
-      href: '/settings',
-      category: 'Configurações',
-      keywords: ['configurações', 'preferências'],
+      category: 'Análise',
     },
     {
       id: 'notifications',
-      title: 'Notificações',
-      description: 'Central de notificações',
-      icon: <Bell className="h-4 w-4" />,
+      title: 'Activity Log',
+      description: 'Log de atividades do sistema',
+      icon: <Activity className="h-4 w-4" />,
       href: '/notifications',
       category: 'Sistema',
-      keywords: ['notificações', 'alertas'],
     },
     {
       id: 'help',
-      title: 'Central de Ajuda',
-      description: 'Tutoriais e suporte',
+      title: 'Suporte',
+      description: 'Ajuda e documentação',
       icon: <HelpCircle className="h-4 w-4" />,
       href: '/help',
       category: 'Suporte',
-      keywords: ['ajuda', 'suporte', 'tutorial'],
+    },
+    {
+      id: 'profile',
+      title: 'Perfil',
+      description: 'Dados pessoais e configurações',
+      icon: <User className="h-4 w-4" />,
+      href: '/profile',
+      category: 'Conta',
     },
   ];
 
@@ -235,9 +197,7 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ trigger, className }
               {items.map((item) => (
                 <CommandItem
                   key={item.id}
-                  value={`${item.title} ${item.description} ${item.keywords?.join(
-                    ' '
-                  )}`}
+                  value={`${item.title} ${item.description}`}
                   onSelect={() => handleSelect(item.href)}
                   className="flex items-center gap-3 px-4 py-3 cursor-pointer"
                 >

@@ -1,6 +1,7 @@
-
 import { Link } from 'react-router-dom';
 import { Fragment } from 'react';
+import { Button } from '@/components/ui/button';
+import { Activity } from 'lucide-react';
 
 interface MobileMenuProps {
   isLoggedIn: boolean;
@@ -14,7 +15,12 @@ interface MobileMenuProps {
   onLogout: () => Promise<void>;
 }
 
-export const MobileMenu = ({ isLoggedIn, isOpen, profileData, onLogout }: MobileMenuProps) => {
+export const MobileMenu = ({
+  isLoggedIn,
+  isOpen,
+  profileData,
+  onLogout,
+}: MobileMenuProps) => {
   if (!isOpen) return null;
 
   return (
@@ -25,7 +31,9 @@ export const MobileMenu = ({ isLoggedIn, isOpen, profileData, onLogout }: Mobile
             <div className="px-5 py-3 border-b">
               <div className="text-lg font-semibold">{profileData.name}</div>
               {profileData.specialty && (
-                <div className="text-sm text-muted-foreground">{profileData.specialty}</div>
+                <div className="text-sm text-muted-foreground">
+                  {profileData.specialty}
+                </div>
               )}
               <div className="text-sm text-muted-foreground">{profileData.email}</div>
             </div>
@@ -53,24 +61,19 @@ export const MobileMenu = ({ isLoggedIn, isOpen, profileData, onLogout }: Mobile
             >
               Não Pagos
             </Link>
-            <Link
-              to="/history"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted"
-            >
-              Histórico
-            </Link>
+
             <Link
               to="/profile"
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted"
             >
               Perfil
             </Link>
-            <Link
-              to="/notifications"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted"
-            >
-              Notificações
-            </Link>
+            <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+              <Link to="/notifications" onClick={() => setIsOpen(false)}>
+                <Activity className="mr-2 h-4 w-4" />
+                Activity Log
+              </Link>
+            </Button>
             <Link
               to="/help"
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted"

@@ -160,6 +160,36 @@ const SelectSeparator = React.forwardRef<
 ));
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  placeholder?: string;
+}
+
+const SelectCustom = React.forwardRef<HTMLSelectElement, SelectProps>(
+  ({ className, placeholder, children, ...props }, ref) => {
+    return (
+      <div className="relative">
+        <select
+          className={cn(
+            'w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg appearance-none cursor-pointer pr-12',
+            className
+          )}
+          ref={ref}
+          {...props}
+        >
+          {placeholder && (
+            <option value="" disabled className="text-slate-500 dark:text-slate-400">
+              {placeholder}
+            </option>
+          )}
+          {children}
+        </select>
+        <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-amber-300/60 pointer-events-none" />
+      </div>
+    );
+  }
+);
+SelectCustom.displayName = 'Select';
+
 export {
   Select,
   SelectGroup,
@@ -171,4 +201,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  SelectCustom,
 };

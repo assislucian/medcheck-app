@@ -143,17 +143,6 @@ export const UserMenu = ({
               <span className="font-medium">Meu Perfil</span>
             </Link>
           </DropdownMenuItem>
-
-          <DropdownMenuItem
-            asChild
-            className="transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/60 focus:bg-gray-50 dark:focus:bg-gray-800/60 cursor-pointer flex items-center gap-3 px-6 py-3 text-base"
-            role="menuitem"
-          >
-            <Link to="/settings">
-              <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              <span className="font-medium">Configurações</span>
-            </Link>
-          </DropdownMenuItem>
         </div>
 
         <DropdownMenuSeparator className="my-2" />

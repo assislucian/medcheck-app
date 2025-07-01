@@ -1,31 +1,43 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
+import { SelectCustom } from './ui/select';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
-import { Input } from './ui/input';
+import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-const registerSchema = z.object({
-  uf: z.string().min(2, 'Selecione a UF'),
-  crm: z.string().min(4, 'Informe o CRM'),
-  nome: z.string().min(2, 'Informe o nome completo'),
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres')
-    .regex(/[A-Z]/, 'A senha deve conter letra maiúscula')
-    .regex(/[a-z]/, 'A senha deve conter letra minúscula')
-    .regex(/[0-9]/, 'A senha deve conter número')
-    .regex(/[^A-Za-z0-9]/, 'A senha deve conter símbolo'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    uf: z.string().min(2, 'Selecione a UF'),
+    crm: z.string().min(4, 'Informe o CRM'),
+    nome: z.string().min(2, 'Informe o nome completo'),
+    password: z
+      .string()
+      .min(8, 'A senha deve ter pelo menos 8 caracteres')
+      .regex(/[A-Z]/, 'A senha deve conter letra maiúscula')
+      .regex(/[a-z]/, 'A senha deve conter letra minúscula')
+      .regex(/[0-9]/, 'A senha deve conter número')
+      .regex(/[^A-Za-z0-9]/, 'A senha deve conter símbolo'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
-const TERMS_VERSION = "2025-05-05"; // Atualize conforme a versão/data dos termos
+const TERMS_VERSION = '2025-05-05'; // Atualize conforme a versão/data dos termos
 
 const RegisterForm = () => {
   const [uf, setUf] = useState('');
@@ -33,7 +45,15 @@ const RegisterForm = () => {
   const [nome, setNome] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<{uf?: string, crm?: string, nome?: string, password?: string, confirmPassword?: string}>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<{
+    uf?: string;
+    crm?: string;
+    nome?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -47,13 +67,20 @@ const RegisterForm = () => {
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const newErrors: {uf?: string, crm?: string, nome?: string, password?: string, confirmPassword?: string} = {};
+        const newErrors: {
+          uf?: string;
+          crm?: string;
+          nome?: string;
+          password?: string;
+          confirmPassword?: string;
+        } = {};
         error.errors.forEach((err) => {
           if (err.path[0] === 'uf') newErrors.uf = err.message;
           if (err.path[0] === 'crm') newErrors.crm = err.message;
           if (err.path[0] === 'nome') newErrors.nome = err.message;
           if (err.path[0] === 'password') newErrors.password = err.message;
-          if (err.path[0] === 'confirmPassword') newErrors.confirmPassword = err.message;
+          if (err.path[0] === 'confirmPassword')
+            newErrors.confirmPassword = err.message;
         });
         setErrors(newErrors);
       }
@@ -66,7 +93,9 @@ const RegisterForm = () => {
     setRegisterError(null);
     setAcceptError(null);
     if (!acceptedTerms) {
-      setAcceptError('É necessário aceitar os Termos de Uso e a Política de Privacidade para se cadastrar.');
+      setAcceptError(
+        'É necessário aceitar os Termos de Uso e a Política de Privacidade para se cadastrar.'
+      );
       return;
     }
     if (!validateForm()) {
@@ -80,153 +109,314 @@ const RegisterForm = () => {
         nome,
         senha: password,
         terms_accepted: acceptedTerms,
-        terms_version: TERMS_VERSION
+        terms_version: TERMS_VERSION,
       });
       toast.success('Cadastro realizado com sucesso! Faça login abaixo.');
       navigate('/login');
     } catch (error: any) {
-      setRegisterError(error?.response?.data?.detail || 'Erro ao realizar cadastro. Tente novamente mais tarde.');
+      setRegisterError(
+        error?.response?.data?.detail ||
+          'Erro ao realizar cadastro. Tente novamente mais tarde.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto glass-card">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Cadastro</CardTitle>
-        <CardDescription className="text-center">
-          Crie sua conta para acessar o sistema
+    <Card className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-amber-200/30 dark:border-amber-700/30 shadow-2xl shadow-amber-500/20 dark:shadow-amber-900/40 rounded-2xl overflow-hidden">
+      {/* Header Premium com Gradiente */}
+      <CardHeader className="text-center pb-8 pt-10 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/20 dark:via-orange-900/10 dark:to-yellow-900/15">
+        <div className="flex items-center justify-center mb-4">
+          <UserPlus className="w-8 h-8 text-amber-600 dark:text-amber-400 mr-3" />
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+            Teste Grátis 30 Dias
+          </span>
+        </div>
+        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+          Cadastro Premium
+        </CardTitle>
+        <CardDescription className="text-slate-600 dark:text-amber-200/70 text-lg">
+          Junte-se a 2.500+ médicos que já recuperaram R$ 2.3M+
         </CardDescription>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="px-8 py-6">
         {registerError && (
-          <div className="mb-4 text-red-600 text-center text-sm">{registerError}</div>
+          <div className="mb-6 p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/50 rounded-xl text-red-700 dark:text-red-400 text-center text-sm backdrop-blur-sm">
+            {registerError}
+          </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="uf"
+                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+              >
+                Estado (UF)
+              </label>
+              <SelectCustom
+                id="uf"
+                value={uf}
+                onChange={(e) => setUf(e.target.value)}
+                placeholder="Selecione seu estado"
+                disabled={isLoading}
+              >
+                <option value="AC">Acre (AC)</option>
+                <option value="AL">Alagoas (AL)</option>
+                <option value="AP">Amapá (AP)</option>
+                <option value="AM">Amazonas (AM)</option>
+                <option value="BA">Bahia (BA)</option>
+                <option value="CE">Ceará (CE)</option>
+                <option value="DF">Distrito Federal (DF)</option>
+                <option value="ES">Espírito Santo (ES)</option>
+                <option value="GO">Goiás (GO)</option>
+                <option value="MA">Maranhão (MA)</option>
+                <option value="MT">Mato Grosso (MT)</option>
+                <option value="MS">Mato Grosso do Sul (MS)</option>
+                <option value="MG">Minas Gerais (MG)</option>
+                <option value="PA">Pará (PA)</option>
+                <option value="PB">Paraíba (PB)</option>
+                <option value="PR">Paraná (PR)</option>
+                <option value="PE">Pernambuco (PE)</option>
+                <option value="PI">Piauí (PI)</option>
+                <option value="RJ">Rio de Janeiro (RJ)</option>
+                <option value="RN">Rio Grande do Norte (RN)</option>
+                <option value="RS">Rio Grande do Sul (RS)</option>
+                <option value="RO">Rondônia (RO)</option>
+                <option value="RR">Roraima (RR)</option>
+                <option value="SC">Santa Catarina (SC)</option>
+                <option value="SP">São Paulo (SP)</option>
+                <option value="SE">Sergipe (SE)</option>
+                <option value="TO">Tocantins (TO)</option>
+              </SelectCustom>
+              {errors.uf && (
+                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                  {errors.uf}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="crm"
+                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+              >
+                Número do CRM
+              </label>
+              <input
+                id="crm"
+                type="text"
+                value={crm}
+                onChange={(e) => setCrm(e.target.value)}
+                placeholder="Digite seu CRM"
+                className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                autoComplete="username"
+                disabled={isLoading}
+              />
+              {errors.crm && (
+                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                  {errors.crm}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div>
-            <label htmlFor="uf" className="block text-sm font-medium mb-1">UF</label>
-            <Input
-              as="select"
-              id="uf"
-              value={uf}
-              onChange={e => setUf(e.target.value)}
-              disabled={isLoading}
-              className="w-full"
+            <label
+              htmlFor="nome"
+              className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
             >
-              <option value="">Selecione</option>
-              <option value="AC">AC</option>
-              <option value="AL">AL</option>
-              <option value="AP">AP</option>
-              <option value="AM">AM</option>
-              <option value="BA">BA</option>
-              <option value="CE">CE</option>
-              <option value="DF">DF</option>
-              <option value="ES">ES</option>
-              <option value="GO">GO</option>
-              <option value="MA">MA</option>
-              <option value="MT">MT</option>
-              <option value="MS">MS</option>
-              <option value="MG">MG</option>
-              <option value="PA">PA</option>
-              <option value="PB">PB</option>
-              <option value="PR">PR</option>
-              <option value="PE">PE</option>
-              <option value="PI">PI</option>
-              <option value="RJ">RJ</option>
-              <option value="RN">RN</option>
-              <option value="RS">RS</option>
-              <option value="RO">RO</option>
-              <option value="RR">RR</option>
-              <option value="SC">SC</option>
-              <option value="SP">SP</option>
-              <option value="SE">SE</option>
-              <option value="TO">TO</option>
-            </Input>
-            {errors.uf && <div className="text-xs text-red-600 mt-1">{errors.uf}</div>}
-          </div>
-          <div>
-            <label htmlFor="crm" className="block text-sm font-medium mb-1">CRM</label>
-            <Input
-              id="crm"
-              type="text"
-              value={crm}
-              onChange={e => setCrm(e.target.value)}
-              autoComplete="username"
-              disabled={isLoading}
-              className="w-full"
-            />
-            {errors.crm && <div className="text-xs text-red-600 mt-1">{errors.crm}</div>}
-          </div>
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium mb-1">Nome completo</label>
-            <Input
+              Nome Completo
+            </label>
+            <input
               id="nome"
               type="text"
               value={nome}
-              onChange={e => setNome(e.target.value)}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Digite seu nome completo"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
               autoComplete="name"
               disabled={isLoading}
-              className="w-full"
             />
-            {errors.nome && <div className="text-xs text-red-600 mt-1">{errors.nome}</div>}
+            {errors.nome && (
+              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                {errors.nome}
+              </div>
+            )}
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">Senha</label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              autoComplete="new-password"
-              disabled={isLoading}
-              className="w-full"
-            />
-            {errors.password && <div className="text-xs text-red-600 mt-1">{errors.password}</div>}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+              >
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Crie uma senha forte"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  autoComplete="new-password"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                  {errors.password}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+              >
+                Confirme a Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirme sua senha"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  autoComplete="new-password"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                  {errors.confirmPassword}
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">Confirme a senha</label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              disabled={isLoading}
-              className="w-full"
-            />
-            {errors.confirmPassword && <div className="text-xs text-red-600 mt-1">{errors.confirmPassword}</div>}
+
+          {/* Termos e Condições Premium */}
+          <div className="bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/10 dark:via-orange-900/5 dark:to-yellow-900/10 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/20">
+            <div className="flex items-start gap-4">
+              <input
+                id="acceptTerms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1 w-5 h-5 text-amber-600 bg-white/60 border-amber-300 rounded focus:ring-amber-500 focus:ring-2"
+                disabled={isLoading}
+                required
+              />
+              <div className="flex-1">
+                <label
+                  htmlFor="acceptTerms"
+                  className="text-sm text-slate-700 dark:text-amber-200/80 select-none leading-relaxed"
+                >
+                  Declaro que li e concordo com os{' '}
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline decoration-amber-300/50"
+                  >
+                    Termos de Uso
+                  </a>{' '}
+                  e a{' '}
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline decoration-amber-300/50"
+                  >
+                    Política de Privacidade
+                  </a>{' '}
+                  do MedCheck, e estou ciente do tratamento de dados conforme LGPD.
+                </label>
+                <div className="mt-3 p-3 bg-slate-100/60 dark:bg-slate-800/40 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                  <p className="text-xs text-slate-600 dark:text-amber-200/60 leading-relaxed">
+                    <Shield className="w-4 h-4 inline mr-2 text-emerald-600 dark:text-emerald-400" />
+                    <strong>Atenção:</strong> O MedCheck é uma ferramenta de apoio à
+                    auditoria médica. O usuário é responsável pelos dados inseridos e
+                    pelas decisões tomadas com base nos relatórios da plataforma.
+                  </p>
+                </div>
+              </div>
+            </div>
+            {acceptError && (
+              <div className="text-xs text-red-600 dark:text-red-400 mt-3 font-medium">
+                {acceptError}
+              </div>
+            )}
           </div>
-          <div className="flex items-start gap-2 mt-2">
-            <input
-              id="acceptTerms"
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={e => setAcceptedTerms(e.target.checked)}
-              className="mt-1"
-              disabled={isLoading}
-              required
-            />
-            <label htmlFor="acceptTerms" className="text-xs text-muted-foreground select-none">
-              Declaro que li e concordo com os <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline">Termos de Uso</a> e a <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline">Política de Privacidade</a> do MedCheck, e estou ciente do tratamento de dados conforme LGPD.
-            </label>
-          </div>
-          <p className="text-xs text-gray-500 mb-2 mt-1">
-            <strong>Atenção:</strong> O uso do MedCheck não substitui a análise profissional. O usuário é responsável pelos dados inseridos e pelas decisões tomadas a partir dos relatórios da plataforma.
-          </p>
-          {acceptError && <div className="text-xs text-red-600 mt-1">{acceptError}</div>}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+
+          <Button
+            type="submit"
+            className="w-full py-4 text-lg font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:from-amber-700 hover:via-orange-700 hover:to-yellow-700 text-white rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-amber-500/30 dark:shadow-amber-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            disabled={isLoading}
+          >
             {isLoading ? (
-              <span className="flex items-center gap-2">
-                <LoadingSpinner size="sm" /> 
-                Cadastrando...
+              <span className="flex items-center justify-center gap-3">
+                <LoadingSpinner size="sm" />
+                Criando sua conta...
               </span>
-            ) : 'Cadastrar'}
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Criar Conta Premium
+                <CheckCircle className="w-5 h-5" />
+              </span>
+            )}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2">
-        <span className="text-sm text-muted-foreground">Já tem uma conta? <Link to="/login" className="text-primary hover:underline">Entrar</Link></span>
+
+      <CardFooter className="flex flex-col gap-4 px-8 pb-8 bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30 dark:from-amber-900/10 dark:via-orange-900/5 dark:to-yellow-900/10">
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
+        <span className="text-slate-600 dark:text-amber-200/70 text-center">
+          Já tem uma conta?{' '}
+          <Link
+            to="/login"
+            className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors underline decoration-amber-300/50 hover:decoration-amber-500"
+          >
+            Faça login aqui
+          </Link>
+        </span>
+        <p className="text-xs text-center text-slate-500 dark:text-amber-200/50">
+          Ao se cadastrar, você concorda com nossos Termos de Uso e Política de
+          Privacidade
+        </p>
       </CardFooter>
     </Card>
   );

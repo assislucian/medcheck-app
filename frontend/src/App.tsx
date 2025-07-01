@@ -6,11 +6,10 @@ import DashboardPage from './pages/Dashboard';
 import IntelligenceHub from './pages/IntelligenceHub';
 import ProfilePage from './pages/Profile';
 import CompareContracheque from './pages/CompareContracheque';
-import HistoryPage from './pages/History';
 import HelpPage from './pages/Help';
 import NotificationsPage from './pages/Notifications';
 import ReportsPage from './pages/Reports';
-import SettingsPage from './pages/Settings';
+
 import { AuthProvider } from './contexts/AuthContext';
 import { Toaster } from 'sonner';
 import { HelmetProvider } from 'react-helmet-async';
@@ -109,14 +108,6 @@ function App() {
                 }
               />
               <Route
-                path="/settings"
-                element={
-                  <PrivateRoute>
-                    <SettingsPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
                 path="/compare"
                 element={
                   <PrivateRoute>
@@ -129,14 +120,6 @@ function App() {
                 element={
                   <PrivateRoute>
                     <ProfilePage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/history"
-                element={
-                  <PrivateRoute>
-                    <HistoryPage />
                   </PrivateRoute>
                 }
               />

@@ -21,6 +21,15 @@ import {
   AlertTriangle,
   ChevronRight,
   Brain,
+  Upload,
+  BarChart3,
+  FileBarChart,
+  Search,
+  Plus,
+  Eye,
+  Heart,
+  Shield,
+  TrendingDown,
 } from 'lucide-react';
 import { InfoCard } from '../components/ui/InfoCard';
 import { formatCurrency, formatPercentage } from '../utils/format';
@@ -45,11 +54,11 @@ const DashboardPage = () => {
 
   // SEO e Título Premium
   usePageTitle({
-    title: 'Centro de Comando',
+    title: 'Minha Prática Médica',
     description:
-      'Dashboard executivo com insights de performance médica, análise financeira e métricas estratégicas em tempo real',
+      'Acompanhe seus honorários, glosas e demonstrativos de forma clara e organizada. Sua gestão médica simplificada.',
     keywords:
-      'dashboard médico, performance financeira, auditoria médica, analytics médico, centro de comando',
+      'honorários médicos, glosas planos de saúde, demonstrativos pagamento, gestão médica, auditoria médica',
   });
 
   const backendTotals = stats?.totals;
@@ -77,29 +86,30 @@ const DashboardPage = () => {
   const valorMedioRecebido =
     procedimentosPagos > 0 ? totals.totalRecebido / procedimentosPagos : 0;
 
-  // Status e alertas inteligentes
+  // Status e alertas inteligentes - ajustados para realidade brasileira
   const temGlosasCriticas = totals.totalGlosado > totals.totalRecebido * 0.15; // > 15%
   const taxaSucessoBaixa = taxaSucesso < 85;
-  const poucosAnalisados = totals.totalProcedimentos < 10;
+  const poucosAnalisados = totals.totalProcedimentos < 5;
+  const needsAttention = temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados;
 
   return (
     <>
       <Helmet>
-        <title>Centro de Comando | MedCheck</title>
+        <title>Minha Prática Médica | MedCheck</title>
         <meta
           name="description"
-          content="Dashboard executivo com insights de performance médica, análise financeira e métricas estratégicas em tempo real"
+          content="Acompanhe seus honorários, glosas e demonstrativos de forma clara e organizada. Sua gestão médica simplificada."
         />
         <meta
           name="keywords"
-          content="dashboard médico, performance financeira, auditoria médica, analytics médico, centro de comando"
+          content="honorários médicos, glosas planos de saúde, demonstrativos pagamento, gestão médica, auditoria médica"
         />
 
         {/* Open Graph para compartilhamento */}
-        <meta property="og:title" content="Centro de Comando | MedCheck" />
+        <meta property="og:title" content="Minha Prática Médica | MedCheck" />
         <meta
           property="og:description"
-          content="Dashboard executivo com insights de performance médica"
+          content="Gestão médica simplificada - acompanhe seus honorários e demonstrativos"
         />
         <meta property="og:type" content="website" />
 
@@ -108,9 +118,9 @@ const DashboardPage = () => {
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebApplication',
-            name: 'MedCheck Dashboard',
+            name: 'MedCheck - Gestão Médica',
             description:
-              'Dashboard executivo para auditoria médica e análise financeira',
+              'Plataforma para acompanhamento de honorários médicos e análise de demonstrativos de planos de saúde',
             applicationCategory: 'HealthApplication',
             operatingSystem: 'Web',
           })}
@@ -118,15 +128,21 @@ const DashboardPage = () => {
       </Helmet>
 
       <AuthenticatedLayout
-        title="Centro de Comando"
-        description="Dashboard executivo - Insights e performance de sua prática médica"
+        title="Minha Prática Médica"
+        description={`Bem-vindo de volta, ${
+          userProfile?.nome || 'Dr(a)'
+        }! Aqui está o resumo dos seus honorários e pendências.`}
       >
         <div className="space-y-10">
           {/* Page Header Premium */}
           <PageHeader
-            title="Centro de Comando"
-            icon={<LayoutDashboard size={32} />}
-            description="Visão estratégica de sua performance médica com insights em tempo real"
+            title="Minha Prática Médica"
+            icon={<Heart size={32} className="text-blue-600" />}
+            description={`Acompanhe seus honorários e demonstrativos de forma simples e organizada. ${
+              needsAttention
+                ? 'Você tem algumas pendências que merecem atenção.'
+                : 'Tudo funcionando bem!'
+            }`}
           />
 
           {/* Dashboard Content */}
@@ -142,10 +158,10 @@ const DashboardPage = () => {
                 <AlertCircle className="h-12 w-12 text-red-500" />
                 <div className="space-y-2">
                   <p className="text-xl font-semibold text-red-600 dark:text-red-400">
-                    Erro ao carregar dados do dashboard
+                    Ops! Não conseguimos carregar seus dados
                   </p>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Verifique sua conexão e tente novamente
+                    Verifique sua conexão com a internet e tente novamente
                   </p>
                 </div>
                 <Button variant="outline" onClick={() => window.location.reload()}>
@@ -154,18 +170,16 @@ const DashboardPage = () => {
               </div>
             ) : (
               <>
-                {/* Visão Geral Financeira Premium */}
-                <section
-                  aria-label="Performance Financeira Global"
-                  className="space-y-6"
-                >
+                {/* Visão Geral dos Honorários */}
+                <section aria-label="Resumo dos Seus Honorários" className="space-y-6">
                   <div className="space-y-3">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
                       <DollarSign className="h-6 w-6 text-green-600" />
-                      Performance Financeira Global
+                      Resumo dos Seus Honorários
                     </h2>
                     <p className="text-gray-600 dark:text-gray-400 text-lg">
-                      Dados consolidados e métricas de performance em tempo real
+                      Acompanhe o que você já recebeu, o que está pendente e quais
+                      procedimentos foram glosados pelos planos
                     </p>
                   </div>
 
@@ -174,7 +188,9 @@ const DashboardPage = () => {
                     <InfoCard
                       icon={<ArrowUpRight className="h-6 w-6" />}
                       title={
-                        <span className="text-sm font-semibold">Total Liberado</span>
+                        <span className="text-sm font-semibold">
+                          Recebido este Período
+                        </span>
                       }
                       value={
                         <span className="text-3xl xl:text-4xl font-bold">
@@ -183,15 +199,17 @@ const DashboardPage = () => {
                       }
                       description={
                         <span className="text-sm">
-                          Pagamentos confirmados no sistema
+                          Honorários já pagos pelos planos
                         </span>
                       }
                       variant="success"
                     />
                     <InfoCard
-                      icon={<AlertTriangle className="h-6 w-6" />}
+                      icon={<TrendingDown className="h-6 w-6" />}
                       title={
-                        <span className="text-sm font-semibold">Total Glosado</span>
+                        <span className="text-sm font-semibold">
+                          Glosas e Pendências
+                        </span>
                       }
                       value={
                         <span className="text-3xl xl:text-4xl font-bold">
@@ -199,14 +217,16 @@ const DashboardPage = () => {
                         </span>
                       }
                       description={
-                        <span className="text-sm">Procedimentos contestados</span>
+                        <span className="text-sm">
+                          Valores glosados ou em contestação
+                        </span>
                       }
-                      variant="danger"
+                      variant={temGlosasCriticas ? 'destructive' : 'warning'}
                     />
                     <InfoCard
-                      icon={<Target className="h-6 w-6" />}
+                      icon={<CheckCircle className="h-6 w-6" />}
                       title={
-                        <span className="text-sm font-semibold">Taxa de Sucesso</span>
+                        <span className="text-sm font-semibold">Taxa de Aprovação</span>
                       }
                       value={
                         <span className="text-3xl xl:text-4xl font-bold">
@@ -214,192 +234,276 @@ const DashboardPage = () => {
                         </span>
                       }
                       description={
-                        <span className="text-sm">Aprovação vs total apresentado</span>
+                        <span className="text-sm">
+                          {taxaSucesso >= 90
+                            ? 'Excelente índice!'
+                            : taxaSucesso >= 80
+                              ? 'Boa performance'
+                              : 'Precisa atenção'}
+                        </span>
                       }
-                      variant={taxaSucesso >= 85 ? 'success' : 'warning'}
+                      variant={
+                        taxaSucesso >= 85
+                          ? 'success'
+                          : taxaSucesso >= 70
+                            ? 'warning'
+                            : 'destructive'
+                      }
                     />
                     <InfoCard
-                      icon={<ClipboardList className="h-6 w-6" />}
+                      icon={<FileText className="h-6 w-6" />}
                       title={
-                        <span className="text-sm font-semibold">Total Analisado</span>
+                        <span className="text-sm font-semibold">
+                          Procedimentos Analisados
+                        </span>
                       }
                       value={
                         <span className="text-3xl xl:text-4xl font-bold">
-                          {totals.totalProcedimentos.toLocaleString()}
+                          <AnimatedNumber value={totals.totalProcedimentos} />
                         </span>
                       }
                       description={
-                        <span className="text-sm">Procedimentos processados</span>
+                        <span className="text-sm">
+                          {poucosAnalisados
+                            ? 'Adicione mais demonstrativos'
+                            : 'Total de procedimentos verificados'}
+                        </span>
                       }
-                      variant="info"
+                      variant={poucosAnalisados ? 'warning' : 'default'}
                     />
                   </div>
                 </section>
 
-                {/* Alertas e Insights */}
-                {(temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados) && (
-                  <section aria-label="Alertas Importantes" className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <AlertTriangle className="h-6 w-6 text-orange-600" />
-                      Alertas & Insights
-                    </h2>
+                {/* Ações Rápidas Reorganizadas */}
+                <section className="space-y-6">
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                      <Zap className="h-6 w-6 text-blue-600" />
+                      Próximos Passos
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-lg">
+                      Ações importantes para manter sua gestão em dia e recuperar
+                      valores
+                    </p>
+                  </div>
 
-                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                    {/* Guias Médicas - Ação primária */}
+                    <Link
+                      to="/guides"
+                      className="group col-span-1 md:col-span-2 xl:col-span-1"
+                    >
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-green-500 bg-gradient-to-r from-green-50/50 to-transparent dark:from-green-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-green-100 dark:bg-green-900/30 rounded-xl group-hover:bg-green-500 group-hover:text-white transition-colors">
+                            <FileText className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">Guias Médicas</h4>
+                              <Badge
+                                variant="secondary"
+                                className="bg-green-100 text-green-700 hover:bg-green-200"
+                              >
+                                Workflow principal
+                              </Badge>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Visualize suas guias TISS e acompanhe o status dos
+                              procedimentos realizados
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    {/* Demonstrativos - Segunda prioridade */}
+                    <Link to="/demonstratives" className="group">
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-xl group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                            <Upload className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">Demonstrativos</h4>
+                              {totals.totalProcedimentos < 5 && (
+                                <Badge
+                                  variant="outline"
+                                  className="border-blue-500 text-blue-700"
+                                >
+                                  Carregue mais dados
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Faça upload dos demonstrativos dos planos para acompanhar
+                              seus pagamentos
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    {/* Glosas Pendentes - Terceira prioridade */}
+                    <Link to="/unpaid-procedures" className="group">
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50/50 to-transparent dark:from-orange-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-orange-100 dark:bg-orange-900/30 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                            <AlertTriangle className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">
+                                Glosas e Pendências
+                              </h4>
+                              {temGlosasCriticas && (
+                                <Badge variant="destructive">Atenção necessária</Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Acompanhe e conteste glosas para recuperar seus honorários
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-orange-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    {/* Linha inferior - Ações complementares */}
+
+                    {/* Relatórios Personalizados */}
+                    <Link to="/reports" className="group">
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50/50 to-transparent dark:from-purple-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-purple-100 dark:bg-purple-900/30 rounded-xl group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                            <FileBarChart className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">Relatórios</h4>
+                              <Badge
+                                variant="secondary"
+                                className="bg-purple-100 text-purple-700"
+                              >
+                                Analytics
+                              </Badge>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Gere relatórios detalhados de performance e lucratividade
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    {/* Intelligence Hub */}
+                    <Link to="/intelligence" className="group">
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-cyan-500 bg-gradient-to-r from-cyan-50/50 to-transparent dark:from-cyan-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl group-hover:bg-cyan-500 group-hover:text-white transition-colors">
+                            <Brain className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">
+                                Intelligence Hub
+                              </h4>
+                              <Badge
+                                variant="secondary"
+                                className="bg-cyan-100 text-cyan-700"
+                              >
+                                IA Médica
+                              </Badge>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Insights inteligentes sobre sua prática e tendências do
+                              mercado
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-cyan-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+
+                    {/* Análise de Performance */}
+                    <Link to="/compare" className="group">
+                      <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-50/50 to-transparent dark:from-emerald-900/20">
+                        <div className="flex items-center gap-4">
+                          <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                            <BarChart3 className="h-6 w-6" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-semibold text-lg">
+                                Análise Comparativa
+                              </h4>
+                              <Badge
+                                variant="secondary"
+                                className="bg-emerald-100 text-emerald-700"
+                              >
+                                Benchmarking
+                              </Badge>
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                              Compare sua performance com referências do mercado médico
+                            </p>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
+                        </div>
+                      </Card>
+                    </Link>
+                  </div>
+                </section>
+
+                {/* Alertas Contextuais */}
+                {(temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados) && (
+                  <section className="space-y-6">
+                    <div className="space-y-3">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                        <Shield className="h-5 w-5 text-amber-600" />
+                        Recomendações Personalizadas
+                      </h3>
+                    </div>
+
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {temGlosasCriticas && (
                         <DashboardAlert
-                          title="Taxa de Glosas Elevada"
-                          description={`${formatPercentage(
-                            (totals.totalGlosado / valorApresentado) * 100
-                          )} dos procedimentos foram glosados`}
-                          type="critical"
-                          action="Revisar procedimentos"
-                          href="/unpaid-procedures"
+                          type="warning"
+                          title="Taxa de glosas acima do esperado"
+                          message="Você tem uma alta taxa de glosas. Revise os procedimentos contestados e considere recursos de glosa para recuperar esses valores."
+                          actionLabel="Ver glosas pendentes"
+                          actionLink="/unpaid-procedures"
                         />
                       )}
+
                       {taxaSucessoBaixa && (
                         <DashboardAlert
-                          title="Taxa de Sucesso Baixa"
-                          description={`Taxa atual: ${formatPercentage(
-                            taxaSucesso
-                          )}. Meta recomendada: 85%+`}
-                          type="warning"
-                          action="Analisar causas"
-                          href="/analytics"
+                          type="info"
+                          title="Oportunidade de melhoria"
+                          message="Sua taxa de aprovação pode melhorar. Verifique se as guias estão sendo preenchidas corretamente antes do envio."
+                          actionLabel="Verificar guias"
+                          actionLink="/guides"
                         />
                       )}
+
                       {poucosAnalisados && (
                         <DashboardAlert
-                          title="Poucos Dados Analisados"
-                          description="Faça upload de mais demonstrativos para insights precisos"
                           type="info"
-                          action="Enviar demonstrativos"
-                          href="/demonstratives"
+                          title="Carregue mais demonstrativos"
+                          message="Para ter uma análise mais completa, adicione mais demonstrativos dos seus atendimentos recentes."
+                          actionLabel="Carregar demonstrativos"
+                          actionLink="/demonstratives"
                         />
                       )}
                     </div>
                   </section>
                 )}
 
-                {/* Widgets Adicionais */}
-                <div className="grid gap-8 grid-cols-1 xl:grid-cols-2">
-                  {/* Recovery Progress */}
-                  <Card className="p-8">
-                    <CardHeader className="pb-6">
-                      <CardTitle className="text-xl font-bold flex items-center gap-3">
-                        <TrendingUp className="h-5 w-5 text-blue-600" />
-                        Progresso de Recuperação
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <RecoveryProgressCard
-                        totalGlosado={totals.totalGlosado}
-                        valorRecuperado={totals.totalRecebido * 0.1} // Mock: 10% recuperado
-                      />
-                    </CardContent>
-                  </Card>
-
-                  {/* Revenue Chart */}
-                  <Card className="p-8">
-                    <CardHeader className="pb-6">
-                      <CardTitle className="text-xl font-bold flex items-center gap-3">
-                        <Activity className="h-5 w-5 text-green-600" />
-                        Distribuição de Receita
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <RevenuePieChart
-                        recebido={totals.totalRecebido}
-                        glosado={totals.totalGlosado}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Quick Actions */}
-                <section aria-label="Ações Rápidas" className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                    <Zap className="h-6 w-6 text-purple-600" />
-                    Ações Rápidas
-                  </h2>
-
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    <Link to="/guides" className="group">
-                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <FileText className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                              Enviar Guias
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Upload de novas guias médicas
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-blue-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    <Link to="/demonstratives" className="group">
-                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                            <FileText className="h-6 w-6 text-green-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                              Demonstrativos
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Analisar demonstrativos
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-green-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    <Link to="/unpaid-procedures" className="group">
-                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                            <AlertTriangle className="h-6 w-6 text-red-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                              Glosas Pendentes
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Revisar contestações
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-red-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-
-                    <Link to="/reports" className="group">
-                      <Card className="p-6 h-full hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02]">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                            <LayoutDashboard className="h-6 w-6 text-purple-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                              Relatórios
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Gerar relatórios
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 ml-auto group-hover:text-purple-600 transition-colors" />
-                        </div>
-                      </Card>
-                    </Link>
-                  </div>
-                </section>
+                {/* Fim do conteúdo principal */}
               </>
             )}
           </div>
