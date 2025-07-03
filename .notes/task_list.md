@@ -22,3 +22,4 @@
 
 - [x] Criar .cursorrules e .cursorignore
 - [x] Estruturar .notes/ e arquivos principais
+- [x] Corrigir vulnerabilidade CVE-2025-48379 no Pillow (atualização 11.2.1 → 11.3.0)
