@@ -440,7 +440,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         setProcedures(mapped);
       } catch (error) {
         console.error('Erro ao carregar procedimentos:', error);
-        toast.error('Erro ao carregar procedimentos');
+        toast.error('Erro ao carregar procedimentos', { id: 'load-procedures-error' });
       } finally {
         setLoading(false);
       }
@@ -1118,7 +1118,9 @@ const DemonstrativesPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success('Demonstrativo excluído com sucesso');
+      toast.success('Demonstrativo excluído com sucesso', {
+        id: `delete-success-${id}`,
+      });
       fetchDemonstratives();
     } catch (error) {
       console.error('Erro ao excluir demonstrativo:', error);
@@ -1375,7 +1377,7 @@ const DemonstrativesPage = () => {
             className="ml-2 h-9 px-4 font-medium bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
             onClick={async () => {
               await handleDeleteDemonstrativo(row.id);
-              toast.success('Demonstrativo excluído com sucesso');
+              // Toast é disparado por handleDeleteDemonstrativo; não repetir aqui
             }}
             title="Excluir demonstrativo"
           >

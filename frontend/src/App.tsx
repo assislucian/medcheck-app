@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Index from './pages/Index';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
+import HealthPlanSelection from './pages/HealthPlanSelection';
 import DashboardPage from './pages/Dashboard';
 import IntelligenceHub from './pages/IntelligenceHub';
 import ProfilePage from './pages/Profile';
@@ -42,6 +43,15 @@ function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/help" element={<PublicHelpPage />} />
+
+              <Route
+                path="/health-plan-selection"
+                element={
+                  <PrivateRoute>
+                    <HealthPlanSelection />
+                  </PrivateRoute>
+                }
+              />
 
               <Route
                 path="/dashboard"

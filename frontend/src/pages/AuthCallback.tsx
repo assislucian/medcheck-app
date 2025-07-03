@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,7 +28,7 @@ const AuthCallback = () => {
           throw error;
         }
 
-        toast.success('Login realizado com sucesso!');
+        toast.success('Login realizado com sucesso!', { id: 'login-success' });
       } catch (err: any) {
         console.error('Error in auth callback:', err);
         setError(err.message || 'An error occurred during authentication');
@@ -54,7 +53,9 @@ const AuthCallback = () => {
   if (error) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center space-y-4">
-        <div className="text-destructive text-lg font-semibold">Erro de autenticação</div>
+        <div className="text-destructive text-lg font-semibold">
+          Erro de autenticação
+        </div>
         <div className="text-muted-foreground">{error}</div>
         <a href="/login" className="text-primary hover:underline">
           Voltar ao login

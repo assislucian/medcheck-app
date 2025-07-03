@@ -13,6 +13,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Info,
+  Eye,
 } from 'lucide-react';
 import {
   TooltipProvider,
@@ -20,6 +21,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -51,6 +53,14 @@ interface DataGridProps {
   loading?: boolean;
   emptyMessage?: string;
   paginationLabel?: string;
+  selectable?: boolean;
+  selectedRows?: string[];
+  onSelectRow?: (id: string, checked: boolean) => void;
+  onSelectAll?: (checked: boolean) => void;
+  expandable?: boolean;
+  expandedRow?: string | null;
+  onExpand?: (id: string) => void;
+  rowIdField?: string;
 }
 
 export function DataGrid({
@@ -63,12 +73,51 @@ export function DataGrid({
   loading = false,
   emptyMessage = 'Nenhum registro encontrado',
   paginationLabel = 'Linhas por página:',
+  selectable = false,
+  selectedRows = [],
+  onSelectRow,
+  onSelectAll,
+  expandable = false,
+  expandedRow = null,
+  onExpand,
+  rowIdField = 'id',
 }: DataGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageRows, setPageRows] = useState(pageSize);
 
   // Make sure rows is always an array, even if undefined is passed
   const safeRows = Array.isArray(rows) ? rows : [];
+
+  // Selection logic
+  const allSelected =
+    selectable && safeRows.length > 0 && selectedRows.length === safeRows.length;
+  const someSelected =
+    selectable && selectedRows.length > 0 && selectedRows.length < safeRows.length;
+
+  // Prepare columns with selection and expand columns
+  const enhancedColumns = [
+    ...(selectable
+      ? [
+          {
+            field: '__select',
+            headerName: '',
+            width: 50,
+            renderCell: () => null, // Handled specially in render
+          },
+        ]
+      : []),
+    ...(expandable
+      ? [
+          {
+            field: '__expand',
+            headerName: '',
+            width: 50,
+            renderCell: () => null, // Handled specially in render
+          },
+        ]
+      : []),
+    ...columns,
+  ];
 
   // Pagination calculations
   const totalPages = Math.ceil(safeRows.length / pageRows);
@@ -135,7 +184,35 @@ export function DataGrid({
           <Table scrollable={false} className="table-auto w-full">
             <TableHeader>
               <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-                {columns.map((column) => {
+                {enhancedColumns.map((column) => {
+                  // Special handling for selection and expand columns
+                  if (column.field === '__select') {
+                    return (
+                      <TableHead
+                        key="__select"
+                        className="w-[50px] text-center align-middle py-4 px-4 bg-gray-50 dark:bg-gray-800/50"
+                      >
+                        <Checkbox
+                          checked={allSelected}
+                          indeterminate={someSelected}
+                          onCheckedChange={(checked) => onSelectAll?.(!!checked)}
+                          aria-label="Selecionar todos"
+                        />
+                      </TableHead>
+                    );
+                  }
+
+                  if (column.field === '__expand') {
+                    return (
+                      <TableHead
+                        key="__expand"
+                        className="w-[50px] text-center align-middle py-4 px-4 bg-gray-50 dark:bg-gray-800/50"
+                      >
+                        {/* Empty header for expand column */}
+                      </TableHead>
+                    );
+                  }
+
                   const tooltipContent = getTooltipContent(column.headerName);
                   let headerContent = (
                     <span className="font-semibold text-gray-900 dark:text-gray-100">
@@ -191,7 +268,46 @@ export function DataGrid({
                         'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
                     )}
                   >
-                    {columns.map((column) => {
+                    {enhancedColumns.map((column) => {
+                      const rowId = row[rowIdField];
+
+                      // Special handling for selection column
+                      if (column.field === '__select') {
+                        return (
+                          <TableCell
+                            key={`${rowId}-select`}
+                            className="w-[50px] text-center py-3 px-4"
+                          >
+                            <Checkbox
+                              checked={selectedRows.includes(String(rowId))}
+                              onCheckedChange={(checked) =>
+                                onSelectRow?.(String(rowId), !!checked)
+                              }
+                              aria-label={`Selecionar linha ${rowId}`}
+                            />
+                          </TableCell>
+                        );
+                      }
+
+                      // Special handling for expand column
+                      if (column.field === '__expand') {
+                        return (
+                          <TableCell
+                            key={`${rowId}-expand`}
+                            className="w-[50px] text-center py-3 px-4"
+                          >
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onExpand?.(String(rowId))}
+                              className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            >
+                              <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            </Button>
+                          </TableCell>
+                        );
+                      }
+
                       const cellValue = getCellValue(row, column.field);
                       // Alinhamento condicional: numérico à direita, texto à esquerda
                       const isNumeric =
@@ -231,7 +347,10 @@ export function DataGrid({
               })}
               {currentRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-12">
+                  <TableCell
+                    colSpan={enhancedColumns.length}
+                    className="text-center py-12"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                         <Info className="h-6 w-6 text-gray-400" />

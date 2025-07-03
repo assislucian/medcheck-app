@@ -66,7 +66,7 @@ import { useAuth } from '../contexts/auth/AuthContext';
 
 import { FiltersToolbar } from '../components/guides/FiltersToolbar';
 import { InfoCard } from '../components/ui/InfoCard';
-import { GuidesTable } from '../components/guides/GuidesTable';
+
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Helmet } from 'react-helmet-async';
 
@@ -176,6 +176,43 @@ function formatDateToISO(dateStr: string) {
   return `${year}-${month}-${day}`;
 }
 
+function renderParticipacaoBadge(papel: string) {
+  const papelNormalizado = normalizePapel(papel);
+
+  switch (papelNormalizado) {
+    case 'cirurgiao':
+      return (
+        <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 shadow-sm hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300 dark:border-blue-700/60 font-medium">
+          Cirurgião
+        </Badge>
+      );
+    case 'primeiro auxiliar':
+      return (
+        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border border-emerald-200 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-300 dark:border-emerald-700/60 font-medium">
+          1º Auxiliar
+        </Badge>
+      );
+    case 'segundo auxiliar':
+      return (
+        <Badge className="bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 shadow-sm hover:from-violet-100 hover:to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 dark:text-violet-300 dark:border-violet-700/60 font-medium">
+          2º Auxiliar
+        </Badge>
+      );
+    case 'anestesista':
+      return (
+        <Badge className="bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200 shadow-sm hover:from-amber-100 hover:to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 dark:text-amber-300 dark:border-amber-700/60 font-medium">
+          Anestesista
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 border border-gray-200 shadow-sm hover:from-gray-100 hover:to-slate-100 dark:from-gray-900/20 dark:to-slate-900/20 dark:text-gray-300 dark:border-gray-700/60 font-medium">
+          {papel || '--'}
+        </Badge>
+      );
+  }
+}
+
 const GuidesPage = () => {
   // SEO e Título Premium
   usePageTitle({
@@ -202,6 +239,63 @@ const GuidesPage = () => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [activities, setActivities] = useState(getRecentActivities());
+
+  // Configuração das colunas para o DataGrid
+  const guidesColumns = [
+    {
+      field: 'numero_guia',
+      headerName: 'Nº Guia',
+      width: 120,
+      renderCell: (params: any) => (
+        <span className="font-mono text-gray-900 dark:text-gray-100">
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: 'data',
+      headerName: 'Data de Execução',
+      width: 140,
+    },
+    {
+      field: 'beneficiario',
+      headerName: 'Beneficiário',
+      width: 200,
+      renderCell: (params: any) => (
+        <span className="truncate max-w-[200px]" title={params.value}>
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: 'qtdProcedimentos',
+      headerName: 'Qtd Proc.',
+      width: 100,
+      type: 'number',
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 150,
+      renderCell: (params: any) => {
+        const statusLabel: Record<string, string> = {
+          Fechada: 'Fechada',
+          'Gerado pela execução': 'Gerado pela execução',
+          Pendente: 'Pendente',
+          Processada: 'Processada',
+        };
+        return (
+          <Badge
+            variant="success"
+            className="whitespace-nowrap px-3 py-1"
+            title={statusLabel[params.value] || params.value}
+          >
+            {statusLabel[params.value] || params.value}
+          </Badge>
+        );
+      },
+    },
+  ];
 
   const fileUpload = useFileUpload() || {};
   const {
@@ -1013,82 +1107,136 @@ const GuidesPage = () => {
 
                 <TabsContent value="list" className="mt-8">
                   <Card className="overflow-hidden border-gray-200/60 dark:border-gray-700/60 shadow-sm">
+                    {/* Barra de Ações Contextual */}
+                    {selectedRows.length > 0 && (
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-200/60 dark:border-blue-700/60 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                                {selectedRows.length}{' '}
+                                {selectedRows.length === 1
+                                  ? 'guia selecionada'
+                                  : 'guias selecionadas'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedRows([])}
+                              className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
+                            >
+                              Limpar Seleção
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleDeleteSelected}
+                              className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-300"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir {selectedRows.length === 1 ? 'Guia' : 'Guias'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <CardContent className="p-8">
                       {loading ? (
                         <LoaderTable />
                       ) : (
-                        <GuidesTable
+                        <DataGrid
                           rows={filteredMacroRows}
-                          columns={macroColumns}
+                          columns={guidesColumns}
+                          pageSize={pageSize}
+                          selectable={true}
                           selectedRows={selectedRows}
                           onSelectRow={handleSelectRow}
                           onSelectAll={handleSelectAll}
+                          expandable={true}
+                          expandedRow={expandedRow}
                           onExpand={(id) =>
                             setExpandedRow(expandedRow === id ? null : id)
                           }
-                          expandedRow={expandedRow}
-                          onNewGuide={() => setActiveTab('upload')}
+                          rowIdField="numero_guia"
+                          className="min-h-[400px]"
+                          loading={loading}
+                          paginationLabel="Guias por página:"
+                          emptyMessage={
+                            search || status || data
+                              ? 'Nenhuma guia encontrada com os filtros aplicados'
+                              : 'Nenhuma guia encontrada'
+                          }
                           renderExpandedRow={(row) => (
-                            <div className="w-full p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                              <div className="overflow-x-auto w-full">
-                                <table className="w-full text-sm min-w-[600px]">
-                                  <thead>
-                                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                                      {[
-                                        'Data',
-                                        'Código',
-                                        'Descrição',
-                                        'Participação',
-                                        'Qtd',
-                                        'Prestador',
-                                      ].map((h) => (
-                                        <th
-                                          key={h}
-                                          className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
-                                        >
-                                          {h}
-                                        </th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {row.detalhes.map((proc: any) => (
-                                      <tr
-                                        key={proc.codigo}
-                                        className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
-                                      >
-                                        <td className="py-2 px-3 whitespace-nowrap">
-                                          {proc.data}
-                                        </td>
-                                        <td className="py-2 px-3 whitespace-nowrap font-mono">
-                                          {proc.codigo}
-                                        </td>
-                                        <td
-                                          className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                          title={proc.descricao}
-                                        >
-                                          {proc.descricao}
-                                        </td>
-                                        <td className="py-2 px-3 whitespace-nowrap">
-                                          <Badge variant="participacao">
-                                            {proc.papel}
-                                          </Badge>
-                                        </td>
-                                        <td className="py-2 px-3 whitespace-nowrap text-center">
-                                          {proc.qtd}
-                                        </td>
-                                        <td
-                                          className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                          title={proc.prestador}
-                                        >
-                                          {proc.prestador}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
+                            <tr key={`${row.numero_guia}-expanded`}>
+                              <td
+                                colSpan={guidesColumns.length + 2}
+                                className="bg-gray-50 dark:bg-gray-800/50 p-0"
+                              >
+                                <div className="w-full p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                                  <div className="overflow-x-auto w-full">
+                                    <table className="w-full text-sm min-w-[600px]">
+                                      <thead>
+                                        <tr className="border-b border-gray-200 dark:border-gray-700">
+                                          {[
+                                            'Data',
+                                            'Código',
+                                            'Descrição',
+                                            'Participação',
+                                            'Qtd',
+                                            'Prestador',
+                                          ].map((h) => (
+                                            <th
+                                              key={h}
+                                              className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
+                                            >
+                                              {h}
+                                            </th>
+                                          ))}
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                        {row.detalhes.map((proc: any) => (
+                                          <tr
+                                            key={proc.codigo}
+                                            className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
+                                          >
+                                            <td className="py-2 px-3 whitespace-nowrap">
+                                              {proc.data}
+                                            </td>
+                                            <td className="py-2 px-3 whitespace-nowrap font-mono">
+                                              {proc.codigo}
+                                            </td>
+                                            <td
+                                              className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
+                                              title={proc.descricao}
+                                            >
+                                              {proc.descricao}
+                                            </td>
+                                            <td className="py-2 px-3 whitespace-nowrap">
+                                              {renderParticipacaoBadge(proc.papel)}
+                                            </td>
+                                            <td className="py-2 px-3 whitespace-nowrap text-center">
+                                              {proc.qtd}
+                                            </td>
+                                            <td
+                                              className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
+                                              title={proc.prestador}
+                                            >
+                                              {proc.prestador}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
                           )}
                         />
                       )}

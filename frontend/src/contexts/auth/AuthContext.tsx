@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Carrega perfil completo
         await loadUserProfile(newToken);
 
-        toast.success('Login realizado com sucesso!');
+        toast.success('Login realizado com sucesso!', { id: 'login-success' });
       } catch (e) {
         console.error('Erro ao processar dados do usuário:', e);
         setUser(null);

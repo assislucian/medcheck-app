@@ -39,7 +39,7 @@ const LoginForm = () => {
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
-  const redirectUrl = searchParams.get('redirect') || '/dashboard';
+  const redirectUrl = searchParams.get('redirect') || '/health-plan-selection';
 
   const validateForm = () => {
     try {
@@ -69,7 +69,6 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       await login(uf, crm, password);
-      toast.success('Login realizado com sucesso!');
       navigate(redirectUrl);
     } catch (error: any) {
       setAuthError(

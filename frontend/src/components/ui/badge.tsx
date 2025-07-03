@@ -31,6 +31,8 @@ const badgeVariants = cva(
           'border-transparent bg-red-100 text-red-800 shadow-sm hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50',
         neutral:
           'border-transparent bg-gray-100 text-gray-600 shadow-sm hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
+        participacao:
+          'border-transparent bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border border-emerald-200 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-300 dark:border-emerald-700/60',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

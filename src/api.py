@@ -19,6 +19,7 @@ from uuid import uuid4
 import bcrypt
 import jwt
 import pandas as pd
+import sqlalchemy
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -137,6 +138,8 @@ class Demonstrativo(Base):
     periodo = Column(String, nullable=True, index=True)
     lote = Column(String, nullable=True)
     filename = Column(String, nullable=False)
+    # Hash SHA-256 do conteúdo do arquivo para detectar duplicações mesmo com nomes diferentes
+    file_hash = Column(String(64), nullable=True, index=True)
     total_procedimentos = Column(Integer, nullable=False, default=0)
     apresentado = Column(String, nullable=False, default="R$ 0,00")
     liberado = Column(String, nullable=False, default="R$ 0,00")
@@ -221,6 +224,31 @@ try:
 except Exception as e:
     logger.error(f"Error creating database tables: {e}")
     # Continua mesmo com erro de DB para permitir health checks
+
+
+# Migração leve: garantir coluna file_hash na tabela demonstrativos
+def _ensure_file_hash_column():
+    try:
+        insp = sqlalchemy.inspect(engine)
+        cols = [c["name"] for c in insp.get_columns("demonstrativos")]
+        if "file_hash" not in cols:
+            with engine.connect() as conn:
+                conn.execute(
+                    sqlalchemy.text(
+                        "ALTER TABLE demonstrativos ADD COLUMN file_hash VARCHAR(64)"
+                    )
+                )
+                conn.execute(
+                    sqlalchemy.text(
+                        "CREATE INDEX IF NOT EXISTS ix_demonstrativos_file_hash ON demonstrativos(file_hash)"
+                    )
+                )
+            logger.info("Column file_hash added to demonstrativos table")
+    except Exception as exc:
+        logger.error(f"Failed to ensure file_hash column: {exc}")
+
+
+_ensure_file_hash_column()
 
 # --- Autenticação JWT real (MVP) ---
 # Quando SKIP_AUTH é true, precisamos deixar o token opcional
@@ -1009,6 +1037,40 @@ def upload_demonstrativos(
                 file_path = os.path.join(UPLOAD_DIR, filename)
                 with open(file_path, "wb") as f:
                     shutil.copyfileobj(file.file, f)
+
+                # Calcular hash SHA-256 do conteúdo para detectar duplicações
+                import hashlib
+
+                sha256 = hashlib.sha256()
+                with open(file_path, "rb") as fh:
+                    for chunk in iter(lambda: fh.read(8192), b""):
+                        sha256.update(chunk)
+                file_hash = sha256.hexdigest()
+
+                # Checar duplicidade por hash (mesmo CRM)
+                exists_hash = (
+                    db.query(Demonstrativo)
+                    .filter_by(crm=user["crm"], file_hash=file_hash)
+                    .first()
+                )
+                if exists_hash:
+                    logger.warning(
+                        f"[UPLOAD] Duplicidade por hash detectada: CRM={user['crm']} | hash={file_hash}"
+                    )
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": "Este demonstrativo já foi enviado anteriormente.",
+                        }
+                    )
+                    # Remover arquivo salvo para evitar acúmulo de duplicatas
+                    try:
+                        os.remove(file_path)
+                    except Exception:
+                        pass
+                    continue
+
                 try:
                     from src.parsers.demonstrativo_parser import DemonstrativoParser
 
@@ -1081,6 +1143,7 @@ def upload_demonstrativos(
                     periodo=periodo_extracted,
                     lote=unique_lote,
                     filename=filename,
+                    file_hash=file_hash,
                     total_procedimentos=total_procedimentos,
                     apresentado=f"R$ {apresentado:,.2f}".replace(".", ","),
                     liberado=f"R$ {liberado:,.2f}".replace(".", ","),

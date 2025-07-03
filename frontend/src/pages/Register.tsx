@@ -6,8 +6,16 @@ import { LoadingSpinner } from '@/components/ui/loading-spinner';
 const RegisterPage = () => {
   const { session, loading } = useAuth();
 
-  // Redirect to dashboard if already logged in
+  // Redirect based on health plan selection if already logged in
   if (session) {
+    const selectedHealthPlan = localStorage.getItem('selected_health_plan');
+
+    // Se não tem plano selecionado, vai para seleção de plano
+    if (!selectedHealthPlan) {
+      return <Navigate to="/health-plan-selection" replace />;
+    }
+
+    // Se já tem plano, vai para dashboard
     return <Navigate to="/dashboard" replace />;
   }
 
