@@ -62,6 +62,9 @@ interface DataGridProps {
   expandedRow?: string | null;
   onExpand?: (id: string) => void;
   rowIdField?: string;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
 }
 
 export function DataGrid({
@@ -82,10 +85,10 @@ export function DataGrid({
   expandedRow = null,
   onExpand,
   rowIdField = 'id',
+  currentPage = 0,
+  onPageChange,
+  onPageSizeChange,
 }: DataGridProps) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageRows, setPageRows] = useState(pageSize);
-
   // Make sure rows is always an array, even if undefined is passed
   const safeRows = Array.isArray(rows) ? rows : [];
 
@@ -121,16 +124,16 @@ export function DataGrid({
   ];
 
   // Pagination calculations
-  const totalPages = Math.ceil(safeRows.length / pageRows);
-  const startIndex = currentPage * pageRows;
-  const endIndex = Math.min(startIndex + pageRows, safeRows.length);
+  const totalPages = Math.ceil(safeRows.length / pageSize);
+  const startIndex = currentPage * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, safeRows.length);
   const currentRows = safeRows.slice(startIndex, endIndex);
 
   // Pagination handlers
-  const goToFirstPage = () => setCurrentPage(0);
-  const goToLastPage = () => setCurrentPage(totalPages - 1);
-  const goToPreviousPage = () => setCurrentPage(Math.max(0, currentPage - 1));
-  const goToNextPage = () => setCurrentPage(Math.min(totalPages - 1, currentPage + 1));
+  const goToFirstPage = () => onPageChange?.(0);
+  const goToLastPage = () => onPageChange?.(totalPages - 1);
+  const goToPreviousPage = () => onPageChange?.(Math.max(0, currentPage - 1));
+  const goToNextPage = () => onPageChange?.(Math.min(totalPages - 1, currentPage + 1));
 
   // Função para obter o valor de uma célula com segurança
   const getCellValue = (row: any, field: string) => {
@@ -399,10 +402,10 @@ export function DataGrid({
                 {paginationLabel}
               </span>
               <Select
-                value={String(pageRows)}
+                value={String(pageSize)}
                 onValueChange={(value) => {
-                  setPageRows(Number(value));
-                  setCurrentPage(0);
+                  onPageSizeChange?.(Number(value));
+                  onPageChange?.(0);
                 }}
               >
                 <SelectTrigger className="w-[100px] h-8">

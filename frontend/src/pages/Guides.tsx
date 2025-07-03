@@ -229,8 +229,8 @@ const GuidesPage = () => {
   const [filter, setFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedGuia, setSelectedGuia] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(5);
   const [total, setTotal] = useState(0);
   const [totalBeneficiarios, setTotalBeneficiarios] = useState(0); // Total de beneficiários únicos
   const [search, setSearch] = useState('');
@@ -369,7 +369,7 @@ const GuidesPage = () => {
         setTotalBeneficiarios(allMacroRows.length);
 
         // Aplica paginação local aos beneficiários agrupados
-        const startIndex = (page - 1) * pageSize;
+        const startIndex = page * pageSize;
         const endIndex = startIndex + pageSize;
         const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
 
@@ -1057,17 +1057,17 @@ const GuidesPage = () => {
                   search={search}
                   onSearch={(val) => {
                     setSearch(val);
-                    setPage(1);
+                    setPage(0);
                   }}
                   date={formatDateToISO(data)}
                   onDateChange={(val) => {
                     setData(formatDateToBR(val));
-                    setPage(1);
+                    setPage(0);
                   }}
                   status={status || 'ALL'}
                   onStatusChange={(val) => {
                     setStatus(val);
-                    setPage(1);
+                    setPage(0);
                   }}
                   pendingCount={(() => {
                     // Calcula pendentes usando todos os dados globais
@@ -1097,7 +1097,7 @@ const GuidesPage = () => {
                     setSearch('');
                     setData('');
                     setStatus('ALL');
-                    setPage(1);
+                    setPage(0);
                   }}
                   onExportCsv={() => exportToCSV(filteredMacroRows)}
                   onExportProcedures={() => exportProceduresToCSV(grouped)}
@@ -1138,6 +1138,12 @@ const GuidesPage = () => {
                           rows={filteredMacroRows}
                           columns={guidesColumns}
                           pageSize={pageSize}
+                          currentPage={page}
+                          onPageSizeChange={(size) => {
+                            setPageSize(size);
+                            setPage(0);
+                          }}
+                          onPageChange={(p) => setPage(p)}
                           selectable={true}
                           selectedRows={selectedRows}
                           onSelectRow={handleSelectRow}
@@ -1196,22 +1202,16 @@ const GuidesPage = () => {
                                             <td className="py-2 px-3 whitespace-nowrap font-mono">
                                               {proc.codigo}
                                             </td>
-                                            <td
-                                              className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                              title={proc.descricao}
-                                            >
+                                            <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate">
                                               {proc.descricao}
                                             </td>
                                             <td className="py-2 px-3 whitespace-nowrap">
                                               {renderParticipacaoBadge(proc.papel)}
                                             </td>
-                                            <td className="py-2 px-3 whitespace-nowrap text-center">
+                                            <td className="py-2 px-3 whitespace-nowrap text-right font-mono">
                                               {proc.qtd}
                                             </td>
-                                            <td
-                                              className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate"
-                                              title={proc.prestador}
-                                            >
+                                            <td className="py-2 px-3 whitespace-nowrap">
                                               {proc.prestador}
                                             </td>
                                           </tr>
