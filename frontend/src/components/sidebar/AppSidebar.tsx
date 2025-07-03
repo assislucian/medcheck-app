@@ -86,7 +86,10 @@ export function AppSidebar() {
 
         // Contar atividades recentes como "não lidas" (últimas 2 horas)
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-        const recentActivities = activityResponse.data.filter(
+        const activities = Array.isArray(activityResponse.data)
+          ? activityResponse.data
+          : [];
+        const recentActivities = activities.filter(
           (activity: any) => new Date(activity.timestamp) > twoHoursAgo
         );
         setUnreadNotifications(recentActivities.length);

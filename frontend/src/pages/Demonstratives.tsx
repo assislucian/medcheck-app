@@ -1040,7 +1040,7 @@ const DemonstrativesPage = () => {
               }/api/v1/demonstrativos/${d.id}/detalhes`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
-            const detalhes = res.data;
+            const detalhes = Array.isArray(res.data) ? res.data : [];
             console.log('DEBUG detalhes demonstrativo', d.id, detalhes);
             const pendentes = detalhes.filter((p: any) => {
               // Replicar lógica do modal: se não houver papel/participacao/participacoes, é pendente
@@ -1210,8 +1210,9 @@ const DemonstrativesPage = () => {
           }/api/v1/demonstrativos/${demo.id}/detalhes`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        const procedures = Array.isArray(res.data) ? res.data : [];
         allProcedures.push(
-          ...res.data.map((proc) => ({ ...proc, demonstrativo: demo.periodo }))
+          ...procedures.map((proc) => ({ ...proc, demonstrativo: demo.periodo }))
         );
       }
 

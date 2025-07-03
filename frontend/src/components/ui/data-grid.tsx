@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import React from 'react';
 
 interface DataGridProps {
   rows: any[];
@@ -190,7 +191,7 @@ export function DataGrid({
                     return (
                       <TableHead
                         key="__select"
-                        className="w-[50px] text-center align-middle py-4 px-4 bg-gray-50 dark:bg-gray-800/50"
+                        className="w-[50px] text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
                       >
                         <Checkbox
                           checked={allSelected}
@@ -206,7 +207,7 @@ export function DataGrid({
                     return (
                       <TableHead
                         key="__expand"
-                        className="w-[50px] text-center align-middle py-4 px-4 bg-gray-50 dark:bg-gray-800/50"
+                        className="w-[50px] text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
                       >
                         {/* Empty header for expand column */}
                       </TableHead>
@@ -245,7 +246,7 @@ export function DataGrid({
                     <TableHead
                       key={column.field}
                       style={{ width: column.width, flex: column.flex }}
-                      className="text-center align-middle py-4 px-4 bg-gray-50 dark:bg-gray-800/50"
+                      className="text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
                     >
                       {headerContent}
                     </TableHead>
@@ -256,94 +257,99 @@ export function DataGrid({
             <TableBody>
               {currentRows.map((row, rowIndex) => {
                 const globalIndex = startIndex + rowIndex;
-                return [
-                  <TableRow
-                    key={row?.id || globalIndex}
-                    className={cn(
-                      'transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50',
-                      globalIndex % 2 === 0
-                        ? 'bg-white dark:bg-gray-800'
-                        : 'bg-gray-50/50 dark:bg-gray-800/30',
-                      Number(row?.glosa) > 0 &&
-                        'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
-                    )}
-                  >
-                    {enhancedColumns.map((column) => {
-                      const rowId = row[rowIdField];
+                return (
+                  <React.Fragment key={row?.id || globalIndex}>
+                    <TableRow
+                      className={cn(
+                        'transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-800/50',
+                        globalIndex % 2 === 0
+                          ? 'bg-white dark:bg-gray-800'
+                          : 'bg-gray-50/50 dark:bg-gray-800/30',
+                        Number(row?.glosa) > 0 &&
+                          'bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30'
+                      )}
+                    >
+                      {enhancedColumns.map((column) => {
+                        const rowId = row[rowIdField];
 
-                      // Special handling for selection column
-                      if (column.field === '__select') {
-                        return (
-                          <TableCell
-                            key={`${rowId}-select`}
-                            className="w-[50px] text-center py-3 px-4"
-                          >
-                            <Checkbox
-                              checked={selectedRows.includes(String(rowId))}
-                              onCheckedChange={(checked) =>
-                                onSelectRow?.(String(rowId), !!checked)
-                              }
-                              aria-label={`Selecionar linha ${rowId}`}
-                            />
-                          </TableCell>
-                        );
-                      }
-
-                      // Special handling for expand column
-                      if (column.field === '__expand') {
-                        return (
-                          <TableCell
-                            key={`${rowId}-expand`}
-                            className="w-[50px] text-center py-3 px-4"
-                          >
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => onExpand?.(String(rowId))}
-                              className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        // Special handling for selection column
+                        if (column.field === '__select') {
+                          return (
+                            <TableCell
+                              key={`${rowId}-select`}
+                              className="w-[50px] text-center py-3 px-3 sm:px-4"
                             >
-                              <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </Button>
+                              <Checkbox
+                                checked={selectedRows.includes(String(rowId))}
+                                onCheckedChange={(checked) =>
+                                  onSelectRow?.(String(rowId), !!checked)
+                                }
+                                aria-label={`Selecionar linha ${rowId}`}
+                              />
+                            </TableCell>
+                          );
+                        }
+
+                        // Special handling for expand column
+                        if (column.field === '__expand') {
+                          return (
+                            <TableCell
+                              key={`${rowId}-expand`}
+                              className="w-[50px] text-center py-3 px-3 sm:px-4"
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onExpand?.(String(rowId))}
+                                className="h-8 w-8 p-0 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                              >
+                                <Eye className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                              </Button>
+                            </TableCell>
+                          );
+                        }
+
+                        const cellValue = getCellValue(row, column.field);
+                        // Alinhamento condicional: numérico à direita, texto à esquerda
+                        const isNumeric =
+                          ['number', 'currency', 'percent'].includes(column.type) ||
+                          /total|valor|quantidade|qtd|delta|percent|glosa|liberado|apresentado|cbhpm|diferença|procedimentos|preco/i.test(
+                            column.field
+                          );
+
+                        return (
+                          <TableCell
+                            key={`${row?.id || globalIndex}-${column.field}`}
+                            className={cn(
+                              'py-3 px-3 sm:px-4 transition-colors duration-200',
+                              isNumeric
+                                ? 'text-right font-mono tabular-nums whitespace-nowrap'
+                                : 'text-left',
+                              'text-gray-800 dark:text-gray-200'
+                            )}
+                          >
+                            {column.renderCell ? (
+                              column.renderCell({ value: cellValue, row })
+                            ) : column.valueFormatter ? (
+                              column.valueFormatter({ value: cellValue })
+                            ) : cellValue !== null && cellValue !== undefined ? (
+                              String(cellValue)
+                            ) : (
+                              <span className="text-gray-400 dark:text-gray-500 italic">
+                                —
+                              </span>
+                            )}
                           </TableCell>
                         );
-                      }
-
-                      const cellValue = getCellValue(row, column.field);
-                      // Alinhamento condicional: numérico à direita, texto à esquerda
-                      const isNumeric =
-                        ['number', 'currency', 'percent'].includes(column.type) ||
-                        /total|valor|quantidade|qtd|delta|percent|glosa|liberado|apresentado|cbhpm|diferença|procedimentos|preco/i.test(
-                          column.field
-                        );
-
-                      return (
-                        <TableCell
-                          key={`${row?.id || globalIndex}-${column.field}`}
-                          className={cn(
-                            'py-3 px-4 transition-colors duration-200',
-                            isNumeric
-                              ? 'text-right font-mono tabular-nums whitespace-nowrap'
-                              : 'text-left',
-                            'text-gray-800 dark:text-gray-200'
-                          )}
-                        >
-                          {column.renderCell ? (
-                            column.renderCell({ value: cellValue, row })
-                          ) : column.valueFormatter ? (
-                            column.valueFormatter({ value: cellValue })
-                          ) : cellValue !== null && cellValue !== undefined ? (
-                            String(cellValue)
-                          ) : (
-                            <span className="text-gray-400 dark:text-gray-500 italic">
-                              —
-                            </span>
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>,
-                  renderExpandedRow && renderExpandedRow(row),
-                ];
+                      })}
+                    </TableRow>
+                    {/* Renderiza a linha expandida apenas se esta linha estiver selecionada */}
+                    {expandable &&
+                      expandedRow === String(row[rowIdField]) &&
+                      renderExpandedRow &&
+                      renderExpandedRow(row)}
+                  </React.Fragment>
+                );
               })}
               {currentRows.length === 0 && (
                 <TableRow>

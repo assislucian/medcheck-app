@@ -396,6 +396,15 @@ else:
         "https://medcheck-app-assislucians-projects.vercel.app",
     ]
 
+# Garantir que endereços locais comuns estejam sempre presentes
+for local_origin in [
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]:
+    if local_origin not in allowed_origins:
+        allowed_origins.append(local_origin)
+
 # Se nenhum regex for definido mas queremos permitir *.vercel.app por padrão
 if not FRONTEND_ORIGIN_REGEX:
     # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)

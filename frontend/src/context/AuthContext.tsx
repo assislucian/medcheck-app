@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -61,9 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const res = await axios.post(`${API_URL}/token`, params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    setToken(res.data.access_token);
+    const accessToken = res.data?.access_token;
+    if (!accessToken) {
+      throw new Error('Token de acesso não recebido');
+    }
+    setToken(accessToken);
     // Decodifica JWT para obter dados do usuário
-    const payload = JSON.parse(atob(res.data.access_token.split('.')[1]));
+    const payload = JSON.parse(atob(accessToken.split('.')[1]));
     setUser({ crm: payload.crm, nome: payload.nome });
   }
 
@@ -88,4 +98,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-} 
+}

@@ -182,31 +182,31 @@ function renderParticipacaoBadge(papel: string) {
   switch (papelNormalizado) {
     case 'cirurgiao':
       return (
-        <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 shadow-sm hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-300 dark:border-blue-700/60 font-medium">
+        <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 shadow-sm hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-200 font-medium">
           Cirurgião
         </Badge>
       );
     case 'primeiro auxiliar':
       return (
-        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border border-emerald-200 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-300 dark:border-emerald-700/60 font-medium">
+        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-800 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-200 font-medium">
           1º Auxiliar
         </Badge>
       );
     case 'segundo auxiliar':
       return (
-        <Badge className="bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 shadow-sm hover:from-violet-100 hover:to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 dark:text-violet-300 dark:border-violet-700/60 font-medium">
+        <Badge className="bg-gradient-to-r from-violet-50 to-purple-50 text-violet-800 shadow-sm hover:from-violet-100 hover:to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 dark:text-violet-200 font-medium">
           2º Auxiliar
         </Badge>
       );
     case 'anestesista':
       return (
-        <Badge className="bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200 shadow-sm hover:from-amber-100 hover:to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 dark:text-amber-300 dark:border-amber-700/60 font-medium">
+        <Badge className="bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800 shadow-sm hover:from-amber-100 hover:to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 dark:text-amber-200 font-medium">
           Anestesista
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-700 border border-gray-200 shadow-sm hover:from-gray-100 hover:to-slate-100 dark:from-gray-900/20 dark:to-slate-900/20 dark:text-gray-300 dark:border-gray-700/60 font-medium">
+        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-800 shadow-sm hover:from-gray-100 hover:to-slate-100 dark:from-gray-900/20 dark:to-slate-900/20 dark:text-gray-200 font-medium">
           {papel || '--'}
         </Badge>
       );
@@ -771,6 +771,29 @@ const GuidesPage = () => {
       .filter(Boolean)
   );
 
+  // --- QuickActions Integration ---
+  useEffect(() => {
+    function handleOpenUpload() {
+      setActiveTab('upload');
+      // Focus dropzone
+      const el = document.querySelector('#upload-dropzone');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function handleExportCSV() {
+      // Usa agrupamento global para CSV completo
+      exportProceduresToCSV(grouped);
+    }
+
+    window.addEventListener('openGuideUpload', handleOpenUpload);
+    window.addEventListener('exportGuidesCSV', handleExportCSV);
+
+    return () => {
+      window.removeEventListener('openGuideUpload', handleOpenUpload);
+      window.removeEventListener('exportGuidesCSV', handleExportCSV);
+    };
+  }, [grouped]);
+
   return (
     <>
       <Helmet>
@@ -1107,44 +1130,6 @@ const GuidesPage = () => {
 
                 <TabsContent value="list" className="mt-8">
                   <Card className="overflow-hidden border-gray-200/60 dark:border-gray-700/60 shadow-sm">
-                    {/* Barra de Ações Contextual */}
-                    {selectedRows.length > 0 && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-blue-200/60 dark:border-blue-700/60 px-6 py-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                                {selectedRows.length}{' '}
-                                {selectedRows.length === 1
-                                  ? 'guia selecionada'
-                                  : 'guias selecionadas'}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedRows([])}
-                              className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
-                            >
-                              Limpar Seleção
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={handleDeleteSelected}
-                              className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-300"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir {selectedRows.length === 1 ? 'Guia' : 'Guias'}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
                     <CardContent className="p-8">
                       {loading ? (
                         <LoaderTable />
@@ -1239,6 +1224,36 @@ const GuidesPage = () => {
                             </tr>
                           )}
                         />
+                      )}
+                      {selectedRows.length > 0 && (
+                        <div className="sticky bottom-0 inset-x-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-t border-blue-200/60 dark:border-blue-700/60 px-6 py-4 mt-4 backdrop-blur-sm shadow-inner rounded-b-lg flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                            {selectedRows.length}{' '}
+                            {selectedRows.length === 1
+                              ? 'guia selecionada'
+                              : 'guias selecionadas'}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedRows([])}
+                              className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
+                            >
+                              Limpar Seleção
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleDeleteSelected}
+                              className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-300"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir {selectedRows.length === 1 ? 'Guia' : 'Guias'}
+                            </Button>
+                          </div>
+                        </div>
                       )}
                       {selectedGuia && (
                         <DetalhesGuia

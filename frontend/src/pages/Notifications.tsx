@@ -258,7 +258,8 @@ const ActivityLogPage = () => {
       }
 
       const data: ActivityLogsResponse = await response.json();
-      setActivities(data.activities);
+      const activitiesArray = Array.isArray(data.activities) ? data.activities : [];
+      setActivities(activitiesArray);
     } catch (error) {
       console.error('Erro ao buscar activity logs:', error);
       setError(error instanceof Error ? error.message : 'Erro desconhecido');
