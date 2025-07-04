@@ -106,15 +106,31 @@ export function useFileUploadService() {
         setProcessingMsg('Processamento concluído!');
         // Feedback por arquivo
         if (res.data && Array.isArray(res.data.results)) {
+          let successCount = 0;
+          let errorCount = 0;
+
           res.data.results.forEach((result: any) => {
             if (result.success) {
-              toast.success(`Demonstrativo ${result.filename}: OK`);
+              successCount++;
+              toast.success(`✅ ${result.filename}: Processado com sucesso`);
             } else {
+              errorCount++;
               toast.error(
-                `Demonstrativo ${result.filename}: ${result.error || 'Erro'}`
+                `❌ ${result.filename}: ${result.error || 'Erro desconhecido'}`
               );
             }
           });
+
+          // Resumo final
+          if (successCount > 0 && errorCount === 0) {
+            toast.success(
+              `${successCount} demonstrativo(s) processado(s) com sucesso!`
+            );
+          } else if (successCount > 0 && errorCount > 0) {
+            toast.warning(`${successCount} processado(s), ${errorCount} com erro`);
+          } else if (errorCount > 0) {
+            toast.error(`${errorCount} demonstrativo(s) com erro`);
+          }
         } else {
           toast.error('Resposta inesperada do servidor.');
         }
@@ -125,12 +141,42 @@ export function useFileUploadService() {
       }
       toast.error('Nenhum arquivo válido para upload.');
       return { success: false };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao processar arquivos:', error);
       setProcessingStage('error');
       setProcessingMsg('Erro ao processar os arquivos');
-      toast.error('Erro ao processar os arquivos', {
-        description: 'Por favor, tente novamente ou contate o suporte.',
+
+      // Mensagens de erro mais específicas
+      let errorMessage = 'Erro ao processar os arquivos';
+      let errorDescription = 'Por favor, tente novamente ou contate o suporte.';
+
+      if (error.response) {
+        // Erro do servidor
+        const status = error.response.status;
+        const data = error.response.data;
+
+        if (status === 400) {
+          errorMessage = 'Arquivo inválido';
+          errorDescription =
+            data?.detail || 'Verifique o formato e tamanho do arquivo.';
+        } else if (status === 401) {
+          errorMessage = 'Sessão expirada';
+          errorDescription = 'Faça login novamente.';
+        } else if (status === 413) {
+          errorMessage = 'Arquivo muito grande';
+          errorDescription = 'O arquivo excede o tamanho máximo permitido.';
+        } else if (status === 500) {
+          errorMessage = 'Erro interno do servidor';
+          errorDescription = 'Tente novamente em alguns minutos.';
+        }
+      } else if (error.request) {
+        // Erro de rede
+        errorMessage = 'Erro de conexão';
+        errorDescription = 'Verifique sua conexão com a internet.';
+      }
+
+      toast.error(errorMessage, {
+        description: errorDescription,
       });
       return { success: false };
     }

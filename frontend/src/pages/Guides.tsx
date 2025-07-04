@@ -314,7 +314,6 @@ const GuidesPage = () => {
     const fetchSavedGuias = async () => {
       try {
         const token = localStorage.getItem('token') || '';
-        // Busca TODOS os dados para calcular totais globais
         const allParams: GuidesQueryParams = {
           page: 1,
           pageSize: 10000,
@@ -326,8 +325,7 @@ const GuidesPage = () => {
         const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
         setAllGuides(allProcedures);
         setTotal(allRes.total || 0);
-        setExtractedGuides(allProcedures); // <- SEMPRE todos os procedimentos, sem slice
-        // Define o total de beneficiários únicos
+        setExtractedGuides(allProcedures);
         const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
           (acc, proc) => {
             acc[proc.numero_guia] = acc[proc.numero_guia] || [];
@@ -338,9 +336,12 @@ const GuidesPage = () => {
         );
         setTotalBeneficiarios(Object.keys(allGrouped).length);
       } catch (err: any) {
-        toast.error('Erro ao carregar guias', {
-          description: err?.response?.data?.detail || err?.message,
-        });
+        // Só mostrar erro se for erro real de rede/backend
+        if (err?.response?.status && err.response.status !== 200) {
+          toast.error('Erro ao carregar guias', {
+            description: err?.response?.data?.detail || err?.message,
+          });
+        }
         setExtractedGuides([]);
         setAllGuides([]);
         setTotal(0);
@@ -348,7 +349,7 @@ const GuidesPage = () => {
       }
     };
     fetchSavedGuias();
-  }, [search, status, data]); // Removido page/pageSize do deps
+  }, [search, status, data]);
 
   // Upload/processamento
   const handleUploadGuias = async () => {

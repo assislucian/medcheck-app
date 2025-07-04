@@ -1375,7 +1375,7 @@ const DemonstrativesPage = () => {
           <Button
             variant="destructive"
             size="sm"
-            className="ml-2 h-9 px-4 font-medium bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
+            className="ml-2 h-9 px-4 font-medium bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow transition-all duration-200"
             onClick={async () => {
               await handleDeleteDemonstrativo(row.id);
               // Toast é disparado por handleDeleteDemonstrativo; não repetir aqui
@@ -1698,7 +1698,7 @@ const DemonstrativesPage = () => {
                               }
                               size="sm"
                               onClick={() => setSelectedStatus('liberado')}
-                              className="flex-1 text-xs text-green-600"
+                              className="flex-1 text-xs"
                             >
                               100% ({summaryStats.demonstrativosSemGlosa})
                             </Button>
@@ -1708,7 +1708,7 @@ const DemonstrativesPage = () => {
                               }
                               size="sm"
                               onClick={() => setSelectedStatus('glosado')}
-                              className="flex-1 text-xs text-red-600"
+                              className="flex-1 text-xs"
                             >
                               Glosas ({summaryStats.demonstrativosComGlosa})
                             </Button>
@@ -1813,7 +1813,7 @@ const DemonstrativesPage = () => {
                     <CardHeader>
                       <CardTitle>Upload de Demonstrativos</CardTitle>
                       <CardDescription>
-                        Faça upload de novos demonstrativos para processamento
+                        Faça upload de demonstrativos de pagamento para processamento
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -1821,22 +1821,28 @@ const DemonstrativesPage = () => {
                         onDropFiles={handleFileDrop}
                         type="demonstrativo"
                         disabled={isUploading}
+                        hasFiles={!!files.length}
                       />
                       <FileList
                         files={files}
                         onRemove={removeFile}
                         disabled={isUploading}
                       />
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button
+                          variant="outline"
+                          onClick={resetFiles}
+                          disabled={!files.length || isUploading}
+                          className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 border-border"
+                        >
+                          Limpar
+                        </Button>
                         <Button
                           onClick={handleUploadDemonstrativos}
                           disabled={isUploading || !files.length}
-                          size="sm"
-                          variant="primary"
-                          className="h-9 px-5 font-semibold flex items-center bg-surface-2 border border-border text-foreground hover:bg-surface-3 transition-colors"
+                          className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          {isUploading ? 'Processando...' : 'Processar'}
+                          {isUploading ? 'Processando...' : 'Processar Demonstrativos'}
                         </Button>
                       </div>
                     </CardContent>

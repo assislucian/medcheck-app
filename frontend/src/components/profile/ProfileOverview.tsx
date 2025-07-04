@@ -11,7 +11,6 @@ import {
   Phone,
   Building2,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 interface ProfileOverviewProps {
   profile: {
@@ -25,7 +24,7 @@ interface ProfileOverviewProps {
     bio?: string;
     avatarUrl: string;
     memberSince: string;
-  };
+  } | null;
   loading: boolean;
 }
 
@@ -67,6 +66,28 @@ export const ProfileOverview = ({ profile, loading }: ProfileOverviewProps) => {
                 <div className="h-16 w-full bg-blue-200 rounded animate-pulse"></div>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <Card className="relative overflow-hidden border-0 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
+        <CardContent className="relative p-8">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
+              <User className="h-8 w-8 text-red-700" />
+            </div>
+            <h3 className="text-lg font-semibold text-red-800">
+              Perfil não encontrado
+            </h3>
+            <p className="text-red-600">
+              Não foi possível carregar as informações do perfil.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -118,12 +139,13 @@ export const ProfileOverview = ({ profile, loading }: ProfileOverviewProps) => {
                 variant="outline"
                 size="sm"
                 className="h-10 px-6 gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-amber-700 hover:from-amber-100 hover:to-orange-100 hover:border-amber-300 transition-all duration-300"
-                asChild
+                onClick={() => {
+                  // TODO: Implementar navegação para edição de perfil
+                  console.log('Editar perfil clicado');
+                }}
               >
-                <Link to="/profile/edit">
-                  <FileEdit className="h-4 w-4" />
-                  Editar Perfil
-                </Link>
+                <FileEdit className="h-4 w-4" />
+                Editar Perfil
               </Button>
             </div>
 

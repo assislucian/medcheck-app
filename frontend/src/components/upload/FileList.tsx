@@ -134,9 +134,6 @@ const FileList = ({ files, onRemove, disabled }: FileListProps) => {
 
       <Dialog open={!!previewFile} onOpenChange={() => closePreview()}>
         <DialogContent className="max-w-full w-full h-screen p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Visualização do arquivo</DialogTitle>
-          </DialogHeader>
           {previewFile && (
             <>
               <button

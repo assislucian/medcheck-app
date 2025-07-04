@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { FileUp, AlertCircle, FileText, Info } from 'lucide-react';
+import { FileUp, AlertCircle, FileText, Info, BarChart3 } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -36,24 +36,39 @@ const FileDropZone = ({
   const inputId = `${type}PdfInput`;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
     onDropFiles(type, e.target.files);
     e.target.value = '';
   };
 
+  const handleClick = () => {
+    if (!disabled) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.click();
+      }
+    }
+  };
+
   return (
     <div
-      className={`flex flex-col items-center p-3 sm:p-4 border border-dashed rounded-lg 
+      className={`flex flex-col items-center p-4 sm:p-6 border-2 border-dashed rounded-xl relative transition-all duration-200
       ${
         disabled
           ? 'bg-muted/30 border-muted cursor-not-allowed'
-          : 'hover:border-primary/50 transition-colors border-border cursor-pointer'
+          : 'hover:border-primary/70 hover:shadow-md focus-within:border-primary/80 focus-within:shadow-lg border-border cursor-pointer'
       } 
       ${isGuia ? 'hover:bg-medblue-600/5' : 'hover:bg-green-600/5'}
       ${hasFiles ? (isGuia ? 'bg-medblue-600/10' : 'bg-green-600/10') : ''}`}
-      onClick={() => {
-        if (!disabled) document.getElementById(inputId)?.click();
-      }}
+      onClick={handleClick}
+      style={{ zIndex: 1, minHeight: '140px' }}
+      tabIndex={0}
+      role="button"
+      aria-label={
+        isGuia ? 'Área de upload de guias médicas' : 'Área de upload de demonstrativos'
+      }
     >
       <input
         type="file"
@@ -68,34 +83,40 @@ const FileDropZone = ({
             ? 'Selecionar guias médicas em PDF'
             : 'Selecionar demonstrativos em PDF'
         }
+        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
       />
-      {isGuia ? (
-        <FileUp
-          className={`h-8 w-8 sm:h-10 sm:w-10 ${
-            hasFiles ? 'text-medblue-600' : 'text-primary'
-          } mb-2`}
-        />
-      ) : (
-        <FileText
-          className={`h-8 w-8 sm:h-10 sm:w-10 ${
-            hasFiles ? 'text-green-600' : 'text-primary'
-          } mb-2`}
-        />
-      )}
-      <label htmlFor={inputId} className="text-center cursor-pointer">
-        <span
-          className={`font-medium mb-1 block text-sm sm:text-base ${
-            disabled ? 'text-muted-foreground' : ''
-          }`}
-        >
-          {isGuia ? 'Guias TISS' : 'Demonstrativos de Pagamento'}
-        </span>
-        <span className="text-xs sm:text-sm text-muted-foreground">
-          {hasFiles
-            ? 'Clique para adicionar mais'
-            : 'Arraste ou clique para selecionar PDFs'}
-        </span>
+
+      <label
+        htmlFor={inputId}
+        className="text-center cursor-pointer w-full h-full flex flex-col items-center justify-center"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const input = document.getElementById(inputId);
+          if (input) {
+            input.click();
+          }
+        }}
+      >
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted">
+            {isGuia ? (
+              <FileText className="h-6 w-6 text-medblue-600" />
+            ) : (
+              <BarChart3 className="h-6 w-6 text-green-600" />
+            )}
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-medium">
+              {isGuia ? 'Adicionar Guias' : 'Adicionar Demonstrativos'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Arraste arquivos PDF ou clique para selecionar
+            </p>
+          </div>
+        </div>
       </label>
+
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -116,18 +137,12 @@ const FileDropZone = ({
           <TooltipContent side="bottom" align="center" className="max-w-xs">
             <p>
               {isGuia
-                ? 'Guias TISS: Documentos que contêm os procedimentos realizados com detalhes como código do procedimento, beneficiário, data e médicos participantes. Servem como comprovante do serviço prestado.'
-                : 'Demonstrativos: Documentos emitidos pelos planos de saúde que detalham o pagamento realizado para os procedimentos. Contêm informações sobre valores pagos, glosas e códigos dos procedimentos.'}
+                ? 'Guias TISS: Documentos que contêm os procedimentos realizados com detalhes como códigos, valores e informações do paciente.'
+                : 'Demonstrativos: Relatórios financeiros que mostram valores apresentados, liberados e glosas por período.'}
             </p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-
-      {hasFiles && (
-        <div className="mt-1 px-2 py-0.5 bg-muted rounded-full text-xs text-muted-foreground">
-          Arquivos adicionados
-        </div>
-      )}
     </div>
   );
 };

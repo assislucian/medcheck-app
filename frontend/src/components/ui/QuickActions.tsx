@@ -54,37 +54,23 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             onClick: () => navigate('/guides'),
           },
           {
-            id: 'new-guide',
-            label: 'Nova Guia',
-            icon: <FileText className="h-4 w-4" />,
-            onClick: () => navigate('/guides'),
-          },
-          {
-            id: 'new-demo',
-            label: 'Novo Demonstrativo',
-            icon: <FileBarChart className="h-4 w-4" />,
-            onClick: () => navigate('/demonstratives'),
+            id: 'export-dashboard',
+            label: 'Exportar CSV',
+            icon: <Download className="h-4 w-4" />,
+            onClick: () => {
+              const event = new CustomEvent('exportGuidesCSV');
+              window.dispatchEvent(event);
+            },
           },
         ];
 
       case '/guides':
         return [
           {
-            id: 'new-guide',
-            label: 'Nova Guia',
-            icon: <Plus className="h-4 w-4" />,
-            onClick: () => {
-              // Trigger nova guia
-              const event = new CustomEvent('openNewGuideModal');
-              window.dispatchEvent(event);
-            },
-          },
-          {
             id: 'upload-guides',
             label: 'Upload de Guias',
             icon: <Upload className="h-4 w-4" />,
             onClick: () => {
-              // Trigger upload
               const event = new CustomEvent('openGuideUpload');
               window.dispatchEvent(event);
             },
@@ -103,17 +89,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       case '/demonstratives':
         return [
           {
-            id: 'new-demo',
-            label: 'Novo Demonstrativo',
-            icon: <Plus className="h-4 w-4" />,
-            onClick: () => {
-              const event = new CustomEvent('openNewDemoModal');
-              window.dispatchEvent(event);
-            },
-          },
-          {
             id: 'upload-demo',
-            label: 'Upload de Demonstrativo',
+            label: 'Upload de Demonstrativos',
             icon: <Upload className="h-4 w-4" />,
             onClick: () => {
               const event = new CustomEvent('openDemoUpload');

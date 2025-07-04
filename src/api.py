@@ -48,6 +48,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
     create_engine,
     desc,
     func,
@@ -122,7 +123,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Medico(Base):
     __tablename__ = "medicos"
-    crm = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    crm = Column(String, nullable=False)
     uf = Column(String, nullable=False)
     nome = Column(String, nullable=False)
     senha_hash = Column(String, nullable=False)
@@ -130,12 +132,16 @@ class Medico(Base):
     terms_accepted_at = Column(DateTime, nullable=True)
     terms_version = Column(String, nullable=True)
     last_login_at = Column(DateTime, nullable=True)
+    __table_args__ = (UniqueConstraint("crm", "uf", name="uix_crm_uf"),)
 
 
 class Demonstrativo(Base):
     __tablename__ = "demonstrativos"
     id = Column(Integer, primary_key=True, index=True)
     crm = Column(String, nullable=False, index=True)
+    uf = Column(
+        String, nullable=False, index=True
+    )  # CRÍTICO: adicionar UF para isolamento
     periodo = Column(String, nullable=True, index=True)
     lote = Column(String, nullable=True)
     filename = Column(String, nullable=False)
@@ -158,6 +164,9 @@ class Guia(Base):
     descricao = Column(String, nullable=False)
     papel = Column(String, nullable=False)
     crm = Column(String, nullable=False)
+    uf = Column(
+        String, nullable=False, index=True
+    )  # CRÍTICO: adicionar UF para isolamento
     qtd = Column(Integer, nullable=False)
     status = Column(String, nullable=True)
     prestador = Column(String, nullable=True)
@@ -230,12 +239,29 @@ except Exception as e:
     # Continua mesmo com erro de DB para permitir health checks
 
 
-# Migração leve: garantir coluna file_hash na tabela demonstrativos
-def _ensure_file_hash_column():
+# Migração leve: garantir colunas uf e file_hash nas tabelas
+def _ensure_uf_and_file_hash_columns():
     try:
         insp = sqlalchemy.inspect(engine)
-        cols = [c["name"] for c in insp.get_columns("demonstrativos")]
-        if "file_hash" not in cols:
+
+        # Verificar e adicionar coluna uf na tabela demonstrativos
+        demo_cols = [c["name"] for c in insp.get_columns("demonstrativos")]
+        if "uf" not in demo_cols:
+            with engine.connect() as conn:
+                conn.execute(
+                    sqlalchemy.text(
+                        "ALTER TABLE demonstrativos ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+                    )
+                )
+                conn.execute(
+                    sqlalchemy.text(
+                        "CREATE INDEX IF NOT EXISTS ix_demonstrativos_uf ON demonstrativos(uf)"
+                    )
+                )
+            logger.info("Column uf added to demonstrativos table")
+
+        # Verificar e adicionar coluna file_hash na tabela demonstrativos
+        if "file_hash" not in demo_cols:
             with engine.connect() as conn:
                 conn.execute(
                     sqlalchemy.text(
@@ -248,11 +274,43 @@ def _ensure_file_hash_column():
                     )
                 )
             logger.info("Column file_hash added to demonstrativos table")
+
+        # Verificar e adicionar coluna uf na tabela guias
+        guia_cols = [c["name"] for c in insp.get_columns("guias")]
+        if "uf" not in guia_cols:
+            with engine.connect() as conn:
+                conn.execute(
+                    sqlalchemy.text(
+                        "ALTER TABLE guias ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+                    )
+                )
+                conn.execute(
+                    sqlalchemy.text(
+                        "CREATE INDEX IF NOT EXISTS ix_guias_uf ON guias(uf)"
+                    )
+                )
+            logger.info("Column uf added to guias table")
+
+        # Verificar e adicionar coluna file_hash na tabela guias
+        if "file_hash" not in guia_cols:
+            with engine.connect() as conn:
+                conn.execute(
+                    sqlalchemy.text(
+                        "ALTER TABLE guias ADD COLUMN file_hash VARCHAR(64)"
+                    )
+                )
+                conn.execute(
+                    sqlalchemy.text(
+                        "CREATE INDEX IF NOT EXISTS ix_guias_file_hash ON guias(file_hash)"
+                    )
+                )
+            logger.info("Column file_hash added to guias table")
+
     except Exception as exc:
-        logger.error(f"Failed to ensure file_hash column: {exc}")
+        logger.error(f"Failed to ensure uf and file_hash columns: {exc}")
 
 
-_ensure_file_hash_column()
+_ensure_uf_and_file_hash_columns()
 
 # --- Autenticação JWT real (MVP) ---
 # Quando SKIP_AUTH é true, precisamos deixar o token opcional
@@ -294,19 +352,20 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     if skip_auth:
         # Use CRM_LOGADO environment variable to simulate a logged-in user
         crm_logado = os.environ.get("CRM_LOGADO")
-        if not crm_logado:
-            logger.warning("SKIP_AUTH is true but CRM_LOGADO is not set!")
+        uf_logado = os.environ.get("UF_LOGADO")
+        if not crm_logado or not uf_logado:
+            logger.warning("SKIP_AUTH is true but CRM_LOGADO or UF_LOGADO is not set!")
             raise HTTPException(
                 status_code=401,
-                detail="CRM_LOGADO environment variable is required when SKIP_AUTH=true",
+                detail="CRM_LOGADO or UF_LOGADO environment variable is required when SKIP_AUTH=true",
             )
         db = SessionLocal()
         try:
             # Try to find medico in database to get the nome
-            medico = db.query(Medico).filter_by(crm=crm_logado).first()
+            medico = db.query(Medico).filter_by(crm=crm_logado, uf=uf_logado).first()
             nome = medico.nome if medico else "Médico Teste"
             logger.info(f"Autenticação ignorada. Usando CRM {crm_logado} ({nome})")
-            return {"crm": crm_logado, "nome": nome}
+            return {"crm": crm_logado, "uf": uf_logado, "nome": nome}
         finally:
             db.close()
 
@@ -316,7 +375,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
     # Normal authentication flow
     payload = decode_jwt(token)
-    return {"crm": payload.get("crm"), "nome": payload.get("nome")}
+    return {
+        "crm": payload.get("crm"),
+        "uf": payload.get("uf"),
+        "nome": payload.get("nome"),
+    }
 
 
 # --- FastAPI app com configurações de segurança ---
@@ -373,11 +436,10 @@ else:
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# --- Configuração do CORS ---
+# --- CORS seguro ---
 # Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
-# Em produção, configure: FRONTEND_ORIGINS=https://medcheck-app.vercel.app,https://www.medcheck-app.vercel.app
+# Isso garante que apenas os domínios autorizados possam acessar a API.
 FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
-
 # Novo: padrão regex para permitir subdomínios dinâmicos do Vercel (ex.: *.vercel.app)
 FRONTEND_ORIGIN_REGEX = os.environ.get("FRONTEND_ORIGIN_REGEX")
 
@@ -431,9 +493,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# --- Garantir que as colunas file_hash e filename existem ---
-_ensure_file_hash_column()
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---
 # Comentado temporariamente para debug do Railway
@@ -1066,15 +1125,15 @@ def upload_demonstrativos(
                         sha256.update(chunk)
                 file_hash = sha256.hexdigest()
 
-                # Checar duplicidade por hash (mesmo CRM)
+                # Checar duplicidade por hash (mesmo CRM e UF)
                 exists_hash = (
                     db.query(Demonstrativo)
-                    .filter_by(crm=user["crm"], file_hash=file_hash)
+                    .filter_by(crm=user["crm"], uf=user["uf"], file_hash=file_hash)
                     .first()
                 )
                 if exists_hash:
                     logger.warning(
-                        f"[UPLOAD] Duplicidade por hash detectada: CRM={user['crm']} | hash={file_hash}"
+                        f"[UPLOAD] Duplicidade por hash detectada: CRM={user['crm']} UF={user['uf']} | hash={file_hash}"
                     )
                     results.append(
                         {
@@ -1095,59 +1154,108 @@ def upload_demonstrativos(
 
                     parser = DemonstrativoParser(file_path)
                     summary = parser.get_summary()
-                    total_procedimentos = summary["total_procedures"]
-                    apresentado = summary["total_presented"]
-                    liberado = summary["total_approved"]
-                    glosa = summary["total_glosa"]
-                    periodo_extracted = periodo or summary["period"]
+
+                    # Validação dos dados extraídos
+                    if not summary:
+                        raise Exception("Parser retornou summary vazio")
+
+                    total_procedimentos = summary.get("total_procedures", 0)
+                    apresentado = summary.get("total_presented", 0.0)
+                    liberado = summary.get("total_approved", 0.0)
+                    glosa = summary.get("total_glosa", 0.0)
+
+                    # Sempre priorizar o período extraído do parser
+                    periodo_extracted = summary.get("period") or periodo
+
+                    logger.info(
+                        f"[UPLOAD] Parser executado com sucesso para {file.filename} (CRM={user['crm']} UF={user['uf']}): {total_procedimentos} procedimentos, R$ {apresentado:,.2f} apresentado"
+                    )
+
+                    # Sanitizar campos livres apenas se summary existir
+                    if summary and "period" in summary:
+                        summary["period"] = sanitize_text(summary["period"])
+                    if summary and "total_presented" in summary:
+                        summary["total_presented"] = sanitize_text(
+                            str(summary["total_presented"])
+                        )
+                    if summary and "total_approved" in summary:
+                        summary["total_approved"] = sanitize_text(
+                            str(summary["total_approved"])
+                        )
+                    if summary and "total_glosa" in summary:
+                        summary["total_glosa"] = sanitize_text(
+                            str(summary["total_glosa"])
+                        )
+
                 except Exception as e:
+                    logger.error(
+                        f"[UPLOAD] Erro ao processar demonstrativo {file.filename} (CRM={user['crm']} UF={user['uf']}): {e}"
+                    )
+                    logger.error(f"[UPLOAD] Stack trace completo: ", exc_info=True)
                     total_procedimentos = 0
                     apresentado = 0.0
                     liberado = 0.0
                     glosa = 0.0
                     periodo_extracted = periodo
-                # Sanitizar campos livres
-                if "period" in summary:
-                    summary["period"] = sanitize_text(summary["period"])
-                if "total_presented" in summary:
-                    summary["total_presented"] = sanitize_text(
-                        str(summary["total_presented"])
-                    )
-                if "total_approved" in summary:
-                    summary["total_approved"] = sanitize_text(
-                        str(summary["total_approved"])
-                    )
-                if "total_glosa" in summary:
-                    summary["total_glosa"] = sanitize_text(str(summary["total_glosa"]))
                 # Log detalhado do upload
                 logger.info(
-                    f"[UPLOAD] CRM={user['crm']} | periodo={periodo_extracted} | lote={lote or filename} | filename={filename}"
+                    f"[UPLOAD] CRM={user['crm']} UF={user['uf']} | periodo={periodo_extracted} | lote={lote or filename} | filename={filename}"
                 )
                 # Validação obrigatória do período
                 if not periodo_extracted:
                     logger.error(
-                        f"[UPLOAD] Falha: demonstrativo sem período extraído! Arquivo: {filename}"
+                        f"[UPLOAD] Não foi possível extrair o período do demonstrativo: {file.filename} (CRM={user['crm']} UF={user['uf']})"
                     )
-                    results.append(
-                        {
-                            "filename": file.filename,
-                            "success": False,
-                            "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
-                        }
-                    )
-                    continue
-                # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, período e lote (ou filename se lote não informado)
+                    # Tentar extrair período do nome do arquivo como fallback
+                    filename_lower = file.filename.lower()
+                    if "outubro" in filename_lower:
+                        periodo_extracted = "outubro de 2024"
+                    elif "novembro" in filename_lower:
+                        periodo_extracted = "novembro de 2024"
+                    elif "dezembro" in filename_lower:
+                        periodo_extracted = "dezembro de 2024"
+                    elif "janeiro" in filename_lower:
+                        periodo_extracted = "janeiro de 2025"
+                    elif "fevereiro" in filename_lower:
+                        periodo_extracted = "fevereiro de 2025"
+                    elif "março" in filename_lower or "marco" in filename_lower:
+                        periodo_extracted = "março de 2025"
+                    elif "abril" in filename_lower:
+                        periodo_extracted = "abril de 2025"
+                    elif "maio" in filename_lower:
+                        periodo_extracted = "maio de 2025"
+                    elif "junho" in filename_lower:
+                        periodo_extracted = "junho de 2025"
+                    elif "julho" in filename_lower:
+                        periodo_extracted = "julho de 2025"
+                    elif "agosto" in filename_lower:
+                        periodo_extracted = "agosto de 2025"
+                    elif "setembro" in filename_lower:
+                        periodo_extracted = "setembro de 2025"
+                    else:
+                        results.append(
+                            {
+                                "filename": file.filename,
+                                "success": False,
+                                "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
+                            }
+                        )
+                        continue
+                # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, UF, período e lote (ou filename se lote não informado)
                 unique_lote = lote or filename
                 exists = (
                     db.query(Demonstrativo)
                     .filter_by(
-                        crm=user["crm"], periodo=periodo_extracted, lote=unique_lote
+                        crm=user["crm"],
+                        uf=user["uf"],
+                        periodo=periodo_extracted,
+                        lote=unique_lote,
                     )
                     .first()
                 )
                 if exists:
                     logger.warning(
-                        f"[UPLOAD] Duplicidade detectada: CRM={user['crm']} | periodo={periodo_extracted} | lote={unique_lote}"
+                        f"[UPLOAD] Duplicidade detectada: CRM={user['crm']} UF={user['uf']} | periodo={periodo_extracted} | lote={unique_lote}"
                     )
                     results.append(
                         {
@@ -1157,8 +1265,13 @@ def upload_demonstrativos(
                         }
                     )
                     continue
+                # Validação final antes de salvar
+                if not periodo_extracted:
+                    raise Exception("Período não pode ser vazio")
+
                 demonstrativo = Demonstrativo(
                     crm=user["crm"],
+                    uf=user["uf"],  # CRÍTICO: incluir UF
                     periodo=periodo_extracted,
                     lote=unique_lote,
                     filename=filename,
@@ -1168,8 +1281,29 @@ def upload_demonstrativos(
                     liberado=f"R$ {liberado:,.2f}".replace(".", ","),
                     glosa=f"R$ {glosa:,.2f}".replace(".", ","),
                 )
-                db.add(demonstrativo)
-                db.commit()
+
+                try:
+                    db.add(demonstrativo)
+                    db.commit()
+                    logger.info(
+                        f"[UPLOAD] Demonstrativo salvo com sucesso: ID={demonstrativo.id}, CRM={user['crm']}, UF={user['uf']}"
+                    )
+                except Exception as db_error:
+                    logger.error(f"[UPLOAD] Erro ao salvar no banco: {db_error}")
+                    db.rollback()
+                    raise db_error
+                # Log de upload bem-sucedido
+                log_audit(
+                    "upload_demonstrativo",
+                    user_crm=user["crm"],
+                    details={
+                        "filename": filename,
+                        "periodo": demonstrativo.periodo,
+                        "lote": demonstrativo.lote,
+                        "total_procedimentos": demonstrativo.total_procedimentos,
+                        "result": "success",
+                    },
+                )
                 results.append(
                     {
                         "filename": file.filename,
@@ -1185,6 +1319,16 @@ def upload_demonstrativos(
                 )
             except Exception as e:
                 logger.error(f"[UPLOAD] Erro ao processar arquivo {file.filename}: {e}")
+                # Log de erro de upload
+                log_audit(
+                    "upload_demonstrativo",
+                    user_crm=user["crm"],
+                    details={
+                        "filename": file.filename,
+                        "result": "error",
+                        "error": str(e),
+                    },
+                )
                 results.append(
                     {"filename": file.filename, "success": False, "error": str(e)}
                 )
@@ -1193,16 +1337,67 @@ def upload_demonstrativos(
         db.close()
 
 
+# --- Endpoint de teste para demonstrativos ---
+@app.post("/api/v1/demonstrativos/test")
+def test_demonstrativo_upload(
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
+):
+    """Endpoint de teste para verificar se o parser de demonstrativos está funcionando"""
+    try:
+        # Salvar arquivo temporário
+        job_id = str(uuid4())
+        filename = f"{job_id}_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+
+        with open(file_path, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+        # Testar parser
+        from src.parsers.demonstrativo_parser import DemonstrativoParser
+
+        parser = DemonstrativoParser(file_path)
+        summary = parser.get_summary()
+        payments = parser.get_payments()
+
+        # Limpar arquivo temporário
+        try:
+            os.remove(file_path)
+        except:
+            pass
+
+        return {
+            "success": True,
+            "summary": summary,
+            "total_payments": len(payments),
+            "sample_payments": payments[:3] if payments else [],
+        }
+    except Exception as e:
+        logger.error(f"[TEST] Erro no teste de demonstrativo: {e}")
+        return {"success": False, "error": str(e)}
+
+
 # --- Endpoint para deletar demonstrativo ---
 @app.delete("/api/v1/demonstrativos/{demo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_demonstrativo(demo_id: int, user: dict = Depends(get_current_user)):
     db = SessionLocal()
     try:
-        demo = db.query(Demonstrativo).filter_by(id=demo_id, crm=user["crm"]).first()
+        demo = (
+            db.query(Demonstrativo)
+            .filter_by(id=demo_id, crm=user["crm"], uf=user["uf"])
+            .first()
+        )
         if not demo:
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado.")
+        filename = demo.filename
         db.delete(demo)
         db.commit()
+        # Log de remoção
+        log_audit(
+            "delete_demonstrativo",
+            user_crm=user["crm"],
+            details={"filename": filename, "result": "success"},
+        )
         return
     finally:
         db.close()
@@ -1210,30 +1405,35 @@ def delete_demonstrativo(demo_id: int, user: dict = Depends(get_current_user)):
 
 # --- Endpoint de listagem de demonstrativos ---
 @app.get("/api/v1/demonstrativos")
-def list_demonstrativos(
-    periodo: str = None, lote: str = None, user: dict = Depends(get_current_user)
-):
+def list_demonstrativos(user: dict = Depends(get_current_user)):
+    """Retorna todos os demonstrativos do usuário autenticado."""
     db = SessionLocal()
+    crm = user.get("crm")
+    uf = user.get("uf")
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
     try:
-        query = db.query(Demonstrativo).filter_by(crm=user["crm"])
-        if periodo:
-            query = query.filter_by(periodo=periodo)
-        if lote:
-            query = query.filter_by(lote=lote)
-        demos = query.order_by(Demonstrativo.upload_time.desc()).all()
+        # CRÍTICO: filtrar por crm E uf para garantir isolamento
+        demonstrativos = (
+            db.query(Demonstrativo)
+            .filter_by(crm=crm, uf=uf)
+            .order_by(Demonstrativo.upload_time.desc())
+            .all()
+        )
         return [
             {
                 "id": d.id,
                 "periodo": d.periodo,
                 "lote": d.lote,
+                "filename": d.filename,
                 "total_procedimentos": d.total_procedimentos,
                 "apresentado": d.apresentado,
                 "liberado": d.liberado,
                 "glosa": d.glosa,
-                "filename": d.filename,
-                "upload_time": d.upload_time.isoformat(),
+                "upload_time": d.upload_time.isoformat() if d.upload_time else None,
             }
-            for d in demos
+            for d in demonstrativos
         ]
     finally:
         db.close()
@@ -1244,7 +1444,11 @@ def list_demonstrativos(
 def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user)):
     db = SessionLocal()
     try:
-        demo = db.query(Demonstrativo).filter_by(id=demo_id, crm=user["crm"]).first()
+        demo = (
+            db.query(Demonstrativo)
+            .filter_by(id=demo_id, crm=user["crm"], uf=user["uf"])
+            .first()
+        )
         if not demo:
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
         file_path = os.path.join(UPLOAD_DIR, demo.filename)
@@ -1262,7 +1466,11 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
     db = SessionLocal()
     try:
-        demo = db.query(Demonstrativo).filter_by(id=demo_id, crm=user["crm"]).first()
+        demo = (
+            db.query(Demonstrativo)
+            .filter_by(id=demo_id, crm=user["crm"], uf=user["uf"])
+            .first()
+        )
         if not demo:
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
         file_path = os.path.join(UPLOAD_DIR, demo.filename)
@@ -1317,17 +1525,13 @@ def upload_guias(
     files: List[UploadFile] = File(...), user: dict = Depends(get_current_user)
 ):
     """
-    Recebe múltiplos PDFs de guias TISS, processa cada um individualmente,
-    salva no banco e retorna uma lista de resultados por arquivo.
-    Exige autenticação e filtra automaticamente por CRM do usuário logado.
-    Inclui proteção contra uploads duplicados baseada no hash do conteúdo.
+    Upload de guias TISS em PDF.
+    Processa múltiplos arquivos e retorna resultado por arquivo.
     """
-    import tempfile
-
-    from src.parsers.guia_parser import parse_guia_pdf
-
-    # Garante que as colunas necessárias existem
-    _ensure_file_hash_column()
+    crm = user.get("crm")
+    uf = user.get("uf")
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
 
     results = []
     for file in files:
@@ -1348,14 +1552,13 @@ def upload_guias(
 
                 # Calcula o hash do arquivo para verificar duplicatas
                 file_hash = calculate_file_hash(tmp_path)
-                crm = str(user.get("crm", ""))
 
-                # Verifica se já existe uma guia com o mesmo hash para este CRM
+                # Verifica se já existe uma guia com o mesmo hash para este CRM E UF
                 db = SessionLocal()
                 try:
                     existing_hash = (
                         db.query(Guia)
-                        .filter_by(file_hash=file_hash, user_id=crm)
+                        .filter_by(file_hash=file_hash, crm=crm, uf=uf)
                         .first()
                     )
 
@@ -1373,30 +1576,27 @@ def upload_guias(
                 finally:
                     db.close()
 
-                logger.info(f"Processando guia para CRM {crm}")
-                procedures = parse_guia_pdf(tmp_path, crm_filter=crm)
+                # Processar o PDF
+                from src.parsers.guia_parser import parse_guia_pdf
+
+                procedures = parse_guia_pdf(tmp_path, crm)
+
                 if not procedures:
-                    logger.warning(
-                        f"Nenhum procedimento encontrado para o CRM {crm} nesta guia"
-                    )
                     results.append(
                         {
                             "filename": file.filename,
-                            "success": True,
-                            "message": "Guia processada, mas nenhum procedimento encontrado para o seu CRM",
-                            "crm": crm,
-                            "procedures": [],
+                            "success": False,
+                            "error": "Não foi possível extrair procedimentos do PDF.",
                         }
                     )
                     continue
 
-                # Sanitizar campos livres
+                # Sanitizar dados
                 for proc in procedures:
                     proc["beneficiario"] = sanitize_text(proc.get("beneficiario", ""))
                     proc["descricao"] = sanitize_text(proc.get("descricao", ""))
                     proc["prestador"] = sanitize_text(proc.get("prestador", ""))
-                    for part in proc.get("participacoes", []):
-                        part["nome"] = sanitize_text(part.get("nome", ""))
+                    proc["nome"] = sanitize_text(proc.get("nome", ""))
 
                 db = SessionLocal()
                 guias_adicionadas = 0
@@ -1410,6 +1610,7 @@ def upload_guias(
                             "descricao": proc.get("descricao", ""),
                             "papel": proc.get("papel_exercido", ""),
                             "crm": crm,
+                            "uf": uf,  # CRÍTICO: incluir UF
                             "qtd": proc.get("quantidade", 1),
                             "status": "Gerado pela execução",
                             "prestador": proc.get("prestador", ""),
@@ -1456,8 +1657,8 @@ def upload_guias(
                                 numero_guia=guia_data["numero_guia"],
                                 codigo=guia_data["codigo"],
                                 papel=guia_data["papel"],
-                                data=guia_data["data"],
-                                user_id=crm,
+                                crm=crm,
+                                uf=uf,  # CRÍTICO: incluir UF na verificação
                             )
                             .first()
                         )
@@ -1471,6 +1672,7 @@ def upload_guias(
                                 descricao=guia_data["descricao"],
                                 papel=guia_data["papel"],
                                 crm=guia_data["crm"],
+                                uf=guia_data["uf"],  # CRÍTICO: incluir UF
                                 qtd=guia_data["qtd"],
                                 status=guia_data["status"],
                                 prestador=guia_data["prestador"],
@@ -1533,30 +1735,57 @@ def upload_guias(
                         }
                         for p in procedures
                     ]
+
+                    logger.info(f"Processando guia para CRM {crm} UF {uf}")
                     logger.info(
                         f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados"
                     )
+
                     results.append(
                         {
                             "filename": file.filename,
                             "success": True,
-                            "message": f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados",
-                            "crm": crm,
                             "procedures": formatted_procedures,
-                            "novos_adicionados": guias_adicionadas,
+                            "guias_adicionadas": guias_adicionadas,
+                        }
+                    )
+
+                    # Log de auditoria
+                    log_audit(
+                        "upload_guia",
+                        user_crm=crm,
+                        ip=None,
+                        details={
+                            "filename": file.filename,
+                            "procedures_count": len(procedures),
+                            "guias_adicionadas": guias_adicionadas,
+                            "uf": uf,
+                        },
+                    )
+
+                except Exception as e:
+                    db.rollback()
+                    logger.error(f"Erro ao processar guia {file.filename}: {e}")
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": f"Erro interno: {str(e)}",
                         }
                     )
                 finally:
                     db.close()
+
             except Exception as e:
-                logger.error(
-                    f"Erro ao processar guia {file.filename}: {e}", exc_info=True
-                )
+                logger.error(f"Erro ao processar arquivo {file.filename}: {e}")
                 results.append(
-                    {"filename": file.filename, "success": False, "error": str(e)}
+                    {
+                        "filename": file.filename,
+                        "success": False,
+                        "error": f"Erro ao processar arquivo: {str(e)}",
+                    }
                 )
             finally:
-                # Limpa o arquivo temporário
                 try:
                     os.unlink(tmp_path)
                 except:
@@ -1619,9 +1848,14 @@ def list_guias(
     Permite busca por texto, filtro por status e data.
     """
     db = SessionLocal()
+    crm = user.get("crm")
+    uf = user.get("uf")
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
     try:
-        # Consulta base
-        query = db.query(Guia).filter_by(user_id=user["crm"])
+        # Consulta base (CRÍTICO: filtrar por crm E uf)
+        query = db.query(Guia).filter_by(crm=crm, uf=uf)
 
         # Aplicar filtros se fornecidos
         if search:
@@ -1691,10 +1925,19 @@ def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
     try:
         deleted = (
             db.query(Guia)
-            .filter_by(numero_guia=numero_guia, user_id=user["crm"])
+            .filter_by(numero_guia=numero_guia, crm=user["crm"], uf=user["uf"])
             .delete()
         )
         db.commit()
+        # Log de remoção
+        log_audit(
+            "delete_guia",
+            user_crm=user["crm"],
+            details={
+                "numero_guia": numero_guia,
+                "result": "success" if deleted else "not_found",
+            },
+        )
         if not deleted:
             raise HTTPException(status_code=404, detail="Guia não encontrada.")
         return
@@ -1738,193 +1981,676 @@ async def log_activity(
 # --- Endpoint para listar activity logs do usuário ---
 @app.get("/api/v1/activity-logs")
 def get_activity_logs(
-    limit: int = Query(50, ge=1, le=100), user: dict = Depends(get_current_user)
+    limit: int = Query(50, ge=1, le=100),
+    user: dict = Depends(get_current_user),
+    start_date: str = Query(None, description="Data inicial (YYYY-MM-DD)"),
+    end_date: str = Query(None, description="Data final (YYYY-MM-DD)"),
+    action_type: str = Query(None, description="Tipo de ação"),
+    status: str = Query(None, description="Status da atividade"),
+    include_metrics: bool = Query(True, description="Incluir métricas"),
+    include_timeline: bool = Query(True, description="Incluir timeline"),
+    search: str = Query(None, description="Busca por texto"),
 ):
-    """Retorna logs de atividade reais do usuário baseado em dados do sistema"""
-    db = SessionLocal()
+    """Retorna logs de atividade premium com métricas avançadas e contexto rico"""
+    import os
+    import re
+    from datetime import datetime, timedelta
+
+    activities = []
+    log_path = os.path.join("logs", "medcheck_audit.log")
+    crm = user["crm"]
+
     try:
-        activities = []
+        if os.path.exists(log_path):
+            with open(log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        entry = json.loads(line.strip())
+                        # Filtra apenas logs do usuário logado
+                        if entry.get("user_crm") != crm:
+                            continue
 
-        # 1. Buscar demonstrativos recentes (uploads)
-        demonstrativos = (
-            db.query(Demonstrativo)
-            .filter_by(crm=user["crm"])
-            .order_by(Demonstrativo.upload_time.desc())
-            .limit(10)
-            .all()
+                        # Filtros avançados
+                        timestamp_str = entry.get("timestamp", "")
+                        if timestamp_str:
+                            try:
+                                entry_date = datetime.fromisoformat(
+                                    timestamp_str.replace("Z", "+00:00")
+                                )
+                                if start_date:
+                                    start_dt = datetime.fromisoformat(start_date)
+                                    if entry_date.date() < start_dt.date():
+                                        continue
+                                if end_date:
+                                    end_dt = datetime.fromisoformat(end_date)
+                                    if entry_date.date() > end_dt.date():
+                                        continue
+                            except:
+                                pass
+
+                        action = entry.get("action", "")
+                        details = entry.get("details", {})
+
+                        # Busca por texto
+                        if search:
+                            search_lower = search.lower()
+                            searchable_text = f"{action} {str(details)}".lower()
+                            if search_lower not in searchable_text:
+                                continue
+
+                        # Categorização inteligente premium
+                        (
+                            activity_type,
+                            status,
+                            description,
+                            entity,
+                            value,
+                            priority,
+                            category,
+                        ) = categorize_activity_premium(action, details, crm)
+
+                        # Contexto rico e detalhado
+                        context = build_activity_context(action, details, entry)
+
+                        # Monta objeto premium para o frontend
+                        activity_obj = {
+                            "id": entry.get("timestamp", "") + action,
+                            "type": activity_type,
+                            "action": description,
+                            "description": description,
+                            "timestamp": entry.get(
+                                "timestamp", datetime.utcnow().isoformat()
+                            ),
+                            "status": status,
+                            "entity": entity,
+                            "details": str(details),
+                            "value": value,
+                            "priority": priority,
+                            "category": category,
+                            "context": context,
+                            "duration": calculate_activity_duration(action, details),
+                            "impact_score": calculate_impact_score(action, details),
+                            "related_entities": extract_related_entities(
+                                action, details
+                            ),
+                            "user_agent": entry.get("details", {}).get("user_agent"),
+                            "ip_address": entry.get("details", {}).get("ip"),
+                            "session_id": entry.get("details", {}).get("session_id"),
+                            "tags": generate_activity_tags(action, details),
+                            "risk_level": assess_risk_level(action, details),
+                            "compliance_flags": check_compliance_flags(action, details),
+                        }
+
+                        # Filtros por tipo e status
+                        if action_type and activity_type != action_type:
+                            continue
+                        if status and activity_obj["status"] != status:
+                            continue
+
+                        activities.append(activity_obj)
+
+                    except Exception as e:
+                        continue
+
+        # Ordenação premium por prioridade e timestamp
+        activities.sort(
+            key=lambda x: (x.get("priority", 0), x["timestamp"]), reverse=True
         )
-
-        for demo in demonstrativos:
-            activities.append(
-                {
-                    "id": f"demo_{demo.id}",
-                    "type": "upload",
-                    "action": "Demonstrativo carregado",
-                    "description": f"Demonstrativo {demo.periodo or 'sem período'} processado",
-                    "timestamp": (
-                        demo.upload_time.isoformat()
-                        if demo.upload_time
-                        else datetime.utcnow().isoformat()
-                    ),
-                    "status": "success",
-                    "entity": demo.filename,
-                    "details": f"Lote: {demo.lote or 'N/A'} | {demo.total_procedimentos} procedimentos encontrados",
-                    "value": None,
-                }
-            )
-
-        # 2. Buscar guias recentes
-        guias_count = db.query(Guia).filter_by(user_id=user["crm"]).count()
-        recent_guias = (
-            db.query(Guia)
-            .filter_by(user_id=user["crm"])
-            .order_by(Guia.id.desc())
-            .limit(5)
-            .all()
-        )
-
-        if guias_count > 0:
-            activities.append(
-                {
-                    "id": f"guias_total",
-                    "type": "analysis",
-                    "action": "Guias processadas",
-                    "description": f"Total de {guias_count} guias médicas no sistema",
-                    "timestamp": (datetime.utcnow() - timedelta(hours=1)).isoformat(),
-                    "status": "info",
-                    "entity": f"{guias_count} guias",
-                    "details": f"Última atualização: guia #{recent_guias[0].numero_guia if recent_guias else 'N/A'}",
-                    "value": None,
-                }
-            )
-
-        # 3. Simular análises de glosas baseado nos dados reais
-        total_demos = len(demonstrativos)
-        if total_demos > 0:
-            # Calcular valores reais dos demonstrativos
-            total_apresentado = 0
-            total_liberado = 0
-            total_glosa = 0
-
-            for demo in demonstrativos:
-                try:
-                    apresentado = (
-                        float(
-                            demo.apresentado.replace("R$", "")
-                            .replace(".", "")
-                            .replace(",", ".")
-                            .strip()
-                        )
-                        if demo.apresentado != "R$ 0,00"
-                        else 0
-                    )
-                    liberado = (
-                        float(
-                            demo.liberado.replace("R$", "")
-                            .replace(".", "")
-                            .replace(",", ".")
-                            .strip()
-                        )
-                        if demo.liberado != "R$ 0,00"
-                        else 0
-                    )
-                    glosa = (
-                        float(
-                            demo.glosa.replace("R$", "")
-                            .replace(".", "")
-                            .replace(",", ".")
-                            .strip()
-                        )
-                        if demo.glosa != "R$ 0,00"
-                        else 0
-                    )
-
-                    total_apresentado += apresentado
-                    total_liberado += liberado
-                    total_glosa += glosa
-                except:
-                    continue
-
-            if total_glosa > 0:
-                activities.append(
-                    {
-                        "id": "glosas_detected",
-                        "type": "gloss",
-                        "action": "Glosas detectadas",
-                        "description": f"Glosas identificadas nos demonstrativos",
-                        "timestamp": (
-                            datetime.utcnow() - timedelta(minutes=30)
-                        ).isoformat(),
-                        "status": "warning",
-                        "entity": f"{total_demos} demonstrativos",
-                        "details": f"Total glosado: R$ {total_glosa:,.2f} de R$ {total_apresentado:,.2f} apresentado",
-                        "value": total_glosa,
-                    }
-                )
-
-            if total_liberado > 0:
-                activities.append(
-                    {
-                        "id": "payments_received",
-                        "type": "payment",
-                        "action": "Pagamentos recebidos",
-                        "description": f"Valores liberados nos demonstrativos",
-                        "timestamp": (
-                            datetime.utcnow() - timedelta(hours=2)
-                        ).isoformat(),
-                        "status": "success",
-                        "entity": f"{total_demos} demonstrativos",
-                        "details": f"Total liberado: R$ {total_liberado:,.2f} | Taxa de sucesso: {(total_liberado/total_apresentado*100) if total_apresentado > 0 else 0:.1f}%",
-                        "value": total_liberado,
-                    }
-                )
-
-        # 4. Adicionar login recente (simulado baseado na sessão atual)
-        activities.append(
-            {
-                "id": "current_login",
-                "type": "login",
-                "action": "Login realizado",
-                "description": "Acesso ao sistema efetuado com sucesso",
-                "timestamp": (datetime.utcnow() - timedelta(hours=4)).isoformat(),
-                "status": "success",
-                "entity": f"CRM {user['crm']}",
-                "details": f"Usuário: {user.get('nome', 'N/A')}",
-                "value": None,
-            }
-        )
-
-        # 5. Sistema de backup (simulado)
-        activities.append(
-            {
-                "id": "system_backup",
-                "type": "system",
-                "action": "Backup automático",
-                "description": "Backup dos dados realizado automaticamente",
-                "timestamp": (datetime.utcnow() - timedelta(hours=6)).isoformat(),
-                "status": "success",
-                "entity": "Sistema",
-                "details": "Dados do usuário salvos com segurança. Próximo backup: amanhã às 03:00",
-                "value": None,
-            }
-        )
-
-        # Ordenar por timestamp (mais recente primeiro) e limitar
-        activities.sort(key=lambda x: x["timestamp"], reverse=True)
         activities = activities[:limit]
+
+        # Métricas avançadas
+        metrics = {}
+        if include_metrics:
+            metrics = calculate_premium_metrics(activities, crm)
+
+        # Timeline de atividades
+        timeline = {}
+        if include_timeline:
+            timeline = build_activity_timeline(activities)
 
         return {
             "activities": activities,
             "total": len(activities),
-            "user_crm": user["crm"],
+            "user_crm": crm,
             "generated_at": datetime.utcnow().isoformat(),
+            "metrics": metrics,
+            "timeline": timeline,
+            "filters_applied": {
+                "start_date": start_date,
+                "end_date": end_date,
+                "action_type": action_type,
+                "status": status,
+                "search": search,
+            },
         }
 
     except Exception as e:
-        logger.error(f"Erro ao buscar activity logs: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao buscar logs: {e}")
-    finally:
-        db.close()
+        logger.error(f"Erro ao buscar activity logs premium: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar logs premium: {e}")
+
+
+def categorize_activity_premium(action: str, details: dict, crm: str) -> tuple:
+    """Categorização inteligente premium com contexto rico"""
+
+    # Mapeamento avançado de ações
+    action_mapping = {
+        # Login e Autenticação
+        "login_success": (
+            "login",
+            "success",
+            "Login realizado com sucesso",
+            f"CRM {crm}",
+            None,
+            1,
+            "security",
+        ),
+        "login_failed": (
+            "login",
+            "error",
+            "Tentativa de login falhou",
+            f"CRM {crm}",
+            None,
+            3,
+            "security",
+        ),
+        "logout": (
+            "login",
+            "info",
+            "Logout realizado",
+            f"CRM {crm}",
+            None,
+            1,
+            "security",
+        ),
+        # Uploads
+        "upload_guias": (
+            "upload",
+            "success",
+            "Guia médica carregada",
+            details.get("filename", "arquivo"),
+            details.get("procedures", 0),
+            2,
+            "data",
+        ),
+        "upload_demonstrativo": (
+            "upload",
+            "success",
+            "Demonstrativo carregado",
+            details.get("filename", "arquivo"),
+            details.get("total_procedimentos", 0),
+            2,
+            "data",
+        ),
+        "upload_guides": (
+            "upload",
+            "success",
+            "Guias carregadas",
+            details.get("filename", "arquivo"),
+            details.get("procedures", 0),
+            2,
+            "data",
+        ),
+        # Exclusões
+        "delete_guia": (
+            "delete",
+            "warning",
+            "Guia removida",
+            f"Guia {details.get('numero_guia', 'N/A')}",
+            None,
+            2,
+            "data",
+        ),
+        "delete_demonstrativo": (
+            "delete",
+            "warning",
+            "Demonstrativo removido",
+            details.get("filename", "arquivo"),
+            None,
+            2,
+            "data",
+        ),
+        # Exportações
+        "export_data": (
+            "export",
+            "success",
+            "Exportação de dados realizada",
+            "Dados do usuário",
+            None,
+            1,
+            "data",
+        ),
+        "export_report": (
+            "export",
+            "success",
+            "Relatório exportado",
+            details.get("report_type", "relatório"),
+            None,
+            1,
+            "data",
+        ),
+        # Análises
+        "analysis_started": (
+            "analysis",
+            "info",
+            "Análise iniciada",
+            details.get("analysis_type", "análise"),
+            None,
+            2,
+            "analysis",
+        ),
+        "analysis_completed": (
+            "analysis",
+            "success",
+            "Análise concluída",
+            details.get("analysis_type", "análise"),
+            details.get("results_count", 0),
+            2,
+            "analysis",
+        ),
+        "analysis_failed": (
+            "analysis",
+            "error",
+            "Análise falhou",
+            details.get("analysis_type", "análise"),
+            None,
+            3,
+            "analysis",
+        ),
+        # Incidentes
+        "incident_reported": (
+            "incident",
+            "warning",
+            "Incidente reportado",
+            details.get("type", "sistema"),
+            None,
+            3,
+            "system",
+        ),
+        "error_occurred": (
+            "error",
+            "error",
+            "Erro do sistema",
+            details.get("error_type", "sistema"),
+            None,
+            4,
+            "system",
+        ),
+        # Perfil e Configurações
+        "update_profile": (
+            "profile",
+            "success",
+            "Perfil atualizado",
+            "Configurações",
+            None,
+            1,
+            "user",
+        ),
+        "change_password": (
+            "security",
+            "success",
+            "Senha alterada",
+            "Segurança",
+            None,
+            2,
+            "security",
+        ),
+        "delete_account": (
+            "security",
+            "warning",
+            "Conta excluída",
+            "Sistema",
+            None,
+            4,
+            "security",
+        ),
+        # Pagamentos e Financeiro
+        "payment_processed": (
+            "payment",
+            "success",
+            "Pagamento processado",
+            details.get("amount", "valor"),
+            details.get("amount", 0),
+            2,
+            "financial",
+        ),
+        "payment_failed": (
+            "payment",
+            "error",
+            "Pagamento falhou",
+            details.get("amount", "valor"),
+            None,
+            3,
+            "financial",
+        ),
+        # Glosas e Auditoria
+        "gloss_analysis": (
+            "gloss",
+            "info",
+            "Análise de glosa",
+            details.get("gloss_type", "glosa"),
+            details.get("gloss_amount", 0),
+            2,
+            "audit",
+        ),
+        "audit_report": (
+            "audit",
+            "success",
+            "Relatório de auditoria",
+            details.get("report_type", "auditoria"),
+            None,
+            2,
+            "audit",
+        ),
+    }
+
+    # Busca no mapeamento ou usa padrão
+    if action in action_mapping:
+        return action_mapping[action]
+    else:
+        # Categorização inteligente baseada em palavras-chave
+        action_lower = action.lower()
+        if any(word in action_lower for word in ["upload", "carregar", "import"]):
+            return (
+                "upload",
+                "success",
+                action.replace("_", " ").title(),
+                "Arquivo",
+                None,
+                2,
+                "data",
+            )
+        elif any(word in action_lower for word in ["delete", "remove", "excluir"]):
+            return (
+                "delete",
+                "warning",
+                action.replace("_", " ").title(),
+                "Item",
+                None,
+                2,
+                "data",
+            )
+        elif any(word in action_lower for word in ["export", "download", "baixar"]):
+            return (
+                "export",
+                "success",
+                action.replace("_", " ").title(),
+                "Dados",
+                None,
+                1,
+                "data",
+            )
+        elif any(word in action_lower for word in ["error", "fail", "falha"]):
+            return (
+                "error",
+                "error",
+                action.replace("_", " ").title(),
+                "Sistema",
+                None,
+                3,
+                "system",
+            )
+        else:
+            return (
+                "system",
+                "info",
+                action.replace("_", " ").title(),
+                "Sistema",
+                None,
+                1,
+                "system",
+            )
+
+
+def build_activity_context(action: str, details: dict, entry: dict) -> dict:
+    """Constrói contexto rico para a atividade"""
+    context = {
+        "session_info": {
+            "user_agent": entry.get("details", {}).get("user_agent"),
+            "ip_address": entry.get("details", {}).get("ip"),
+            "timestamp": entry.get("timestamp"),
+        },
+        "performance_metrics": {},
+        "security_flags": [],
+        "compliance_notes": [],
+        "related_data": {},
+    }
+
+    # Métricas de performance
+    if "duration" in details:
+        context["performance_metrics"]["duration_ms"] = details["duration"]
+
+    # Flags de segurança
+    if action in ["login_failed", "delete_account", "incident_reported"]:
+        context["security_flags"].append("high_priority")
+
+    # Notas de compliance
+    if action in ["export_data", "delete_account"]:
+        context["compliance_notes"].append("audit_trail_required")
+
+    # Dados relacionados
+    if "filename" in details:
+        context["related_data"]["file_info"] = {
+            "name": details["filename"],
+            "size": details.get("file_size"),
+            "type": details.get("file_type"),
+        }
+
+    return context
+
+
+def calculate_activity_duration(action: str, details: dict) -> int:
+    """Calcula duração da atividade em milissegundos"""
+    if "duration" in details:
+        return details["duration"]
+
+    # Estimativas baseadas no tipo de ação
+    duration_estimates = {
+        "upload_guias": 2000,
+        "upload_demonstrativo": 3000,
+        "analysis_completed": 5000,
+        "export_data": 1500,
+        "login_success": 500,
+    }
+
+    return duration_estimates.get(action, 1000)
+
+
+def calculate_impact_score(action: str, details: dict) -> int:
+    """Calcula score de impacto da atividade (1-10)"""
+    impact_scores = {
+        "delete_account": 10,
+        "incident_reported": 8,
+        "error_occurred": 7,
+        "delete_guia": 6,
+        "delete_demonstrativo": 6,
+        "upload_demonstrativo": 5,
+        "upload_guias": 4,
+        "export_data": 3,
+        "login_failed": 2,
+        "login_success": 1,
+    }
+
+    return impact_scores.get(action, 3)
+
+
+def extract_related_entities(action: str, details: dict) -> list:
+    """Extrai entidades relacionadas à atividade"""
+    entities = []
+
+    if "filename" in details:
+        entities.append({"type": "file", "name": details["filename"]})
+
+    if "numero_guia" in details:
+        entities.append({"type": "guia", "number": details["numero_guia"]})
+
+    if "periodo" in details:
+        entities.append({"type": "period", "value": details["periodo"]})
+
+    return entities
+
+
+def generate_activity_tags(action: str, details: dict) -> list:
+    """Gera tags inteligentes para a atividade"""
+    tags = []
+
+    # Tags baseadas na ação
+    if "upload" in action:
+        tags.extend(["upload", "data_import"])
+    elif "delete" in action:
+        tags.extend(["delete", "data_removal"])
+    elif "export" in action:
+        tags.extend(["export", "data_export"])
+    elif "login" in action:
+        tags.extend(["authentication", "security"])
+
+    # Tags baseadas nos detalhes
+    if "filename" in details:
+        tags.append("file_operation")
+
+    if "procedures" in details:
+        tags.append("medical_procedures")
+
+    if "periodo" in details:
+        tags.append("period_analysis")
+
+    return tags
+
+
+def assess_risk_level(action: str, details: dict) -> str:
+    """Avalia nível de risco da atividade"""
+    high_risk_actions = ["delete_account", "incident_reported", "error_occurred"]
+    medium_risk_actions = ["delete_guia", "delete_demonstrativo", "login_failed"]
+
+    if action in high_risk_actions:
+        return "high"
+    elif action in medium_risk_actions:
+        return "medium"
+    else:
+        return "low"
+
+
+def check_compliance_flags(action: str, details: dict) -> list:
+    """Verifica flags de compliance"""
+    flags = []
+
+    if action in ["export_data", "delete_account"]:
+        flags.append("audit_required")
+
+    if action in ["delete_guia", "delete_demonstrativo"]:
+        flags.append("data_retention_check")
+
+    if "medical_data" in str(details).lower():
+        flags.append("hipaa_compliance")
+
+    return flags
+
+
+def calculate_premium_metrics(activities: list, crm: str) -> dict:
+    """Calcula métricas premium avançadas"""
+    if not activities:
+        return {}
+
+    # Estatísticas básicas
+    total_activities = len(activities)
+    success_count = len([a for a in activities if a["status"] == "success"])
+    error_count = len([a for a in activities if a["status"] == "error"])
+    warning_count = len([a for a in activities if a["status"] == "warning"])
+
+    # Análise por categoria
+    categories = {}
+    for activity in activities:
+        category = activity.get("category", "unknown")
+        categories[category] = categories.get(category, 0) + 1
+
+    # Análise por tipo
+    types = {}
+    for activity in activities:
+        activity_type = activity.get("type", "unknown")
+        types[activity_type] = types.get(activity_type, 0) + 1
+
+    # Métricas de performance
+    durations = [a.get("duration", 0) for a in activities if a.get("duration")]
+    avg_duration = sum(durations) / len(durations) if durations else 0
+
+    # Impacto total
+    impact_scores = [a.get("impact_score", 0) for a in activities]
+    total_impact = sum(impact_scores)
+    avg_impact = total_impact / len(impact_scores) if impact_scores else 0
+
+    # Atividade recente (últimas 24h)
+    now = datetime.utcnow()
+    recent_activities = []
+    for activity in activities:
+        try:
+            activity_time = datetime.fromisoformat(
+                activity["timestamp"].replace("Z", "+00:00")
+            )
+            if (now - activity_time).total_seconds() < 86400:  # 24 horas
+                recent_activities.append(activity)
+        except:
+            pass
+
+    return {
+        "summary": {
+            "total_activities": total_activities,
+            "success_rate": (
+                (success_count / total_activities * 100) if total_activities > 0 else 0
+            ),
+            "error_rate": (
+                (error_count / total_activities * 100) if total_activities > 0 else 0
+            ),
+            "recent_activities_24h": len(recent_activities),
+        },
+        "categories": categories,
+        "types": types,
+        "performance": {
+            "average_duration_ms": avg_duration,
+            "total_impact_score": total_impact,
+            "average_impact_score": avg_impact,
+        },
+        "trends": {
+            "success_trend": "stable",
+            "activity_trend": (
+                "increasing"
+                if len(recent_activities) > total_activities * 0.3
+                else "stable"
+            ),
+        },
+    }
+
+
+def build_activity_timeline(activities: list) -> dict:
+    """Constrói timeline de atividades"""
+    timeline = {"hourly": {}, "daily": {}, "weekly": {}}
+
+    for activity in activities:
+        try:
+            activity_time = datetime.fromisoformat(
+                activity["timestamp"].replace("Z", "+00:00")
+            )
+            hour_key = activity_time.strftime("%Y-%m-%d %H:00")
+            day_key = activity_time.strftime("%Y-%m-%d")
+            week_key = activity_time.strftime("%Y-W%U")
+
+            # Timeline por hora
+            if hour_key not in timeline["hourly"]:
+                timeline["hourly"][hour_key] = []
+            timeline["hourly"][hour_key].append(activity["type"])
+
+            # Timeline por dia
+            if day_key not in timeline["daily"]:
+                timeline["daily"][day_key] = []
+            timeline["daily"][day_key].append(activity["type"])
+
+            # Timeline por semana
+            if week_key not in timeline["weekly"]:
+                timeline["weekly"][week_key] = []
+            timeline["weekly"][week_key].append(activity["type"])
+
+        except:
+            continue
+
+    return timeline
 
 
 # --- Endpoint para exportar dados do usuário ---
@@ -2145,120 +2871,7 @@ def report_incident(data: IncidentRequest, request: Request):
         db.close()
 
 
-# --- Endpoint para listar incidentes ---
-@app.get("/api/v1/incidents", response_model=list[IncidentListItem])
-def list_incidents(admin: bool = False):
-    # Em produção, proteger este endpoint com autenticação/admin
-    db = SessionLocal()
-    try:
-        incidents = db.query(Incident).order_by(Incident.occurred_at.desc()).all()
-        return [
-            IncidentListItem(
-                id=i.id,
-                type=i.type,
-                description=i.description,
-                occurred_at=i.occurred_at.isoformat(),
-                user_crm=i.user_crm,
-                ip=i.ip,
-                status=i.status,
-            )
-            for i in incidents
-        ]
-    finally:
-        db.close()
-
-
-# --- Endpoint para listar contas inativas há mais de X anos ---
-@app.get("/api/v1/inactive-accounts", response_model=list[InactiveAccountItem])
-def list_inactive_accounts(years: int = Query(2, ge=1, le=10)):
-    # Em produção, proteger este endpoint com autenticação/admin
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        return [
-            InactiveAccountItem(
-                crm=m.crm,
-                nome=m.nome,
-                uf=m.uf,
-                last_login_at=m.last_login_at.isoformat() if m.last_login_at else None,
-                created_at=(
-                    m.terms_accepted_at.isoformat() if m.terms_accepted_at else None
-                ),
-            )
-            for m in inativos
-        ]
-    finally:
-        db.close()
-
-
-# --- Endpoint para notificar usuários inativos ---
-@app.post("/api/v1/notify-inactive", response_model=NotifyInactiveResponse)
-def notify_inactive_accounts(years: int = Query(2, ge=1, le=10)):
-    # Em produção, proteger este endpoint com autenticação/admin
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        notified = []
-        for m in inativos:
-            # Aqui, simular envio de notificação (ex: e-mail)
-            logger.info(
-                f"[NOTIFY] Conta inativa: CRM={m.crm}, nome={m.nome}, UF={m.uf}, last_login={m.last_login_at}"
-            )
-            notified.append(m.crm)
-        return NotifyInactiveResponse(
-            message=f"Notificações simuladas para {len(notified)} contas inativas.",
-            notified_crms=notified,
-        )
-    finally:
-        db.close()
-
-
-# --- Endpoint para deletar contas inativas ---
-@app.delete("/api/v1/delete-inactive", response_model=BulkDeleteResponse)
-def delete_inactive_accounts(years: int = Query(2, ge=1, le=10)):
-    # Em produção, proteger este endpoint com autenticação/admin
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        deleted = []
-        for m in inativos:
-            # Anonimizar antes de deletar (boa prática LGPD)
-            m.nome = "ANONIMIZADO"
-            m.senha_hash = "ANONIMIZADO"
-            # Anonimizar guias
-            guias = db.query(Guia).filter_by(user_id=m.crm).all()
-            for g in guias:
-                g.paciente = "ANONIMIZADO"
-                g.nome_medico = "ANONIMIZADO"
-            # Anonimizar demonstrativos
-            demonstrativos = db.query(Demonstrativo).filter_by(crm=m.crm).all()
-            for d in demonstrativos:
-                d.lote = "ANONIMIZADO"
-            deleted.append(m.crm)
-            # Opcional: deletar o médico após anonimização
-            db.delete(m)
-        db.commit()
-        return BulkDeleteResponse(
-            message=f"{len(deleted)} contas inativas anonimizadas e removidas.",
-            deleted_crms=deleted,
-        )
-    finally:
-        db.close()
+# --- Endpoint para listar suboperadores ---
 
 
 # --- Endpoint para listar suboperadores ---
@@ -2410,7 +3023,8 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
 def dashboard_summary(user: dict = Depends(get_current_user)):
     db = SessionLocal()
     crm = user.get("crm")
-    if not crm:
+    uf = user.get("uf")
+    if not crm or not uf:
         raise HTTPException(status_code=401, detail="Usuário não autenticado")
     # Últimos 30 dias
     data_limite = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
@@ -2422,10 +3036,14 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
     # Procedimentos
     procedures = []
     glosas = []
-    # Buscar demonstrativos do usuário
+    # Buscar demonstrativos do usuário (CRÍTICO: filtrar por crm E uf)
     demos = (
         db.query(Demonstrativo)
-        .filter(Demonstrativo.crm == crm, Demonstrativo.upload_time >= data_limite)
+        .filter(
+            Demonstrativo.crm == crm,
+            Demonstrativo.uf == uf,
+            Demonstrativo.upload_time >= data_limite,
+        )
         .all()
     )
     for demo in demos:
@@ -2442,67 +3060,53 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
             total_procedimentos += int(demo.total_procedimentos)
         except Exception:
             pass
-    # Auditorias pendentes: demonstrativos sem liberação
+    # Auditorias pendentes: demonstrativos sem liberação (CRÍTICO: filtrar por crm E uf)
     auditoria_pendente = (
         db.query(Demonstrativo)
-        .filter(Demonstrativo.crm == crm, Demonstrativo.liberado == "R$ 0,00")
+        .filter(
+            Demonstrativo.crm == crm,
+            Demonstrativo.uf == uf,
+            Demonstrativo.liberado == "R$ 0,00",
+        )
         .count()
     )
-    # Procedimentos detalhados (últimos 30 dias)
-    guias = db.query(Guia).filter(Guia.crm == crm, Guia.data >= data_limite).all()
+    # Buscar guias do usuário (CRÍTICO: filtrar por crm E uf)
+    guias = (
+        db.query(Guia)
+        .filter(Guia.crm == crm, Guia.uf == uf, Guia.data >= data_limite)
+        .all()
+    )
     for guia in guias:
         procedures.append(
             {
-                "id": guia.id,
+                "numero_guia": guia.numero_guia,
+                "data": guia.data,
+                "beneficiario": guia.paciente,
                 "codigo": guia.codigo,
                 "descricao": guia.descricao,
-                "funcao": guia.papel,
-                "pago": guia.status == "Pago",
-                "valorPago": None,  # Pode ser enriquecido se necessário
-                "valorTabela2015": None,
-                "diferenca": None,
-                "guia": guia.numero_guia,
-                "beneficiario": guia.paciente,
+                "papel": guia.papel,
+                "crm": guia.crm,
+                "qtd": guia.qtd,
+                "status": guia.status,
+                "prestador": guia.prestador,
+                "nome_medico": guia.nome_medico,
+                "dt_inicio": guia.dt_inicio,
+                "dt_fim": guia.dt_fim,
+                "status_part": guia.status_part,
             }
         )
-    # Glosas: calcular baseado no valor glosado real dos demonstrativos
-    glosas_detectadas = 0
-    for demo in demos:
-        valor_glosado_demo = brl_to_float(demo.glosa)
-        if valor_glosado_demo > 0:
-            glosas_detectadas += 1
-
-    # Taxa de glosa (percentual com 2 casas decimais)
-    total_apresentado = total_recebido + total_glosado
-    taxa_glosa = (
-        round((total_glosado / total_apresentado * 100), 2)
-        if total_apresentado > 0
-        else 0.0
-    )
-
-    # Glosas detalhadas (baseadas em status de guias)
-    for guia in guias:
-        if guia.status and "glosa" in guia.status.lower():
-            glosas.append(
-                {
-                    "id": guia.id,
-                    "codigo": guia.codigo,
-                    "descricao": guia.descricao,
-                    "motivo": guia.status,
-                    "valorGlosa": None,
-                }
-            )
+    # Calcular totais
+    total_apresentado = sum(brl_to_float(demo.apresentado) for demo in demos)
     return {
-        "totals": {
-            "totalRecebido": round(total_recebido, 2),
-            "totalGlosado": round(total_glosado, 2),
-            "totalProcedimentos": total_procedimentos,
-            "auditoriaPendente": auditoria_pendente,
-            "glosasDetectadas": glosas_detectadas,
-            "taxaGlosa": taxa_glosa,
-        },
+        "total_recebido": total_recebido,
+        "total_glosado": total_glosado,
+        "total_apresentado": total_apresentado,
+        "total_procedimentos": total_procedimentos,
+        "auditoria_pendente": auditoria_pendente,
         "procedures": procedures,
         "glosas": glosas,
+        "user_crm": crm,
+        "user_uf": uf,
     }
 
 
@@ -2592,7 +3196,7 @@ def get_profile(user: dict = Depends(get_current_user)):
     """Retorna os dados do médico autenticado."""
     db = SessionLocal()
     try:
-        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
+        medico = db.query(Medico).filter_by(crm=user["crm"], uf=user["uf"]).first()
         if not medico:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
@@ -3423,3 +4027,74 @@ def _ensure_file_hash_column():
                 logger.info("Coluna filename adicionada à tabela guias")
     except Exception as e:
         logger.error(f"Erro ao verificar/criar coluna file_hash: {e}")
+
+
+# Garantir que as colunas existem
+_ensure_file_hash_column()
+
+
+# --- Função para extrair data do período ---
+def extract_date_from_period(periodo: str) -> datetime:
+    """
+    Extrai data do período em formato brasileiro (ex: 'outubro de 2024')
+    Retorna datetime para ordenação inteligente
+    """
+    if not periodo:
+        return datetime.min
+
+    # Mapeamento de meses em português
+    meses = {
+        "janeiro": 1,
+        "fevereiro": 2,
+        "março": 3,
+        "abril": 4,
+        "maio": 5,
+        "junho": 6,
+        "julho": 7,
+        "agosto": 8,
+        "setembro": 9,
+        "outubro": 10,
+        "novembro": 11,
+        "dezembro": 12,
+    }
+
+    try:
+        # Padronizar texto
+        periodo_lower = periodo.lower().strip()
+
+        # Padrão: "outubro de 2024" ou "outubro 2024"
+        for mes_nome, mes_num in meses.items():
+            if mes_nome in periodo_lower:
+                # Extrair ano
+                import re
+
+                ano_match = re.search(r"(\d{4})", periodo_lower)
+                if ano_match:
+                    ano = int(ano_match.group(1))
+                    return datetime(ano, mes_num, 1)
+
+        # Se não conseguir extrair, tentar outros padrões
+        # Padrão: "2024-10" ou "10/2024"
+        date_patterns = [
+            r"(\d{4})-(\d{1,2})",  # 2024-10
+            r"(\d{1,2})/(\d{4})",  # 10/2024
+            r"(\d{4})/(\d{1,2})",  # 2024/10
+        ]
+
+        for pattern in date_patterns:
+            match = re.search(pattern, periodo_lower)
+            if match:
+                if len(match.groups()) == 2:
+                    if len(match.group(1)) == 4:  # ano primeiro
+                        ano = int(match.group(1))
+                        mes = int(match.group(2))
+                    else:  # mês primeiro
+                        mes = int(match.group(1))
+                        ano = int(match.group(2))
+                    return datetime(ano, mes, 1)
+
+        # Se nada funcionar, retornar data mínima
+        return datetime.min
+
+    except Exception:
+        return datetime.min

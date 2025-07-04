@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { FileWithStatus, FileType } from '@/types/upload';
 import { toast } from 'sonner';
@@ -13,12 +12,14 @@ export function useFileList() {
 
   const hasFile = (type: FileType): boolean => filesByType(type).length > 0;
 
-  const hasGuiaDemonstrativoPair = (): boolean => hasFile('guia') && hasFile('demonstrativo');
+  const hasGuiaDemonstrativoPair = (): boolean =>
+    hasFile('guia') && hasFile('demonstrativo');
 
   const hasValidFilesForProcessing = (): boolean =>
     files.some((file) => file.status !== 'invalid');
 
-  const hasInvalidFiles = (): boolean => files.some((file) => file.status === 'invalid');
+  const hasInvalidFiles = (): boolean =>
+    files.some((file) => file.status === 'invalid');
 
   // Função para pegar IDs dos arquivos válidos de cada tipo
   const getFileIdsAndTypes = () => {
@@ -31,14 +32,17 @@ export function useFileList() {
   // Pega os tipos presentes
   const getTypesPresent = (): FileType[] => {
     const types: Set<FileType> = new Set(
-      files.filter(f => f.status === 'valid').map(f => f.type)
+      files.filter((f) => f.status === 'valid').map((f) => f.type)
     );
     return Array.from(types);
   };
 
   // Função para adicionar arquivos de um tipo só
   const handleFileChangeByType = async (type: FileType, fileListInput: FileList) => {
-    if (!fileListInput || fileListInput.length === 0) return;
+    if (!fileListInput || fileListInput.length === 0) {
+      return;
+    }
+
     const list = Array.from(fileListInput).map((file, index) => ({
       id: `local-${Date.now()}-${index}`, // Add id when creating files
       name: file.name,
@@ -46,8 +50,15 @@ export function useFileList() {
       type,
       status: 'processing' as const,
     }));
-    const validatedFiles = await validateFiles(list);
-    setFiles((prev) => [...prev, ...validatedFiles]);
+
+    try {
+      const validatedFiles = await validateFiles(list);
+      if (validatedFiles.length > 0) {
+        setFiles((prev) => [...prev, ...validatedFiles]);
+      }
+    } catch (error) {
+      console.error('Erro ao processar arquivos:', error);
+    }
   };
 
   /**
