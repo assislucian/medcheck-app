@@ -1233,14 +1233,14 @@ def upload_demonstrativos(
                     elif "setembro" in filename_lower:
                         periodo_extracted = "setembro de 2025"
                     else:
-                        results.append(
-                            {
-                                "filename": file.filename,
-                                "success": False,
-                                "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
-                            }
-                        )
-                        continue
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
+                        }
+                    )
+                    continue
                 # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, UF, período e lote (ou filename se lote não informado)
                 unique_lote = lote or filename
                 exists = (
@@ -1283,8 +1283,8 @@ def upload_demonstrativos(
                 )
 
                 try:
-                    db.add(demonstrativo)
-                    db.commit()
+                db.add(demonstrativo)
+                db.commit()
                     logger.info(
                         f"[UPLOAD] Demonstrativo salvo com sucesso: ID={demonstrativo.id}, CRM={user['crm']}, UF={user['uf']}"
                     )
@@ -1563,16 +1563,16 @@ def upload_guias(
                     )
 
                     if existing_hash:
-                        results.append(
-                            {
-                                "filename": file.filename,
+                    results.append(
+                        {
+                            "filename": file.filename,
                                 "success": False,
                                 "error": f"Arquivo duplicado detectado. Esta guia já foi processada anteriormente (arquivo: {existing_hash.filename or 'N/A'}).",
                                 "duplicate": True,
                                 "existing_filename": existing_hash.filename,
-                            }
-                        )
-                        continue
+                        }
+                    )
+                    continue
                 finally:
                     db.close()
 
@@ -1787,7 +1787,7 @@ def upload_guias(
                 )
             finally:
                 try:
-                    os.unlink(tmp_path)
+                os.unlink(tmp_path)
                 except:
                     pass
 
@@ -1996,7 +1996,7 @@ def get_activity_logs(
     import re
     from datetime import datetime, timedelta
 
-    activities = []
+        activities = []
     log_path = os.path.join("logs", "medcheck_audit.log")
     crm = user["crm"]
 
@@ -2590,7 +2590,7 @@ def calculate_premium_metrics(activities: list, crm: str) -> dict:
         except:
             pass
 
-    return {
+        return {
         "summary": {
             "total_activities": total_activities,
             "success_rate": (
@@ -3082,8 +3082,8 @@ def dashboard_summary(user: dict = Depends(get_current_user)):
                 "numero_guia": guia.numero_guia,
                 "data": guia.data,
                 "beneficiario": guia.paciente,
-                "codigo": guia.codigo,
-                "descricao": guia.descricao,
+                    "codigo": guia.codigo,
+                    "descricao": guia.descricao,
                 "papel": guia.papel,
                 "crm": guia.crm,
                 "qtd": guia.qtd,

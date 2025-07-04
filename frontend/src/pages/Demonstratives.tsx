@@ -1445,7 +1445,11 @@ const DemonstrativesPage = () => {
                 </h1>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
                   Acompanhe seus recebimentos, identifique glosas e otimize sua gestão
-                  financeira com análises inteligentes e insights práticos.
+                  financeira.
+                </p>
+                <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                  Visualize valores liberados, glosados e oportunidades de recuperação
+                  com análises inteligentes.
                 </p>
               </div>
             </div>

@@ -1,50 +1,49 @@
-
-import { AuthenticatedLayout } from "@/components/layout/AuthenticatedLayout";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { DataGrid } from "@/components/ui/data-grid";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Download, FileText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DataGrid } from '@/components/ui/data-grid';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Download, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
 
 // Dados mock de exemplo para a demonstração
 const mockGlosas = [
-  { 
-    id: "gl1", 
-    guia: "10467538", 
-    procedimento: "Reconstrução Mamária Com Retalhos Cutâneos Regionais",
-    data: "19/04/2025", 
-    valorGlosado: 1063.68, 
-    motivoGlosa: "Procedimento em auditoria",
-    contestada: false 
+  {
+    id: 'gl1',
+    guia: '10467538',
+    procedimento: 'Reconstrução Mamária Com Retalhos Cutâneos Regionais',
+    data: '19/04/2025',
+    valorGlosado: 1063.68,
+    motivoGlosa: 'Procedimento em auditoria',
+    contestada: false,
   },
-  { 
-    id: "gl2", 
-    guia: "10467539", 
-    procedimento: "Vitrectomia posterior",
-    data: "20/04/2025", 
-    valorGlosado: 892.44, 
-    motivoGlosa: "Documentação incompleta",
-    contestada: true 
+  {
+    id: 'gl2',
+    guia: '10467539',
+    procedimento: 'Vitrectomia posterior',
+    data: '20/04/2025',
+    valorGlosado: 892.44,
+    motivoGlosa: 'Documentação incompleta',
+    contestada: true,
   },
-  { 
-    id: "gl3", 
-    guia: "10467540", 
-    procedimento: "Palpebra - reconstrução total",
-    data: "21/04/2025", 
-    valorGlosado: 629.75, 
-    motivoGlosa: "Procedimento não coberto",
-    contestada: false 
-  }
+  {
+    id: 'gl3',
+    guia: '10467540',
+    procedimento: 'Palpebra - reconstrução total',
+    data: '21/04/2025',
+    valorGlosado: 629.75,
+    motivoGlosa: 'Procedimento não coberto',
+    contestada: false,
+  },
 ];
 
 const glosaColumns = [
   { field: 'guia', headerName: 'Nº Guia', width: 120 },
   { field: 'procedimento', headerName: 'Procedimento', flex: 1 },
   { field: 'data', headerName: 'Data', width: 120 },
-  { 
-    field: 'valorGlosado', 
-    headerName: 'Valor Glosado', 
+  {
+    field: 'valorGlosado',
+    headerName: 'Valor Glosado',
     width: 150,
     valueFormatter: (params: any) => {
       if (params.value === undefined || params.value === null) {
@@ -52,20 +51,22 @@ const glosaColumns = [
       }
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
-        currency: 'BRL'
+        currency: 'BRL',
       }).format(params.value);
-    }
+    },
   },
   { field: 'motivoGlosa', headerName: 'Motivo', width: 200 },
-  { 
-    field: 'contestada', 
-    headerName: 'Status', 
+  {
+    field: 'contestada',
+    headerName: 'Status',
     width: 150,
     renderCell: ({ value }: { value: boolean }) => {
-      return value ? 
-        <Badge variant="warning">Contestada</Badge> : 
-        <Badge variant="destructive">Não Contestada</Badge>;
-    }
+      return value ? (
+        <Badge variant="warning">Contestada</Badge>
+      ) : (
+        <Badge variant="destructive">Não Contestada</Badge>
+      );
+    },
   },
   {
     field: 'actions',
@@ -73,43 +74,42 @@ const glosaColumns = [
     width: 120,
     renderCell: ({ row }: { row: any }) => {
       return (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          disabled={row.contestada}
-        >
+        <Button variant="outline" size="sm" disabled={row.contestada}>
           Contestar
         </Button>
       );
-    }
-  }
+    },
+  },
 ];
 
 const GlosasPage = () => {
   const [glosas] = useState<any[]>(mockGlosas);
 
   return (
-    <AuthenticatedLayout 
-      title="Glosas" 
+    <AuthenticatedLayout
+      title="Glosas"
       description="Analise e conteste as glosas dos planos de saúde"
     >
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Gestão de Glosas</h2>
-            <p className="text-muted-foreground">
-              Conteste glosas e recupere valores perdidos
-            </p>
+        <div className="text-center space-y-6 pt-8 pb-4">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-50 to-amber-50 rounded-full border border-red-200/60">
+            <AlertCircle className="h-6 w-6 text-red-700" />
+            <span className="text-sm font-semibold text-red-700 uppercase tracking-wide">
+              Glosas & Contestações
+            </span>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              <FileText className="w-4 h-4 mr-2" />
-              Relatório
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button>
+          <div className="space-y-4">
+            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-red-700 via-amber-600 to-red-800 bg-clip-text text-transparent leading-tight">
+              Glosas & Contestações
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Defenda seus direitos! Conteste glosas indevidas e recupere valores de
+              forma proativa.
+            </p>
+            <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              Acompanhe prazos críticos, recupere valores e maximize sua receita médica
+              com inteligência.
+            </p>
           </div>
         </div>
 

@@ -1011,34 +1011,29 @@ const GuidesPage = () => {
         title="Central de Guias Médicas"
         description="Sistema avançado de gestão e análise de guias médicas TISS"
       >
+        {/* Header Premium - explicação do propósito da página */}
+        <div className="text-center space-y-6 pt-8 pb-4">
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200/60">
+            <FileText className="h-6 w-6 text-blue-700" />
+            <span className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
+              Gestão de Guias Médicas
+            </span>
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent leading-tight">
+              Central de Guias Médicas
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Envie, acompanhe e gerencie suas guias TISS com total controle e
+              automação.
+            </p>
+            <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
+              Tenha insights, filtros avançados e participe ativamente da sua gestão
+              médica.
+            </p>
+          </div>
+        </div>
         <div className="space-y-10">
-          {/* Page Header Premium */}
-          <PageHeader
-            title={
-              <span className="flex items-center gap-3 text-2xl xl:text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Central de Guias Médicas
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        to="/help"
-                        className="ml-2 text-blue-600 hover:text-blue-700 transition-colors flex items-center"
-                        aria-label="Central de Ajuda"
-                      >
-                        <HelpCircle className="w-6 h-6" />
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Central de Ajuda: tutoriais, vídeos e perguntas frequentes
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </span>
-            }
-            icon={<FileText size={32} />}
-            description="Gestão inteligente de guias TISS com análise automatizada e insights de performance"
-          />
-
           {/* Dashboard Content */}
           <div className="space-y-12">
             {/* Visão Geral - Dados Gerais */}
