@@ -232,11 +232,78 @@ class LGPDRequestResponse(BaseModel):
 
 # Inicializar tabelas com tratamento de erro
 try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created/verified successfully")
+    # Usar a função de migração do database.py
+    from src.database import init_database
+
+    if not init_database(engine):
+        logger.error("Failed to initialize database with migration")
+    else:
+        logger.info("Database initialized successfully with migration")
 except Exception as e:
     logger.error(f"Error creating database tables: {e}")
     # Continua mesmo com erro de DB para permitir health checks
+
+
+def _ensure_medicos_table_structure():
+    """Garante que a tabela medicos tenha a estrutura correta"""
+    try:
+        insp = sqlalchemy.inspect(engine)
+
+        # Verificar se a tabela medicos existe
+        if not insp.has_table("medicos"):
+            logger.info("Table medicos does not exist, creating...")
+            Base.metadata.create_all(bind=engine)
+            return
+
+        # Verificar colunas da tabela medicos
+        medico_cols = [c["name"] for c in insp.get_columns("medicos")]
+        logger.info(f"Current medicos table columns: {medico_cols}")
+
+        # Verificar se a coluna id existe
+        if "id" not in medico_cols:
+            logger.warning(
+                "Column 'id' missing from medicos table, attempting to add..."
+            )
+            with engine.connect() as conn:
+                # Tentar adicionar a coluna id
+                try:
+                    conn.execute(
+                        sqlalchemy.text(
+                            "ALTER TABLE medicos ADD COLUMN id SERIAL PRIMARY KEY"
+                        )
+                    )
+                    logger.info("Column id added to medicos table")
+                except Exception as e:
+                    logger.error(f"Failed to add id column: {e}")
+                    # Se falhar, tentar recriar a tabela
+                    logger.info("Attempting to recreate medicos table...")
+                    conn.execute(
+                        sqlalchemy.text("DROP TABLE IF EXISTS medicos CASCADE")
+                    )
+                    Base.metadata.create_all(bind=engine)
+                    logger.info("Medicos table recreated successfully")
+
+        # Verificar outras colunas essenciais
+        required_columns = ["crm", "uf", "nome", "senha_hash"]
+        missing_columns = [col for col in required_columns if col not in medico_cols]
+
+        if missing_columns:
+            logger.warning(f"Missing columns in medicos table: {missing_columns}")
+            # Recriar a tabela se faltam colunas essenciais
+            with engine.connect() as conn:
+                conn.execute(sqlalchemy.text("DROP TABLE IF EXISTS medicos CASCADE"))
+                Base.metadata.create_all(bind=engine)
+                logger.info("Medicos table recreated with correct structure")
+
+    except Exception as exc:
+        logger.error(f"Failed to ensure medicos table structure: {exc}")
+        # Em caso de erro, tentar recriar todas as tabelas
+        try:
+            Base.metadata.drop_all(bind=engine)
+            Base.metadata.create_all(bind=engine)
+            logger.info("All tables recreated successfully")
+        except Exception as e:
+            logger.error(f"Failed to recreate tables: {e}")
 
 
 # Migração leve: garantir colunas uf e file_hash nas tabelas
@@ -310,6 +377,7 @@ def _ensure_uf_and_file_hash_columns():
         logger.error(f"Failed to ensure uf and file_hash columns: {exc}")
 
 
+_ensure_medicos_table_structure()
 _ensure_uf_and_file_hash_columns()
 
 # --- Autenticação JWT real (MVP) ---
@@ -500,6 +568,11 @@ app.add_middleware(
 # Comentado temporariamente para debug do Railway
 # from backend.knowledge_base.glosas_api import router as glosas_router
 # app.include_router(glosas_router, prefix="/api/v1")
+
+# --- Incluir router de health check ---
+from src.health import router as health_router
+
+app.include_router(health_router)
 
 # --- Logging estruturado ---
 # --- Logging estruturado para auditoria ---
@@ -2488,3 +2561,6 @@ def calculate_file_hash(path):
         for chunk in iter(lambda: f.read(8192), b""):
             sha256.update(chunk)
     return sha256.hexdigest()
+
+
+# redeploy for demonstrativos columns
