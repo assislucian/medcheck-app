@@ -525,14 +525,19 @@ def log_audit(action, user_crm=None, ip=None, details=None):
     )
 
 
-def sanitize_text(text):
+def sanitize_text(text, max_length=None):
     import re
 
     if not text:
         return text
     text = re.sub(r"<.*?>", "", text)
     text = re.sub(r"script", "", text, flags=re.IGNORECASE)
-    return text.strip()
+    text = text.strip()
+
+    if max_length and len(text) > max_length:
+        text = text[:max_length]
+
+    return text
 
 
 # --- Models ---
@@ -858,7 +863,7 @@ def process_validation_job(job_id: str, file_path: str, user: dict):
                     demo.periodo = periodo
                 if lote:
                     demo.lote = lote
-                db.commit()
+                    db.commit()
         finally:
             db.close()
         result_path = os.path.join(RESULTS_DIR, f"{job_id}.json")
@@ -1233,14 +1238,14 @@ def upload_demonstrativos(
                     elif "setembro" in filename_lower:
                         periodo_extracted = "setembro de 2025"
                     else:
-                    results.append(
-                        {
-                            "filename": file.filename,
-                            "success": False,
-                            "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
-                        }
-                    )
-                    continue
+                        results.append(
+                            {
+                                "filename": file.filename,
+                                "success": False,
+                                "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
+                            }
+                        )
+                        continue
                 # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, UF, período e lote (ou filename se lote não informado)
                 unique_lote = lote or filename
                 exists = (
@@ -1283,8 +1288,8 @@ def upload_demonstrativos(
                 )
 
                 try:
-                db.add(demonstrativo)
-                db.commit()
+                    db.add(demonstrativo)
+                    db.commit()
                     logger.info(
                         f"[UPLOAD] Demonstrativo salvo com sucesso: ID={demonstrativo.id}, CRM={user['crm']}, UF={user['uf']}"
                     )
@@ -1461,6 +1466,13 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
         db.close()
 
 
+# --- Endpoint para obter detalhes do demonstrativo (alias para procedimentos) ---
+@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
+def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
+    """Alias para o endpoint de procedimentos, mantendo compatibilidade com o frontend."""
+    return get_demonstrativo_procedures(demo_id, user)
+
+
 # --- Endpoint para obter procedimentos do demonstrativo ---
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
@@ -1563,16 +1575,16 @@ def upload_guias(
                     )
 
                     if existing_hash:
-                    results.append(
-                        {
-                            "filename": file.filename,
+                        results.append(
+                            {
+                                "filename": file.filename,
                                 "success": False,
                                 "error": f"Arquivo duplicado detectado. Esta guia já foi processada anteriormente (arquivo: {existing_hash.filename or 'N/A'}).",
                                 "duplicate": True,
                                 "existing_filename": existing_hash.filename,
-                        }
-                    )
-                    continue
+                            }
+                        )
+                        continue
                 finally:
                     db.close()
 
@@ -1787,7 +1799,7 @@ def upload_guias(
                 )
             finally:
                 try:
-                os.unlink(tmp_path)
+                    os.unlink(tmp_path)
                 except:
                     pass
 
@@ -1981,22 +1993,18 @@ async def log_activity(
 # --- Endpoint para listar activity logs do usuário ---
 @app.get("/api/v1/activity-logs")
 def get_activity_logs(
-    limit: int = Query(50, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=100),
     user: dict = Depends(get_current_user),
     start_date: str = Query(None, description="Data inicial (YYYY-MM-DD)"),
     end_date: str = Query(None, description="Data final (YYYY-MM-DD)"),
     action_type: str = Query(None, description="Tipo de ação"),
-    status: str = Query(None, description="Status da atividade"),
-    include_metrics: bool = Query(True, description="Incluir métricas"),
-    include_timeline: bool = Query(True, description="Incluir timeline"),
     search: str = Query(None, description="Busca por texto"),
 ):
-    """Retorna logs de atividade premium com métricas avançadas e contexto rico"""
+    """Retorna logs de atividade do usuário de forma amigável e útil."""
     import os
-    import re
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
-        activities = []
+    activities = []
     log_path = os.path.join("logs", "medcheck_audit.log")
     crm = user["crm"]
 
@@ -2010,7 +2018,7 @@ def get_activity_logs(
                         if entry.get("user_crm") != crm:
                             continue
 
-                        # Filtros avançados
+                        # Filtros de data
                         timestamp_str = entry.get("timestamp", "")
                         if timestamp_str:
                             try:
@@ -2038,7 +2046,7 @@ def get_activity_logs(
                             if search_lower not in searchable_text:
                                 continue
 
-                        # Categorização inteligente premium
+                        # Categorização inteligente
                         (
                             activity_type,
                             status,
@@ -2049,10 +2057,10 @@ def get_activity_logs(
                             category,
                         ) = categorize_activity_premium(action, details, crm)
 
-                        # Contexto rico e detalhado
+                        # Contexto útil
                         context = build_activity_context(action, details, entry)
 
-                        # Monta objeto premium para o frontend
+                        # Monta objeto amigável para o frontend
                         activity_obj = {
                             "id": entry.get("timestamp", "") + action,
                             "type": activity_type,
@@ -2063,1233 +2071,48 @@ def get_activity_logs(
                             ),
                             "status": status,
                             "entity": entity,
-                            "details": str(details),
+                            "details": context,  # Contexto útil em vez de string bruta
                             "value": value,
                             "priority": priority,
                             "category": category,
-                            "context": context,
-                            "duration": calculate_activity_duration(action, details),
-                            "impact_score": calculate_impact_score(action, details),
-                            "related_entities": extract_related_entities(
-                                action, details
-                            ),
-                            "user_agent": entry.get("details", {}).get("user_agent"),
-                            "ip_address": entry.get("details", {}).get("ip"),
-                            "session_id": entry.get("details", {}).get("session_id"),
                             "tags": generate_activity_tags(action, details),
                             "risk_level": assess_risk_level(action, details),
-                            "compliance_flags": check_compliance_flags(action, details),
                         }
 
-                        # Filtros por tipo e status
+                        # Filtro por tipo de ação
                         if action_type and activity_type != action_type:
-                            continue
-                        if status and activity_obj["status"] != status:
                             continue
 
                         activities.append(activity_obj)
-
                     except Exception as e:
+                        logger.error(f"Erro ao processar log: {e}")
                         continue
 
-        # Ordenação premium por prioridade e timestamp
-        activities.sort(
-            key=lambda x: (x.get("priority", 0), x["timestamp"]), reverse=True
-        )
+        # Ordena por timestamp (mais recente primeiro)
+        activities.sort(key=lambda x: x["timestamp"], reverse=True)
+
+        # Limita o número de resultados
         activities = activities[:limit]
-
-        # Métricas avançadas
-        metrics = {}
-        if include_metrics:
-            metrics = calculate_premium_metrics(activities, crm)
-
-        # Timeline de atividades
-        timeline = {}
-        if include_timeline:
-            timeline = build_activity_timeline(activities)
 
         return {
             "activities": activities,
             "total": len(activities),
-            "user_crm": crm,
-            "generated_at": datetime.utcnow().isoformat(),
-            "metrics": metrics,
-            "timeline": timeline,
-            "filters_applied": {
-                "start_date": start_date,
-                "end_date": end_date,
-                "action_type": action_type,
-                "status": status,
-                "search": search,
-            },
+            "page": 1,
+            "pageSize": limit,
         }
-
     except Exception as e:
-        logger.error(f"Erro ao buscar activity logs premium: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro ao buscar logs premium: {e}")
-
-
-def categorize_activity_premium(action: str, details: dict, crm: str) -> tuple:
-    """Categorização inteligente premium com contexto rico"""
-
-    # Mapeamento avançado de ações
-    action_mapping = {
-        # Login e Autenticação
-        "login_success": (
-            "login",
-            "success",
-            "Login realizado com sucesso",
-            f"CRM {crm}",
-            None,
-            1,
-            "security",
-        ),
-        "login_failed": (
-            "login",
-            "error",
-            "Tentativa de login falhou",
-            f"CRM {crm}",
-            None,
-            3,
-            "security",
-        ),
-        "logout": (
-            "login",
-            "info",
-            "Logout realizado",
-            f"CRM {crm}",
-            None,
-            1,
-            "security",
-        ),
-        # Uploads
-        "upload_guias": (
-            "upload",
-            "success",
-            "Guia médica carregada",
-            details.get("filename", "arquivo"),
-            details.get("procedures", 0),
-            2,
-            "data",
-        ),
-        "upload_demonstrativo": (
-            "upload",
-            "success",
-            "Demonstrativo carregado",
-            details.get("filename", "arquivo"),
-            details.get("total_procedimentos", 0),
-            2,
-            "data",
-        ),
-        "upload_guides": (
-            "upload",
-            "success",
-            "Guias carregadas",
-            details.get("filename", "arquivo"),
-            details.get("procedures", 0),
-            2,
-            "data",
-        ),
-        # Exclusões
-        "delete_guia": (
-            "delete",
-            "warning",
-            "Guia removida",
-            f"Guia {details.get('numero_guia', 'N/A')}",
-            None,
-            2,
-            "data",
-        ),
-        "delete_demonstrativo": (
-            "delete",
-            "warning",
-            "Demonstrativo removido",
-            details.get("filename", "arquivo"),
-            None,
-            2,
-            "data",
-        ),
-        # Exportações
-        "export_data": (
-            "export",
-            "success",
-            "Exportação de dados realizada",
-            "Dados do usuário",
-            None,
-            1,
-            "data",
-        ),
-        "export_report": (
-            "export",
-            "success",
-            "Relatório exportado",
-            details.get("report_type", "relatório"),
-            None,
-            1,
-            "data",
-        ),
-        # Análises
-        "analysis_started": (
-            "analysis",
-            "info",
-            "Análise iniciada",
-            details.get("analysis_type", "análise"),
-            None,
-            2,
-            "analysis",
-        ),
-        "analysis_completed": (
-            "analysis",
-            "success",
-            "Análise concluída",
-            details.get("analysis_type", "análise"),
-            details.get("results_count", 0),
-            2,
-            "analysis",
-        ),
-        "analysis_failed": (
-            "analysis",
-            "error",
-            "Análise falhou",
-            details.get("analysis_type", "análise"),
-            None,
-            3,
-            "analysis",
-        ),
-        # Incidentes
-        "incident_reported": (
-            "incident",
-            "warning",
-            "Incidente reportado",
-            details.get("type", "sistema"),
-            None,
-            3,
-            "system",
-        ),
-        "error_occurred": (
-            "error",
-            "error",
-            "Erro do sistema",
-            details.get("error_type", "sistema"),
-            None,
-            4,
-            "system",
-        ),
-        # Perfil e Configurações
-        "update_profile": (
-            "profile",
-            "success",
-            "Perfil atualizado",
-            "Configurações",
-            None,
-            1,
-            "user",
-        ),
-        "change_password": (
-            "security",
-            "success",
-            "Senha alterada",
-            "Segurança",
-            None,
-            2,
-            "security",
-        ),
-        "delete_account": (
-            "security",
-            "warning",
-            "Conta excluída",
-            "Sistema",
-            None,
-            4,
-            "security",
-        ),
-        # Pagamentos e Financeiro
-        "payment_processed": (
-            "payment",
-            "success",
-            "Pagamento processado",
-            details.get("amount", "valor"),
-            details.get("amount", 0),
-            2,
-            "financial",
-        ),
-        "payment_failed": (
-            "payment",
-            "error",
-            "Pagamento falhou",
-            details.get("amount", "valor"),
-            None,
-            3,
-            "financial",
-        ),
-        # Glosas e Auditoria
-        "gloss_analysis": (
-            "gloss",
-            "info",
-            "Análise de glosa",
-            details.get("gloss_type", "glosa"),
-            details.get("gloss_amount", 0),
-            2,
-            "audit",
-        ),
-        "audit_report": (
-            "audit",
-            "success",
-            "Relatório de auditoria",
-            details.get("report_type", "auditoria"),
-            None,
-            2,
-            "audit",
-        ),
-    }
-
-    # Busca no mapeamento ou usa padrão
-    if action in action_mapping:
-        return action_mapping[action]
-    else:
-        # Categorização inteligente baseada em palavras-chave
-        action_lower = action.lower()
-        if any(word in action_lower for word in ["upload", "carregar", "import"]):
-            return (
-                "upload",
-                "success",
-                action.replace("_", " ").title(),
-                "Arquivo",
-                None,
-                2,
-                "data",
-            )
-        elif any(word in action_lower for word in ["delete", "remove", "excluir"]):
-            return (
-                "delete",
-                "warning",
-                action.replace("_", " ").title(),
-                "Item",
-                None,
-                2,
-                "data",
-            )
-        elif any(word in action_lower for word in ["export", "download", "baixar"]):
-            return (
-                "export",
-                "success",
-                action.replace("_", " ").title(),
-                "Dados",
-                None,
-                1,
-                "data",
-            )
-        elif any(word in action_lower for word in ["error", "fail", "falha"]):
-            return (
-                "error",
-                "error",
-                action.replace("_", " ").title(),
-                "Sistema",
-                None,
-                3,
-                "system",
-            )
-        else:
-            return (
-                "system",
-                "info",
-                action.replace("_", " ").title(),
-                "Sistema",
-                None,
-                1,
-                "system",
-            )
-
-
-def build_activity_context(action: str, details: dict, entry: dict) -> dict:
-    """Constrói contexto rico para a atividade"""
-    context = {
-        "session_info": {
-            "user_agent": entry.get("details", {}).get("user_agent"),
-            "ip_address": entry.get("details", {}).get("ip"),
-            "timestamp": entry.get("timestamp"),
-        },
-        "performance_metrics": {},
-        "security_flags": [],
-        "compliance_notes": [],
-        "related_data": {},
-    }
-
-    # Métricas de performance
-    if "duration" in details:
-        context["performance_metrics"]["duration_ms"] = details["duration"]
-
-    # Flags de segurança
-    if action in ["login_failed", "delete_account", "incident_reported"]:
-        context["security_flags"].append("high_priority")
-
-    # Notas de compliance
-    if action in ["export_data", "delete_account"]:
-        context["compliance_notes"].append("audit_trail_required")
-
-    # Dados relacionados
-    if "filename" in details:
-        context["related_data"]["file_info"] = {
-            "name": details["filename"],
-            "size": details.get("file_size"),
-            "type": details.get("file_type"),
-        }
-
-    return context
-
-
-def calculate_activity_duration(action: str, details: dict) -> int:
-    """Calcula duração da atividade em milissegundos"""
-    if "duration" in details:
-        return details["duration"]
-
-    # Estimativas baseadas no tipo de ação
-    duration_estimates = {
-        "upload_guias": 2000,
-        "upload_demonstrativo": 3000,
-        "analysis_completed": 5000,
-        "export_data": 1500,
-        "login_success": 500,
-    }
-
-    return duration_estimates.get(action, 1000)
-
-
-def calculate_impact_score(action: str, details: dict) -> int:
-    """Calcula score de impacto da atividade (1-10)"""
-    impact_scores = {
-        "delete_account": 10,
-        "incident_reported": 8,
-        "error_occurred": 7,
-        "delete_guia": 6,
-        "delete_demonstrativo": 6,
-        "upload_demonstrativo": 5,
-        "upload_guias": 4,
-        "export_data": 3,
-        "login_failed": 2,
-        "login_success": 1,
-    }
-
-    return impact_scores.get(action, 3)
-
-
-def extract_related_entities(action: str, details: dict) -> list:
-    """Extrai entidades relacionadas à atividade"""
-    entities = []
-
-    if "filename" in details:
-        entities.append({"type": "file", "name": details["filename"]})
-
-    if "numero_guia" in details:
-        entities.append({"type": "guia", "number": details["numero_guia"]})
-
-    if "periodo" in details:
-        entities.append({"type": "period", "value": details["periodo"]})
-
-    return entities
-
-
-def generate_activity_tags(action: str, details: dict) -> list:
-    """Gera tags inteligentes para a atividade"""
-    tags = []
-
-    # Tags baseadas na ação
-    if "upload" in action:
-        tags.extend(["upload", "data_import"])
-    elif "delete" in action:
-        tags.extend(["delete", "data_removal"])
-    elif "export" in action:
-        tags.extend(["export", "data_export"])
-    elif "login" in action:
-        tags.extend(["authentication", "security"])
-
-    # Tags baseadas nos detalhes
-    if "filename" in details:
-        tags.append("file_operation")
-
-    if "procedures" in details:
-        tags.append("medical_procedures")
-
-    if "periodo" in details:
-        tags.append("period_analysis")
-
-    return tags
-
-
-def assess_risk_level(action: str, details: dict) -> str:
-    """Avalia nível de risco da atividade"""
-    high_risk_actions = ["delete_account", "incident_reported", "error_occurred"]
-    medium_risk_actions = ["delete_guia", "delete_demonstrativo", "login_failed"]
-
-    if action in high_risk_actions:
-        return "high"
-    elif action in medium_risk_actions:
-        return "medium"
-    else:
-        return "low"
-
-
-def check_compliance_flags(action: str, details: dict) -> list:
-    """Verifica flags de compliance"""
-    flags = []
-
-    if action in ["export_data", "delete_account"]:
-        flags.append("audit_required")
-
-    if action in ["delete_guia", "delete_demonstrativo"]:
-        flags.append("data_retention_check")
-
-    if "medical_data" in str(details).lower():
-        flags.append("hipaa_compliance")
-
-    return flags
-
-
-def calculate_premium_metrics(activities: list, crm: str) -> dict:
-    """Calcula métricas premium avançadas"""
-    if not activities:
-        return {}
-
-    # Estatísticas básicas
-    total_activities = len(activities)
-    success_count = len([a for a in activities if a["status"] == "success"])
-    error_count = len([a for a in activities if a["status"] == "error"])
-    warning_count = len([a for a in activities if a["status"] == "warning"])
-
-    # Análise por categoria
-    categories = {}
-    for activity in activities:
-        category = activity.get("category", "unknown")
-        categories[category] = categories.get(category, 0) + 1
-
-    # Análise por tipo
-    types = {}
-    for activity in activities:
-        activity_type = activity.get("type", "unknown")
-        types[activity_type] = types.get(activity_type, 0) + 1
-
-    # Métricas de performance
-    durations = [a.get("duration", 0) for a in activities if a.get("duration")]
-    avg_duration = sum(durations) / len(durations) if durations else 0
-
-    # Impacto total
-    impact_scores = [a.get("impact_score", 0) for a in activities]
-    total_impact = sum(impact_scores)
-    avg_impact = total_impact / len(impact_scores) if impact_scores else 0
-
-    # Atividade recente (últimas 24h)
-    now = datetime.utcnow()
-    recent_activities = []
-    for activity in activities:
-        try:
-            activity_time = datetime.fromisoformat(
-                activity["timestamp"].replace("Z", "+00:00")
-            )
-            if (now - activity_time).total_seconds() < 86400:  # 24 horas
-                recent_activities.append(activity)
-        except:
-            pass
-
-        return {
-        "summary": {
-            "total_activities": total_activities,
-            "success_rate": (
-                (success_count / total_activities * 100) if total_activities > 0 else 0
-            ),
-            "error_rate": (
-                (error_count / total_activities * 100) if total_activities > 0 else 0
-            ),
-            "recent_activities_24h": len(recent_activities),
-        },
-        "categories": categories,
-        "types": types,
-        "performance": {
-            "average_duration_ms": avg_duration,
-            "total_impact_score": total_impact,
-            "average_impact_score": avg_impact,
-        },
-        "trends": {
-            "success_trend": "stable",
-            "activity_trend": (
-                "increasing"
-                if len(recent_activities) > total_activities * 0.3
-                else "stable"
-            ),
-        },
-    }
-
-
-def build_activity_timeline(activities: list) -> dict:
-    """Constrói timeline de atividades"""
-    timeline = {"hourly": {}, "daily": {}, "weekly": {}}
-
-    for activity in activities:
-        try:
-            activity_time = datetime.fromisoformat(
-                activity["timestamp"].replace("Z", "+00:00")
-            )
-            hour_key = activity_time.strftime("%Y-%m-%d %H:00")
-            day_key = activity_time.strftime("%Y-%m-%d")
-            week_key = activity_time.strftime("%Y-W%U")
-
-            # Timeline por hora
-            if hour_key not in timeline["hourly"]:
-                timeline["hourly"][hour_key] = []
-            timeline["hourly"][hour_key].append(activity["type"])
-
-            # Timeline por dia
-            if day_key not in timeline["daily"]:
-                timeline["daily"][day_key] = []
-            timeline["daily"][day_key].append(activity["type"])
-
-            # Timeline por semana
-            if week_key not in timeline["weekly"]:
-                timeline["weekly"][week_key] = []
-            timeline["weekly"][week_key].append(activity["type"])
-
-        except:
-            continue
-
-    return timeline
-
-
-# --- Endpoint para exportar dados do usuário ---
-@app.get("/api/v1/export-data")
-def export_user_data(user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    try:
-        log_audit("export_data", user_crm=user["crm"], ip=None, details=None)
-        try:
-            # Coletar dados do usuário
-            guias = db.query(Guia).filter_by(user_id=user["crm"]).all()
-            demonstrativos = db.query(Demonstrativo).filter_by(crm=user["crm"]).all()
-            # Simular logs (poderia ser de uma tabela de logs)
-            logs = []
-
-            # Montar JSONs
-            def to_serializable(obj):
-                d = obj.__dict__.copy()
-                d.pop("_sa_instance_state", None)
-                for k, v in d.items():
-                    if isinstance(v, (datetime, date)):
-                        d[k] = v.isoformat()
-                return d
-
-            guias_json = [to_serializable(g) for g in guias]
-            demonstrativos_json = [to_serializable(d) for d in demonstrativos]
-
-            # Encoder customizado para garantir serialização de qualquer datetime
-            class DateTimeEncoder(json.JSONEncoder):
-                def default(self, o):
-                    if isinstance(o, (datetime, date)):
-                        return o.isoformat()
-                    return super().default(o)
-
-            # Criar ZIP em memória
-            mem_zip = io.BytesIO()
-            with zipfile.ZipFile(
-                mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED
-            ) as zf:
-                zf.writestr(
-                    "guias.json",
-                    json.dumps(
-                        guias_json, ensure_ascii=False, indent=2, cls=DateTimeEncoder
-                    ),
-                )
-                zf.writestr(
-                    "demonstrativos.json",
-                    json.dumps(
-                        demonstrativos_json,
-                        ensure_ascii=False,
-                        indent=2,
-                        cls=DateTimeEncoder,
-                    ),
-                )
-                zf.writestr(
-                    "logs.json",
-                    json.dumps(logs, ensure_ascii=False, indent=2, cls=DateTimeEncoder),
-                )
-            mem_zip.seek(0)
-            logger.info(f"Exportação de dados para CRM {user['crm']}")
-            return StreamingResponse(
-                mem_zip,
-                media_type="application/zip",
-                headers={
-                    "Content-Disposition": "attachment; filename=medcheck-dados-usuario.zip"
-                },
-            )
-        except Exception as e:
-            logger.error(f"Erro ao exportar dados do usuário: {e}", exc_info=True)
-            raise HTTPException(status_code=500, detail=f"Erro ao exportar dados: {e}")
-    finally:
-        db.close()
-
-
-# --- Endpoint para deletar conta do usuário ---
-@app.delete("/api/v1/delete-account")
-def delete_account(user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    try:
-        log_audit("delete_account", user_crm=user["crm"], ip=None, details=None)
-        # Apagar guias
-        db.query(Guia).filter_by(user_id=user["crm"]).delete()
-        # Apagar demonstrativos
-        db.query(Demonstrativo).filter_by(crm=user["crm"]).delete()
-        # Apagar cadastro
-        db.query(Medico).filter_by(crm=user["crm"]).delete()
-        db.commit()
-        logger.info(f"Conta e dados excluídos para CRM {user['crm']}")
-        return {"message": "Conta e dados excluídos com sucesso."}
-    finally:
-        db.close()
-
-
-# --- Endpoint para consultar histórico de consentimentos ---
-@app.get("/api/v1/consentimentos")
-def listar_consentimentos(user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    try:
-        consentimentos = (
-            db.query(Consentimento)
-            .filter_by(crm=user["crm"])
-            .order_by(Consentimento.accepted_at.desc())
-            .all()
-        )
-        return [
-            {
-                "terms_version": c.terms_version,
-                "accepted_at": c.accepted_at.isoformat(),
-                "ip": c.ip,
-            }
-            for c in consentimentos
-        ]
-    finally:
-        db.close()
-
-
-# --- Endpoint para atualizar perfil do usuário ---
-@app.patch("/api/v1/profile", response_model=UpdateProfileResponse)
-def update_profile(data: UpdateProfileRequest, user: dict = Depends(get_current_user)):
-    # Sanitizar nome
-    if data.nome:
-        data.nome = sanitize_text(data.nome)
-    db = SessionLocal()
-    try:
-        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
-        if not medico:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
-        updated = False
-        if data.uf:
-            medico.uf = data.uf
-            updated = True
-        if data.senha:
-            if len(data.senha) < 8:
-                raise HTTPException(
-                    status_code=400, detail="A senha deve ter pelo menos 8 caracteres."
-                )
-            medico.senha_hash = bcrypt.hashpw(
-                data.senha.encode(), bcrypt.gensalt()
-            ).decode()
-            updated = True
-        if updated:
-            log_audit(
-                "update_profile",
-                user_crm=user["crm"],
-                ip=None,
-                details={"nome": data.nome, "uf": data.uf},
-            )
-            db.commit()
-            logger.info(
-                f"Perfil atualizado para CRM {user['crm']}: nome={data.nome}, uf={data.uf}, senha={'***' if data.senha else None}"
-            )
-            return UpdateProfileResponse(message="Perfil atualizado com sucesso.")
-        else:
-            return UpdateProfileResponse(message="Nenhuma alteração realizada.")
-    finally:
-        db.close()
-
-
-# --- Endpoint para anonimizar dados do usuário ---
-@app.post("/api/v1/request-anonimization", response_model=AnonimizationResponse)
-def request_anonimization(user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    try:
-        log_audit("anonimization", user_crm=user["crm"], ip=None, details=None)
-        medico = db.query(Medico).filter_by(crm=user["crm"]).first()
-        if not medico:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
-        # Anonimizar dados do médico
-        medico.nome = "ANONIMIZADO"
-        medico.senha_hash = "ANONIMIZADO"
-        # Anonimizar dados de guias
-        guias = db.query(Guia).filter_by(user_id=user["crm"]).all()
-        for g in guias:
-            g.paciente = "ANONIMIZADO"
-            g.nome_medico = "ANONIMIZADO"
-        # Anonimizar dados de demonstrativos
-        demonstrativos = db.query(Demonstrativo).filter_by(crm=user["crm"]).all()
-        for d in demonstrativos:
-            d.lote = "ANONIMIZADO"
-        db.commit()
-        logger.info(f"Dados anonimizados para CRM {user['crm']}")
-        return AnonimizationResponse(
-            message="Dados anonimizados com sucesso. O acesso à conta foi bloqueado."
-        )
-    finally:
-        db.close()
-
-
-# --- Endpoint para registrar incidente ---
-@app.post("/api/v1/incidents", response_model=IncidentResponse)
-def report_incident(data: IncidentRequest, request: Request):
-    db = SessionLocal()
-    try:
-        ip = data.ip or (request.client.host if request and request.client else None)
-        incident = Incident(
-            type=data.type,
-            description=data.description,
-            occurred_at=datetime.utcnow(),
-            user_crm=data.user_crm,
-            ip=ip,
-            status="open",
-        )
-        db.add(incident)
-        db.commit()
-        log_audit(
-            "incident_reported",
-            user_crm=data.user_crm,
-            ip=ip,
-            details={"type": data.type, "description": data.description},
-        )
-        logger.error(
-            f"[INCIDENT] Tipo: {data.type} | Usuário: {data.user_crm} | IP: {ip} | Desc: {data.description}"
-        )
-        return IncidentResponse(
-            message="Incidente registrado com sucesso.", incident_id=incident.id
-        )
-    finally:
-        db.close()
-
-
-# --- Endpoint para listar suboperadores ---
-
-
-# --- Endpoint para listar suboperadores ---
-@app.get("/api/v1/suboperadores", response_model=list[SuboperadorItem])
-def listar_suboperadores():
-    suboperadores = [
-        SuboperadorItem(
-            nome="AWS",
-            finalidade="Infraestrutura de nuvem e armazenamento de arquivos",
-            pais="Brasil/EUA",
-        ),
-        SuboperadorItem(
-            nome="SendGrid", finalidade="Envio de e-mails transacionais", pais="EUA"
-        ),
-        SuboperadorItem(
-            nome="Supabase", finalidade="Banco de dados e analytics", pais="EUA"
-        ),
-        SuboperadorItem(
-            nome="Google", finalidade="Analytics e monitoramento", pais="EUA"
-        ),
-        SuboperadorItem(
-            nome="Vercel", finalidade="Hospedagem e deploy do frontend", pais="EUA"
-        ),
-    ]
-    return suboperadores
-
-
-# --- Endpoint para registrar requisição LGPD ---
-@app.post("/api/v1/lgpd-request", response_model=LGPDRequestResponse)
-@limiter.limit("3/minute")
-def canal_lgpd(data: LGPDRequest, request: Request):
-    # Sanitizar mensagem
-    mensagem_limpa = sanitize_text(data.mensagem)
-    # Salvar log da requisição
-    logger.info(
-        f"[LGPD] Nova requisição: tipo={data.tipo}, nome={data.nome}, email={data.email}, crm={data.crm}, mensagem={mensagem_limpa}, ip={request.client.host if request and request.client else None}"
-    )
-    # (Opcional) Salvar em tabela LGPDRequests no banco para auditoria
-    # (Opcional) Enviar e-mail para admin/DPO
-    # Simular resposta automática
-    return LGPDRequestResponse(
-        message="Sua solicitação foi recebida. Você receberá uma resposta em até 2 dias úteis. Obrigado!"
-    )
-
-
-# --- Endpoint detalhado de demonstrativo com cruzamento de participação ---
-@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
-def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    try:
-        demo = db.query(Demonstrativo).filter_by(id=demo_id, crm=user["crm"]).first()
-        if not demo:
-            raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
-        file_path = os.path.join(UPLOAD_DIR, demo.filename)
-        if not os.path.exists(file_path):
-            raise HTTPException(
-                status_code=404, detail="Arquivo do demonstrativo não encontrado"
-            )
-        from src.parsers.cbhpm_parser import CBHPMParser
-        from src.parsers.demonstrativo_parser import DemonstrativoParser
-        from src.services.participacao import papel_do_procedimento
-
-        cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
-        parser = DemonstrativoParser(file_path)
-        payments = parser.get_payments()
-        print(
-            f"[DEBUG] Total de procedimentos extraídos do demonstrativo {demo_id}: {len(payments)}"
-        )
-        detalhes = []
-        for item in payments:
-            papel = (
-                papel_do_procedimento(
-                    db,
-                    guia=item.get("guia"),
-                    codigo=item.get("code") or item.get("codigo"),
-                    data=item.get("date") or item.get("data_execucao"),
-                    crm=user["crm"],
-                )
-                or item.get("papel")
-                or "--"
-            )
-            # Padronizar papel
-            papel_norm = str(papel).strip().lower()
-            if papel_norm in (
-                "",
-                "--",
-                "não identificado",
-                "nao identificado",
-                "none",
-                "null",
-            ):
-                papel_key = None
-            elif "cirurgiao" in papel_norm:
-                papel_key = "cirurgiao"
-            elif "primeiro auxiliar" in papel_norm or "1º auxiliar" in papel_norm:
-                papel_key = "primeiro_auxiliar"
-            elif "anestesista" in papel_norm:
-                papel_key = "anestesista"
-            else:
-                papel_key = None  # Não identificado
-            code_str = str(item.get("code") or "").strip()
-            cbhpm_valor = None
-            proc = cbhpm_parser.get_procedure(code_str)
-            if proc and papel_key:
-                if papel_key == "cirurgiao":
-                    cbhpm_valor = proc.get("surgeon_value")
-                elif papel_key == "primeiro_auxiliar":
-                    cbhpm_valor = proc.get("first_assistant_value")
-                elif papel_key == "anesthesiologist":
-                    cbhpm_valor = proc.get("anesthesiologist_value")
-            # Busca motivo/código detalhado se não vier direto do item
-            codigo_glosa = item.get("codigo_glosa")
-            motivo_glosa = item.get("motivo_glosa")
-            if (not codigo_glosa or not motivo_glosa) and hasattr(
-                parser, "get_glosa_detalhada"
-            ):
-                key = (item.get("guia"), item.get("code"), item.get("date"))
-                detalhada = parser.get_glosa_detalhada(*key)
-                if detalhada:
-                    codigo_glosa = detalhada.get("codigo_glosa")
-                    motivo_glosa = detalhada.get("motivo_glosa")
-            detalhes.append(
-                {
-                    "guia": item.get("guia"),
-                    "data": item.get("date"),
-                    "paciente": item.get("patient"),
-                    "codigo": item.get("code"),
-                    "descricao": item.get("description"),
-                    "participacao": papel,
-                    "qtd": item.get("quantity"),
-                    "cbhpm": cbhpm_valor,
-                    "liberado": item.get("financial", {}).get("approved_value"),
-                    "apresentado": item.get("financial", {}).get("presented_value"),
-                    "glosa": item.get("financial", {}).get("glosa"),
-                    "pro_rata": item.get("financial", {}).get("pro_rata"),
-                    "codigo_glosa": codigo_glosa,
-                    "motivo_glosa": motivo_glosa,
-                    "beneficiario": item.get("patient") or item.get("beneficiario"),
-                    "hospital": item.get("prestador") or item.get("hospital"),
-                }
-            )
-        return detalhes
-    finally:
-        db.close()
-
-
-# --- Endpoint para obter resumo do dashboard ---
-@app.get("/api/v1/dashboard")
-def dashboard_summary(user: dict = Depends(get_current_user)):
-    db = SessionLocal()
-    crm = user.get("crm")
-    uf = user.get("uf")
-    if not crm or not uf:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
-    # Últimos 30 dias
-    data_limite = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
-    # Totais
-    total_recebido = 0.0
-    total_glosado = 0.0
-    total_procedimentos = 0
-    auditoria_pendente = 0
-    # Procedimentos
-    procedures = []
-    glosas = []
-    # Buscar demonstrativos do usuário (CRÍTICO: filtrar por crm E uf)
-    demos = (
-        db.query(Demonstrativo)
-        .filter(
-            Demonstrativo.crm == crm,
-            Demonstrativo.uf == uf,
-            Demonstrativo.upload_time >= data_limite,
-        )
-        .all()
-    )
-    for demo in demos:
-        try:
-            # Conversão robusta considerando formato brasileiro (milhar com ponto, decimal com vírgula)
-            valor_recebido = brl_to_float(demo.liberado)
-            valor_glosado = brl_to_float(demo.glosa)
-        except Exception:
-            valor_recebido = 0.0
-            valor_glosado = 0.0
-        total_recebido += valor_recebido
-        total_glosado += valor_glosado
-        try:
-            total_procedimentos += int(demo.total_procedimentos)
-        except Exception:
-            pass
-    # Auditorias pendentes: demonstrativos sem liberação (CRÍTICO: filtrar por crm E uf)
-    auditoria_pendente = (
-        db.query(Demonstrativo)
-        .filter(
-            Demonstrativo.crm == crm,
-            Demonstrativo.uf == uf,
-            Demonstrativo.liberado == "R$ 0,00",
-        )
-        .count()
-    )
-    # Buscar guias do usuário (CRÍTICO: filtrar por crm E uf)
-    guias = (
-        db.query(Guia)
-        .filter(Guia.crm == crm, Guia.uf == uf, Guia.data >= data_limite)
-        .all()
-    )
-    for guia in guias:
-        procedures.append(
-            {
-                "numero_guia": guia.numero_guia,
-                "data": guia.data,
-                "beneficiario": guia.paciente,
-                    "codigo": guia.codigo,
-                    "descricao": guia.descricao,
-                "papel": guia.papel,
-                "crm": guia.crm,
-                "qtd": guia.qtd,
-                "status": guia.status,
-                "prestador": guia.prestador,
-                "nome_medico": guia.nome_medico,
-                "dt_inicio": guia.dt_inicio,
-                "dt_fim": guia.dt_fim,
-                "status_part": guia.status_part,
-            }
-        )
-    # Calcular totais
-    total_apresentado = sum(brl_to_float(demo.apresentado) for demo in demos)
-    return {
-        "total_recebido": total_recebido,
-        "total_glosado": total_glosado,
-        "total_apresentado": total_apresentado,
-        "total_procedimentos": total_procedimentos,
-        "auditoria_pendente": auditoria_pendente,
-        "procedures": procedures,
-        "glosas": glosas,
-        "user_crm": crm,
-        "user_uf": uf,
-    }
-
-
-# --- Endpoint para deletar conta do usuário ---
-@app.delete("/api/v1/admin/purge-users")
-def purge_all_users(secret: str = Query(...)):
-    # Proteção simples: só executa se o secret for igual ao valor esperado
-    ADMIN_SECRET = os.environ.get("ADMIN_PURGE_SECRET", "super-secret-purge")
-    if secret != ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    db = SessionLocal()
-    try:
-        # Apaga dados relacionados primeiro (ordem importa por FK)
-        db.query(Guia).delete()
-        db.query(Demonstrativo).delete()
-        db.query(Consentimento).delete()
-        db.query(Medico).delete()
-        db.commit()
-        logger.warning(
-            "Todos os usuários e dados relacionados foram apagados por comando administrativo!"
-        )
-        return {"message": "Todos os usuários e dados relacionados foram apagados."}
-    finally:
-        db.close()
-
-
-# --- Observações ---
-# - Para produção, troque JWT_SECRET por segredo seguro e use HTTPS
-# - Substitua jobs dict por Redis/Celery/DB para escalabilidade real
-# - Adapte process_validation_job para rodar o pipeline Python real
-# - Para S3/MinIO, troque o salvamento de arquivos/resultados
-# - Para Prometheus, adicione instrumentação com prometheus_fastapi_instrumentator
-# - Para rate-limiting, use slowapi/starlette-limiter
-# - Para logs estruturados, use structlog
-
-
-# --- Utilitário para conversão de valores monetários BRL em float ---
-def brl_to_float(value: str | float | int) -> float:
-    """Converte uma string no formato 'R$ 5.539,90' para float 5539.90.
-
-    A função é resiliente a variações (com ou sem símbolo, separador de milhar
-    com ponto ou espaço) e falhas de parse, sempre retornando *0.0* em caso de
-    erro.
-    """
-    try:
-        # Se já for numérico, devolve como float
-        if isinstance(value, (int, float)):
-            return float(value)
-        if not value:
-            return 0.0
-        # Remove tudo que não seja dígito, vírgula ou ponto
-        cleaned = re.sub(r"[^0-9,\.]", "", str(value))
-
-        # Existem PDFs/rotinas que geram formato com vírgula duplicada, ex.:
-        #   5,372,22   (milhar + decimal)
-        # A regra abaixo converte para 5372.22 antes do cast para float.
-        if cleaned.count(",") > 1:
-            # As vírgulas da esquerda representam milhares, a última é o separador decimal
-            parts = cleaned.split(",")
-            cleaned = "".join(parts[:-1]) + "." + parts[-1]
-        else:
-            # Primeiro elimina separador de milhar (ponto). Ex.: 5.539,90 -> 5539,90
-            cleaned = cleaned.replace(".", "")
-            # Agora trocamos vírgula por ponto para obter notação decimal padrão
-            cleaned = cleaned.replace(",", ".")
-
-        return float(cleaned) if cleaned else 0.0
-    except Exception:
-        return 0.0
-
-
-# --- Endpoint para obter perfil do usuário ---
-class ProfileResponse(BaseModel):
-    crm: str
-    uf: str
-    nome: str
-    email: str | None = None
-    specialty: str | None = None
-    hospital: str | None = None
-    phone: str | None = None
-    bio: str | None = None
-    avatar_url: str | None = None
-
-
-@app.get("/api/v1/profile", response_model=ProfileResponse)
-def get_profile(user: dict = Depends(get_current_user)):
-    """Retorna os dados do médico autenticado."""
-    db = SessionLocal()
-    try:
-        medico = db.query(Medico).filter_by(crm=user["crm"], uf=user["uf"]).first()
-        if not medico:
-            raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
-        # Tenta obter detalhes adicionais de perfil
-        perfil = db.query(PerfilMedico).filter_by(crm=user["crm"]).first()
-
-        return ProfileResponse(
-            crm=medico.crm,
-            uf=medico.uf,
-            nome=medico.nome,
-            email=perfil.email if perfil else None,
-            specialty=perfil.specialty if perfil else None,
-            hospital=perfil.hospital if perfil else None,
-            phone=perfil.phone if perfil else None,
-            bio=perfil.bio if perfil else None,
-            avatar_url=perfil.avatar_url if perfil else None,
-        )
-    finally:
-        db.close()
-
-
-# --- Novo: detalhes estendidos de perfil ---
-class PerfilMedico(Base):
-    """Tabela separada para dados adicionais do perfil que podem mudar com mais frequência.
-    Mantemos separado de `medicos` para evitar migrações de colunas sensíveis (senha, consentimentos).
-    """
-
-    __tablename__ = "perfis_medico"
-    crm = Column(String, ForeignKey("medicos.crm"), primary_key=True)
-    email = Column(String, nullable=True)
-    specialty = Column(String, nullable=True)
-    hospital = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
-    bio = Column(String, nullable=True)
-    avatar_url = Column(
-        String, nullable=True
-    )  # URL da foto do médico (base64 compactada)
-
-
-# Garante que a nova tabela seja criada em bancos já existentes sem rodar migração
-Base.metadata.create_all(bind=engine)
-
-
-# --- Autenticação administrativa segura ---
-def verify_admin_secret(secret: str) -> bool:
-    """Verifica se o segredo administrativo está correto."""
-    if not secret or not ADMIN_SECRET:
-        return False
-    # Comparação segura contra timing attacks
-    return hmac.compare_digest(secret.encode(), ADMIN_SECRET.encode())
-
-
-def get_admin_user(secret: str = Query(...)) -> dict:
-    """Dependência para endpoints administrativos."""
-    if not verify_admin_secret(secret):
+        logger.error(f"Erro inesperado em get_activity_logs: {e}")
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso negado. Credenciais administrativas inválidas.",
+            status_code=500, detail="Erro interno ao buscar logs de atividade."
         )
-    return {"role": "admin"}
-
-
-# --- Sanitização de inputs melhorada ---
-def sanitize_text(text, max_length: int = 1000):
-    """Sanitiza texto removendo scripts e limitando tamanho."""
-    import html
-    import re
-
-    if not text:
-        return text
-
-    # Limitar tamanho
-    text = str(text)[:max_length]
-
-    # Escapar HTML
-    text = html.escape(text)
-
-    # Remover tags HTML restantes
-    text = re.sub(r"<.*?>", "", text)
-
-    # Remover scripts
-    text = re.sub(r"script", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"javascript:", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"on\w+\s*=", "", text, flags=re.IGNORECASE)
-
-    return text.strip()
 
 
 def validate_crm(crm: str) -> bool:
-    """Valida formato do CRM."""
+    """Valida formato do CRM: deve ser numérico com 4-6 dígitos."""
+    import re
+
     if not crm:
         return False
-    # CRM deve ser numérico com 4-6 dígitos
     return re.match(r"^\d{4,6}$", crm) is not None
 
 
@@ -3327,774 +2150,339 @@ def validate_uf(uf: str) -> bool:
     return uf and uf.upper() in ufs_validas
 
 
-import hmac
-
-# --- Endpoints administrativos PROTEGIDOS ---
-
-
-@app.get("/api/v1/incidents", response_model=list[IncidentListItem])
-def list_incidents(admin: dict = Depends(get_admin_user)):
-    """Lista incidentes - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
-    db = SessionLocal()
-    try:
-        incidents = db.query(Incident).order_by(Incident.occurred_at.desc()).all()
-        return [
-            IncidentListItem(
-                id=i.id,
-                type=i.type,
-                description=i.description,
-                occurred_at=i.occurred_at.isoformat(),
-                user_crm=i.user_crm,
-                ip=i.ip,
-                status=i.status,
-            )
-            for i in incidents
-        ]
-    finally:
-        db.close()
-
-
-@app.get("/api/v1/inactive-accounts", response_model=list[InactiveAccountItem])
-def list_inactive_accounts(
-    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
-):
-    """Lista contas inativas - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        return [
-            InactiveAccountItem(
-                crm=m.crm,
-                nome=m.nome,
-                uf=m.uf,
-                last_login_at=m.last_login_at.isoformat() if m.last_login_at else None,
-                created_at=(
-                    m.terms_accepted_at.isoformat() if m.terms_accepted_at else None
-                ),
-            )
-            for m in inativos
-        ]
-    finally:
-        db.close()
-
-
-@app.post("/api/v1/notify-inactive", response_model=NotifyInactiveResponse)
-def notify_inactive_accounts(
-    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
-):
-    """Notifica usuários inativos - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        notified = []
-        for m in inativos:
-            logger.info(
-                f"[NOTIFY] Conta inativa: CRM={m.crm}, nome={m.nome}, UF={m.uf}, last_login={m.last_login_at}"
-            )
-            notified.append(m.crm)
-
-        # Log da ação administrativa
-        log_audit(
-            "admin_notify_inactive",
-            user_crm="ADMIN",
-            ip=None,
-            details={"years": years, "count": len(notified)},
-        )
-
-        return NotifyInactiveResponse(
-            message=f"Notificações simuladas para {len(notified)} contas inativas.",
-            notified_crms=notified,
-        )
-    finally:
-        db.close()
-
-
-@app.delete("/api/v1/delete-inactive", response_model=BulkDeleteResponse)
-def delete_inactive_accounts(
-    years: int = Query(2, ge=1, le=10), admin: dict = Depends(get_admin_user)
-):
-    """Deleta contas inativas - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
-    db = SessionLocal()
-    try:
-        cutoff = datetime.utcnow() - timedelta(days=365 * years)
-        inativos = (
-            db.query(Medico)
-            .filter((Medico.last_login_at == None) | (Medico.last_login_at < cutoff))
-            .all()
-        )
-        deleted = []
-        for m in inativos:
-            # Anonimizar antes de deletar (boa prática LGPD)
-            m.nome = "ANONIMIZADO"
-            m.senha_hash = "ANONIMIZADO"
-            # Anonimizar guias
-            guias = db.query(Guia).filter_by(user_id=m.crm).all()
-            for g in guias:
-                g.paciente = "ANONIMIZADO"
-                g.nome_medico = "ANONIMIZADO"
-            # Anonimizar demonstrativos
-            demonstrativos = db.query(Demonstrativo).filter_by(crm=m.crm).all()
-            for d in demonstrativos:
-                d.lote = "ANONIMIZADO"
-            deleted.append(m.crm)
-            # Opcional: deletar o médico após anonimização
-            db.delete(m)
-        db.commit()
-
-        # Log crítico da ação administrativa
-        log_audit(
-            "admin_delete_inactive",
-            user_crm="ADMIN",
-            ip=None,
-            details={
-                "years": years,
-                "deleted_count": len(deleted),
-                "deleted_crms": deleted,
-            },
-        )
-        logger.warning(
-            f"ADMIN: {len(deleted)} contas inativas foram anonimizadas e removidas."
-        )
-
-        return BulkDeleteResponse(
-            message=f"{len(deleted)} contas inativas anonimizadas e removidas.",
-            deleted_crms=deleted,
-        )
-    finally:
-        db.close()
-
-
-@app.delete("/api/v1/admin/purge-users")
-def purge_all_users(admin: dict = Depends(get_admin_user)):
-    """OPERAÇÃO EXTREMAMENTE PERIGOSA - REQUER AUTENTICAÇÃO ADMINISTRATIVA."""
-    db = SessionLocal()
-    try:
-        # Log crítico antes da operação
-        log_audit(
-            "admin_purge_all_users",
-            user_crm="ADMIN",
-            ip=None,
-            details={"warning": "ALL_DATA_WILL_BE_DELETED"},
-        )
-
-        # Contar registros antes da exclusão
-        count_guias = db.query(Guia).count()
-        count_demos = db.query(Demonstrativo).count()
-        count_medicos = db.query(Medico).count()
-
-        # Apaga dados relacionados primeiro (ordem importa por FK)
-        db.query(Guia).delete()
-        db.query(Demonstrativo).delete()
-        db.query(Consentimento).delete()
-        db.query(Medico).delete()
-        db.commit()
-
-        logger.critical(
-            f"ADMIN PURGE: Todos os dados foram apagados! "
-            f"Removidos: {count_medicos} médicos, {count_demos} demonstrativos, {count_guias} guias"
-        )
-
-        return {
-            "message": "Todos os usuários e dados relacionados foram apagados.",
-            "deleted": {
-                "medicos": count_medicos,
-                "demonstrativos": count_demos,
-                "guias": count_guias,
-            },
-        }
-    finally:
-        db.close()
-
-
-# --- Endpoint para analytics avançado ---
-@app.get("/api/v1/analytics")
-def advanced_analytics(
-    user: dict = Depends(get_current_user), period: str = Query("6m")
-):
-    """
-    Endpoint de analytics avançado que gera insights estratégicos profundos
-    para o médico baseado em todo o histórico de dados disponível.
-    """
-    db = SessionLocal()
-    crm = user.get("crm")
-    if not crm:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
-
-    try:
-        import calendar
-        from collections import Counter, defaultdict
-        from datetime import datetime, timedelta
-
-        # Buscar TODOS os dados históricos (não apenas 30 dias)
-        all_demos = db.query(Demonstrativo).filter(Demonstrativo.crm == crm).all()
-        all_guias = db.query(Guia).filter(Guia.crm == crm).all()
-
-        # === 1. ANALYTICS TEMPORAIS AVANÇADOS ===
-        monthly_performance = defaultdict(
-            lambda: {
-                "recebido": 0,
-                "glosado": 0,
-                "apresentado": 0,
-                "procedimentos": 0,
-                "demos": 0,
-                "taxa_glosa": 0,
-            }
-        )
-
-        quarterly_trends = defaultdict(
-            lambda: {"recebido": 0, "glosado": 0, "procedimentos": 0}
-        )
-        yearly_summary = defaultdict(
-            lambda: {"recebido": 0, "glosado": 0, "procedimentos": 0}
-        )
-
-        for demo in all_demos:
-            if demo.upload_time:
-                month_key = demo.upload_time.strftime("%Y-%m")
-                quarter_key = (
-                    f"{demo.upload_time.year}-Q{(demo.upload_time.month-1)//3 + 1}"
-                )
-                year_key = str(demo.upload_time.year)
-
-                recebido = brl_to_float(demo.liberado)
-                glosado = brl_to_float(demo.glosa)
-                apresentado = brl_to_float(demo.apresentado)
-                procedimentos = int(demo.total_procedimentos or 0)
-
-                # Monthly
-                monthly_performance[month_key]["recebido"] += recebido
-                monthly_performance[month_key]["glosado"] += glosado
-                monthly_performance[month_key]["apresentado"] += apresentado
-                monthly_performance[month_key]["procedimentos"] += procedimentos
-                monthly_performance[month_key]["demos"] += 1
-
-                # Quarterly
-                quarterly_trends[quarter_key]["recebido"] += recebido
-                quarterly_trends[quarter_key]["glosado"] += glosado
-                quarterly_trends[quarter_key]["procedimentos"] += procedimentos
-
-                # Yearly
-                yearly_summary[year_key]["recebido"] += recebido
-                yearly_summary[year_key]["glosado"] += glosado
-                yearly_summary[year_key]["procedimentos"] += procedimentos
-
-        # Calcular taxas de glosa mensais
-        for month_key in monthly_performance:
-            data = monthly_performance[month_key]
-            total_apresentado = data["recebido"] + data["glosado"]
-            data["taxa_glosa"] = (
-                round((data["glosado"] / total_apresentado * 100), 2)
-                if total_apresentado > 0
-                else 0
-            )
-
-        # === 2. ANALYTICS DE PERFORMANCE POR CATEGORIA ===
-
-        # Performance por Procedimento
-        procedure_stats = defaultdict(
-            lambda: {
-                "count": 0,
-                "recebido_total": 0,
-                "glosado_total": 0,
-                "hospitais": set(),
-                "roles": set(),
-                "descricao": "",
-            }
-        )
-
-        # Performance por Hospital/Prestador
-        hospital_stats = defaultdict(
-            lambda: {
-                "procedimentos": 0,
-                "recebido": 0,
-                "glosado": 0,
-                "demos": 0,
-                "codigos_unicos": set(),
-            }
-        )
-
-        # Performance por Papel/Função
-        role_performance = defaultdict(
-            lambda: {"procedimentos": 0, "recebido_estimado": 0, "hospitais": set()}
-        )
-
-        # Processar guias para analytics de performance
-        for guia in all_guias:
-            codigo = guia.codigo
-            hospital = guia.prestador or "Não identificado"
-            papel = guia.papel or "Não identificado"
-
-            procedure_stats[codigo]["count"] += guia.qtd or 1
-            procedure_stats[codigo]["hospitais"].add(hospital)
-            procedure_stats[codigo]["roles"].add(papel)
-            procedure_stats[codigo]["descricao"] = guia.descricao or ""
-
-            hospital_stats[hospital]["procedimentos"] += guia.qtd or 1
-            hospital_stats[hospital]["codigos_unicos"].add(codigo)
-
-            role_performance[papel]["procedimentos"] += guia.qtd or 1
-            role_performance[papel]["hospitais"].add(hospital)
-
-        # Enriquecer com dados financeiros dos demonstrativos
-        for demo in all_demos:
-            if demo.periodo:
-                # Aproximação: distribuir valores proporcionalmente
-                total_proc = demo.total_procedimentos or 1
-                recebido_por_proc = brl_to_float(demo.liberado) / total_proc
-                glosado_por_proc = brl_to_float(demo.glosa) / total_proc
-
-                # Tentar vincular aos procedimentos do mesmo período
-                periodo_guias = [
-                    g
-                    for g in all_guias
-                    if demo.periodo.lower() in (g.data or "").lower()
-                ]
-                for guia in periodo_guias:
-                    qtd = guia.qtd or 1
-                    procedure_stats[guia.codigo]["recebido_total"] += (
-                        recebido_por_proc * qtd
-                    )
-                    procedure_stats[guia.codigo]["glosado_total"] += (
-                        glosado_por_proc * qtd
-                    )
-
-        # === 3. INSIGHTS FINANCEIROS AVANÇADOS ===
-
-        total_recebido_historico = sum(brl_to_float(d.liberado) for d in all_demos)
-        total_glosado_historico = sum(brl_to_float(d.glosa) for d in all_demos)
-        total_apresentado_historico = total_recebido_historico + total_glosado_historico
-
-        # Taxa de recuperação média
-        taxa_recuperacao_media = (
-            round((total_recebido_historico / total_apresentado_historico * 100), 2)
-            if total_apresentado_historico > 0
-            else 0
-        )
-
-        # Projeção anual baseada nos últimos 3 meses
-        ultimos_3_meses = [
-            d
-            for d in all_demos
-            if d.upload_time and d.upload_time >= datetime.now() - timedelta(days=90)
-        ]
-        recebido_3m = sum(brl_to_float(d.liberado) for d in ultimos_3_meses)
-        projecao_anual = recebido_3m * 4 if ultimos_3_meses else 0
-
-        # Valor médio por procedimento
-        total_procedimentos_historico = sum(
-            int(d.total_procedimentos or 0) for d in all_demos
-        )
-        valor_medio_procedimento = (
-            round(total_recebido_historico / total_procedimentos_historico, 2)
-            if total_procedimentos_historico > 0
-            else 0
-        )
-
-        # === 4. IDENTIFICAÇÃO DE PADRÕES E ANOMALIAS ===
-
-        # Mês de melhor performance
-        melhor_mes = (
-            max(monthly_performance.items(), key=lambda x: x[1]["recebido"])
-            if monthly_performance
-            else None
-        )
-
-        # Procedimento mais lucrativo
-        procedimento_top = (
-            max(procedure_stats.items(), key=lambda x: x[1]["recebido_total"])
-            if procedure_stats
-            else None
-        )
-
-        # Hospital com melhor eficiência (menor taxa de glosa)
-        hospital_eficiente = None
-        if hospital_stats:
-            for hospital, stats in hospital_stats.items():
-                if stats["procedimentos"] >= 5:  # Mínimo para ser relevante
-                    # Buscar demos relacionadas a este hospital
-                    demos_hospital = [
-                        d
-                        for d in all_demos
-                        if hospital.lower() in (d.filename or "").lower()
-                    ]
-                    if demos_hospital:
-                        total_rec = sum(
-                            brl_to_float(d.liberado) for d in demos_hospital
-                        )
-                        total_glo = sum(brl_to_float(d.glosa) for d in demos_hospital)
-                        taxa_glosa = (
-                            (total_glo / (total_rec + total_glo) * 100)
-                            if (total_rec + total_glo) > 0
-                            else 100
-                        )
-                        stats["taxa_glosa"] = round(taxa_glosa, 2)
-
-            hospital_eficiente = min(
-                [h for h in hospital_stats.items() if h[1].get("taxa_glosa", 100) < 50],
-                key=lambda x: x[1].get("taxa_glosa", 100),
-                default=None,
-            )
-
-        # === 5. ALERTAS E RECOMENDAÇÕES INTELIGENTES ===
-
-        alerts = []
-        recommendations = []
-
-        # Alerta: Taxa de glosa muito alta
-        if monthly_performance:
-            ultimos_meses = sorted(monthly_performance.items(), key=lambda x: x[0])[-3:]
-            taxa_media_recente = sum(m[1]["taxa_glosa"] for m in ultimos_meses) / len(
-                ultimos_meses
-            )
-            if taxa_media_recente > 15:
-                alerts.append(
-                    {
-                        "type": "warning",
-                        "title": "Taxa de Glosa Elevada",
-                        "message": f"Sua taxa de glosa média dos últimos meses é {taxa_media_recente:.1f}%. Considere revisar os procedimentos mais glosados.",
-                        "action": "Ver Análise de Glosas",
-                    }
-                )
-
-        # Recomendação: Foco em procedimento lucrativo
-        if procedimento_top and procedimento_top[1]["recebido_total"] > 1000:
-            recommendations.append(
-                {
-                    "type": "growth",
-                    "title": "Oportunidade de Crescimento",
-                    "message": f'O procedimento {procedimento_top[0]} ({procedimento_top[1]["descricao"][:50]}) tem ótima performance. Considere expandi-lo.',
-                    "metric": f'R$ {procedimento_top[1]["recebido_total"]:.2f} recebidos',
-                }
-            )
-
-        # Recomendação: Hospital eficiente
-        if hospital_eficiente:
-            recommendations.append(
-                {
-                    "type": "efficiency",
-                    "title": "Hospital Eficiente Identificado",
-                    "message": f'O hospital {hospital_eficiente[0]} tem baixa taxa de glosa ({hospital_eficiente[1].get("taxa_glosa", 0):.1f}%). Considere aumentar o volume lá.',
-                    "metric": f'{hospital_eficiente[1]["procedimentos"]} procedimentos',
-                }
-            )
-
-        # === 6. BENCHMARKS E COMPARAÇÕES ===
-
-        # Benchmark interno: comparar com própria média
-        if len(monthly_performance) >= 6:  # Pelo menos 6 meses de dados
-            meses_sorted = sorted(monthly_performance.items(), key=lambda x: x[0])
-            primeiros_6m = meses_sorted[:6]
-            ultimos_6m = meses_sorted[-6:]
-
-            media_inicial = sum(m[1]["recebido"] for m in primeiros_6m) / len(
-                primeiros_6m
-            )
-            media_recente = sum(m[1]["recebido"] for m in ultimos_6m) / len(ultimos_6m)
-
-            crescimento_percentual = (
-                round(((media_recente - media_inicial) / media_inicial * 100), 2)
-                if media_inicial > 0
-                else 0
-            )
-        else:
-            crescimento_percentual = 0
-
-        # === 7. FORMATAÇÃO DOS DADOS PARA RESPOSTA ===
-
-        # Top 5 procedimentos por valor
-        top_procedures = sorted(
-            procedure_stats.items(), key=lambda x: x[1]["recebido_total"], reverse=True
-        )[:5]
-        top_procedures_formatted = [
-            {
-                "codigo": proc[0],
-                "descricao": (
-                    proc[1]["descricao"][:60] + "..."
-                    if len(proc[1]["descricao"]) > 60
-                    else proc[1]["descricao"]
-                ),
-                "count": proc[1]["count"],
-                "recebido_total": round(proc[1]["recebido_total"], 2),
-                "taxa_sucesso": (
-                    round(
-                        (
-                            proc[1]["recebido_total"]
-                            / (proc[1]["recebido_total"] + proc[1]["glosado_total"])
-                            * 100
-                        ),
-                        2,
-                    )
-                    if (proc[1]["recebido_total"] + proc[1]["glosado_total"]) > 0
-                    else 0
-                ),
-                "hospitais_count": len(proc[1]["hospitais"]),
-            }
-            for proc in top_procedures
-        ]
-
-        # Dados mensais para gráficos (últimos 12 meses)
-        monthly_chart_data = []
-        if monthly_performance:
-            sorted_months = sorted(monthly_performance.items(), key=lambda x: x[0])[
-                -12:
-            ]
-            for month_key, data in sorted_months:
-                try:
-                    year, month = map(int, month_key.split("-"))
-                    month_name = calendar.month_name[month][:3]
-                    monthly_chart_data.append(
-                        {
-                            "name": f"{month_name}/{year}",
-                            "recebido": round(data["recebido"], 2),
-                            "glosado": round(data["glosado"], 2),
-                            "taxa_glosa": data["taxa_glosa"],
-                            "procedimentos": data["procedimentos"],
-                        }
-                    )
-                except:
-                    continue
-
-        # Performance por papel (roles)
-        roles_formatted = []
-        for role, data in role_performance.items():
-            if data["procedimentos"] > 0:
-                roles_formatted.append(
-                    {
-                        "papel": role,
-                        "procedimentos": data["procedimentos"],
-                        "hospitais_count": len(data["hospitais"]),
-                        "recebido_estimado": round(data["recebido_estimado"], 2),
-                    }
-                )
-
-        return {
-            "summary": {
-                "total_recebido_historico": round(total_recebido_historico, 2),
-                "total_glosado_historico": round(total_glosado_historico, 2),
-                "taxa_recuperacao_media": taxa_recuperacao_media,
-                "projecao_anual": round(projecao_anual, 2),
-                "valor_medio_procedimento": valor_medio_procedimento,
-                "total_procedimentos_historico": total_procedimentos_historico,
-                "crescimento_percentual": crescimento_percentual,
-                "demonstrativos_processados": len(all_demos),
-                "periodo_analise": f"{len(monthly_performance)} meses",
-            },
-            "temporal_analytics": {
-                "monthly_performance": monthly_chart_data,
-                "melhor_mes": {
-                    "mes": melhor_mes[0] if melhor_mes else None,
-                    "recebido": (
-                        round(melhor_mes[1]["recebido"], 2) if melhor_mes else 0
-                    ),
-                },
-            },
-            "performance_analytics": {
-                "top_procedures": top_procedures_formatted,
-                "role_performance": roles_formatted,
-                "hospital_stats": [
-                    {
-                        "nome": hospital,
-                        "procedimentos": stats["procedimentos"],
-                        "codigos_unicos": len(stats["codigos_unicos"]),
-                        "taxa_glosa": stats.get("taxa_glosa", 0),
-                    }
-                    for hospital, stats in sorted(
-                        hospital_stats.items(),
-                        key=lambda x: x[1]["procedimentos"],
-                        reverse=True,
-                    )[:10]
-                ],
-            },
-            "insights": {
-                "alerts": alerts,
-                "recommendations": recommendations,
-                "key_insights": [
-                    f"Você processou {len(all_demos)} demonstrativos até agora",
-                    f"Sua taxa de recuperação média é {taxa_recuperacao_media}%",
-                    f"Valor médio por procedimento: R$ {valor_medio_procedimento}",
-                    f"Projeção anual baseada no trimestre: R$ {projecao_anual:.2f}",
-                ],
-            },
-        }
-
-    except Exception as e:
-        # Log do erro para debug
-        print(f"Erro no analytics: {str(e)}")
-        return {
-            "error": "Erro ao processar analytics",
-            "summary": {"total_recebido_historico": 0},
-            "temporal_analytics": {"monthly_performance": []},
-            "performance_analytics": {"top_procedures": []},
-            "insights": {"alerts": [], "recommendations": [], "key_insights": []},
-        }
-    finally:
-        db.close()
-
-
-# --- Health Check Endpoint ---
-@app.get("/healthz")
-@app.get("/health")
-def health_check():
-    """Endpoint de verificação de saúde da aplicação"""
-    try:
-        # Testa conexão com banco de dados
-        db = SessionLocal()
-        try:
-            result = db.execute(text("SELECT 1")).fetchone()
-            database_status = "connected" if result else "error"
-        except Exception as db_error:
-            logger.error(f"Database error in health check: {str(db_error)}")
-            database_status = "disconnected"
-        finally:
-            db.close()
-
-        return {
-            "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "version": "1.0.0",
-            "database": database_status,
-            "service": "medcheck-api",
-            "environment": os.environ.get("ENV", "development"),
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        # Retorna 200 mas com status unhealthy para compatibilidade com Railway
-        return {
-            "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "version": "1.0.0",
-            "database": "disconnected",
-            "error": str(e),
-            "service": "medcheck-api",
-            "environment": os.environ.get("ENV", "development"),
-        }
-
-
-# --- Root endpoint ---
-@app.get("/")
-def root():
-    """Endpoint raiz da API"""
+# --- Endpoint mínimo para profile ---
+@app.get("/api/v1/profile")
+def get_profile(user: dict = Depends(get_current_user)):
+    """Retorna dados básicos do usuário autenticado."""
     return {
-        "message": "MedCheck API",
-        "version": "1.0.0",
-        "docs": (
-            "/docs" if os.environ.get("ENV", "development") == "development" else None
+        "crm": user.get("crm"),
+        "uf": user.get("uf"),
+        "nome": user.get("nome", "Usuário"),
+        "email": user.get("email", ""),
+        "specialty": user.get("specialty", ""),
+        "hospital": user.get("hospital", ""),
+        "avatar_url": user.get("avatar_url", ""),
+    }
+
+
+# --- Endpoint mínimo para dashboard ---
+@app.get("/api/v1/dashboard")
+def get_dashboard(user: dict = Depends(get_current_user)):
+    """Retorna dados básicos do dashboard no formato esperado pelo frontend."""
+    return {
+        "totals": {
+            "totalRecebido": 0,
+            "totalGlosado": 0,
+            "totalProcedimentos": 0,
+            "auditoriaPendente": 0,
+            "glosasDetectadas": 0,
+            "taxaGlosa": 0,
+        },
+        "procedures": [],
+        "glosas": [],
+    }
+
+
+# --- Funções inteligentes para logs de atividade ---
+def categorize_activity_premium(action, details, crm):
+    """Categoriza atividades de forma inteligente e amigável."""
+
+    # Mapeamento de ações para categorias amigáveis
+    action_mapping = {
+        # Login e Autenticação
+        "login_success": (
+            "authentication",
+            "success",
+            "Login realizado com sucesso",
+            "Sistema",
+            1,
+            "normal",
+            "Segurança",
         ),
-        "status": "running",
+        "login_failed": (
+            "authentication",
+            "error",
+            "Tentativa de login falhou",
+            "Sistema",
+            2,
+            "high",
+            "Segurança",
+        ),
+        # Upload de Arquivos
+        "upload_demonstrativo": (
+            "upload",
+            "success",
+            "Demonstrativo enviado",
+            "Demonstrativo",
+            3,
+            "normal",
+            "Documentos",
+        ),
+        "upload_guia": (
+            "upload",
+            "success",
+            "Guia médica enviada",
+            "Guia",
+            3,
+            "normal",
+            "Documentos",
+        ),
+        "delete_demonstrativo": (
+            "delete",
+            "success",
+            "Demonstrativo excluído",
+            "Demonstrativo",
+            2,
+            "normal",
+            "Documentos",
+        ),
+        "delete_guia": (
+            "delete",
+            "success",
+            "Guia médica excluída",
+            "Guia",
+            2,
+            "normal",
+            "Documentos",
+        ),
+        # Validação e Análise
+        "validate_file": (
+            "analysis",
+            "success",
+            "Arquivo validado",
+            "Análise",
+            4,
+            "high",
+            "Processamento",
+        ),
+        "validate_cross": (
+            "analysis",
+            "success",
+            "Validação cruzada realizada",
+            "Análise",
+            5,
+            "high",
+            "Processamento",
+        ),
+        # Perfil e Configurações
+        "update_profile": (
+            "profile",
+            "success",
+            "Perfil atualizado",
+            "Perfil",
+            1,
+            "normal",
+            "Configuração",
+        ),
+        # Erros e Problemas
+        "error": ("error", "error", "Erro no sistema", "Sistema", 3, "high", "Técnico"),
     }
 
+    # Busca no mapeamento
+    if action in action_mapping:
+        return action_mapping[action]
 
-def calculate_file_hash(file_path: str) -> str:
-    """Calcula o hash SHA-256 do arquivo"""
-    hash_sha256 = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_sha256.update(chunk)
-    return hash_sha256.hexdigest()
+    # Fallback inteligente baseado no padrão da ação
+    if "upload" in action.lower():
+        return (
+            "upload",
+            "success",
+            f"Arquivo enviado: {action}",
+            "Arquivo",
+            2,
+            "normal",
+            "Documentos",
+        )
+    elif "delete" in action.lower():
+        return (
+            "delete",
+            "success",
+            f"Item excluído: {action}",
+            "Item",
+            1,
+            "normal",
+            "Manutenção",
+        )
+    elif "login" in action.lower():
+        return (
+            "authentication",
+            "success",
+            "Acesso ao sistema",
+            "Sistema",
+            1,
+            "normal",
+            "Segurança",
+        )
+    elif "error" in action.lower():
+        return ("error", "error", "Problema detectado", "Sistema", 3, "high", "Técnico")
+    else:
+        return (
+            "general",
+            "info",
+            f"Ação realizada: {action}",
+            "Sistema",
+            1,
+            "normal",
+            "Geral",
+        )
 
 
-def _ensure_file_hash_column():
-    """Garante que as colunas file_hash e filename existem na tabela guias"""
-    try:
-        with engine.connect() as conn:
-            # Verifica se a coluna existe
-            result = conn.execute(text("PRAGMA table_info(guias)"))
-            columns = [row[1] for row in result.fetchall()]
+def build_activity_context(action, details, entry):
+    """Constrói contexto rico e amigável para a atividade."""
+    context = {}
 
-            if "file_hash" not in columns:
-                conn.execute(text("ALTER TABLE guias ADD COLUMN file_hash VARCHAR(64)"))
-                conn.execute(
-                    text(
-                        "CREATE INDEX IF NOT EXISTS idx_guias_file_hash ON guias(file_hash)"
-                    )
-                )
-                conn.commit()
-                logger.info("Coluna file_hash adicionada à tabela guias")
+    # Extrai informações úteis dos detalhes
+    if isinstance(details, dict):
+        # Informações de arquivo
+        if "filename" in details:
+            context["arquivo"] = details["filename"]
 
-            if "filename" not in columns:
-                conn.execute(text("ALTER TABLE guias ADD COLUMN filename VARCHAR(255)"))
-                conn.commit()
-                logger.info("Coluna filename adicionada à tabela guias")
-    except Exception as e:
-        logger.error(f"Erro ao verificar/criar coluna file_hash: {e}")
+        # Informações de período
+        if "periodo" in details:
+            context["período"] = details["periodo"]
+
+        # Informações de procedimentos
+        if "procedures_count" in details:
+            context["procedimentos"] = details["procedures_count"]
+
+        # Informações financeiras
+        if "total_procedimentos" in details:
+            context["total_procedimentos"] = details["total_procedimentos"]
+
+        # Informações de guia
+        if "numero_guia" in details:
+            context["guia"] = details["numero_guia"]
+
+        # Informações de resultado
+        if "result" in details:
+            context["resultado"] = details["result"]
+
+    return context
 
 
-# Garantir que as colunas existem
-_ensure_file_hash_column()
-
-
-# --- Função para extrair data do período ---
-def extract_date_from_period(periodo: str) -> datetime:
-    """
-    Extrai data do período em formato brasileiro (ex: 'outubro de 2024')
-    Retorna datetime para ordenação inteligente
-    """
-    if not periodo:
-        return datetime.min
-
-    # Mapeamento de meses em português
-    meses = {
-        "janeiro": 1,
-        "fevereiro": 2,
-        "março": 3,
-        "abril": 4,
-        "maio": 5,
-        "junho": 6,
-        "julho": 7,
-        "agosto": 8,
-        "setembro": 9,
-        "outubro": 10,
-        "novembro": 11,
-        "dezembro": 12,
+def calculate_activity_duration(action, details):
+    """Calcula duração estimada da atividade (em segundos)."""
+    duration_map = {
+        "upload_demonstrativo": 30,
+        "upload_guia": 15,
+        "validate_file": 60,
+        "validate_cross": 120,
+        "login_success": 2,
+        "delete_demonstrativo": 5,
+        "delete_guia": 3,
     }
 
-    try:
-        # Padronizar texto
-        periodo_lower = periodo.lower().strip()
+    return duration_map.get(action, 10)
 
-        # Padrão: "outubro de 2024" ou "outubro 2024"
-        for mes_nome, mes_num in meses.items():
-            if mes_nome in periodo_lower:
-                # Extrair ano
-                import re
 
-                ano_match = re.search(r"(\d{4})", periodo_lower)
-                if ano_match:
-                    ano = int(ano_match.group(1))
-                    return datetime(ano, mes_num, 1)
+def calculate_impact_score(action, details):
+    """Calcula score de impacto da atividade (1-10)."""
+    impact_map = {
+        "upload_demonstrativo": 7,
+        "upload_guia": 6,
+        "validate_file": 8,
+        "validate_cross": 9,
+        "login_success": 2,
+        "delete_demonstrativo": 5,
+        "delete_guia": 4,
+        "error": 8,
+    }
 
-        # Se não conseguir extrair, tentar outros padrões
-        # Padrão: "2024-10" ou "10/2024"
-        date_patterns = [
-            r"(\d{4})-(\d{1,2})",  # 2024-10
-            r"(\d{1,2})/(\d{4})",  # 10/2024
-            r"(\d{4})/(\d{1,2})",  # 2024/10
-        ]
+    return impact_map.get(action, 3)
 
-        for pattern in date_patterns:
-            match = re.search(pattern, periodo_lower)
-            if match:
-                if len(match.groups()) == 2:
-                    if len(match.group(1)) == 4:  # ano primeiro
-                        ano = int(match.group(1))
-                        mes = int(match.group(2))
-                    else:  # mês primeiro
-                        mes = int(match.group(1))
-                        ano = int(match.group(2))
-                    return datetime(ano, mes, 1)
 
-        # Se nada funcionar, retornar data mínima
-        return datetime.min
+def extract_related_entities(action, details):
+    """Extrai entidades relacionadas à atividade."""
+    entities = []
 
-    except Exception:
-        return datetime.min
+    if isinstance(details, dict):
+        if "filename" in details:
+            entities.append({"type": "arquivo", "value": details["filename"]})
+
+        if "numero_guia" in details:
+            entities.append({"type": "guia", "value": details["numero_guia"]})
+
+        if "periodo" in details:
+            entities.append({"type": "período", "value": details["periodo"]})
+
+        if "crm" in details:
+            entities.append({"type": "médico", "value": details["crm"]})
+
+    return entities
+
+
+def generate_activity_tags(action, details):
+    """Gera tags relevantes para a atividade."""
+    tags = []
+
+    # Tags baseadas na ação
+    if "upload" in action:
+        tags.extend(["upload", "documento"])
+    elif "delete" in action:
+        tags.extend(["exclusão", "manutenção"])
+    elif "validate" in action:
+        tags.extend(["validação", "análise"])
+    elif "login" in action:
+        tags.extend(["acesso", "segurança"])
+    elif "error" in action:
+        tags.extend(["erro", "problema"])
+
+    # Tags baseadas nos detalhes
+    if isinstance(details, dict):
+        if "filename" in details:
+            if "demonstrativo" in details["filename"].lower():
+                tags.append("demonstrativo")
+            elif "guia" in details["filename"].lower():
+                tags.append("guia")
+
+        if "periodo" in details:
+            tags.append("período")
+
+        if "procedures_count" in details:
+            tags.append("procedimentos")
+
+    return list(set(tags))  # Remove duplicatas
+
+
+def assess_risk_level(action, details):
+    """Avalia nível de risco da atividade."""
+    risk_map = {
+        "login_failed": "alto",
+        "error": "alto",
+        "delete_demonstrativo": "médio",
+        "delete_guia": "médio",
+        "upload_demonstrativo": "baixo",
+        "upload_guia": "baixo",
+        "validate_file": "baixo",
+        "login_success": "baixo",
+    }
+
+    return risk_map.get(action, "baixo")
+
+
+def check_compliance_flags(action, details):
+    """Verifica flags de compliance para a atividade."""
+    flags = []
+
+    # Flags baseadas na ação
+    if "delete" in action:
+        flags.append("exclusão_permanente")
+
+    if "error" in action:
+        flags.append("erro_sistema")
+
+    if "login_failed" in action:
+        flags.append("tentativa_acesso")
+
+    return flags
+
+
+# --- Utilitário para calcular hash SHA-256 de um arquivo ---
+def calculate_file_hash(path):
+    import hashlib
+
+    sha256 = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            sha256.update(chunk)
+    return sha256.hexdigest()

@@ -198,7 +198,7 @@ export function DataGrid({
                       >
                         <Checkbox
                           checked={allSelected}
-                          indeterminate={someSelected}
+                          indeterminate={someSelected ? true : undefined}
                           onCheckedChange={(checked) => onSelectAll?.(!!checked)}
                           aria-label="Selecionar todos"
                         />
