@@ -407,4 +407,7 @@ def parse_guia_pdf(pdf_path: str | Path, crm_filter: str) -> List[Dict[str, Any]
         if papel_exercido:
             proc["papel_exercido"] = papel_exercido
             result.append(proc)
+
+    # **CORREÇÃO**: Preserva ordem original do PDF (não ordenar artificialmente)
+    # A ordem correta é a mesma que aparece na guia TISS original
     return result

@@ -230,7 +230,7 @@ const GuidesPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedGuia, setSelectedGuia] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [totalBeneficiarios, setTotalBeneficiarios] = useState(0); // Total de beneficiários únicos
   const [search, setSearch] = useState('');
@@ -314,7 +314,7 @@ const GuidesPage = () => {
     const fetchSavedGuias = async () => {
       try {
         const token = localStorage.getItem('token') || '';
-        // Busca TODOS os dados para calcular totais globais e fazer paginação local
+        // Busca TODOS os dados para calcular totais globais
         const allParams: GuidesQueryParams = {
           page: 1,
           pageSize: 10000,
@@ -324,11 +324,10 @@ const GuidesPage = () => {
         };
         const allRes = await getGuides(token, allParams);
         const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
         setAllGuides(allProcedures);
         setTotal(allRes.total || 0);
-
-        // Agrupa TODOS os dados por número de guia para paginação local
+        setExtractedGuides(allProcedures); // <- SEMPRE todos os procedimentos, sem slice
+        // Define o total de beneficiários únicos
         const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
           (acc, proc) => {
             acc[proc.numero_guia] = acc[proc.numero_guia] || [];
@@ -337,45 +336,7 @@ const GuidesPage = () => {
           },
           {}
         );
-
-        const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-          const numeroGuiaStr = String(numero_guia).trim();
-          const datas = procs.map((p) => p.data).sort();
-          const dataMaisRecente = datas[datas.length - 1] || '';
-          const beneficiario = procs[0]?.beneficiario || '';
-          const prestador = procs[0]?.prestador || '';
-          const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-          const statusCount = procs.reduce(
-            (acc, p) => {
-              acc[p.status] = (acc[p.status] || 0) + 1;
-              return acc;
-            },
-            {} as Record<string, number>
-          );
-          const statusComum =
-            Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-          return {
-            numero_guia: numeroGuiaStr,
-            data: dataMaisRecente,
-            beneficiario,
-            prestador,
-            qtdProcedimentos,
-            status: statusComum,
-            detalhes: procs,
-          };
-        });
-
-        // Define o total de beneficiários únicos
-        setTotalBeneficiarios(allMacroRows.length);
-
-        // Aplica paginação local aos beneficiários agrupados
-        const startIndex = page * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-        // Converte de volta para lista de procedimentos da página atual
-        const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-        setExtractedGuides(currentPageProcedures);
+        setTotalBeneficiarios(Object.keys(allGrouped).length);
       } catch (err: any) {
         toast.error('Erro ao carregar guias', {
           description: err?.response?.data?.detail || err?.message,
@@ -387,7 +348,7 @@ const GuidesPage = () => {
       }
     };
     fetchSavedGuias();
-  }, [page, pageSize, search, status, data]);
+  }, [search, status, data]); // Removido page/pageSize do deps
 
   // Upload/processamento
   const handleUploadGuias = async () => {
@@ -400,6 +361,7 @@ const GuidesPage = () => {
       const token = localStorage.getItem('token') || '';
       const guiaFiles = files.filter((f) => f.type === 'guia').map((f) => f.file);
       if (!guiaFiles.length) throw new Error('Nenhum arquivo de guia válido');
+
       // Faz o upload das guias em lote
       const uploadResult = await uploadGuides(guiaFiles, token);
       if (uploadResult && Array.isArray(uploadResult.results)) {
@@ -407,26 +369,116 @@ const GuidesPage = () => {
           if (result.success) {
             toast.success(`Guia ${result.filename}: OK`);
           } else {
-            toast.error(`Guia ${result.filename}: ${result.error || 'Erro'}`);
+            // Tratamento específico para duplicatas
+            if (result.duplicate) {
+              toast.warning(`Guia ${result.filename}: Duplicata detectada`, {
+                description: `Esta guia já foi processada anteriormente (arquivo: ${
+                  result.existing_filename || 'N/A'
+                }). O conteúdo é idêntico, mesmo com nome diferente.`,
+                duration: 6000,
+              });
+            } else {
+              toast.error(`Guia ${result.filename}: ${result.error || 'Erro'}`);
+            }
           }
         });
       } else {
         toast.error('Resposta inesperada do servidor.');
       }
-      // Recarrega os dados do servidor para ter a lista completa e atualizada
-      const params: GuidesQueryParams = { page, pageSize, search, status, data };
-      const res = await getGuides(token, params);
-      setExtractedGuides(Array.isArray(res.procedures) ? res.procedures : []);
-      setTotal(res.total || 0);
+
+      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
+      // Busca TODOS os dados para recalcular totais globais e paginação local
+      const allParams: GuidesQueryParams = {
+        page: 1,
+        pageSize: 10000,
+        search,
+        status,
+        data,
+      };
+      const allRes = await getGuides(token, allParams);
+      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
+
+      setAllGuides(allProcedures);
+      setTotal(allRes.total || 0);
+
+      // Agrupa TODOS os dados por número de guia para paginação local
+      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
+        (acc, proc) => {
+          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
+          acc[proc.numero_guia].push(proc);
+          return acc;
+        },
+        {}
+      );
+
+      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
+        const numeroGuiaStr = String(numero_guia).trim();
+        const datas = procs.map((p) => p.data).sort();
+        const dataMaisRecente = datas[datas.length - 1] || '';
+        const beneficiario = procs[0]?.beneficiario || '';
+        const prestador = procs[0]?.prestador || '';
+        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
+        const statusCount = procs.reduce(
+          (acc, p) => {
+            acc[p.status] = (acc[p.status] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+        const statusComum =
+          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+        return {
+          numero_guia: numeroGuiaStr,
+          data: dataMaisRecente,
+          beneficiario,
+          prestador,
+          qtdProcedimentos,
+          status: statusComum,
+          detalhes: procs,
+        };
+      });
+
+      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
+      allMacroRows.sort((a, b) => {
+        const dateA = formatDateToISO(a.data);
+        const dateB = formatDateToISO(b.data);
+        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
+      });
+
+      // Define o total de beneficiários únicos
+      setTotalBeneficiarios(allMacroRows.length);
+
+      // Aplica paginação local aos beneficiários agrupados
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
+
+      // Converte de volta para lista de procedimentos da página atual
+      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
+      setExtractedGuides(currentPageProcedures);
+
       resetFiles();
       setActiveTab('list');
+
       // Registra atividade
       if (uploadResult && Array.isArray(uploadResult.results)) {
         const uniqueGuias = new Set();
-        uploadResult.results.forEach((r: any) => uniqueGuias.add(r.filename));
-        logActivity('Upload de Guias', `Processada(s) ${uniqueGuias.size} guia(s)`, {
+        const duplicates = uploadResult.results.filter((r: any) => r.duplicate);
+        const successful = uploadResult.results.filter(
+          (r: any) => r.success && !r.duplicate
+        );
+
+        successful.forEach((r: any) => uniqueGuias.add(r.filename));
+
+        let activityMessage = `Processada(s) ${uniqueGuias.size} guia(s)`;
+        if (duplicates.length > 0) {
+          activityMessage += `, ${duplicates.length} duplicata(s) ignorada(s)`;
+        }
+
+        logActivity('Upload de Guias', activityMessage, {
           target: { arquivos: Array.from(uniqueGuias) },
           result: `${uploadResult.results.length} arquivos processados`,
+          duplicates: duplicates.length,
         });
         setActivities(getRecentActivities());
       }
@@ -483,8 +535,14 @@ const GuidesPage = () => {
     };
   });
 
-  // Usa os dados do backend diretamente (paginação já aplicada)
-  // A filtragem é feita no backend através dos parâmetros de pesquisa
+  // Sorting automático por Data de Execução (mais recente primeiro)
+  macroRows.sort((a, b) => {
+    const dateA = formatDateToISO(a.data);
+    const dateB = formatDateToISO(b.data);
+    return dateB.localeCompare(dateA);
+  });
+
+  // DataGrid recebe todas as macroRows, sem slice manual
   const filteredMacroRows = macroRows;
 
   const handleSelectRow = (numero_guia: string, checked: boolean) => {
@@ -511,11 +569,76 @@ const GuidesPage = () => {
         selectedRows.map((numeroGuia) => deleteGuide(numeroGuia, token))
       );
 
-      // Recarrega os dados do servidor para ter a lista atualizada
-      const params: GuidesQueryParams = { page, pageSize, search, status, data };
-      const res = await getGuides(token, params);
-      setExtractedGuides(Array.isArray(res.procedures) ? res.procedures : []);
-      setTotal(res.total || 0);
+      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
+      // Busca TODOS os dados para recalcular totais globais e paginação local
+      const allParams: GuidesQueryParams = {
+        page: 1,
+        pageSize: 10000,
+        search,
+        status,
+        data,
+      };
+      const allRes = await getGuides(token, allParams);
+      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
+
+      setAllGuides(allProcedures);
+      setTotal(allRes.total || 0);
+
+      // Agrupa TODOS os dados por número de guia para paginação local
+      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
+        (acc, proc) => {
+          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
+          acc[proc.numero_guia].push(proc);
+          return acc;
+        },
+        {}
+      );
+
+      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
+        const numeroGuiaStr = String(numero_guia).trim();
+        const datas = procs.map((p) => p.data).sort();
+        const dataMaisRecente = datas[datas.length - 1] || '';
+        const beneficiario = procs[0]?.beneficiario || '';
+        const prestador = procs[0]?.prestador || '';
+        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
+        const statusCount = procs.reduce(
+          (acc, p) => {
+            acc[p.status] = (acc[p.status] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+        const statusComum =
+          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+        return {
+          numero_guia: numeroGuiaStr,
+          data: dataMaisRecente,
+          beneficiario,
+          prestador,
+          qtdProcedimentos,
+          status: statusComum,
+          detalhes: procs,
+        };
+      });
+
+      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
+      allMacroRows.sort((a, b) => {
+        const dateA = formatDateToISO(a.data);
+        const dateB = formatDateToISO(b.data);
+        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
+      });
+
+      // Define o total de beneficiários únicos
+      setTotalBeneficiarios(allMacroRows.length);
+
+      // Aplica paginação local aos beneficiários agrupados
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
+
+      // Converte de volta para lista de procedimentos da página atual
+      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
+      setExtractedGuides(currentPageProcedures);
 
       setSelectedRows([]);
       toast.success('Guias removidas!');
@@ -532,53 +655,51 @@ const GuidesPage = () => {
 
   const macroColumns = [
     {
-      field: 'select',
-      headerName: '',
-      width: 40,
-      renderCell: ({ row }: any) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.numero_guia)}
-          onChange={(e) => handleSelectRow(row.numero_guia, e.target.checked)}
-          aria-label={`Selecionar guia ${row.numero_guia}`}
-        />
+      field: 'numero_guia',
+      headerName: 'Nº Guia',
+      width: 120,
+      renderCell: ({ value }: { value: string }) => (
+        <span className="font-mono text-gray-900 dark:text-gray-100 font-medium">
+          {value}
+        </span>
       ),
     },
     {
-      field: 'expand',
-      headerName: '',
-      width: 40,
-      renderCell: ({ row }: any) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => {
-            const id = String(row.numero_guia).trim();
-            console.log('EXPAND BTN', { expandedRow, id });
-            setExpandedRow(expandedRow === id ? null : id);
-          }}
-          aria-label={
-            expandedRow === String(row.numero_guia).trim()
-              ? 'Colapsar detalhes'
-              : 'Expandir detalhes'
-          }
-        >
-          {expandedRow === String(row.numero_guia).trim() ? (
-            <Eye className="w-4 h-4 text-primary" />
-          ) : (
-            <Eye className="w-4 h-4" />
-          )}
-        </Button>
+      field: 'data',
+      headerName: 'Data de Execução',
+      width: 140,
+      renderCell: ({ value }: { value: string }) => (
+        <span className="text-gray-700 dark:text-gray-300">{value}</span>
       ),
     },
-    { field: 'numero_guia', headerName: 'Nº Guia', width: 120 },
-    { field: 'data', headerName: 'Data de Execução', width: 140 },
-    { field: 'beneficiario', headerName: 'Beneficiário', width: 200 },
-    { field: 'qtdProcedimentos', headerName: 'Qtd Procedimentos', width: 140 },
+    {
+      field: 'beneficiario',
+      headerName: 'Beneficiário',
+      width: 250,
+      renderCell: ({ value }: { value: string }) => (
+        <span
+          className="truncate max-w-[240px] text-gray-700 dark:text-gray-300"
+          title={value}
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
+      field: 'qtdProcedimentos',
+      headerName: 'Qtd Proc.',
+      width: 100,
+      type: 'number',
+      renderCell: ({ value }: { value: number }) => (
+        <span className="font-mono text-right text-gray-900 dark:text-gray-100 font-medium">
+          {value}
+        </span>
+      ),
+    },
     {
       field: 'status',
       headerName: 'Status',
-      width: 120,
+      width: 150,
       renderCell: ({ value }: { value: string }) => {
         const variant =
           value === 'Fechada'
@@ -589,15 +710,7 @@ const GuidesPage = () => {
         return (
           <Badge
             variant={variant}
-            style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              minWidth: 80,
-              maxWidth: 120,
-              textAlign: 'center',
-              display: 'inline-block',
-            }}
+            className="whitespace-nowrap px-3 py-1"
             title={value || '-'}
           >
             {value || '-'}
@@ -615,11 +728,76 @@ const GuidesPage = () => {
       const token = localStorage.getItem('token') || '';
       await deleteGuide(numeroGuia, token);
 
-      // Recarrega os dados do servidor para ter a lista atualizada
-      const params: GuidesQueryParams = { page, pageSize, search, status, data };
-      const res = await getGuides(token, params);
-      setExtractedGuides(Array.isArray(res.procedures) ? res.procedures : []);
-      setTotal(res.total || 0);
+      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
+      // Busca TODOS os dados para recalcular totais globais e paginação local
+      const allParams: GuidesQueryParams = {
+        page: 1,
+        pageSize: 10000,
+        search,
+        status,
+        data,
+      };
+      const allRes = await getGuides(token, allParams);
+      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
+
+      setAllGuides(allProcedures);
+      setTotal(allRes.total || 0);
+
+      // Agrupa TODOS os dados por número de guia para paginação local
+      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
+        (acc, proc) => {
+          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
+          acc[proc.numero_guia].push(proc);
+          return acc;
+        },
+        {}
+      );
+
+      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
+        const numeroGuiaStr = String(numero_guia).trim();
+        const datas = procs.map((p) => p.data).sort();
+        const dataMaisRecente = datas[datas.length - 1] || '';
+        const beneficiario = procs[0]?.beneficiario || '';
+        const prestador = procs[0]?.prestador || '';
+        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
+        const statusCount = procs.reduce(
+          (acc, p) => {
+            acc[p.status] = (acc[p.status] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+        const statusComum =
+          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+        return {
+          numero_guia: numeroGuiaStr,
+          data: dataMaisRecente,
+          beneficiario,
+          prestador,
+          qtdProcedimentos,
+          status: statusComum,
+          detalhes: procs,
+        };
+      });
+
+      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
+      allMacroRows.sort((a, b) => {
+        const dateA = formatDateToISO(a.data);
+        const dateB = formatDateToISO(b.data);
+        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
+      });
+
+      // Define o total de beneficiários únicos
+      setTotalBeneficiarios(allMacroRows.length);
+
+      // Aplica paginação local aos beneficiários agrupados
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
+
+      // Converte de volta para lista de procedimentos da página atual
+      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
+      setExtractedGuides(currentPageProcedures);
 
       toast.success('Guia removida com sucesso');
       logActivity('Remoção de Guia', `Guia ${numeroGuia} removida`, {
@@ -1136,7 +1314,7 @@ const GuidesPage = () => {
                       ) : (
                         <DataGrid
                           rows={filteredMacroRows}
-                          columns={guidesColumns}
+                          columns={macroColumns}
                           pageSize={pageSize}
                           currentPage={page}
                           onPageSizeChange={(size) => {
@@ -1165,7 +1343,7 @@ const GuidesPage = () => {
                           renderExpandedRow={(row) => (
                             <tr key={`${row.numero_guia}-expanded`}>
                               <td
-                                colSpan={guidesColumns.length + 2}
+                                colSpan={macroColumns.length + 2}
                                 className="bg-gray-50 dark:bg-gray-800/50 p-0"
                               >
                                 <div className="w-full p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
@@ -1191,31 +1369,34 @@ const GuidesPage = () => {
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {row.detalhes.map((proc: any) => (
-                                          <tr
-                                            key={proc.codigo}
-                                            className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
-                                          >
-                                            <td className="py-2 px-3 whitespace-nowrap">
-                                              {proc.data}
-                                            </td>
-                                            <td className="py-2 px-3 whitespace-nowrap font-mono">
-                                              {proc.codigo}
-                                            </td>
-                                            <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate">
-                                              {proc.descricao}
-                                            </td>
-                                            <td className="py-2 px-3 whitespace-nowrap">
-                                              {renderParticipacaoBadge(proc.papel)}
-                                            </td>
-                                            <td className="py-2 px-3 whitespace-nowrap text-right font-mono">
-                                              {proc.qtd}
-                                            </td>
-                                            <td className="py-2 px-3 whitespace-nowrap">
-                                              {proc.prestador}
-                                            </td>
-                                          </tr>
-                                        ))}
+                                        {row.detalhes
+                                          // **CORREÇÃO**: Preserva ordem original do parser (ordem do PDF TISS)
+                                          // Não aplicar sorting pois a ordem correta já vem do backend
+                                          .map((proc: any) => (
+                                            <tr
+                                              key={proc.codigo}
+                                              className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
+                                            >
+                                              <td className="py-2 px-3 whitespace-nowrap">
+                                                {proc.data}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap font-mono">
+                                                {proc.codigo}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate">
+                                                {proc.descricao}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap">
+                                                {renderParticipacaoBadge(proc.papel)}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap text-right font-mono">
+                                                {proc.qtd}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap">
+                                                {proc.prestador}
+                                              </td>
+                                            </tr>
+                                          ))}
                                       </tbody>
                                     </table>
                                   </div>

@@ -1,4 +1,5 @@
 # flake8: noqa
+import hashlib
 import io
 import json
 import logging
@@ -167,6 +168,9 @@ class Guia(Base):
     status_part = Column(
         String, nullable=True
     )  # Status da participação (ex: Fechada, Pendente)
+    # Hash SHA-256 do conteúdo do arquivo para detectar duplicações mesmo com nomes diferentes
+    file_hash = Column(String(64), nullable=True, index=True)
+    filename = Column(String, nullable=True)  # Nome original do arquivo
 
 
 class Consentimento(Base):
@@ -613,8 +617,10 @@ def register_medico(req: RegisterRequest, request: Request):
 
     db = SessionLocal()
     try:
-        if db.query(Medico).filter_by(crm=req.crm).first():
-            raise HTTPException(status_code=400, detail="CRM já cadastrado")
+        if db.query(Medico).filter_by(crm=req.crm, uf=req.uf).first():
+            raise HTTPException(
+                status_code=400, detail="CRM já cadastrado para este estado (UF)"
+            )
         if not req.terms_accepted:
             raise HTTPException(
                 status_code=400,
@@ -1310,10 +1316,14 @@ def upload_guias(
     Recebe múltiplos PDFs de guias TISS, processa cada um individualmente,
     salva no banco e retorna uma lista de resultados por arquivo.
     Exige autenticação e filtra automaticamente por CRM do usuário logado.
+    Inclui proteção contra uploads duplicados baseada no hash do conteúdo.
     """
     import tempfile
 
     from src.parsers.guia_parser import parse_guia_pdf
+
+    # Garante que as colunas necessárias existem
+    _ensure_file_hash_column()
 
     results = []
     for file in files:
@@ -1326,11 +1336,39 @@ def upload_guias(
                 }
             )
             continue
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             try:
                 shutil.copyfileobj(file.file, tmp)
                 tmp_path = tmp.name
+
+                # Calcula o hash do arquivo para verificar duplicatas
+                file_hash = calculate_file_hash(tmp_path)
                 crm = str(user.get("crm", ""))
+
+                # Verifica se já existe uma guia com o mesmo hash para este CRM
+                db = SessionLocal()
+                try:
+                    existing_hash = (
+                        db.query(Guia)
+                        .filter_by(file_hash=file_hash, user_id=crm)
+                        .first()
+                    )
+
+                    if existing_hash:
+                        results.append(
+                            {
+                                "filename": file.filename,
+                                "success": False,
+                                "error": f"Arquivo duplicado detectado. Esta guia já foi processada anteriormente (arquivo: {existing_hash.filename or 'N/A'}).",
+                                "duplicate": True,
+                                "existing_filename": existing_hash.filename,
+                            }
+                        )
+                        continue
+                finally:
+                    db.close()
+
                 logger.info(f"Processando guia para CRM {crm}")
                 procedures = parse_guia_pdf(tmp_path, crm_filter=crm)
                 if not procedures:
@@ -1347,6 +1385,7 @@ def upload_guias(
                         }
                     )
                     continue
+
                 # Sanitizar campos livres
                 for proc in procedures:
                     proc["beneficiario"] = sanitize_text(proc.get("beneficiario", ""))
@@ -1354,6 +1393,7 @@ def upload_guias(
                     proc["prestador"] = sanitize_text(proc.get("prestador", ""))
                     for part in proc.get("participacoes", []):
                         part["nome"] = sanitize_text(part.get("nome", ""))
+
                 db = SessionLocal()
                 guias_adicionadas = 0
                 try:
@@ -1401,17 +1441,23 @@ def upload_guias(
                                 ),
                                 "",
                             ),
+                            "file_hash": file_hash,
+                            "filename": file.filename,
                         }
+
+                        # Verificação de duplicata baseada em conteúdo + dados específicos
                         existing = (
                             db.query(Guia)
                             .filter_by(
                                 numero_guia=guia_data["numero_guia"],
                                 codigo=guia_data["codigo"],
                                 papel=guia_data["papel"],
+                                data=guia_data["data"],
                                 user_id=crm,
                             )
                             .first()
                         )
+
                         if not existing:
                             guia = Guia(
                                 numero_guia=guia_data["numero_guia"],
@@ -1429,9 +1475,12 @@ def upload_guias(
                                 dt_inicio=guia_data["dt_inicio"],
                                 dt_fim=guia_data["dt_fim"],
                                 status_part=guia_data["status_part"],
+                                file_hash=file_hash,
+                                filename=file.filename,
                             )
                             db.add(guia)
                             guias_adicionadas += 1
+
                     db.commit()
                     formatted_procedures = [
                         {
@@ -1503,7 +1552,12 @@ def upload_guias(
                     {"filename": file.filename, "success": False, "error": str(e)}
                 )
             finally:
-                os.unlink(tmp_path)
+                # Limpa o arquivo temporário
+                try:
+                    os.unlink(tmp_path)
+                except:
+                    pass
+
     return {"results": results}
 
 
@@ -1587,8 +1641,9 @@ def list_guias(
         # Contagem total para paginação
         total = query.count()
 
-        # Aplicar ordenação e paginação
-        query = query.order_by(desc(Guia.data), desc(Guia.id))
+        # **CORREÇÃO**: Preserva ordem original de inserção (ID crescente)
+        # Não ordenar por data para manter a sequência cronológica correta do PDF
+        query = query.order_by(Guia.id)
         if page and pageSize:
             offset = (page - 1) * pageSize
             query = query.offset(offset).limit(pageSize)
@@ -3329,3 +3384,38 @@ def root():
         ),
         "status": "running",
     }
+
+
+def calculate_file_hash(file_path: str) -> str:
+    """Calcula o hash SHA-256 do arquivo"""
+    hash_sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_sha256.update(chunk)
+    return hash_sha256.hexdigest()
+
+
+def _ensure_file_hash_column():
+    """Garante que as colunas file_hash e filename existem na tabela guias"""
+    try:
+        with engine.connect() as conn:
+            # Verifica se a coluna existe
+            result = conn.execute(text("PRAGMA table_info(guias)"))
+            columns = [row[1] for row in result.fetchall()]
+
+            if "file_hash" not in columns:
+                conn.execute(text("ALTER TABLE guias ADD COLUMN file_hash VARCHAR(64)"))
+                conn.execute(
+                    text(
+                        "CREATE INDEX IF NOT EXISTS idx_guias_file_hash ON guias(file_hash)"
+                    )
+                )
+                conn.commit()
+                logger.info("Coluna file_hash adicionada à tabela guias")
+
+            if "filename" not in columns:
+                conn.execute(text("ALTER TABLE guias ADD COLUMN filename VARCHAR(255)"))
+                conn.commit()
+                logger.info("Coluna filename adicionada à tabela guias")
+    except Exception as e:
+        logger.error(f"Erro ao verificar/criar coluna file_hash: {e}")
