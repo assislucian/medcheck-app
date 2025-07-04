@@ -373,10 +373,11 @@ else:
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# --- CORS seguro ---
+# --- Configuração do CORS ---
 # Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
-# Isso garante que apenas os domínios autorizados possam acessar a API.
+# Em produção, configure: FRONTEND_ORIGINS=https://medcheck-app.vercel.app,https://www.medcheck-app.vercel.app
 FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
+
 # Novo: padrão regex para permitir subdomínios dinâmicos do Vercel (ex.: *.vercel.app)
 FRONTEND_ORIGIN_REGEX = os.environ.get("FRONTEND_ORIGIN_REGEX")
 
@@ -430,6 +431,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Garantir que as colunas file_hash e filename existem ---
+_ensure_file_hash_column()
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---
 # Comentado temporariamente para debug do Railway
