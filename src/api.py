@@ -461,6 +461,9 @@ else:
         "https://medcheck-app.vercel.app",  # Vercel produção
         "https://www.medcheck-app.vercel.app",  # Vercel produção com www
         "https://medcheck-app-assislucians-projects.vercel.app",
+        "https://medcheck-app.vercel.app",  # Vercel produção (duplicado para garantir)
+        "https://medcheck-app.vercel.app/",  # Vercel produção com trailing slash
+        "https://www.medcheck-app.vercel.app/",  # Vercel produção com www e trailing slash
     ]
 
 # Garantir que endereços locais comuns estejam sempre presentes
@@ -477,9 +480,8 @@ if not FRONTEND_ORIGIN_REGEX:
     # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)
     # Ex.: https://medcheck-app-xxxxx-assislucians-projects.vercel.app
     # Ex.: https://medcheck-prddbw64p-assislucians-projects.vercel.app
-    FRONTEND_ORIGIN_REGEX = (
-        r"https://medcheck-[a-z0-9-]+-assislucians-projects\.vercel\.app"
-    )
+    # Também permite o domínio principal do Vercel
+    FRONTEND_ORIGIN_REGEX = r"https://(www\.)?medcheck-app(-[a-z0-9-]+)?(-assislucians-projects)?\.vercel\.app"
 
 logging.info(
     f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX}"
