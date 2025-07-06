@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProcessingStage, ProcessMode } from '@/types/upload';
 
@@ -14,7 +13,7 @@ export function useProcessingStatus() {
   const [showComparison, setShowComparison] = useState(false);
   const [processingMode, setProcessingMode] = useState<ProcessMode>('complete');
   const [crmRegistrado, setCrmRegistrado] = useState('');
-  
+
   /**
    * Reset all status state
    */
@@ -40,11 +39,11 @@ export function useProcessingStatus() {
     setUploading: setIsUploading,
     setProgress,
     setProcessingStage,
-    setProcessingMsg, 
+    setProcessingMsg,
     setProcessingMode,
     setUploadSuccess,
     setShowComparison,
     setCrmRegistrado,
-    resetStatus
+    resetStatus,
   };
 }

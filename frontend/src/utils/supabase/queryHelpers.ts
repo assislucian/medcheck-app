@@ -1,4 +1,3 @@
-
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export function hasError<T>(
@@ -15,7 +14,7 @@ export function hasData<T>(
 
 export function extractData<T>(response: PostgrestSingleResponse<T>): T | null {
   if (response.error !== null) {
-    console.error("Database error:", response.error);
+    console.error('Database error:', response.error);
     return null;
   }
   return response.data;

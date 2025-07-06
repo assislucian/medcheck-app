@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateAnalysisStatus } from '@/services/history/statusUpdate';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 describe('updateAnalysisStatus', () => {

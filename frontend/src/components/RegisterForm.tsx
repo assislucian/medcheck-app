@@ -16,7 +16,7 @@ import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://medcheck-backend.onrender.com';
 
 const registerSchema = z
   .object({

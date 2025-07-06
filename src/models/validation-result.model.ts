@@ -1,5 +1,9 @@
 export interface ValidationError {
-  type: 'MISSING_PROCEDURE' | 'EXTRA_PROCEDURE' | 'DESCRIPTION_MISMATCH' | 'CRM_MISMATCH';
+  type:
+    | "MISSING_PROCEDURE"
+    | "EXTRA_PROCEDURE"
+    | "DESCRIPTION_MISMATCH"
+    | "CRM_MISMATCH";
   procedureCode: string;
   message: string;
   expected: any;
@@ -14,4 +18,4 @@ export interface ValidationResult {
     validatedProcedures: number;
     errorCount: number;
   };
-} 
+}

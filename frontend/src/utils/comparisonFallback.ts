@@ -44,14 +44,16 @@ interface ProcedureMappedData extends ProcedureData {
  * @param proceduresData Optional procedures data to use
  * @returns Mapped procedures data for comparison
  */
-export function getFallbackComparisonData(proceduresData?: any[]): ProcedureComparison[] {
+export function getFallbackComparisonData(
+  proceduresData?: any[]
+): ProcedureComparison[] {
   // If we have procedures data, use it
   if (proceduresData && proceduresData.length > 0) {
     // Map the data to ensure it matches the expected format
-    return proceduresData.map(proc => {
+    return proceduresData.map((proc) => {
       // Type assertion to ensure we have the expected fields
       const mappedProc = proc as ProcedureMappedData;
-      
+
       return {
         id: mappedProc.id,
         codigo: mappedProc.codigo || '',
@@ -74,37 +76,37 @@ export function getFallbackComparisonData(proceduresData?: any[]): ProcedureComp
       codigo: '31309054',
       procedimento: 'Laparotomia exploradora',
       papel: 'Cirurgião',
-      valorCBHPM: 562.30,
-      valorPago: 468.60,
-      diferenca: -93.70,
+      valorCBHPM: 562.3,
+      valorPago: 468.6,
+      diferenca: -93.7,
       pago: true,
       guia: 'G123456',
-      beneficiario: 'João da Silva'
+      beneficiario: 'João da Silva',
     },
     {
       id: '2',
       codigo: '30715016',
       procedimento: 'Angioplastia transluminal',
       papel: 'Auxiliar',
-      valorCBHPM: 320.40,
-      valorPago: 280.00,
-      diferenca: -40.40,
+      valorCBHPM: 320.4,
+      valorPago: 280.0,
+      diferenca: -40.4,
       pago: true,
       guia: 'G123457',
-      beneficiario: 'Maria Oliveira'
+      beneficiario: 'Maria Oliveira',
     },
     {
       id: '3',
       codigo: '32301065',
       procedimento: 'Cirurgia de catarata',
       papel: 'Cirurgião',
-      valorCBHPM: 480.00,
+      valorCBHPM: 480.0,
       valorPago: 0,
-      diferenca: -480.00,
+      diferenca: -480.0,
       pago: false,
       guia: 'G123458',
-      beneficiario: 'Antonio Pereira'
-    }
+      beneficiario: 'Antonio Pereira',
+    },
   ];
 }
 
@@ -113,7 +115,9 @@ export function getFallbackComparisonData(proceduresData?: any[]): ProcedureComp
  * @param procedimentos Array of procedure comparisons
  * @returns Summary statistics
  */
-export function calculateCBHPMSummary(procedimentos: ProcedureComparison[]): SummaryResult {
+export function calculateCBHPMSummary(
+  procedimentos: ProcedureComparison[]
+): SummaryResult {
   const total = procedimentos.length;
   let conforme = 0;
   let abaixo = 0;
@@ -121,11 +125,11 @@ export function calculateCBHPMSummary(procedimentos: ProcedureComparison[]): Sum
   let valorCBHPM = 0;
   let valorPago = 0;
   let naoPagos = 0;
-  
-  procedimentos.forEach(proc => {
+
+  procedimentos.forEach((proc) => {
     valorCBHPM += proc.valorCBHPM;
     valorPago += proc.valorPago;
-    
+
     if (Math.abs(proc.diferenca) < 0.01) {
       conforme++;
     } else if (proc.diferenca < 0) {
@@ -133,14 +137,14 @@ export function calculateCBHPMSummary(procedimentos: ProcedureComparison[]): Sum
     } else {
       acima++;
     }
-    
+
     if (!proc.pago) {
       naoPagos++;
     }
   });
-  
+
   const diferenca = valorCBHPM - valorPago;
-  
+
   return {
     total,
     conforme,
@@ -149,6 +153,6 @@ export function calculateCBHPMSummary(procedimentos: ProcedureComparison[]): Sum
     valorCBHPM,
     valorPago,
     diferenca,
-    naoPagos
+    naoPagos,
   };
 }

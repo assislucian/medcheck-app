@@ -1,16 +1,16 @@
 {
-    "validacoes": [
-      {
-        "guia": "00012345",
-        "codigo": "10101012",
-        "status": "divergente",
-        "mensagem": "Diferença de valor superior a 10%"
-      },
-      {
-        "guia": "00012346",
-        "codigo": "12345678",
-        "status": "ok",
-        "mensagem": "Valores coincidem com a tabela"
-      }
-    ]
-  }
+  "validacoes": [
+    {
+      "guia": "00012345",
+      "codigo": "10101012",
+      "status": "divergente",
+      "mensagem": "Diferença de valor superior a 10%"
+    },
+    {
+      "guia": "00012346",
+      "codigo": "12345678",
+      "status": "ok",
+      "mensagem": "Valores coincidem com a tabela"
+    }
+  ]
+}

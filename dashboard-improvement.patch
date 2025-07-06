@@ -1,0 +1,10 @@
+# Adicionar ao endpoint do dashboard em src/api.py
+# No método que retorna o dashboard, adicionar:
+
+dashboard_response = {
+    # ... existing fields ...
+    "total_demonstrativos": len(demonstrativos),
+    "uploads_recentes": recent_uploads[:5],  # últimos 5 uploads
+    "estatisticas_completas": True,
+    # ... rest of existing response ...
+}

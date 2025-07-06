@@ -10,7 +10,11 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, CheckCircle as CheckCircleIcon, Download as DownloadIcon } from '@mui/icons-material';
+import {
+  CloudUpload as CloudUploadIcon,
+  CheckCircle as CheckCircleIcon,
+  Download as DownloadIcon,
+} from '@mui/icons-material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -64,10 +68,14 @@ export default function Validation() {
     });
     try {
       // Ajuste o endpoint conforme o backend
-      const res = await axios.post('http://localhost:8000/api/v1/validate-cross', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        responseType: 'json',
-      });
+      const res = await axios.post(
+        'https://medcheck-backend.onrender.com/api/v1/validate-cross',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          responseType: 'json',
+        }
+      );
       setSuccess('Validação concluída!');
       setSummary(res.data.summary);
       setReportUrl(res.data.report_url); // URL para download do relatório
@@ -132,7 +140,8 @@ export default function Validation() {
         </label>
         {guias.length > 0 && (
           <Typography variant="body2" sx={{ mt: 1 }}>
-            {guias.length} arquivo(s) selecionado(s): {guias.map(f => f.name).join(', ')}
+            {guias.length} arquivo(s) selecionado(s):{' '}
+            {guias.map((f) => f.name).join(', ')}
           </Typography>
         )}
         <Box sx={{ mt: 4 }}>
@@ -141,16 +150,22 @@ export default function Validation() {
             color="primary"
             onClick={handleValidate}
             disabled={!demonstrativo || guias.length === 0 || processing}
-            startIcon={processing ? <CircularProgress size={24} /> : <CheckCircleIcon />}
+            startIcon={
+              processing ? <CircularProgress size={24} /> : <CheckCircleIcon />
+            }
           >
             {processing ? 'Validando...' : 'Validar'}
           </Button>
         </Box>
         {error && (
-          <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
         )}
         {success && (
-          <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>
+          <Alert severity="success" sx={{ mt: 2 }}>
+            {success}
+          </Alert>
         )}
         {summary && (
           <Paper sx={{ mt: 3, p: 2 }}>
@@ -178,4 +193,4 @@ export default function Validation() {
       </Paper>
     </Box>
   );
-} 
+}

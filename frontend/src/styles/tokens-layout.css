@@ -11,33 +11,33 @@
     --sidebar-width-mobile: 280px;
     --sidebar-z-index: 40;
     --sidebar-overlay-z-index: 30;
-    
+
     /* ========================================
        LAYOUT TOKENS
        ======================================== */
     --page-max-width: 1440px;
     --page-min-width: 320px;
-    
+
     /* ========================================
        PADDING TOKENS
        ======================================== */
-    --page-padding-x-sm: 1.5rem;    /* 24px */
-    --page-padding-x-md: 2rem;      /* 32px */
-    --page-padding-x-lg: 2.5rem;    /* 40px */
-    --page-padding-x-xl: 3rem;      /* 48px */
-    --page-padding-x-2xl: 3.5rem;   /* 56px */
-    
-    --page-padding-y-sm: 1.5rem;    /* 24px */
-    --page-padding-y-md: 2rem;      /* 32px */
-    --page-padding-y-lg: 2.5rem;    /* 40px */
-    
+    --page-padding-x-sm: 1.5rem; /* 24px */
+    --page-padding-x-md: 2rem; /* 32px */
+    --page-padding-x-lg: 2.5rem; /* 40px */
+    --page-padding-x-xl: 3rem; /* 48px */
+    --page-padding-x-2xl: 3.5rem; /* 56px */
+
+    --page-padding-y-sm: 1.5rem; /* 24px */
+    --page-padding-y-md: 2rem; /* 32px */
+    --page-padding-y-lg: 2.5rem; /* 40px */
+
     /* ========================================
        SPACING TOKENS
        ======================================== */
-    --section-spacing: 2rem;         /* 32px */
-    --card-spacing: 1.5rem;          /* 24px */
-    --content-spacing: 1rem;         /* 16px */
-    
+    --section-spacing: 2rem; /* 32px */
+    --card-spacing: 1.5rem; /* 24px */
+    --content-spacing: 1rem; /* 16px */
+
     /* ========================================
        BREAKPOINT TOKENS
        ======================================== */
@@ -46,7 +46,7 @@
     --breakpoint-lg: 1024px;
     --breakpoint-xl: 1280px;
     --breakpoint-2xl: 1536px;
-    
+
     /* ========================================
        TRANSITION TOKENS
        ======================================== */
@@ -71,24 +71,24 @@
     min-width: var(--page-min-width);
     margin: 0 auto;
     padding: var(--page-padding-y-md) var(--page-padding-x-md);
-    
+
     /* Responsive padding */
     @media (min-width: 640px) {
       padding-left: var(--page-padding-x-lg);
       padding-right: var(--page-padding-x-lg);
     }
-    
+
     @media (min-width: 1024px) {
       padding-left: var(--page-padding-x-xl);
       padding-right: var(--page-padding-x-xl);
     }
-    
+
     @media (min-width: 1280px) {
       padding-left: var(--page-padding-x-2xl);
       padding-right: var(--page-padding-x-2xl);
     }
   }
-  
+
   /* ========================================
      SIDEBAR OFFSET - APENAS QUANDO STATIC
      ======================================== */
@@ -96,22 +96,22 @@
     margin-left: 0;
     transition: margin-left var(--transition-duration-normal) var(--transition-easing);
   }
-  
+
   .sidebar-offset.static {
     margin-left: var(--sidebar-width);
   }
-  
+
   /* ========================================
      SECTION SPACING
      ======================================== */
   .section-spacing {
     margin-bottom: var(--section-spacing);
   }
-  
+
   .section-spacing:last-child {
     margin-bottom: 0;
   }
-  
+
   /* ========================================
      CARD GRID LAYOUT
      ======================================== */
@@ -120,19 +120,19 @@
     gap: var(--card-spacing);
     grid-template-columns: 1fr;
   }
-  
+
   @media (min-width: 640px) {
     .card-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
-  
+
   @media (min-width: 1024px) {
     .card-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }
-  
+
   /* ========================================
      CONTENT LAYOUT
      ======================================== */
@@ -141,7 +141,7 @@
     flex-direction: column;
     gap: var(--content-spacing);
   }
-  
+
   /* ========================================
      FLEX LAYOUTS
      ======================================== */
@@ -150,23 +150,23 @@
     flex-direction: column;
     gap: var(--content-spacing);
   }
-  
+
   .flex-layout.horizontal {
     flex-direction: row;
     align-items: center;
   }
-  
+
   .flex-layout.vertical {
     flex-direction: column;
   }
-  
+
   @media (min-width: 768px) {
     .flex-layout.responsive {
       flex-direction: row;
       align-items: center;
     }
   }
-  
+
   /* ========================================
      GRID LAYOUTS
      ======================================== */
@@ -174,45 +174,45 @@
     display: grid;
     gap: var(--content-spacing);
   }
-  
+
   .grid-layout.cols-1 {
     grid-template-columns: 1fr;
   }
-  
+
   .grid-layout.cols-2 {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .grid-layout.cols-3 {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .grid-layout.cols-4 {
     grid-template-columns: repeat(4, 1fr);
   }
-  
+
   @media (max-width: 1023px) {
     .grid-layout.responsive {
       grid-template-columns: 1fr;
     }
   }
-  
+
   /* ========================================
      UTILITIES PARA REMOÇÃO DE CONFLITOS
      ======================================== */
   .no-margin {
     margin: 0 !important;
   }
-  
+
   .no-padding {
     padding: 0 !important;
   }
-  
+
   .no-max-width {
     max-width: none !important;
   }
-  
+
   .no-min-width {
     min-width: 0 !important;
   }
-} 
+}

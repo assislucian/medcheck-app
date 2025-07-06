@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { PaymentMethod } from './types';
 
 interface PaymentFormProps {
@@ -37,13 +42,16 @@ const createFormSchema = (paymentMethod: PaymentMethod) => {
     return z.object({
       ...baseSchema,
       cardName: z.string().min(3, 'Nome no cartão é obrigatório'),
-      cardNumber: z.string()
+      cardNumber: z
+        .string()
         .min(13, 'Número do cartão inválido')
         .max(19, 'Número do cartão inválido')
         .regex(/^[0-9]+$/, 'Apenas números são permitidos'),
-      expiryDate: z.string()
+      expiryDate: z
+        .string()
         .regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, 'Data inválida (MM/YY)'),
-      cvv: z.string()
+      cvv: z
+        .string()
         .min(3, 'CVV inválido')
         .max(4, 'CVV inválido')
         .regex(/^[0-9]+$/, 'Apenas números são permitidos'),
@@ -51,7 +59,8 @@ const createFormSchema = (paymentMethod: PaymentMethod) => {
   } else if (paymentMethod === 'bank_slip') {
     return z.object({
       ...baseSchema,
-      document: z.string()
+      document: z
+        .string()
         .min(11, 'CPF/CNPJ inválido')
         .max(18, 'CPF/CNPJ inválido')
         .regex(/^[0-9.\\-]+$/, 'Formato inválido'),
@@ -66,10 +75,15 @@ const createFormSchema = (paymentMethod: PaymentMethod) => {
   }
 };
 
-export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, isProcessing }: PaymentFormProps) {
+export function PaymentForm({
+  paymentMethod,
+  onPaymentMethodChange,
+  onSubmit,
+  isProcessing,
+}: PaymentFormProps) {
   // Get schema based on current payment method
   const formSchema = createFormSchema(paymentMethod);
-  
+
   // Create form with the dynamic schema
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -103,34 +117,49 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <Label>Selecione o método de pagamento</Label>
-              <RadioGroup 
-                defaultValue={paymentMethod} 
+              <RadioGroup
+                defaultValue={paymentMethod}
                 onValueChange={(value) => onPaymentMethodChange(value as PaymentMethod)}
                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
               >
-                <div className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'credit_card' ? 'ring-2 ring-primary' : ''}`}>
+                <div
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'credit_card' ? 'ring-2 ring-primary' : ''}`}
+                >
                   <RadioGroupItem value="credit_card" id="credit_card" />
-                  <Label htmlFor="credit_card" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="credit_card"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <CreditCard className="h-4 w-4" /> Cartão de Crédito
                   </Label>
                 </div>
-                
-                <div className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'bank_slip' ? 'ring-2 ring-primary' : ''}`}>
+
+                <div
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'bank_slip' ? 'ring-2 ring-primary' : ''}`}
+                >
                   <RadioGroupItem value="bank_slip" id="bank_slip" />
-                  <Label htmlFor="bank_slip" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="bank_slip"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Landmark className="h-4 w-4" /> Boleto Bancário
                   </Label>
                 </div>
-                
-                <div className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'pix' ? 'ring-2 ring-primary' : ''}`}>
+
+                <div
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'pix' ? 'ring-2 ring-primary' : ''}`}
+                >
                   <RadioGroupItem value="pix" id="pix" />
-                  <Label htmlFor="pix" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="pix"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <QrCode className="h-4 w-4" /> PIX
                   </Label>
                 </div>
               </RadioGroup>
             </div>
-            
+
             <FormField
               control={form.control}
               name="name"
@@ -144,7 +173,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                 </FormItem>
               )}
             />
-            
+
             {paymentMethod === 'credit_card' && (
               <>
                 <FormField
@@ -160,7 +189,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="cardNumber"
@@ -174,7 +203,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -189,7 +218,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="cvv"
@@ -206,7 +235,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                 </div>
               </>
             )}
-            
+
             {paymentMethod === 'bank_slip' && (
               <>
                 <FormField
@@ -222,7 +251,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -238,7 +267,7 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                 />
               </>
             )}
-            
+
             {paymentMethod === 'pix' && (
               <>
                 <FormField
@@ -254,22 +283,20 @@ export function PaymentForm({ paymentMethod, onPaymentMethodChange, onSubmit, is
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="bg-secondary/30 p-4 rounded-md text-sm">
                   <p>Após confirmar, você receberá um código PIX para pagamento.</p>
-                  <p>O acesso ao plano será liberado após a confirmação do pagamento.</p>
+                  <p>
+                    O acesso ao plano será liberado após a confirmação do pagamento.
+                  </p>
                 </div>
               </>
             )}
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isProcessing}
-            >
+
+            <Button type="submit" className="w-full" disabled={isProcessing}>
               {isProcessing ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processando...
                 </>
               ) : (

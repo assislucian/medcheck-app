@@ -1,9 +1,13 @@
-import { ValidationService } from '../validation.service';
-import { createMockContext, createTestDemonstrativoRecord, createTestCBHPMEntry } from '../../test/setup';
-import { Role } from '../../domain/models';
-import { CBHPMError } from '../../errors';
+import { ValidationService } from "../validation.service";
+import {
+  createMockContext,
+  createTestDemonstrativoRecord,
+  createTestCBHPMEntry,
+} from "../../test/setup";
+import { Role } from "../../domain/models";
+import { CBHPMError } from "../../errors";
 
-describe('ValidationService', () => {
+describe("ValidationService", () => {
   const mockContext = createMockContext();
   let validationService: ValidationService;
 
@@ -11,13 +15,15 @@ describe('ValidationService', () => {
     validationService = new ValidationService(mockContext.prisma);
   });
 
-  describe('validateRecords', () => {
-    it('should validate a record with matching CBHPM values', async () => {
+  describe("validateRecords", () => {
+    it("should validate a record with matching CBHPM values", async () => {
       // Arrange
       const record = createTestDemonstrativoRecord();
       const cbhpmEntry = createTestCBHPMEntry();
 
-      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(cbhpmEntry);
+      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(
+        cbhpmEntry,
+      );
 
       // Act
       const results = await validationService.validateRecords([record], {
@@ -33,7 +39,7 @@ describe('ValidationService', () => {
       expect(results[0].difference).toBe(-50); // 950 - 1000
     });
 
-    it('should mark record as invalid when outside tolerance', async () => {
+    it("should mark record as invalid when outside tolerance", async () => {
       // Arrange
       const record = {
         ...createTestDemonstrativoRecord(),
@@ -41,7 +47,9 @@ describe('ValidationService', () => {
       };
       const cbhpmEntry = createTestCBHPMEntry();
 
-      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(cbhpmEntry);
+      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(
+        cbhpmEntry,
+      );
 
       // Act
       const results = await validationService.validateRecords([record], {
@@ -54,10 +62,10 @@ describe('ValidationService', () => {
       expect(results).toHaveLength(1);
       expect(results[0].isValid).toBe(false);
       expect(results[0].errors).toHaveLength(1);
-      expect(results[0].errors[0]).toContain('exceeds tolerance');
+      expect(results[0].errors[0]).toContain("exceeds tolerance");
     });
 
-    it('should handle missing CBHPM codes when allowed', async () => {
+    it("should handle missing CBHPM codes when allowed", async () => {
       // Arrange
       const record = createTestDemonstrativoRecord();
       mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(null);
@@ -73,10 +81,10 @@ describe('ValidationService', () => {
       expect(results).toHaveLength(1);
       expect(results[0].isValid).toBe(false);
       expect(results[0].errors).toHaveLength(1);
-      expect(results[0].errors[0]).toContain('No CBHPM entry found');
+      expect(results[0].errors[0]).toContain("No CBHPM entry found");
     });
 
-    it('should throw error for missing CBHPM codes when not allowed', async () => {
+    it("should throw error for missing CBHPM codes when not allowed", async () => {
       // Arrange
       const record = createTestDemonstrativoRecord();
       mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(null);
@@ -87,24 +95,26 @@ describe('ValidationService', () => {
           tolerancePercentage: 5,
           requireExactMatch: false,
           allowMissingCodes: false,
-        })
+        }),
       ).rejects.toThrow(CBHPMError);
     });
 
-    it('should validate multiple records correctly', async () => {
+    it("should validate multiple records correctly", async () => {
       // Arrange
       const records = [
         createTestDemonstrativoRecord(),
         {
           ...createTestDemonstrativoRecord(),
-          code: '30602204',
+          code: "30602204",
           role: Role.ANESTHETIST,
           approvedValue: 300.0,
         },
       ];
 
       const cbhpmEntry = createTestCBHPMEntry();
-      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(cbhpmEntry);
+      mockContext.prisma.cBHPMProcedure.findUnique.mockResolvedValue(
+        cbhpmEntry,
+      );
 
       // Act
       const results = await validationService.validateRecords(records, {
@@ -115,12 +125,12 @@ describe('ValidationService', () => {
 
       // Assert
       expect(results).toHaveLength(2);
-      expect(results.filter(r => r.isValid)).toHaveLength(2);
+      expect(results.filter((r) => r.isValid)).toHaveLength(2);
     });
   });
 
-  describe('getValidationSummary', () => {
-    it('should generate correct summary statistics', async () => {
+  describe("getValidationSummary", () => {
+    it("should generate correct summary statistics", async () => {
       // Arrange
       const results = [
         {
@@ -135,7 +145,7 @@ describe('ValidationService', () => {
           expectedValue: 1000,
           difference: -500,
           isValid: false,
-          errors: ['Value difference exceeds tolerance'],
+          errors: ["Value difference exceeds tolerance"],
         },
       ];
 
@@ -146,7 +156,7 @@ describe('ValidationService', () => {
       expect(summary.totalRecords).toBe(2);
       expect(summary.validRecords).toBe(1);
       expect(summary.totalDifference).toBe(-550);
-      expect(summary.errorsByType).toHaveProperty('Value difference');
+      expect(summary.errorsByType).toHaveProperty("Value difference");
     });
   });
-}); 
+});

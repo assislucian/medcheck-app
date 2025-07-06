@@ -7,10 +7,10 @@ import { User } from '@supabase/supabase-js';
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
-      getUser: vi.fn()
+      getUser: vi.fn(),
     },
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 const run = process.env.CI === 'true';
@@ -26,7 +26,7 @@ const run = process.env.CI === 'true';
     email: 'test@example.com',
     phone: '',
     role: '',
-    factors: null
+    factors: null,
   };
 
   beforeEach(() => {
@@ -34,25 +34,33 @@ const run = process.env.CI === 'true';
   });
 
   it('returns empty array when user is not authenticated', async () => {
-    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: null }, error: null });
-    
+    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: null },
+      error: null,
+    });
+
     const result = await searchHistory('test');
     expect(result).toEqual([]);
   });
 
   it('applies search filters correctly', async () => {
-    const mockData = [{
-      id: '1',
-      date: '2025-01-01',
-      type: 'analysis',
-      description: 'Test Analysis',
-      procedimentos: 5,
-      glosados: 2,
-      status: 'complete'
-    }];
+    const mockData = [
+      {
+        id: '1',
+        date: '2025-01-01',
+        type: 'analysis',
+        description: 'Test Analysis',
+        procedimentos: 5,
+        glosados: 2,
+        status: 'complete',
+      },
+    ];
 
-    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: mockUser }, error: null });
-    
+    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    });
+
     const mockOrder = vi.fn().mockResolvedValue({ data: mockData, error: null });
     const mockLt = vi.fn().mockReturnValue({ order: mockOrder });
     const mockGte = vi.fn().mockReturnValue({ lt: mockLt });

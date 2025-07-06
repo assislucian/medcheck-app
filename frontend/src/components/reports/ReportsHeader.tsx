@@ -1,8 +1,13 @@
-
-import { Calendar, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { Calendar, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useState } from 'react';
 
 interface ReportsHeaderProps {
   onExport: () => void;
@@ -10,9 +15,13 @@ interface ReportsHeaderProps {
   onFilterPeriod: () => void;
 }
 
-export function ReportsHeader({ onExport, onYearChange, onFilterPeriod }: ReportsHeaderProps) {
-  const [selectedYear, setSelectedYear] = useState("2025");
-  
+export function ReportsHeader({
+  onExport,
+  onYearChange,
+  onFilterPeriod,
+}: ReportsHeaderProps) {
+  const [selectedYear, setSelectedYear] = useState('2025');
+
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
     onYearChange(year);

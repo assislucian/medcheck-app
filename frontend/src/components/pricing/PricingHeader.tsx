@@ -1,18 +1,21 @@
-
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 
 interface PricingHeaderProps {
   billingInterval: 'monthly' | 'yearly';
   onIntervalChange: (interval: 'monthly' | 'yearly') => void;
 }
 
-export function PricingHeader({ billingInterval, onIntervalChange }: PricingHeaderProps) {
+export function PricingHeader({
+  billingInterval,
+  onIntervalChange,
+}: PricingHeaderProps) {
   return (
     <div className="flex flex-col items-center space-y-4">
       <p className="text-center text-muted-foreground max-w-2xl">
-        Escolha o plano ideal para suas necessidades e comece a recuperar valores glosados hoje mesmo
+        Escolha o plano ideal para suas necessidades e comece a recuperar valores
+        glosados hoje mesmo
       </p>
-      
+
       <div className="flex items-center border border-input bg-background rounded-lg p-1 mt-6">
         <Button
           variant={billingInterval === 'monthly' ? 'default' : 'ghost'}

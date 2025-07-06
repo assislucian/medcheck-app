@@ -1,6 +1,12 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -30,7 +36,9 @@ const TokenValidation = ({ isValid }: TokenValidationProps) => {
     return (
       <Card className="w-full max-w-md mx-auto glass-card">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Link inválido</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            Link inválido
+          </CardTitle>
           <CardDescription className="text-center">
             O link de redefinição de senha é inválido ou expirou.
           </CardDescription>

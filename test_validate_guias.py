@@ -3,12 +3,12 @@ Testes de regressão — garantem que o parser continue funcionando
 independentemente de futuras refatorações no Cursor ou no código.
 """
 
+import json
 from pathlib import Path
 
 import pytest
 
 from src.parsers.guia_parser import parse_guia_pdf
-import json
 
 # PDFs de testes (coloque na pasta tests/assets ou ajuste o path)
 PDF_DIR = Path(__file__).parent / "assets"
@@ -45,26 +45,44 @@ def test_fields_presence():
     assert mandatory_fields.issubset(res.keys())
     assert res["data_execucao"].count("/") == 2  # dd/mm/yyyy
 
+
 test_files = [
-    'uploads/8a259c72-a13e-42bd-bb6b-856dfda97b20_nubia_katia.pdf', 
-    'uploads/bf14a491-9688-4ae7-ab85-55c2ae7a8a69_guia_0.pdf', 
-    'uploads/noivana.pdf'
+    "uploads/8a259c72-a13e-42bd-bb6b-856dfda97b20_nubia_katia.pdf",
+    "uploads/bf14a491-9688-4ae7-ab85-55c2ae7a8a69_guia_0.pdf",
+    "uploads/noivana.pdf",
 ]
 
-print('\n\nVALIDATION RESULTS:\n')
+print("\n\nVALIDATION RESULTS:\n")
 for f in test_files:
-    result = parse_guia_pdf(f, '6091')
-    filename = f.split('/')[-1]
-    print(f'File: {filename}')
-    print(f'- Procedures: {len(result)}')
+    result = parse_guia_pdf(f, "6091")
+    filename = f.split("/")[-1]
+    print(f"File: {filename}")
+    print(f"- Procedures: {len(result)}")
     print(f'- Guia numbers: {[p["guia"] for p in result]}')
-    required_fields = all(['guia' in p and 'codigo' in p and 'descricao' in p and 'data_execucao' in p and 'beneficiario' in p and 'prestador' in p and 'papel_exercido' in p for p in result])
-    print(f'- Required fields present: {required_fields}')
-    date_format = all([p['data_execucao'].count("/") == 2 and len(p['data_execucao'].split("/")[0]) == 2 for p in result])
-    print(f'- Date format correct (dd/mm/yyyy): {date_format}')
-    
-    if 'rodrigo bernardo.pdf' in f:
+    required_fields = all(
+        [
+            "guia" in p
+            and "codigo" in p
+            and "descricao" in p
+            and "data_execucao" in p
+            and "beneficiario" in p
+            and "prestador" in p
+            and "papel_exercido" in p
+            for p in result
+        ]
+    )
+    print(f"- Required fields present: {required_fields}")
+    date_format = all(
+        [
+            p["data_execucao"].count("/") == 2
+            and len(p["data_execucao"].split("/")[0]) == 2
+            for p in result
+        ]
+    )
+    print(f"- Date format correct (dd/mm/yyyy): {date_format}")
+
+    if "rodrigo bernardo.pdf" in f:
         for res in result:
             assert res["prestador"] == "LIGA NORTERIOG CANCER POLICLINIC"
-            print(f'- Prestador check for rodrigo bernardo.pdf: PASSED')
+            print(f"- Prestador check for rodrigo bernardo.pdf: PASSED")
     print()

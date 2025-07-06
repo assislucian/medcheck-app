@@ -1,7 +1,6 @@
-
 /**
  * use-onboarding.ts
- * 
+ *
  * Custom hook que gerencia o estado de onboarding do usuário.
  * Controla a exibição do tour guiado e gerencia o status de onboarding no Supabase.
  */
@@ -16,7 +15,7 @@ export function useOnboarding() {
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
-  
+
   /**
    * Efeito que verifica se o tour deve ser mostrado com base no estado de URL
    * ou no status de onboarding do usuário no banco de dados.
@@ -28,11 +27,11 @@ export function useOnboarding() {
       setShowTour(true);
       return;
     }
-    
+
     // Verifica o status de onboarding no banco de dados para o usuário atual
     const checkOnboardingStatus = async () => {
       if (!user) return;
-      
+
       try {
         // Busca o status de onboarding do usuário no Supabase
         const { data, error } = await supabase
@@ -40,12 +39,12 @@ export function useOnboarding() {
           .select('onboarding_completed')
           .eq('id', user.id)
           .single();
-        
+
         if (error) throw error;
-        
+
         // Atualiza o estado com base no valor do banco de dados
         setOnboardingCompleted(!!data?.onboarding_completed);
-        
+
         // Mostra o tour se o usuário não completou o onboarding
         if (!data?.onboarding_completed) {
           setShowTour(true);
@@ -54,7 +53,7 @@ export function useOnboarding() {
         console.error('Error checking onboarding status:', error);
       }
     };
-    
+
     checkOnboardingStatus();
   }, [location, user]);
 
@@ -68,7 +67,7 @@ export function useOnboarding() {
     try {
       // Utiliza a função RPC definida no Supabase para atualizar o status
       const { data, error } = await supabase.rpc('update_onboarding_status', {
-        completed
+        completed,
       });
 
       if (error) throw error;
@@ -117,6 +116,6 @@ export function useOnboarding() {
     updateOnboardingStatus,
     completeTour,
     skipTour,
-    resetTour
+    resetTour,
   };
 }

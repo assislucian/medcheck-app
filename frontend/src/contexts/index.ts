@@ -1,7 +1,6 @@
-
 /**
  * index.ts
- * 
+ *
  * Re-exporta o contexto de autenticação para manter compatibilidade
  * com a estrutura de importação existente.
  */

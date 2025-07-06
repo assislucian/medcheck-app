@@ -48,7 +48,7 @@
   - auth_crm.md
   - core.md
   - **exemplos/**
-    -  output_esperado_resumo.json
+    - output_esperado_resumo.json
     - cbhpm_amostra.csv
     - noivana.pdf
     - nubia_katia.pdf
@@ -270,7 +270,7 @@
         - MainNavigation.tsx
         - NotificationsSection.tsx
         - ProfileSection.tsx
-        - **__tests__/**
+        - ****tests**/**
           - AccountSection.test.tsx
           - FooterSection.test.tsx
           - HelpSection.test.tsx
@@ -357,7 +357,7 @@
         - UploadSection.tsx
         - UploadStatus.tsx
         - UploadSuccess.tsx
-        - **__tests__/**
+        - ****tests**/**
           - UploadSection.test.tsx
     - **context/**
       - AuthContext.tsx
@@ -610,10 +610,10 @@
   - f4bd71ab-4f3a-406b-84f3-2cf6e9945b28_relatorio.csv
 - run_tests.py
 - **src/**
-  - __init__.py
+  - **init**.py
   - api.py
   - **comparators/**
-    - __init__.py
+    - **init**.py
     - procedure_comparator.py
   - **components/**
     - **custom/**
@@ -644,7 +644,7 @@
   - **pages/**
     - Guides.tsx
   - **parsers/**
-    - __init__.py
+    - **init**.py
     - cbhpm_parser.py
     - demonstrativo_parser.py
     - guia_parser.py
@@ -654,7 +654,7 @@
   - parsers.py
   - schema.py
   - **services/**
-    - **__tests__/**
+    - ****tests**/**
       - validation.service.test.ts
   - **uploads/**
     - 0fdfac2a-39f0-4a67-bd92-28add0f32e3b_Demonstrativo-outubro_2024.pdf
@@ -936,7 +936,7 @@
         - MainNavigation.tsx
         - NotificationsSection.tsx
         - ProfileSection.tsx
-        - **__tests__/**
+        - ****tests**/**
           - AccountSection.test.tsx
           - FooterSection.test.tsx
           - HelpSection.test.tsx
@@ -1022,7 +1022,7 @@
         - UploadSection.tsx
         - UploadStatus.tsx
         - UploadSuccess.tsx
-        - **__tests__/**
+        - ****tests**/**
           - UploadSection.test.tsx
     - **contexts/**
       - AuthContext.ts

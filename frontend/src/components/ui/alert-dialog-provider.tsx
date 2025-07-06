@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import {
   AlertDialog,
@@ -9,7 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 interface AlertDialogContextType {
   showAlert: (props: {
@@ -33,7 +32,9 @@ export const useAlertDialog = () => {
   return context;
 };
 
-export const AlertDialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AlertDialogProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [open, setOpen] = useState(false);
   const [alertProps, setAlertProps] = useState({
     title: '',
@@ -83,17 +84,19 @@ export const AlertDialogProvider: React.FC<{ children: React.ReactNode }> = ({ c
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{alertProps.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {alertProps.description}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{alertProps.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancel}>
               {alertProps.cancelLabel}
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirm}
-              className={alertProps.variant === 'destructive' ? 'bg-destructive hover:bg-destructive/90' : ''}
+              className={
+                alertProps.variant === 'destructive'
+                  ? 'bg-destructive hover:bg-destructive/90'
+                  : ''
+              }
             >
               {alertProps.confirmLabel}
             </AlertDialogAction>

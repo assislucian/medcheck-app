@@ -1,4 +1,3 @@
-
 # Mock Data Integration
 
 This directory contains mock data and utilities for frontend development without a backend connection.

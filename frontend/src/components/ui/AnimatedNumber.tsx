@@ -1,6 +1,6 @@
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 interface AnimatedNumberProps {
   /** Valor final a ser animado. */
@@ -18,7 +18,7 @@ interface AnimatedNumberProps {
  */
 export const AnimatedNumber = ({
   value,
-  format = (v) => v.toLocaleString("pt-BR"),
+  format = (v) => v.toLocaleString('pt-BR'),
   className,
   duration = 0.6,
 }: AnimatedNumberProps) => {
@@ -30,7 +30,5 @@ export const AnimatedNumber = ({
     motionValue.set(value);
   }, [value, motionValue]);
 
-  return (
-    <motion.span className={cn(className)}>{animated}</motion.span>
-  );
-}; 
+  return <motion.span className={cn(className)}>{animated}</motion.span>;
+};

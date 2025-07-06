@@ -1,4 +1,3 @@
-
 import { Database } from '@/integrations/supabase/types';
 import { Json } from '@/integrations/supabase/types';
 
@@ -50,5 +49,5 @@ export type {
   Procedure,
   PaymentStatement,
   GuideData,
-  DemonstrativeData
+  DemonstrativeData,
 } from './medical';

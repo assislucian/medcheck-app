@@ -85,9 +85,20 @@ export function useFileUploadService() {
         setProcessingStage('complete');
         setProcessingMsg('Processamento concluído!');
         toast.success('Guias processadas!');
-        // Atualizar cache
-        queryClient.invalidateQueries(['dashboardStats']);
-        queryClient.invalidateQueries(['demonstrativos']);
+        // Atualizar cache com invalidação inteligente
+        queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+        queryClient.invalidateQueries({ queryKey: ['demonstrativos'] });
+        queryClient.invalidateQueries({ queryKey: ['guias'] });
+
+        // Força refetch imediato para dados críticos
+        queryClient.refetchQueries({
+          queryKey: ['dashboardStats'],
+          type: 'active',
+        });
+
+        // Dispara evento para sincronização automática
+        window.dispatchEvent(new CustomEvent('uploadComplete'));
+
         return { success: true, data: res.data };
       }
       // Upload de demonstrativos (em lote)
@@ -134,9 +145,21 @@ export function useFileUploadService() {
         } else {
           toast.error('Resposta inesperada do servidor.');
         }
-        // Atualizar dashboard e lista de demonstrativos
-        queryClient.invalidateQueries(['dashboardStats']);
-        queryClient.invalidateQueries(['demonstrativos']);
+        // Atualizar dashboard e lista de demonstrativos com invalidação inteligente
+        queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+        queryClient.invalidateQueries({ queryKey: ['demonstrativos'] });
+        queryClient.invalidateQueries({ queryKey: ['guias'] });
+        queryClient.invalidateQueries({ queryKey: ['activity-logs'] });
+
+        // Força refetch imediato para dados críticos
+        queryClient.refetchQueries({
+          queryKey: ['dashboardStats'],
+          type: 'active',
+        });
+
+        // Dispara evento para sincronização automática
+        window.dispatchEvent(new CustomEvent('uploadComplete'));
+
         return { success: true, data: res.data };
       }
       toast.error('Nenhum arquivo válido para upload.');

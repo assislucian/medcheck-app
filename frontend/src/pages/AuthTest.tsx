@@ -8,7 +8,11 @@ import {
   Alert,
   TextField,
 } from '@mui/material';
-import { CloudUpload as CloudUploadIcon, Login as LoginIcon, PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import {
+  CloudUpload as CloudUploadIcon,
+  Login as LoginIcon,
+  PersonAdd as PersonAddIcon,
+} from '@mui/icons-material';
 import axios from 'axios';
 
 export default function AuthTest() {
@@ -41,7 +45,7 @@ export default function AuthTest() {
     setSuccess(null);
     setJobId(null);
     try {
-      await axios.post('http://localhost:8000/api/v1/register', {
+      await axios.post('https://medcheck-backend.onrender.com/api/v1/register', {
         crm: crmCadastro,
         nome: nomeCadastro,
         senha: senhaCadastro,
@@ -64,9 +68,13 @@ export default function AuthTest() {
       const params = new URLSearchParams();
       params.append('username', crm);
       params.append('password', senha);
-      const res = await axios.post('http://localhost:8000/token', params, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      });
+      const res = await axios.post(
+        'https://medcheck-backend.onrender.com/token',
+        params,
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }
+      );
       setToken(res.data.access_token);
     } catch (err) {
       setLoginError('CRM ou senha inválidos ou backend indisponível.');
@@ -99,12 +107,16 @@ export default function AuthTest() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/validate', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const res = await axios.post(
+        'https://medcheck-backend.onrender.com/api/v1/validate',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
       setSuccess('Upload realizado com sucesso!');
       setJobId(res.data.job_id);
     } catch (err) {
@@ -126,20 +138,20 @@ export default function AuthTest() {
           <TextField
             label="CRM"
             value={crmCadastro}
-            onChange={e => setCrmCadastro(e.target.value)}
+            onChange={(e) => setCrmCadastro(e.target.value)}
             autoComplete="off"
           />
           <TextField
             label="Nome"
             value={nomeCadastro}
-            onChange={e => setNomeCadastro(e.target.value)}
+            onChange={(e) => setNomeCadastro(e.target.value)}
             autoComplete="off"
           />
           <TextField
             label="Senha"
             type="password"
             value={senhaCadastro}
-            onChange={e => setSenhaCadastro(e.target.value)}
+            onChange={(e) => setSenhaCadastro(e.target.value)}
             autoComplete="new-password"
           />
           <Button
@@ -161,14 +173,14 @@ export default function AuthTest() {
           <TextField
             label="CRM"
             value={crm}
-            onChange={e => setCrm(e.target.value)}
+            onChange={(e) => setCrm(e.target.value)}
             autoComplete="username"
           />
           <TextField
             label="Senha"
             type="password"
             value={senha}
-            onChange={e => setSenha(e.target.value)}
+            onChange={(e) => setSenha(e.target.value)}
             autoComplete="current-password"
           />
           <Button
@@ -180,7 +192,9 @@ export default function AuthTest() {
             {token ? 'Logado' : 'Entrar'}
           </Button>
           {loginError && <Alert severity="error">{loginError}</Alert>}
-          {token && <Alert severity="success">Login realizado! Token JWT obtido.</Alert>}
+          {token && (
+            <Alert severity="success">Login realizado! Token JWT obtido.</Alert>
+          )}
         </Box>
       </Paper>
       {/* Upload */}
@@ -206,7 +220,8 @@ export default function AuthTest() {
           </label>
           {file && (
             <Typography variant="body2">
-              Arquivo selecionado: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+              Arquivo selecionado: {file.name} ({(file.size / 1024 / 1024).toFixed(2)}{' '}
+              MB)
             </Typography>
           )}
           <Button
@@ -219,11 +234,9 @@ export default function AuthTest() {
           </Button>
           {uploadError && <Alert severity="error">{uploadError}</Alert>}
           {success && <Alert severity="success">{success}</Alert>}
-          {jobId && (
-            <Alert severity="info">Job ID: {jobId}</Alert>
-          )}
+          {jobId && <Alert severity="info">Job ID: {jobId}</Alert>}
         </Box>
       </Paper>
     </Box>
   );
-} 
+}

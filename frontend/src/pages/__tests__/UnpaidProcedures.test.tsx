@@ -72,4 +72,4 @@ describe('Acessibilidade', () => {
     userEvent.tab();
     expect(document.body).toHaveFocus();
   });
-}); 
+});

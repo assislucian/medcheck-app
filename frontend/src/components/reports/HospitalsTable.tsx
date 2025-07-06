@@ -1,8 +1,13 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import { fetchHospitalData } from "@/services/reports";
-import { Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { fetchHospitalData } from '@/services/reports';
+import { Loader2 } from 'lucide-react';
 
 type HospitalData = {
   name: string;
@@ -14,14 +19,14 @@ type HospitalData = {
 export function HospitalsTable() {
   const [hospitalData, setHospitalData] = useState<HospitalData[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const loadHospitalData = async () => {
       const data = await fetchHospitalData();
       setHospitalData(data);
       setLoading(false);
     };
-    
+
     loadHospitalData();
   }, []);
 
@@ -56,17 +61,28 @@ export function HospitalsTable() {
                     <tr key={index} className="border-b">
                       <td className="py-3">{hospital.name}</td>
                       <td className="py-3 text-center">{hospital.procedimentos}</td>
-                      <td className="py-3 text-center text-red-500 font-medium">{hospital.glosados}</td>
-                      <td className="py-3 text-center">
-                        {hospital.procedimentos > 0 
-                          ? ((hospital.glosados / hospital.procedimentos) * 100).toFixed(1) 
-                          : '0.0'}%
+                      <td className="py-3 text-center text-red-500 font-medium">
+                        {hospital.glosados}
                       </td>
-                      <td className="py-3 text-center text-green-500 font-medium">{hospital.recuperados}</td>
                       <td className="py-3 text-center">
-                        {hospital.glosados > 0 
-                          ? ((hospital.recuperados / hospital.glosados) * 100).toFixed(1) 
-                          : '0.0'}%
+                        {hospital.procedimentos > 0
+                          ? (
+                              (hospital.glosados / hospital.procedimentos) *
+                              100
+                            ).toFixed(1)
+                          : '0.0'}
+                        %
+                      </td>
+                      <td className="py-3 text-center text-green-500 font-medium">
+                        {hospital.recuperados}
+                      </td>
+                      <td className="py-3 text-center">
+                        {hospital.glosados > 0
+                          ? ((hospital.recuperados / hospital.glosados) * 100).toFixed(
+                              1
+                            )
+                          : '0.0'}
+                        %
                       </td>
                     </tr>
                   ))

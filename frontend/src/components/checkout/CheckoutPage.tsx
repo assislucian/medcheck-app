@@ -1,67 +1,73 @@
-
-import { useState } from "react";
-import { Helmet } from "react-helmet-async";
-import { useNavigate, useLocation } from "react-router-dom";
-import Navbar from "@/components/Navbar";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
-import { CheckCircle, ArrowLeft, CreditCard, Clock } from "lucide-react";
+import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useNavigate, useLocation } from 'react-router-dom';
+import Navbar from '@/components/Navbar';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
+import { CheckCircle, ArrowLeft, CreditCard, Clock } from 'lucide-react';
 
 interface CheckoutPageProps {}
 
 export default function CheckoutPage({}: CheckoutPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { 
+  const state = location.state as {
     planId: string;
     planName: string;
     price: string;
     interval: 'monthly' | 'yearly';
   } | null;
-  
+
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    address: "",
-    city: "",
-    zip: ""
+    name: '',
+    email: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+    address: '',
+    city: '',
+    zip: '',
   });
-  
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
-  
+
   if (!state) {
-    navigate("/pricing");
+    navigate('/pricing');
     return null;
   }
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsProcessing(true);
-    
+
     // Simulando processamento de pagamento
     setTimeout(() => {
       setIsProcessing(false);
       setIsComplete(true);
-      
-      toast.success("Assinatura realizada com sucesso!", {
-        description: "Obrigado por assinar o MedCheck. Sua conta foi atualizada."
+
+      toast.success('Assinatura realizada com sucesso!', {
+        description: 'Obrigado por assinar o MedCheck. Sua conta foi atualizada.',
       });
     }, 2000);
   };
-  
+
   if (isComplete) {
     return (
       <>
@@ -75,7 +81,9 @@ export default function CheckoutPage({}: CheckoutPageProps) {
               <CardHeader className="text-center pb-2">
                 <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
                 <CardTitle className="text-2xl">Assinatura Concluída</CardTitle>
-                <CardDescription>Sua assinatura foi processada com sucesso</CardDescription>
+                <CardDescription>
+                  Sua assinatura foi processada com sucesso
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 <div className="space-y-1">
@@ -84,15 +92,22 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Preço</p>
-                  <p className="text-base">{state.price} / {state.interval === 'monthly' ? 'mês' : 'ano'}</p>
+                  <p className="text-base">
+                    {state.price} / {state.interval === 'monthly' ? 'mês' : 'ano'}
+                  </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Próxima cobrança</p>
-                  <p className="text-base">{new Date(Date.now() + (state.interval === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-base">
+                    {new Date(
+                      Date.now() +
+                        (state.interval === 'monthly' ? 30 : 365) * 24 * 60 * 60 * 1000
+                    ).toLocaleDateString('pt-BR')}
+                  </p>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-center gap-4">
-                <Button onClick={() => navigate("/dashboard")} size="lg">
+                <Button onClick={() => navigate('/dashboard')} size="lg">
                   Ir para o Dashboard
                 </Button>
               </CardFooter>
@@ -102,7 +117,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
       </>
     );
   }
-  
+
   return (
     <>
       <Helmet>
@@ -111,14 +126,10 @@ export default function CheckoutPage({}: CheckoutPageProps) {
       <div className="min-h-screen flex flex-col">
         <Navbar isLoggedIn={false} />
         <div className="flex-1 container py-8 md:py-12">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/pricing")} 
-            className="mb-6"
-          >
+          <Button variant="ghost" onClick={() => navigate('/pricing')} className="mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Planos
           </Button>
-          
+
           <div className="grid gap-8 md:grid-cols-3">
             <Card className="md:col-span-2">
               <CardHeader>
@@ -134,7 +145,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="name">Nome Completo</Label>
-                        <Input 
+                        <Input
                           id="name"
                           name="name"
                           placeholder="Digite seu nome completo"
@@ -145,7 +156,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input 
+                        <Input
                           id="email"
                           name="email"
                           type="email"
@@ -157,14 +168,14 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="font-medium text-lg">Dados do Cartão</h3>
                     <div className="space-y-2">
                       <Label htmlFor="cardNumber">Número do Cartão</Label>
-                      <Input 
+                      <Input
                         id="cardNumber"
                         name="cardNumber"
                         placeholder="0000 0000 0000 0000"
@@ -176,7 +187,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                     <div className="grid gap-4 grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="expiryDate">Data de Validade</Label>
-                        <Input 
+                        <Input
                           id="expiryDate"
                           name="expiryDate"
                           placeholder="MM/AA"
@@ -187,7 +198,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="cvv">Código de Segurança (CVV)</Label>
-                        <Input 
+                        <Input
                           id="cvv"
                           name="cvv"
                           placeholder="000"
@@ -198,14 +209,14 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="font-medium text-lg">Endereço de Cobrança</h3>
                     <div className="space-y-2">
                       <Label htmlFor="address">Endereço</Label>
-                      <Input 
+                      <Input
                         id="address"
                         name="address"
                         placeholder="Rua, número e complemento"
@@ -217,7 +228,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="city">Cidade</Label>
-                        <Input 
+                        <Input
                           id="city"
                           name="city"
                           placeholder="Sua cidade"
@@ -228,7 +239,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="zip">CEP</Label>
-                        <Input 
+                        <Input
                           id="zip"
                           name="zip"
                           placeholder="00000-000"
@@ -239,10 +250,10 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                       </div>
                     </div>
                   </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+
+                  <Button
+                    type="submit"
+                    className="w-full"
                     size="lg"
                     disabled={isProcessing}
                   >
@@ -261,7 +272,7 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                 </form>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Resumo do Pedido</CardTitle>
@@ -281,16 +292,15 @@ export default function CheckoutPage({}: CheckoutPageProps) {
                   <span>{state.price}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {state.interval === 'monthly' 
-                    ? 'Cobrado mensalmente' 
-                    : 'Cobrado anualmente'
-                  }
+                  {state.interval === 'monthly'
+                    ? 'Cobrado mensalmente'
+                    : 'Cobrado anualmente'}
                 </div>
               </CardContent>
               <CardFooter>
                 <p className="text-sm text-muted-foreground">
-                  Você pode cancelar sua assinatura a qualquer momento através
-                  da página de configurações da sua conta.
+                  Você pode cancelar sua assinatura a qualquer momento através da página
+                  de configurações da sua conta.
                 </p>
               </CardFooter>
             </Card>

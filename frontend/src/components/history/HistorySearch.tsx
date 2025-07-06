@@ -1,12 +1,17 @@
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Download, Search } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { DateRange } from "react-day-picker";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Calendar, Download, Search } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
 
 export interface HistorySearchProps {
   searchTerm: string;
@@ -18,19 +23,19 @@ export interface HistorySearchProps {
   onDateRangeChange: (range: DateRange | undefined) => void;
 }
 
-export function HistorySearch({ 
-  searchTerm, 
-  onSearchChange, 
-  filterStatus, 
+export function HistorySearch({
+  searchTerm,
+  onSearchChange,
+  filterStatus,
   onFilterChange,
   onExport,
   dateRange,
-  onDateRangeChange
+  onDateRangeChange,
 }: HistorySearchProps) {
   const handleExport = () => {
     onExport();
-    toast.success("Exportação iniciada", {
-      description: "Seu relatório será baixado em breve."
+    toast.success('Exportação iniciada', {
+      description: 'Seu relatório será baixado em breve.',
     });
   };
 
@@ -46,7 +51,7 @@ export function HistorySearch({
             className="pl-9"
           />
         </div>
-        
+
         <Select value={filterStatus} onValueChange={onFilterChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Status" />
@@ -58,7 +63,7 @@ export function HistorySearch({
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="flex gap-2 items-center">
         <DateRangePicker
           value={dateRange}

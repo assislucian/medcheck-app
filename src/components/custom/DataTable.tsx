@@ -12,7 +12,14 @@ import {
   CellContext,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "../ui/button";
 import { Pagination } from "@/components/ui/pagination";
 
@@ -62,13 +69,16 @@ export function DataTable({ data }: DataTableProps) {
         cell: (info: CellContext<Procedure, string>) => info.getValue(),
         sortingFn: "datetime",
       }),
-      columnHelper.accessor(row => `${row.horario_in || ""} - ${row.horario_out || ""}`, {
-        id: "horario",
-        header: "Horário in/out",
-        cell: (info: CellContext<Procedure, string>) => info.getValue(),
-      }),
+      columnHelper.accessor(
+        (row) => `${row.horario_in || ""} - ${row.horario_out || ""}`,
+        {
+          id: "horario",
+          header: "Horário in/out",
+          cell: (info: CellContext<Procedure, string>) => info.getValue(),
+        },
+      ),
     ],
-    [columnHelper]
+    [columnHelper],
   );
 
   const table = useReactTable<Procedure>({
@@ -82,15 +92,25 @@ export function DataTable({ data }: DataTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    globalFilterFn: (row: Row<Procedure>, columnId: string, filterValue: string) => {
+    globalFilterFn: (
+      row: Row<Procedure>,
+      columnId: string,
+      filterValue: string,
+    ) => {
       // Filtro por código ou descrição
       if (columnId === "codigo" || columnId === "descricao") {
-        return String(row.getValue(columnId)).toLowerCase().includes(filterValue.toLowerCase());
+        return String(row.getValue(columnId))
+          .toLowerCase()
+          .includes(filterValue.toLowerCase());
       }
       // Filtro global: código ou descrição
       return (
-        String(row.getValue("codigo")).toLowerCase().includes(filterValue.toLowerCase()) ||
-        String(row.getValue("descricao")).toLowerCase().includes(filterValue.toLowerCase())
+        String(row.getValue("codigo"))
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()) ||
+        String(row.getValue("descricao"))
+          .toLowerCase()
+          .includes(filterValue.toLowerCase())
       );
     },
     initialState: {
@@ -105,7 +125,7 @@ export function DataTable({ data }: DataTableProps) {
       <Input
         placeholder="Filtrar por código ou descrição..."
         value={globalFilter}
-        onChange={e => setGlobalFilter(e.target.value)}
+        onChange={(e) => setGlobalFilter(e.target.value)}
         className="max-w-xs"
       />
       <div className="rounded-md border">
@@ -115,7 +135,12 @@ export function DataTable({ data }: DataTableProps) {
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -126,7 +151,12 @@ export function DataTable({ data }: DataTableProps) {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -142,13 +172,24 @@ export function DataTable({ data }: DataTableProps) {
       </div>
       <div className="flex items-center justify-between py-2">
         <div className="text-sm text-muted-foreground">
-          Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
+          Página {table.getState().pagination.pageIndex + 1} de{" "}
+          {table.getPageCount()}
         </div>
         <div className="space-x-2">
-          <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
             Anterior
           </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
             Próxima
           </Button>
         </div>
@@ -157,4 +198,4 @@ export function DataTable({ data }: DataTableProps) {
   );
 }
 
-export default DataTable; 
+export default DataTable;

@@ -1,4 +1,3 @@
-
 import { Star, BadgeDollarSign, ShieldCheck } from 'lucide-react';
 import type { Plan } from './types';
 
@@ -45,7 +44,8 @@ export const plans: Plan[] = [
       'Relatórios consolidados',
     ],
     icon: BadgeDollarSign,
-    bgColor: 'from-indigo-50 to-indigo-100 dark:from-indigo-950/40 dark:to-indigo-900/30',
+    bgColor:
+      'from-indigo-50 to-indigo-100 dark:from-indigo-950/40 dark:to-indigo-900/30',
     isFeatured: true,
   },
   {
@@ -68,7 +68,8 @@ export const plans: Plan[] = [
       'API para integração',
     ],
     icon: ShieldCheck,
-    bgColor: 'from-emerald-50 to-emerald-100 dark:from-emerald-950/40 dark:to-emerald-900/30',
+    bgColor:
+      'from-emerald-50 to-emerald-100 dark:from-emerald-950/40 dark:to-emerald-900/30',
     isEnterprise: true,
-  }
+  },
 ];

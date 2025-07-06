@@ -1,4 +1,3 @@
-
 # Configurando Login com Google no MedCheck
 
 Este guia explica como configurar o login com Google para o seu aplicativo MedCheck.

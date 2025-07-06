@@ -1,6 +1,7 @@
 Função: Controlar acesso e escopo de dados por CRM.
 
 Lógica:
+
 - Usuário loga com CRM + senha.
 - Toda visualização e análise deve ser filtrada por CRM.
 - Autenticação via JWT.

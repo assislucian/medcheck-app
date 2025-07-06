@@ -1,9 +1,8 @@
-
-import { Play } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { VideoTutorial } from "@/types/help";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Play } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { VideoTutorial } from '@/types/help';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface VideosListProps {
   videos: VideoTutorial[];
@@ -21,14 +20,14 @@ export const VideosList = ({ videos, onShowAll }: VideosListProps) => {
           </Button>
         )}
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
           <Card key={video.id} className="hover:shadow-md transition-shadow">
             <div className="relative">
               <AspectRatio ratio={16 / 9}>
-                <img 
-                  src={video.thumbnail} 
+                <img
+                  src={video.thumbnail}
                   alt={video.title}
                   className="object-cover w-full h-full rounded-t-lg"
                 />
@@ -45,9 +44,7 @@ export const VideosList = ({ videos, onShowAll }: VideosListProps) => {
               <CardTitle className="text-lg">{video.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground line-clamp-2">
-                {video.description}
-              </p>
+              <p className="text-muted-foreground line-clamp-2">{video.description}</p>
             </CardContent>
           </Card>
         ))}
@@ -55,4 +52,3 @@ export const VideosList = ({ videos, onShowAll }: VideosListProps) => {
     </div>
   );
 };
-

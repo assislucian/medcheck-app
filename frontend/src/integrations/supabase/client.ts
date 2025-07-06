@@ -1,4 +1,3 @@
-
 // Mock Supabase client for frontend development without a backend
 
 interface MockUser {
@@ -39,8 +38,8 @@ const mockSupabase = {
                     beneficiario: 'João Silva',
                     doctors: [{ id: '1', name: 'Dr. Smith' }],
                     user_id: '1',
-                    created_at: '2025-01-01T12:00:00Z'
-                  }
+                    created_at: '2025-01-01T12:00:00Z',
+                  },
                 ],
                 error: null,
                 single: () => ({
@@ -58,9 +57,9 @@ const mockSupabase = {
                     beneficiario: 'João Silva',
                     doctors: [{ id: '1', name: 'Dr. Smith' }],
                     user_id: '1',
-                    created_at: '2025-01-01T12:00:00Z'
+                    created_at: '2025-01-01T12:00:00Z',
                   },
-                  error: null
+                  error: null,
                 }),
                 maybeSingle: () => ({
                   data: {
@@ -77,10 +76,10 @@ const mockSupabase = {
                     beneficiario: 'João Silva',
                     doctors: [{ id: '1', name: 'Dr. Smith' }],
                     user_id: '1',
-                    created_at: '2025-01-01T12:00:00Z'
+                    created_at: '2025-01-01T12:00:00Z',
                   },
-                  error: null
-                })
+                  error: null,
+                }),
               };
             }
             if (table === 'analysis_results') {
@@ -100,10 +99,10 @@ const mockSupabase = {
                       totalPago: 800,
                       totalDiferenca: 200,
                       procedimentosTotal: 10,
-                      procedimentosNaoPagos: 2
+                      procedimentosNaoPagos: 2,
                     },
-                    user_id: '1'
-                  }
+                    user_id: '1',
+                  },
                 ],
                 error: null,
                 single: () => ({
@@ -121,11 +120,11 @@ const mockSupabase = {
                       totalPago: 800,
                       totalDiferenca: 200,
                       procedimentosTotal: 10,
-                      procedimentosNaoPagos: 2
+                      procedimentosNaoPagos: 2,
                     },
-                    user_id: '1'
+                    user_id: '1',
                   },
-                  error: null
+                  error: null,
                 }),
                 maybeSingle: () => ({
                   data: {
@@ -142,12 +141,12 @@ const mockSupabase = {
                       totalPago: 800,
                       totalDiferenca: 200,
                       procedimentosTotal: 10,
-                      procedimentosNaoPagos: 2
+                      procedimentosNaoPagos: 2,
                     },
-                    user_id: '1'
+                    user_id: '1',
                   },
-                  error: null
-                })
+                  error: null,
+                }),
               };
             }
             if (table === 'profiles') {
@@ -160,8 +159,8 @@ const mockSupabase = {
                     crm: '12345/SP',
                     specialty: 'Cardiologia',
                     trial_status: 'active',
-                    created_at: '2025-01-01T12:00:00Z'
-                  }
+                    created_at: '2025-01-01T12:00:00Z',
+                  },
                 ],
                 error: null,
                 single: () => ({
@@ -171,10 +170,10 @@ const mockSupabase = {
                     email: 'john@example.com',
                     crm: '12345/SP',
                     specialty: 'Cardiologia',
-                    trial_status: 'active', 
-                    created_at: '2025-01-01T12:00:00Z'
+                    trial_status: 'active',
+                    created_at: '2025-01-01T12:00:00Z',
                   },
-                  error: null
+                  error: null,
                 }),
                 maybeSingle: () => ({
                   data: {
@@ -184,29 +183,29 @@ const mockSupabase = {
                     crm: '12345/SP',
                     specialty: 'Cardiologia',
                     trial_status: 'active',
-                    created_at: '2025-01-01T12:00:00Z'
+                    created_at: '2025-01-01T12:00:00Z',
                   },
-                  error: null
-                })
+                  error: null,
+                }),
               };
             }
             return {
               data: [],
-              error: null
+              error: null,
             };
           },
           order: () => ({
             data: [],
-            error: null
+            error: null,
           }),
           range: () => ({
             data: [],
-            error: null
+            error: null,
           }),
           limit: () => ({
             data: [],
-            error: null
-          })
+            error: null,
+          }),
         };
       },
       insert: (data: any) => {
@@ -216,11 +215,11 @@ const mockSupabase = {
               {
                 ...data,
                 id: 'new-id-' + Math.random().toString(36).substring(7),
-                created_at: new Date().toISOString()
-              }
+                created_at: new Date().toISOString(),
+              },
             ],
-            error: null
-          })
+            error: null,
+          }),
         };
       },
       update: (data: any) => {
@@ -229,74 +228,76 @@ const mockSupabase = {
             data: [
               {
                 ...data,
-                updated_at: new Date().toISOString()
-              }
+                updated_at: new Date().toISOString(),
+              },
             ],
-            error: null
-          })
+            error: null,
+          }),
         };
       },
       delete: () => {
         return {
           eq: () => ({
             data: [],
-            error: null
-          })
+            error: null,
+          }),
         };
-      }
+      },
     };
   },
   rpc: (func: string, params?: any) => {
     return {
       data: { result: true },
-      error: null
+      error: null,
     };
   },
   storage: {
     from: (bucket: string) => ({
       upload: (path: string, file: File) => ({
         data: { path },
-        error: null
+        error: null,
       }),
       getPublicUrl: (path: string) => ({
         data: { publicUrl: `https://mock-storage.com/${bucket}/${path}` },
-        error: null
+        error: null,
       }),
       remove: (paths: string[]) => ({
         data: { deleted: paths },
-        error: null
+        error: null,
       }),
       download: (path: string) => ({
         data: new Blob(['mock file content']),
-        error: null
-      })
-    })
+        error: null,
+      }),
+    }),
   },
   auth: {
-    getUser: () => Promise.resolve({
-      data: {
-        user: {
-          id: '1',
-          email: 'user@example.com'
-        }
-      },
-      error: null
-    }),
-    getSession: () => Promise.resolve({
-      data: {
-        session: {
-          access_token: 'mock-access-token',
-          refresh_token: 'mock-refresh-token',
-          expires_in: 3600,
-          token_type: 'bearer',
+    getUser: () =>
+      Promise.resolve({
+        data: {
           user: {
             id: '1',
-            email: 'user@example.com'
-          }
-        }
-      },
-      error: null
-    }),
+            email: 'user@example.com',
+          },
+        },
+        error: null,
+      }),
+    getSession: () =>
+      Promise.resolve({
+        data: {
+          session: {
+            access_token: 'mock-access-token',
+            refresh_token: 'mock-refresh-token',
+            expires_in: 3600,
+            token_type: 'bearer',
+            user: {
+              id: '1',
+              email: 'user@example.com',
+            },
+          },
+        },
+        error: null,
+      }),
     onAuthStateChange: (callback: Function) => {
       callback('SIGNED_IN', {
         access_token: 'mock-access-token',
@@ -305,42 +306,21 @@ const mockSupabase = {
         token_type: 'bearer',
         user: {
           id: '1',
-          email: 'user@example.com'
-        }
+          email: 'user@example.com',
+        },
       });
       return {
         subscription: {
-          unsubscribe: () => {}
-        }
+          unsubscribe: () => {},
+        },
       };
     },
-    signUp: ({ email, password }: { email: string, password: string }) => {
+    signUp: ({ email, password }: { email: string; password: string }) => {
       return Promise.resolve({
         data: {
           user: {
             id: '1',
-            email
-          },
-          session: {
-            access_token: 'mock-access-token',
-            refresh_token: 'mock-refresh-token',
-            expires_in: 3600,
-            token_type: 'bearer',
-            user: {
-              id: '1', 
-              email
-            }
-          }
-        },
-        error: null
-      });
-    },
-    signInWithPassword: ({ email, password }: { email: string, password: string }) => {
-      return Promise.resolve({
-        data: {
-          user: {
-            id: '1',
-            email
+            email,
           },
           session: {
             access_token: 'mock-access-token',
@@ -349,30 +329,52 @@ const mockSupabase = {
             token_type: 'bearer',
             user: {
               id: '1',
-              email
-            }
-          }
+              email,
+            },
+          },
         },
-        error: null
+        error: null,
+      });
+    },
+    signInWithPassword: ({ email, password }: { email: string; password: string }) => {
+      return Promise.resolve({
+        data: {
+          user: {
+            id: '1',
+            email,
+          },
+          session: {
+            access_token: 'mock-access-token',
+            refresh_token: 'mock-refresh-token',
+            expires_in: 3600,
+            token_type: 'bearer',
+            user: {
+              id: '1',
+              email,
+            },
+          },
+        },
+        error: null,
       });
     },
     signInWithOAuth: ({ provider }: { provider: string }) => {
       return Promise.resolve({
         data: {
           provider,
-          url: `https://example.com/oauth/${provider}`
+          url: `https://example.com/oauth/${provider}`,
         },
-        error: null
+        error: null,
       });
     },
     signOut: () => Promise.resolve({ error: null }),
     resetPasswordForEmail: (email: string) => Promise.resolve({ error: null }),
-    updateUser: (data: any) => Promise.resolve({
-      data: { user: { ...data, id: '1' } },
-      error: null
-    }),
-    exchangeCodeForSession: (code: string) => Promise.resolve({ error: null })
-  }
+    updateUser: (data: any) =>
+      Promise.resolve({
+        data: { user: { ...data, id: '1' } },
+        error: null,
+      }),
+    exchangeCodeForSession: (code: string) => Promise.resolve({ error: null }),
+  },
 };
 
 export const supabase = mockSupabase;

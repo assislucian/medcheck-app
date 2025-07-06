@@ -211,9 +211,7 @@ const UnpaidProceduresPage = () => {
           `${
             import.meta.env.VITE_API_URL || 'http://localhost:8000'
           }/api/v1/demonstrativos`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         const demonstrativos = res.data || [];
         // 2. Buscar detalhes de cada demonstrativo (em paralelo)
@@ -224,9 +222,7 @@ const UnpaidProceduresPage = () => {
                 `${
                   import.meta.env.VITE_API_URL || 'http://localhost:8000'
                 }/api/v1/demonstrativos/${d.id}/detalhes`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                }
+                { headers: { Authorization: `Bearer ${token}` } }
               );
               return resDetalhes.data || [];
             } catch {

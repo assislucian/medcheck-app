@@ -1,4 +1,3 @@
-
 import { useParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import ComparisonView from '@/components/ComparisonView';

@@ -1,4 +1,3 @@
-
 interface ProfileStatsProps {
   analyses: number;
   recovered: number;

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export async function fetchAnalysisById(analysisId: string) {
@@ -8,9 +7,9 @@ export async function fetchAnalysisById(analysisId: string) {
       .select('*')
       .eq('id', analysisId)
       .single();
-      
+
     if (error) throw error;
-    
+
     return data;
   } catch (error) {
     console.error('Error fetching analysis:', error);

@@ -1,19 +1,22 @@
 import { Procedure } from '@/types/medical';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, CheckCircle, HelpCircle, Users, FileText } from 'lucide-react';
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { findProcedureByCodigo, calculateTotalCBHPM } from '@/data/cbhpmData';
 import { useState } from 'react';
 import { ContestationDialog } from '../contestation/ContestationDialog';
@@ -23,7 +26,10 @@ interface ProceduresTableProps {
   isDetailView: boolean;
 }
 
-export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTableProps) => {
+export const ProceduresTable = ({
+  procedimentos,
+  isDetailView,
+}: ProceduresTableProps) => {
   const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
   const [contestationOpen, setContestationOpen] = useState(false);
 
@@ -51,8 +57,10 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
         <TableBody>
           {procedimentos.map((item) => {
             const cbhpmData = findProcedureByCodigo(item.codigo);
-            const baseCBHPM = cbhpmData ? calculateTotalCBHPM(cbhpmData) : item.valorCBHPM;
-            
+            const baseCBHPM = cbhpmData
+              ? calculateTotalCBHPM(cbhpmData)
+              : item.valorCBHPM;
+
             return (
               <TableRow key={item.id}>
                 <TableCell className="font-medium">{item.codigo}</TableCell>
@@ -67,7 +75,8 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="max-w-xs">
-                            CBHPM 2015: {cbhpmData?.descricao || item.procedimento}<br />
+                            CBHPM 2015: {cbhpmData?.descricao || item.procedimento}
+                            <br />
                             Valor Base: R$ {baseCBHPM.toFixed(2)}
                           </p>
                         </TooltipContent>
@@ -86,15 +95,23 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
                     <PopoverContent className="w-80">
                       <div className="space-y-2">
                         {item.doctors.map((doctor) => (
-                          <div key={doctor.code} className="flex flex-col space-y-1 border-b last:border-0 pb-2">
+                          <div
+                            key={doctor.code}
+                            className="flex flex-col space-y-1 border-b last:border-0 pb-2"
+                          >
                             <span className="font-medium">{doctor.name}</span>
                             <div className="flex justify-between text-sm text-muted-foreground">
-                              <Badge variant={
-                                doctor.role === "Cirurgião" ? "info" : 
-                                doctor.role === "Primeiro Auxiliar" ? "success" : 
-                                doctor.role === "Anestesista" ? "warning" :
-                                "neutral"
-                              }>
+                              <Badge
+                                variant={
+                                  doctor.role === 'Cirurgião'
+                                    ? 'info'
+                                    : doctor.role === 'Primeiro Auxiliar'
+                                      ? 'success'
+                                      : doctor.role === 'Anestesista'
+                                        ? 'warning'
+                                        : 'neutral'
+                                }
+                              >
                                 {doctor.role}
                               </Badge>
                               <span>CRM: {doctor.code}</span>
@@ -105,7 +122,9 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
                     </PopoverContent>
                   </Popover>
                 </TableCell>
-                <TableCell className="text-right">R$ {item.valorCBHPM.toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                  R$ {item.valorCBHPM.toFixed(2)}
+                </TableCell>
                 <TableCell className="text-right">
                   {item.pago ? `R$ ${item.valorPago.toFixed(2)}` : '-'}
                 </TableCell>
@@ -113,17 +132,22 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
                   {item.diferenca === 0 ? (
                     <span>-</span>
                   ) : (
-                    <span className={item.diferenca < 0 ? 'text-danger font-medium' : 'text-success font-medium'}>
-                      {item.diferenca < 0 ? '-' : '+'} R$ {Math.abs(item.diferenca).toFixed(2)}
+                    <span
+                      className={
+                        item.diferenca < 0
+                          ? 'text-danger font-medium'
+                          : 'text-success font-medium'
+                      }
+                    >
+                      {item.diferenca < 0 ? '-' : '+'} R${' '}
+                      {Math.abs(item.diferenca).toFixed(2)}
                     </span>
                   )}
                 </TableCell>
                 <TableCell className="text-center">
                   {item.pago ? (
                     item.diferenca < 0 ? (
-                      <Badge variant="warning">
-                        Pago Parcialmente
-                      </Badge>
+                      <Badge variant="warning">Pago Parcialmente</Badge>
                     ) : (
                       <Badge variant="success">
                         <CheckCircle className="h-3 w-3 mr-1" />
@@ -139,8 +163,8 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
                 </TableCell>
                 <TableCell>
                   {(item.diferenca < 0 || !item.pago) && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => handleContestProcedure(item)}
                     >
@@ -156,7 +180,7 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
       </Table>
 
       {selectedProcedure && (
-        <ContestationDialog 
+        <ContestationDialog
           open={contestationOpen}
           onOpenChange={setContestationOpen}
           procedureDetails={{
@@ -166,7 +190,7 @@ export const ProceduresTable = ({ procedimentos, isDetailView }: ProceduresTable
             valorPago: selectedProcedure.valorPago,
             diferenca: selectedProcedure.diferenca,
             papel: selectedProcedure.doctors?.[0]?.role,
-            justificativa: ''
+            justificativa: '',
           }}
         />
       )}

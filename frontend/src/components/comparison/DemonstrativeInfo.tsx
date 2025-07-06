@@ -35,11 +35,15 @@ export const DemonstrativeInfo = ({ info }: DemonstrativeInfoProps) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">Total Apresentado:</span>
-              <p className="font-medium">R$ {info.honorarios.totalApresentado.toFixed(2)}</p>
+              <p className="font-medium">
+                R$ {info.honorarios.totalApresentado.toFixed(2)}
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">Total Aprovado:</span>
-              <p className="font-medium">R$ {info.honorarios.totalAprovado.toFixed(2)}</p>
+              <p className="font-medium">
+                R$ {info.honorarios.totalAprovado.toFixed(2)}
+              </p>
             </div>
             <div>
               <span className="text-muted-foreground">Total Glosa:</span>

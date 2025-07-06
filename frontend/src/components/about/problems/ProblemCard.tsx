@@ -1,7 +1,6 @@
-
-import { Card, CardContent } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { Card, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { ReactNode } from 'react';
 
 export interface ProblemCardProps {
   title: string;
@@ -21,9 +20,7 @@ export function ProblemCard({ title, description, icon, index }: ProblemCardProp
       <Card className="h-full border-none shadow-sm">
         <CardContent className="pt-6">
           <div className="flex items-start">
-            <div className="mr-4 p-3 rounded-full bg-muted">
-              {icon}
-            </div>
+            <div className="mr-4 p-3 rounded-full bg-muted">{icon}</div>
             <div>
               <h3 className="text-xl font-semibold mb-2">{title}</h3>
               <p className="text-muted-foreground">{description}</p>

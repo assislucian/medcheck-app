@@ -1,4 +1,3 @@
-
 # Export Services Documentation
 
 This documentation provides a comprehensive guide to using the export services in the MedCheck application. These services allow data to be exported in various formats including Excel, TISS XML, and HL7 FHIR.
@@ -25,7 +24,7 @@ import { exportToExcel } from '@/services/exportService';
 // Example data
 const data = [
   { name: 'Hospital A', procedimentos: 150, glosados: 12 },
-  { name: 'Hospital B', procedimentos: 230, glosados: 18 }
+  { name: 'Hospital B', procedimentos: 230, glosados: 18 },
 ];
 
 // Export the data
@@ -42,24 +41,34 @@ import { exportReportToExcel } from '@/services/exportService';
 const reportData = {
   period: 'Janeiro a Março 2025',
   summary: {
-    totalRecebido: 195000.50,
+    totalRecebido: 195000.5,
     totalGlosado: 14500.75,
     totalProcedimentos: 1350,
-    auditoriaPendente: 42
+    auditoriaPendente: 42,
   },
   hospitalData: [
     { name: 'Hospital A', procedimentos: 500, glosados: 45, recuperados: 30 },
-    { name: 'Hospital B', procedimentos: 850, glosados: 62, recuperados: 40 }
+    { name: 'Hospital B', procedimentos: 850, glosados: 62, recuperados: 40 },
   ],
   monthlyData: [
     { month: 'Janeiro', procedimentos: 450, glosados: 35 },
     { month: 'Fevereiro', procedimentos: 420, glosados: 31 },
-    { month: 'Março', procedimentos: 480, glosados: 38 }
+    { month: 'Março', procedimentos: 480, glosados: 38 },
   ],
   procedureData: [
-    { codigo: '31309127', descricao: 'Consulta em consultório', quantidade: 245, glosados: 12 },
-    { codigo: '31602029', descricao: 'Atendimento de emergência', quantidade: 118, glosados: 8 }
-  ]
+    {
+      codigo: '31309127',
+      descricao: 'Consulta em consultório',
+      quantidade: 245,
+      glosados: 12,
+    },
+    {
+      codigo: '31602029',
+      descricao: 'Atendimento de emergência',
+      quantidade: 118,
+      glosados: 8,
+    },
+  ],
 };
 
 // Export the report
@@ -84,7 +93,7 @@ const historyData: HistoryItem[] = [
     type: 'Guia',
     status: 'analisado',
     procedimentos: 145,
-    glosados: 12
+    glosados: 12,
   },
   {
     id: '2',
@@ -93,8 +102,8 @@ const historyData: HistoryItem[] = [
     type: 'Demonstrativo',
     status: 'pendente',
     procedimentos: 230,
-    glosados: 0
-  }
+    glosados: 0,
+  },
 ];
 
 // Export the history data
@@ -116,15 +125,13 @@ const procedimentosData = [
     id: 'GUIA123456',
     procedimentos: [
       { codigo: '10101012', descricao: 'Consulta em consultório' },
-      { codigo: '40304361', descricao: 'Endoscopia digestiva alta' }
-    ]
+      { codigo: '40304361', descricao: 'Endoscopia digestiva alta' },
+    ],
   },
   {
     id: 'GUIA123457',
-    procedimentos: [
-      { codigo: '31309127', descricao: 'Consulta em pronto socorro' }
-    ]
-  }
+    procedimentos: [{ codigo: '31309127', descricao: 'Consulta em pronto socorro' }],
+  },
 ];
 
 // Export to TISS XML format
@@ -145,14 +152,14 @@ const patientData = [
     id: 'PT001',
     nome: 'Maria Silva',
     genero: 'female',
-    dataNascimento: '1985-06-15'
+    dataNascimento: '1985-06-15',
   },
   {
     id: 'PT002',
     nome: 'João Santos',
     genero: 'male',
-    dataNascimento: '1978-11-23'
-  }
+    dataNascimento: '1978-11-23',
+  },
 ];
 
 // Export as FHIR Patient resources
@@ -165,8 +172,8 @@ const practitionerData = [
     id: 'DR001',
     nome: 'Dr. Carlos Mendes',
     crm: '12345-SP',
-    especialidade: 'Cardiologia'
-  }
+    especialidade: 'Cardiologia',
+  },
 ];
 
 // Export as FHIR Practitioner resources
@@ -194,20 +201,20 @@ const handleExport = (format: 'excel' | 'tiss' | 'fhir' = 'excel') => {
       monthlyData: monthlyData,
       procedureData: [] // Opcional
     };
-    
+
     const filename = `relatorio-${currentYear}`;
-    
+
     switch (format) {
       case 'excel':
         exportReportToExcel(reportData, filename);
         toast.success("Relatório exportado em Excel");
         break;
-        
+
       case 'tiss':
         exportToTissXML(hospitalData, `${filename}-tiss`);
         toast.success("Relatório exportado em formato TISS (XML)");
         break;
-        
+
       case 'fhir':
         exportToFHIR(hospitalData, 'Organization', `${filename}-fhir`);
         toast.success("Relatório exportado em formato HL7 FHIR");

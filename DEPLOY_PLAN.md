@@ -1,6 +1,7 @@
 # Plano de Deploy Completo — MedCheck
 
 ## 1. Objetivo
+
 Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, com administração remota (solo founder na Alemanha) e operação principal no Brasil.
 
 ---
@@ -23,6 +24,7 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 ## 3. Passos de Deploy
 
 ### 3.1. Backend
+
 1. Configurar repositório GitHub privado.
 2. Provisionar instância AWS EC2 (ou ECS/Fargate) na região desejada.
 3. Configurar variáveis de ambiente (segredos, chaves, URLs de banco, SMTP, etc).
@@ -34,16 +36,19 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 9. Monitoramento: CloudWatch, Sentry, ou similar.
 
 ### 3.2. Frontend
+
 1. Deploy via Vercel (conectar repositório GitHub, configurar domínio).
 2. Configurar variáveis de ambiente (API URL, chaves públicas, etc).
 3. Testar build e integração com backend.
 
 ### 3.3. E-mails
+
 1. Criar conta SendGrid, configurar domínio e autenticação SPF/DKIM.
 2. Integrar chave SendGrid no backend.
 3. Testar envio de e-mails (cadastro, recuperação de senha, notificações LGPD).
 
 ### 3.4. Analytics
+
 1. Configurar Google Analytics (ou Plausible/Matomo).
 2. Adicionar consentimento de cookies no frontend.
 3. Testar coleta de dados e dashboards.
@@ -51,6 +56,7 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 ---
 
 ## 4. Segurança e Compliance
+
 - **Criptografia em trânsito:** HTTPS obrigatório em todas as camadas.
 - **Criptografia em repouso:** Ativar no banco e S3.
 - **Política de senha forte e 2FA (quando possível).**
@@ -63,6 +69,7 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 ---
 
 ## 5. Operação e Gestão
+
 - **Administração 100% remota via painéis web (AWS, Supabase, Vercel, SendGrid, etc).**
 - **Monitoramento de custos e alertas de uso.**
 - **Automação de notificações e incidentes críticos.**
@@ -71,6 +78,7 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 ---
 
 ## 6. Checklist Final para Go-Live
+
 - [ ] Testes de ponta a ponta (cadastro, login, upload, exportação, exclusão, logs, LGPD)
 - [ ] Testes de performance e latência do Brasil
 - [ ] Testes de backup/restauração
@@ -81,10 +89,11 @@ Deploy seguro, escalável e em conformidade com LGPD/GDPR para SaaS Healthtech, 
 ---
 
 ## 7. Observações
+
 - Este plano pode ser adaptado conforme crescimento do negócio (multi-região, multi-cloud, equipe, etc).
 - Revisar periodicamente suboperadores e contratos.
 - Manter logs e auditoria de todas as operações críticas.
 
 ---
 
-**Este arquivo serve como referência viva para deploy e operação do MedCheck.** 
+**Este arquivo serve como referência viva para deploy e operação do MedCheck.**

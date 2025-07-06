@@ -1,4 +1,3 @@
-
 /**
  * Types for the export services
  */
@@ -11,7 +10,7 @@ import { HistoryItem } from '@/components/history/data';
 export interface ReportData {
   /** Period covered by the report (e.g., "January 2025") */
   period?: string;
-  
+
   /** Summary data with totals */
   summary?: {
     /** Total value received */
@@ -23,13 +22,13 @@ export interface ReportData {
     /** Procedures pending audit */
     auditoriaPendente: number;
   };
-  
+
   /** Data grouped by hospital */
   hospitalData?: HospitalData[];
-  
+
   /** Data grouped by month */
   monthlyData?: MonthlyData[];
-  
+
   /** Data grouped by procedure */
   procedureData?: ProcedureData[];
 }
@@ -94,9 +93,9 @@ export interface TISSProcedure {
 /**
  * FHIR resource types
  */
-export type FHIRResourceType = 
-  | 'Patient' 
-  | 'Practitioner' 
+export type FHIRResourceType =
+  | 'Patient'
+  | 'Practitioner'
   | 'Organization'
   | 'Procedure'
   | 'Encounter'

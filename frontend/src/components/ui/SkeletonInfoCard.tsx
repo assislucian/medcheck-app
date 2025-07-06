@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SkeletonInfoCardProps {
   className?: string;
@@ -9,7 +9,7 @@ interface SkeletonInfoCardProps {
 export const SkeletonInfoCard = ({ className }: SkeletonInfoCardProps) => (
   <div
     className={cn(
-      "w-full rounded-xl border p-4 shadow-sm bg-muted/20 animate-pulse flex flex-col gap-4",
+      'w-full rounded-xl border p-4 shadow-sm bg-muted/20 animate-pulse flex flex-col gap-4',
       className
     )}
     aria-busy="true"
@@ -25,4 +25,4 @@ export const SkeletonInfoCard = ({ className }: SkeletonInfoCardProps) => (
       <Skeleton className="h-3 w-20" />
     </div>
   </div>
-); 
+);

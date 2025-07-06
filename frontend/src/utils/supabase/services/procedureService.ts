@@ -32,19 +32,21 @@ interface ProcedureResponse {
  * @param analysisId The ID of the analysis to fetch procedures for
  * @returns List of procedures
  */
-export async function fetchProceduresData(analysisId: string): Promise<ProcedureData[]> {
+export async function fetchProceduresData(
+  analysisId: string
+): Promise<ProcedureData[]> {
   try {
     // Use type assertion to handle the Supabase response
-    const response = await supabase
+    const response = (await supabase
       .from('procedures')
       .select('*')
-      .eq('analysis_id', analysisId) as unknown as ProcedureResponse;
-      
+      .eq('analysis_id', analysisId)) as unknown as ProcedureResponse;
+
     if (response.error) {
       console.error('Error fetching procedures data:', response.error);
       throw response.error;
     }
-    
+
     return response.data || [];
   } catch (error) {
     console.error('Error in procedure service:', error);

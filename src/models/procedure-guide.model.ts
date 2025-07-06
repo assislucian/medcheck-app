@@ -1,4 +1,4 @@
-import { Role } from './role.enum';
+import { Role } from "./role.enum";
 
 export interface ProcedureGuide {
   guia: string;
@@ -10,4 +10,4 @@ export interface ProcedureGuide {
   quantity: number;
   presentedValue: number;
   approvedValue: number;
-} 
+}

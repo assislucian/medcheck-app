@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 type TrialStatus = 'not_started' | 'active' | 'expired' | 'loading' | 'error';
@@ -27,7 +26,7 @@ export function useTrialStatus() {
 
       try {
         const { data, error } = await supabase.rpc('check_trial_status', {
-          user_id: user.id
+          user_id: user.id,
         });
 
         if (error) {
@@ -36,9 +35,9 @@ export function useTrialStatus() {
 
         // Properly type cast the data
         const trialData = data as unknown as TrialResponse;
-        
+
         setStatus(trialData.status as TrialStatus);
-        
+
         if (trialData.end_date) {
           setEndDate(new Date(trialData.end_date));
         } else {
@@ -56,13 +55,13 @@ export function useTrialStatus() {
     checkTrialStatus();
   }, [user]);
 
-  return { 
-    status, 
-    endDate, 
-    isLoading, 
+  return {
+    status,
+    endDate,
+    isLoading,
     error,
     isActive: status === 'active',
     isExpired: status === 'expired',
-    isNotStarted: status === 'not_started'
+    isNotStarted: status === 'not_started',
   };
 }

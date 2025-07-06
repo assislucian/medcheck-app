@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchAnalysisById } from '@/utils/supabase/analysisHelpers';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 describe('analysisHelpers', () => {
@@ -19,7 +18,7 @@ describe('analysisHelpers', () => {
     const mockAnalysis = {
       id: 'test-id',
       summary: { total: 100 },
-      created_at: '2025-01-01'
+      created_at: '2025-01-01',
     };
 
     // Create proper mock implementation
@@ -37,7 +36,9 @@ describe('analysisHelpers', () => {
 
   it('returns null on error', async () => {
     // Create proper mock implementation for error case
-    const mockSingle = vi.fn().mockResolvedValue({ data: null, error: { message: 'Error' } });
+    const mockSingle = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: { message: 'Error' } });
     const mockEq = vi.fn().mockReturnValue({ single: mockSingle });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });

@@ -1,7 +1,12 @@
-
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Check } from 'lucide-react';
 
 interface OrderSummaryProps {
@@ -12,7 +17,7 @@ interface OrderSummaryProps {
 
 export function OrderSummary({ planName, price, interval }: OrderSummaryProps) {
   const navigate = useNavigate();
-  
+
   // Plan features based on plan name
   const getPlanFeatures = () => {
     switch (planName) {
@@ -46,13 +51,10 @@ export function OrderSummary({ planName, price, interval }: OrderSummaryProps) {
           'Treinamento dedicado',
         ];
       default:
-        return [
-          'Features do plano selecionado',
-          'Suporte completo',
-        ];
+        return ['Features do plano selecionado', 'Suporte completo'];
     }
   };
-  
+
   return (
     <Card>
       <CardHeader>
@@ -63,17 +65,17 @@ export function OrderSummary({ planName, price, interval }: OrderSummaryProps) {
           <span className="font-medium">Plano</span>
           <span className="font-semibold">{planName}</span>
         </div>
-        
+
         <div className="flex justify-between items-center">
           <span className="font-medium">Cobrança</span>
           <span>{interval === 'monthly' ? 'Mensal' : 'Anual'}</span>
         </div>
-        
+
         <div className="flex justify-between items-center">
           <span className="font-medium">Valor</span>
           <span className="font-semibold text-lg">{price}</span>
         </div>
-        
+
         <div className="mt-4 pt-4 border-t">
           <h4 className="font-medium mb-2">Inclui:</h4>
           <ul className="space-y-2">
@@ -87,8 +89,8 @@ export function OrderSummary({ planName, price, interval }: OrderSummaryProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full"
           onClick={() => navigate('/pricing')}
         >

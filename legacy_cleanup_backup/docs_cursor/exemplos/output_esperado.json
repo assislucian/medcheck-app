@@ -10,9 +10,9 @@
       "papel": "Cirurgião",
       "beneficiario": "João da Silva",
       "qtd": 1,
-      "valor_liberado": 80.00,
-      "valor_tabela": 85.00,
-      "diferenca": -5.00,
+      "valor_liberado": 80.0,
+      "valor_tabela": 85.0,
+      "diferenca": -5.0,
       "diferenca_percentual": -5.88,
       "status": "divergente"
     },
@@ -24,10 +24,10 @@
       "papel": "Cirurgião",
       "beneficiario": "Maria Oliveira",
       "qtd": 1,
-      "valor_liberado": 500.00,
-      "valor_tabela": 500.00,
-      "diferenca": 0.00,
-      "diferenca_percentual": 0.00,
+      "valor_liberado": 500.0,
+      "valor_tabela": 500.0,
+      "diferenca": 0.0,
+      "diferenca_percentual": 0.0,
       "status": "ok"
     }
   ],
@@ -36,16 +36,16 @@
       "guia": "00012347",
       "codigo": "87654321",
       "descricao": "Procedimento Y",
-      "valor_glosa": 100.00,
+      "valor_glosa": 100.0,
       "motivo": "Procedimento não autorizado"
     }
   ],
   "resumo": {
     "total_procedimentos": 2,
-    "total_liberado": 580.00,
-    "total_tabela": 585.00,
-    "total_diferenca": -5.00,
+    "total_liberado": 580.0,
+    "total_tabela": 585.0,
+    "total_diferenca": -5.0,
     "percentual_diferenca": -0.85,
-    "total_glosas": 100.00
+    "total_glosas": 100.0
   }
 }

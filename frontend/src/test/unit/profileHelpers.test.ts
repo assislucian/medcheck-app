@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi } from 'vitest';
 import { getProfileData, updateProfile } from '@/utils/supabase/profileHelpers';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,8 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 // Mock the Supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 describe('profileHelpers', () => {
@@ -17,10 +16,12 @@ describe('profileHelpers', () => {
       name: 'Test User',
       email: 'test@example.com',
       crm: '12345',
-      specialty: 'Cardiologia'
+      specialty: 'Cardiologia',
     };
 
-    const mockMaybeSingle = vi.fn().mockResolvedValue({ data: mockProfile, error: null });
+    const mockMaybeSingle = vi
+      .fn()
+      .mockResolvedValue({ data: mockProfile, error: null });
     const mockEq = vi.fn().mockReturnValue({ maybeSingle: mockMaybeSingle });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });
     const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });

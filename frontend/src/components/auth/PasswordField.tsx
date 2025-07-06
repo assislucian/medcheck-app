@@ -1,4 +1,3 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
@@ -29,7 +28,7 @@ const PasswordField = ({ password, setPassword, error }: PasswordFieldProps) => 
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`pr-10 ${error ? "border-destructive" : ""}`}
+          className={`pr-10 ${error ? 'border-destructive' : ''}`}
           required
           autoComplete="current-password"
         />
@@ -44,9 +43,7 @@ const PasswordField = ({ password, setPassword, error }: PasswordFieldProps) => 
           </span>
         </button>
       </div>
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 };

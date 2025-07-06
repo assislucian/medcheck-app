@@ -1,9 +1,14 @@
-
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Lock } from 'lucide-react';
 
 const LockScreen = () => {
   const navigate = useNavigate();
@@ -26,11 +31,7 @@ const LockScreen = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center space-y-4">
-              <Button 
-                size="lg" 
-                className="w-full" 
-                onClick={() => navigate('/welcome')}
-              >
+              <Button size="lg" className="w-full" onClick={() => navigate('/welcome')}>
                 Iniciar Teste Grátis
               </Button>
               <p className="text-sm text-muted-foreground">

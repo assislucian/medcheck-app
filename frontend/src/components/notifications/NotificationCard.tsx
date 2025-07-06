@@ -1,9 +1,16 @@
-
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Check, X, Info, AlertTriangle, CheckCircle, Bell, ExternalLink } from 'lucide-react';
+import {
+  Check,
+  X,
+  Info,
+  AlertTriangle,
+  CheckCircle,
+  Bell,
+  ExternalLink,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -14,10 +21,13 @@ interface NotificationCardProps {
   fullWidth?: boolean;
 }
 
-export const NotificationCard = ({ notification, fullWidth = false }: NotificationCardProps) => {
+export const NotificationCard = ({
+  notification,
+  fullWidth = false,
+}: NotificationCardProps) => {
   const [isHovering, setIsHovering] = useState(false);
   const { markAsRead, removeNotification } = useNotifications();
-  
+
   const getIconByType = () => {
     switch (notification.type) {
       case 'success':
@@ -31,10 +41,13 @@ export const NotificationCard = ({ notification, fullWidth = false }: Notificati
         return <Info className="h-5 w-5 text-blue-500" />;
     }
   };
-  
+
   const getTimeAgo = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: ptBR });
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: ptBR,
+      });
     } catch (e) {
       return 'Data inválida';
     }
@@ -50,7 +63,7 @@ export const NotificationCard = ({ notification, fullWidth = false }: Notificati
     e.stopPropagation();
     removeNotification(notification.id);
   };
-  
+
   const NotificationContent = () => (
     <div className="w-full">
       <div className="flex items-center justify-between">
@@ -58,13 +71,13 @@ export const NotificationCard = ({ notification, fullWidth = false }: Notificati
           {getIconByType()}
           <span className="font-medium">{notification.title}</span>
         </div>
-        <div 
+        <div
           className={`transition-opacity duration-200 ${isHovering || !fullWidth ? 'opacity-100' : 'opacity-0'}`}
         >
           {!notification.read ? (
             <Button
-              variant="ghost" 
-              size="icon" 
+              variant="ghost"
+              size="icon"
               className="h-6 w-6"
               onClick={(e) => {
                 e.stopPropagation();
@@ -76,9 +89,9 @@ export const NotificationCard = ({ notification, fullWidth = false }: Notificati
             </Button>
           ) : null}
           <Button
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6" 
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
             onClick={handleRemove}
           >
             <X className="h-4 w-4" />
@@ -104,9 +117,9 @@ export const NotificationCard = ({ notification, fullWidth = false }: Notificati
   return (
     <Card
       className={cn(
-        "p-3 transition-all cursor-pointer hover:bg-accent",
-        !notification.read && "bg-primary/5 border-l-4 border-l-primary",
-        fullWidth ? "w-full" : "w-80"
+        'p-3 transition-all cursor-pointer hover:bg-accent',
+        !notification.read && 'bg-primary/5 border-l-4 border-l-primary',
+        fullWidth ? 'w-full' : 'w-80'
       )}
       onClick={handleCardClick}
       onMouseEnter={() => setIsHovering(true)}

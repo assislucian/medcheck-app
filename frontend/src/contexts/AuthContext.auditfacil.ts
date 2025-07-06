@@ -1,7 +1,6 @@
-
 /**
  * AuthContext.ts
- * 
+ *
  * Re-exporta o contexto de autenticação de auth/AuthContext.tsx
  * para manter compatibilidade com a estrutura de importação existente.
  */

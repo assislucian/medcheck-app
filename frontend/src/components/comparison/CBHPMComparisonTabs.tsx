@@ -1,11 +1,5 @@
-
 import React, { useState } from 'react';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -13,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 // Local small currency formatter as the '@/utils/formatters' file does not exist
 const formatCurrency = (value: number) => {
@@ -49,38 +43,39 @@ const CBHPMComparisonTabs: React.FC<CBHPMComparisonTabsProps> = ({
   getSortIcon,
   filter,
   filteredSummary,
-  PatientInfo
+  PatientInfo,
 }) => {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState('all');
 
   // Filter details based on active tab
   const tabFilteredDetails = React.useMemo(() => {
-    if (activeTab === "all") return filteredDetails;
-    return filteredDetails.filter(detail => detail.papel === activeTab);
+    if (activeTab === 'all') return filteredDetails;
+    return filteredDetails.filter((detail) => detail.papel === activeTab);
   }, [activeTab, filteredDetails]);
 
   // Calculate summary for the currently displayed tab
   const tabSummary = React.useMemo(() => {
-    const summary = tabFilteredDetails.reduce((acc, detail) => {
-      acc.total++;
-      if (detail.status === 'conforme') acc.conforme++;
-      else if (detail.status === 'abaixo') acc.abaixo++;
-      else if (detail.status === 'acima') acc.acima++;
-      return acc;
-    }, { total: 0, conforme: 0, abaixo: 0, acima: 0 });
-    
+    const summary = tabFilteredDetails.reduce(
+      (acc, detail) => {
+        acc.total++;
+        if (detail.status === 'conforme') acc.conforme++;
+        else if (detail.status === 'abaixo') acc.abaixo++;
+        else if (detail.status === 'acima') acc.acima++;
+        return acc;
+      },
+      { total: 0, conforme: 0, abaixo: 0, acima: 0 }
+    );
+
     return summary;
   }, [tabFilteredDetails]);
 
   return (
     <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="mb-4">
-        <TabsTrigger value="all">
-          Todos ({filteredSummary.total})
-        </TabsTrigger>
-        {roles.map(role => (
+        <TabsTrigger value="all">Todos ({filteredSummary.total})</TabsTrigger>
+        {roles.map((role) => (
           <TabsTrigger key={role} value={role}>
-            {role} ({filteredDetails.filter(d => d.papel === role).length})
+            {role} ({filteredDetails.filter((d) => d.papel === role).length})
           </TabsTrigger>
         ))}
       </TabsList>
@@ -96,11 +91,11 @@ const CBHPMComparisonTabs: React.FC<CBHPMComparisonTabsProps> = ({
           PatientInfo={PatientInfo}
         />
       </TabsContent>
-      
-      {roles.map(role => (
+
+      {roles.map((role) => (
         <TabsContent key={role} value={role} className="overflow-auto">
           <ComparisonTable
-            details={filteredDetails.filter(d => d.papel === role)}
+            details={filteredDetails.filter((d) => d.papel === role)}
             getStatusBadge={getStatusBadge}
             getRoleBadge={getRoleBadge}
             toggleSort={toggleSort}
@@ -131,38 +126,28 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
   toggleSort,
   sortField,
   getSortIcon,
-  PatientInfo
+  PatientInfo,
 }) => {
   return (
     <Table className="border rounded-md">
       <TableHeader className="bg-muted/50">
         <TableRow>
-          <TableHead 
+          <TableHead
             className="w-24 cursor-pointer"
             onClick={() => toggleSort('codigo')}
           >
-            <div className="flex items-center">
-              Código {getSortIcon('codigo')}
-            </div>
+            <div className="flex items-center">Código {getSortIcon('codigo')}</div>
           </TableHead>
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => toggleSort('descricao')}
-          >
+          <TableHead className="cursor-pointer" onClick={() => toggleSort('descricao')}>
             <div className="flex items-center">
               Descrição {getSortIcon('descricao')}
             </div>
           </TableHead>
-          <TableHead 
-            className="cursor-pointer"
-            onClick={() => toggleSort('papel')}
-          >
-            <div className="flex items-center">
-              Papel {getSortIcon('papel')}
-            </div>
+          <TableHead className="cursor-pointer" onClick={() => toggleSort('papel')}>
+            <div className="flex items-center">Papel {getSortIcon('papel')}</div>
           </TableHead>
           {PatientInfo && (
-            <TableHead 
+            <TableHead
               className="cursor-pointer"
               onClick={() => toggleSort('beneficiario')}
             >
@@ -171,7 +156,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               </div>
             </TableHead>
           )}
-          <TableHead 
+          <TableHead
             className="text-right cursor-pointer"
             onClick={() => toggleSort('valorCbhpm')}
           >
@@ -179,7 +164,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               CBHPM {getSortIcon('valorCbhpm')}
             </div>
           </TableHead>
-          <TableHead 
+          <TableHead
             className="text-right cursor-pointer"
             onClick={() => toggleSort('valorPago')}
           >
@@ -187,7 +172,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               Pago {getSortIcon('valorPago')}
             </div>
           </TableHead>
-          <TableHead 
+          <TableHead
             className="text-right cursor-pointer"
             onClick={() => toggleSort('diferenca')}
           >
@@ -195,7 +180,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               Diferença {getSortIcon('diferenca')}
             </div>
           </TableHead>
-          <TableHead 
+          <TableHead
             className="text-center cursor-pointer"
             onClick={() => toggleSort('status')}
           >
@@ -229,10 +214,15 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({
               <TableCell className="text-right">
                 {formatCurrency(detail.valorPago)}
               </TableCell>
-              <TableCell className={`text-right ${
-                detail.diferenca < 0 ? 'text-red-600' : 
-                detail.diferenca > 0 ? 'text-green-600' : ''
-              }`}>
+              <TableCell
+                className={`text-right ${
+                  detail.diferenca < 0
+                    ? 'text-red-600'
+                    : detail.diferenca > 0
+                      ? 'text-green-600'
+                      : ''
+                }`}
+              >
                 {formatCurrency(detail.diferenca)}
               </TableCell>
               <TableCell className="text-center">

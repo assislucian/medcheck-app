@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 interface GlobalHeaderProps {
   title?: string;
@@ -7,4 +7,4 @@ interface GlobalHeaderProps {
 
 export default function GlobalHeader() {
   return null;
-} 
+}

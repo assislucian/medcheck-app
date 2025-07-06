@@ -7,7 +7,7 @@ interface RetryOptions {
 
 export async function retry<T>(
   fn: () => Promise<T>,
-  options: RetryOptions
+  options: RetryOptions,
 ): Promise<T> {
   let lastError: Error;
   let attempt = 0;
@@ -26,10 +26,10 @@ export async function retry<T>(
       // Calculate exponential backoff
       const timeout = Math.min(
         options.minTimeout * Math.pow(options.factor, attempt),
-        options.maxTimeout
+        options.maxTimeout,
       );
 
-      await new Promise(resolve => setTimeout(resolve, timeout));
+      await new Promise((resolve) => setTimeout(resolve, timeout));
     }
   }
 
@@ -39,26 +39,26 @@ export async function retry<T>(
 export function isRetryableError(error: Error): boolean {
   // Add specific error types that should be retried
   const retryableErrors = [
-    'ECONNRESET',
-    'ETIMEDOUT',
-    'ECONNREFUSED',
-    'EPIPE',
-    'EHOSTUNREACH',
-    'ENETUNREACH',
-    'ENOTFOUND',
+    "ECONNRESET",
+    "ETIMEDOUT",
+    "ECONNREFUSED",
+    "EPIPE",
+    "EHOSTUNREACH",
+    "ENETUNREACH",
+    "ENOTFOUND",
   ];
 
   return (
-    retryableErrors.some(code => error.message.includes(code)) ||
-    error.message.toLowerCase().includes('timeout') ||
-    error.message.toLowerCase().includes('network') ||
-    error.message.toLowerCase().includes('connection')
+    retryableErrors.some((code) => error.message.includes(code)) ||
+    error.message.toLowerCase().includes("timeout") ||
+    error.message.toLowerCase().includes("network") ||
+    error.message.toLowerCase().includes("connection")
   );
 }
 
 export function withRetry<T>(
   fn: () => Promise<T>,
-  options: Partial<RetryOptions> = {}
+  options: Partial<RetryOptions> = {},
 ): Promise<T> {
   const defaultOptions: RetryOptions = {
     retries: 3,
@@ -68,4 +68,4 @@ export function withRetry<T>(
   };
 
   return retry(fn, { ...defaultOptions, ...options });
-} 
+}

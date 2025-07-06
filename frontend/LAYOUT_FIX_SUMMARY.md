@@ -13,6 +13,7 @@ O desalinhamento horizontal entre as páginas (Dashboard, Guides, Demonstratives
 ### 1. Padronização de Layout Classes
 
 Todas as páginas agora usam consistentemente:
+
 - `content-layout` - Container principal com padding e max-width padronizados
 - `section-spacing` - Espaçamento vertical consistente entre seções
 - `card-grid` - Grid responsivo para cards de métricas
@@ -20,6 +21,7 @@ Todas as páginas agora usam consistentemente:
 ### 2. Remoção de Wrappers Locais
 
 **Antes:**
+
 ```tsx
 // Guides.tsx
 <CardContent className="space-y-4"> // ❌ Wrapper extra
@@ -27,7 +29,7 @@ Todas as páginas agora usam consistentemente:
   <FileList />
 </CardContent>
 
-// Demonstratives.tsx  
+// Demonstratives.tsx
 <CardContent className="space-y-4"> // ❌ Wrapper extra
   <FileDropZone />
   <FileList />
@@ -35,6 +37,7 @@ Todas as páginas agora usam consistentemente:
 ```
 
 **Depois:**
+
 ```tsx
 // Guides.tsx
 <CardContent className="p-0"> // ✅ Sem wrapper extra
@@ -57,13 +60,9 @@ Todas as páginas seguem a mesma estrutura:
   <PageContainer>
     <PageHeader />
     <div className="content-layout">
+      <div className="section-spacing">{/* Conteúdo da seção */}</div>
       <div className="section-spacing">
-        {/* Conteúdo da seção */}
-      </div>
-      <div className="section-spacing">
-        <div className="card-grid">
-          {/* Cards de métricas */}
-        </div>
+        <div className="card-grid">{/* Cards de métricas */}</div>
       </div>
     </div>
   </PageContainer>
@@ -73,6 +72,7 @@ Todas as páginas seguem a mesma estrutura:
 ### 4. Tokens de Layout Centralizados
 
 Definidos em `src/styles/tokens-layout.css`:
+
 ```css
 :root {
   --sidebar-width: 256px;
@@ -108,21 +108,25 @@ Definidos em `src/styles/tokens-layout.css`:
 ## Resultados
 
 ### ✅ Alinhamento Consistente
+
 - Todas as páginas têm o mesmo left offset (tolerância < 10px)
 - Mesmo max-width para conteúdo (tolerância < 50px)
 - Sem scroll horizontal
 
 ### ✅ Responsividade
+
 - Funciona em breakpoints de 320px a 1536px
 - Layout adaptativo sem quebrar alinhamento
 - Sidebar overlay em mobile
 
 ### ✅ Performance
+
 - Build bem-sucedido sem erros
 - CSS otimizado com tokens centralizados
 - Transições suaves
 
 ### ✅ Manutenibilidade
+
 - Layout tokens centralizados
 - Classes utilitárias reutilizáveis
 - Estrutura consistente entre páginas
@@ -145,4 +149,4 @@ Definidos em `src/styles/tokens-layout.css`:
 
 **Status**: ✅ RESOLVIDO
 **Data**: 2025-06-19
-**Versão**: 1.0.0 
+**Versão**: 1.0.0

@@ -1,9 +1,8 @@
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileAvatar } from "@/hooks/use-profile-avatar";
-import { Camera, User } from "lucide-react";
-import { useState } from "react";
-import { useAlert } from "@/utils/alertUtils";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useProfileAvatar } from '@/hooks/use-profile-avatar';
+import { Camera, User } from 'lucide-react';
+import { useState } from 'react';
+import { useAlert } from '@/utils/alertUtils';
 
 interface ProfileAvatarProps {
   name: string;
@@ -11,14 +10,22 @@ interface ProfileAvatarProps {
   onAvatarUpdate: (url: string) => void;
 }
 
-export const ProfileAvatar = ({ name, avatarUrl, onAvatarUpdate }: ProfileAvatarProps) => {
+export const ProfileAvatar = ({
+  name,
+  avatarUrl,
+  onAvatarUpdate,
+}: ProfileAvatarProps) => {
   const { uploading, handleAvatarChange } = useProfileAvatar();
   const [isHovering, setIsHovering] = useState(false);
   const { showSuccess, showError } = useAlert();
 
   // Get initials from name
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
   };
 
   const handleChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,7 +39,7 @@ export const ProfileAvatar = ({ name, avatarUrl, onAvatarUpdate }: ProfileAvatar
         );
       }
     } catch (error) {
-      console.error("Error uploading avatar:", error);
+      console.error('Error uploading avatar:', error);
       showError(
         'Falha ao atualizar avatar',
         'Não foi possível atualizar sua imagem de perfil. Tente novamente.'
@@ -41,7 +48,7 @@ export const ProfileAvatar = ({ name, avatarUrl, onAvatarUpdate }: ProfileAvatar
   };
 
   return (
-    <div 
+    <div
       className="relative cursor-pointer group"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -55,8 +62,8 @@ export const ProfileAvatar = ({ name, avatarUrl, onAvatarUpdate }: ProfileAvatar
           </AvatarFallback>
         )}
       </Avatar>
-      
-      <label 
+
+      <label
         htmlFor="avatar-upload"
         className={`absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-200 ${isHovering || uploading ? 'opacity-100' : ''}`}
       >

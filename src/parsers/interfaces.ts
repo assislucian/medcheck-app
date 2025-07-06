@@ -1,4 +1,4 @@
-import { DemonstrativoRecord } from '../domain/models';
+import { DemonstrativoRecord } from "../domain/models";
 
 export interface Parser {
   parse(): Promise<DemonstrativoRecord[]>;
@@ -13,7 +13,7 @@ export interface FileMetadata {
 
 export interface ParserContext {
   config: {
-    documentType: 'GUIA' | 'DEMONSTRATIVO';
+    documentType: "GUIA" | "DEMONSTRATIVO";
     requiredHeaders: string[];
     columnMappings: {
       [key: string]: string;
@@ -35,4 +35,4 @@ export interface ParserContext {
 
 export interface ParserFactory {
   createParser(filePath: string, context: ParserContext): Promise<Parser>;
-} 
+}

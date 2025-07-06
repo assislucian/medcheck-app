@@ -1,4 +1,3 @@
-
 import { ProcessingStage, ProcessMode } from '@/types/upload';
 import { getAnalysisMessage, getCompletionMessage } from './messageUtils';
 
@@ -18,27 +17,29 @@ export async function simulateProcessingStages(
     setProcessingMsg('Extraindo dados dos documentos...');
     setProcessingStage('extracting');
     await simulateProgress(1, 30, setProgress);
-    
+
     // Estágio 2: Análise de procedimentos
     setProcessingStage('analyzing');
     setProcessingMsg(getAnalysisMessage(processMode));
     await simulateProgress(31, 60, setProgress);
-    
+
     // Estágio 3: Comparação (apenas para modo completo)
     if (processMode === 'complete') {
       setProcessingStage('comparing');
-      setProcessingMsg('Comparando valores pagos com referência CBHPM e calculando diferenças...');
+      setProcessingMsg(
+        'Comparando valores pagos com referência CBHPM e calculando diferenças...'
+      );
       await simulateProgress(61, 95, setProgress);
     } else {
       await simulateProgress(61, 95, setProgress);
     }
-    
+
     // Finalizar processamento
     setProgress(100);
     setProcessingStage('complete');
     setProcessingMsg(getCompletionMessage(processMode));
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   } catch (error) {
     console.error('Error during processing simulation:', error);
     // Continue without throwing to ensure UI doesn't break
@@ -59,7 +60,7 @@ export async function simulateProgress(
 ): Promise<void> {
   try {
     for (let i = start; i <= end; i++) {
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       setProgress(i);
     }
   } catch (error) {

@@ -1,5 +1,10 @@
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 // Define the context value type
 export interface Notification {
@@ -24,11 +29,15 @@ interface NotificationContextType {
   fetchNotifications: () => Promise<void>;
   clearNotifications: () => void; // Added this method
   removeNotification: (id: string) => void; // Added this method
-  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void; // Added this method
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'read' | 'createdAt'>
+  ) => void; // Added this method
 }
 
 // Create the context with default values
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
 // Custom hook to use the notification context
 export const useNotifications = () => {
@@ -58,7 +67,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       read: false,
       createdAt: new Date().toISOString(),
       time: new Date().toISOString(),
-      type: 'success'
+      type: 'success',
     },
     {
       id: '2',
@@ -68,7 +77,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       read: true,
       createdAt: new Date(Date.now() - 86400000).toISOString(),
       time: new Date(Date.now() - 86400000).toISOString(),
-      type: 'info'
+      type: 'info',
     },
     {
       id: '3',
@@ -78,8 +87,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
       read: false,
       createdAt: new Date(Date.now() - 172800000).toISOString(),
       time: new Date(Date.now() - 172800000).toISOString(),
-      type: 'warning'
-    }
+      type: 'warning',
+    },
   ];
 
   // Fetch notifications from API/mock
@@ -95,13 +104,13 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
   // Update unread count
   const updateUnreadCount = (notifs: Notification[]) => {
-    const count = notifs.filter(notification => !notification.read).length;
+    const count = notifs.filter((notification) => !notification.read).length;
     setUnreadCount(count);
   };
 
   // Mark a notification as read
   const markAsRead = (id: string) => {
-    const updatedNotifications = notifications.map(notification => 
+    const updatedNotifications = notifications.map((notification) =>
       notification.id === id ? { ...notification, read: true } : notification
     );
     setNotifications(updatedNotifications);
@@ -110,9 +119,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
   // Mark all notifications as read
   const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => ({ 
-      ...notification, 
-      read: true 
+    const updatedNotifications = notifications.map((notification) => ({
+      ...notification,
+      read: true,
     }));
     setNotifications(updatedNotifications);
     setUnreadCount(0);
@@ -120,7 +129,9 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
   // Remove a notification
   const removeNotification = (id: string) => {
-    const updatedNotifications = notifications.filter(notification => notification.id !== id);
+    const updatedNotifications = notifications.filter(
+      (notification) => notification.id !== id
+    );
     setNotifications(updatedNotifications);
     updateUnreadCount(updatedNotifications);
   };
@@ -132,14 +143,16 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   };
 
   // Add a new notification
-  const addNotification = (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
+  const addNotification = (
+    notification: Omit<Notification, 'id' | 'read' | 'createdAt'>
+  ) => {
     const now = new Date();
     const newNotification: Notification = {
       id: `notification-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       read: false,
       createdAt: now.toISOString(),
       time: now.toISOString(),
-      ...notification
+      ...notification,
     };
     const updatedNotifications = [newNotification, ...notifications];
     setNotifications(updatedNotifications);
@@ -159,7 +172,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     fetchNotifications,
     clearNotifications,
     removeNotification,
-    addNotification
+    addNotification,
   };
 
   return (

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTrialStatus } from '@/hooks/use-trial-status';
@@ -18,27 +17,39 @@ const TrialGuard = ({ children }: TrialGuardProps) => {
   const [hasNavigated, setHasNavigated] = useState(false);
 
   useEffect(() => {
-    console.log('TrialGuard - User:', !!user, 'Status:', status, 'isLoading:', isLoading, 'Path:', location.pathname);
-    
+    console.log(
+      'TrialGuard - User:',
+      !!user,
+      'Status:',
+      status,
+      'isLoading:',
+      isLoading,
+      'Path:',
+      location.pathname
+    );
+
     // Only proceed if loading is complete and we're not already on the welcome page
     if (!isLoading && user && !hasNavigated) {
       console.log('TrialGuard check complete - Status:', status);
-      
+
       // Only redirect to welcome if not already on welcome page and trial not started
       if (status === 'not_started' && location.pathname !== '/welcome') {
-        console.log('Trial not started, redirecting to welcome page from:', location.pathname);
+        console.log(
+          'Trial not started, redirecting to welcome page from:',
+          location.pathname
+        );
         setHasNavigated(true);
-        navigate('/welcome', { 
+        navigate('/welcome', {
           state: { returnTo: location.pathname },
-          replace: true 
+          replace: true,
         });
       } else if (status === 'expired') {
         console.log('Trial expired, showing message');
         toast.error('Seu período de avaliação expirou', {
-          description: 'Por favor, atualize para um plano pago para continuar.'
+          description: 'Por favor, atualize para um plano pago para continuar.',
         });
       }
-      
+
       setIsChecking(false);
     } else if (!user && !isLoading) {
       // If there's no user and we're not loading, allow the auth routes to handle it
@@ -54,7 +65,7 @@ const TrialGuard = ({ children }: TrialGuardProps) => {
         setIsChecking(false);
       }
     }, 5000);
-    
+
     return () => clearTimeout(maxLoadingTimer);
   }, [isChecking]);
 

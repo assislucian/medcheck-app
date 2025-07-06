@@ -1,4 +1,3 @@
-
 import { Helmet } from 'react-helmet-async';
 import { Card } from '@/components/ui/card';
 import UploadSection from '@/components/UploadSection';
@@ -16,7 +15,7 @@ const NewAuditPage = () => {
             Faça upload de guias e demonstrativos para análise automática dos valores.
           </p>
         </div>
-        
+
         <UploadSection />
       </div>
     </>

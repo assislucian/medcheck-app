@@ -1,7 +1,9 @@
 import re
 from pathlib import Path
+
 import pandas as pd
 import pdfplumber
+
 
 def load_cbhpm(path: Path) -> pd.DataFrame:
     """Carrega CBHPM2015 e retorna DataFrame com dtype correto."""
@@ -16,6 +18,7 @@ def load_cbhpm(path: Path) -> pd.DataFrame:
             "valor_primeiro_auxiliar",
         ]
     ]
+
 
 def parse_demonstrativo(path: Path, user_crm: str) -> pd.DataFrame:
     """
@@ -44,6 +47,7 @@ def parse_demonstrativo(path: Path, user_crm: str) -> pd.DataFrame:
     else:
         raise KeyError("Coluna 'codigo' não encontrada no demonstrativo_df")
     demo_df = df.merge(cbhpm_df, on="codigo", how="left")
+
     def valor_por_papel(row):
         if row["papel"] == "Cirurgião":
             return row["valor_cirurgiao"]
@@ -54,6 +58,7 @@ def parse_demonstrativo(path: Path, user_crm: str) -> pd.DataFrame:
         elif row["papel"] == "2º Auxiliar":
             return row["valor_primeiro_auxiliar"]
         return None
+
     demo_df["valor_tabela"] = demo_df.apply(valor_por_papel, axis=1)
     if "liberado" in demo_df.columns:
         demo_df["liberado"] = pd.to_numeric(
@@ -77,6 +82,7 @@ def parse_demonstrativo(path: Path, user_crm: str) -> pd.DataFrame:
         demo_df["diferenca_percentual"].round(2).fillna(0.0)
     )
     return demo_df
+
 
 def parse_guide_pdf(path, user_crm: str) -> pd.DataFrame:
     """
@@ -136,4 +142,4 @@ def parse_guide_pdf(path, user_crm: str) -> pd.DataFrame:
                 }
             )
     df = pd.DataFrame(records)
-    return df 
+    return df

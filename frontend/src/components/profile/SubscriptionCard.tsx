@@ -1,15 +1,14 @@
-
-import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { CalendarDays, ShieldCheck, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { CalendarDays, ShieldCheck, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 export function SubscriptionCard() {
   const navigate = useNavigate();
@@ -23,9 +22,7 @@ export function SubscriptionCard() {
         </div>
         <div>
           <CardTitle className="text-xl">Plano Atual</CardTitle>
-          <CardDescription>
-            Informações sobre seu plano
-          </CardDescription>
+          <CardDescription>Informações sobre seu plano</CardDescription>
         </div>
       </CardHeader>
       <CardContent>
@@ -34,13 +31,13 @@ export function SubscriptionCard() {
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium flex items-center gap-2">
                 Plano Pro
-                <Badge variant="secondary" className="bg-secondary/10 text-secondary">Ativo</Badge>
+                <Badge variant="secondary" className="bg-secondary/10 text-secondary">
+                  Ativo
+                </Badge>
               </h3>
-              <p className="text-sm text-muted-foreground">
-                Renova em 25/jun/2025
-              </p>
+              <p className="text-sm text-muted-foreground">Renova em 25/jun/2025</p>
             </div>
-            
+
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Recursos incluídos:</p>
               <ul className="space-y-2">
@@ -58,29 +55,20 @@ export function SubscriptionCard() {
                 </li>
               </ul>
             </div>
-            
+
             <div className="flex justify-between pt-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/planos')}
-              >
+              <Button variant="outline" size="sm" onClick={() => navigate('/planos')}>
                 Ver detalhes
               </Button>
-              <Button 
-                variant="default"
-                size="sm"
-              >
+              <Button variant="default" size="sm">
                 Gerenciar assinatura
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Nenhum plano selecionado
-            </p>
-            <Button 
+            <p className="text-muted-foreground">Nenhum plano selecionado</p>
+            <Button
               variant="default"
               onClick={() => navigate('/planos')}
               className="w-full md:w-auto"

@@ -1,55 +1,235 @@
 [
-  {"grupo": "Elegibilidade", "codigo": "1001", "descricao": "Número da carteira inválido"},
-  {"grupo": "Elegibilidade", "codigo": "1003", "descricao": "A admissão do Beneficiário no prestador ocorreu antes da inclusão"},
-  {"grupo": "Elegibilidade", "codigo": "1005", "descricao": "Atendimento anterior à inclusão do Beneficiário"},
-  {"grupo": "Elegibilidade", "codigo": "1006", "descricao": "Atendimento após o desligamento do Beneficiário"},
-  {"grupo": "Elegibilidade", "codigo": "1007", "descricao": "Atendimento dentro da carência do Beneficiário"},
-  {"grupo": "Elegibilidade", "codigo": "1008", "descricao": "Assinatura divergente"},
-  {"grupo": "Elegibilidade", "codigo": "1009", "descricao": "Beneficiário com pagamento em aberto"},
-  {"grupo": "Elegibilidade", "codigo": "1010", "descricao": "Assinatura do Titular / Responsável inexistente"},
-  {"grupo": "Elegibilidade", "codigo": "1011", "descricao": "Identificação do beneficiário não consistente"},
-  {"grupo": "Elegibilidade", "codigo": "1012", "descricao": "Serviço Profissional Hospitalar não é coberto pelo plano do beneficiário"},
-  {"grupo": "Elegibilidade", "codigo": "1013", "descricao": "Cadastro do beneficiário com problemas"},
-  {"grupo": "Elegibilidade", "codigo": "1014", "descricao": "Beneficiário com data de exclusão"},
-  {"grupo": "Elegibilidade", "codigo": "1015", "descricao": "Idade do Beneficiário acima idade limite"},
-  {"grupo": "Elegibilidade", "codigo": "1016", "descricao": "Beneficiário com atendimento suspenso"},
-  {"grupo": "Elegibilidade", "codigo": "1017", "descricao": "Data Validade Vencida"},
-  {"grupo": "Elegibilidade", "codigo": "1023", "descricao": "Nome do titular inválido"},
-  {"grupo": "Elegibilidade", "codigo": "1099", "descricao": "Outros"},
-  {"grupo": "Protocolo", "codigo": "1102", "descricao": "Protocolo é de re-apresentação"},
-  {"grupo": "Protocolo", "codigo": "1199", "descricao": "Outros"},
-  {"grupo": "Prestador", "codigo": "1201", "descricao": "Atendimento fora da vigência do contrato com o credenciado"},
-  {"grupo": "Prestador", "codigo": "1202", "descricao": "Número do CNES invadido"},
-  {"grupo": "Prestador", "codigo": "1203", "descricao": "Código Prestador inválido"},
-  {"grupo": "Prestador", "codigo": "1204", "descricao": "Admissão anterior à inclusão do credenciado na rede"},
-  {"grupo": "Prestador", "codigo": "1205", "descricao": "Admissão após o desligamento do credenciado da rede"},
-  {"grupo": "Prestador", "codigo": "1206", "descricao": "CPF / CNPJ inválido"},
-  {"grupo": "Prestador", "codigo": "1207", "descricao": "Credenciado não pertence à Rede Credenciada"},
-  {"grupo": "Prestador", "codigo": "1208", "descricao": "Solicitação anterior à inclusão do Credenciado"},
-  {"grupo": "Prestador", "codigo": "1209", "descricao": "Solicitação após o desligamento do Credenciado"},
-  {"grupo": "Prestador", "codigo": "1210", "descricao": "Solicitante Credenciado não cadastrado"},
-  {"grupo": "Prestador", "codigo": "1211", "descricao": "Assinatura / Carimbo do Credenciado inexistente"},
-  {"grupo": "Prestador", "codigo": "1212", "descricao": "Atendimento / Referência fora da vigência do contrato"},
-  {"grupo": "Prestador", "codigo": "1213", "descricao": "CBO-S (especialidade) inválido"},
-  {"grupo": "Prestador", "codigo": "1214", "descricao": "Credenciado não habilitado a realizar o procedimento"},
-  {"grupo": "Prestador", "codigo": "1216", "descricao": "Especialidade não cadastrada"},
-  {"grupo": "Prestador", "codigo": "1217", "descricao": "Especialidade não cadastrada para o prestador"},
-  {"grupo": "Prestador", "codigo": "1299", "descricao": "Outros"},
-  {"grupo": "Guia", "codigo": "1301", "descricao": "Tipo guia inválido"},
-  {"grupo": "Guia", "codigo": "1302", "descricao": "Código tipo Guia Principal e Número Guias Incompatíveis"},
-  {"grupo": "Guia", "codigo": "1303", "descricao": "Não existe o Número Guia Principal informado"},
-  {"grupo": "Guia", "codigo": "1304", "descricao": "Cobrança em guia indevida"},
-  {"grupo": "Guia", "codigo": "1305", "descricao": "Item pago em outra Guia"},
-  {"grupo": "Guia", "codigo": "1306", "descricao": "Não existe Número Guia Principal e/ou Código Guia Principal"},
-  {"grupo": "Guia", "codigo": "1307", "descricao": "Número da guia inválido"},
-  {"grupo": "Guia", "codigo": "1308", "descricao": "Guia já apresentada"},
-  {"grupo": "Guia", "codigo": "1309", "descricao": "Procedimento contratado não está de acordo com o tipo de guia utilizado"},
-  {"grupo": "Guia", "codigo": "1310", "descricao": "Serviço do tipo cirúrgico e invasivo. Equipe médica não informada na guia"},
-  {"grupo": "Guia", "codigo": "1311", "descricao": "Prestador executante não informado"},
-  {"grupo": "Guia", "codigo": "1312", "descricao": "Prestador contratado não informado"},
-  {"grupo": "Guia", "codigo": "1313", "descricao": "Guia com rasura"},
-  {"grupo": "Guia", "codigo": "1314", "descricao": "Guia sem assinatura e/ou carimbo do credenciado"},
-  {"grupo": "Guia", "codigo": "1315", "descricao": "Guia sem data do ato cirúrgico"},
-  {"grupo": "Guia", "codigo": "1316", "descricao": "Guia com local de atendimento preenchido incorretamente"},
-  {"grupo": "Guia", "codigo": "1317", "descricao": "Guia sem data do atendimento"}
-] 
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1001",
+    "descricao": "Número da carteira inválido"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1003",
+    "descricao": "A admissão do Beneficiário no prestador ocorreu antes da inclusão"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1005",
+    "descricao": "Atendimento anterior à inclusão do Beneficiário"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1006",
+    "descricao": "Atendimento após o desligamento do Beneficiário"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1007",
+    "descricao": "Atendimento dentro da carência do Beneficiário"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1008",
+    "descricao": "Assinatura divergente"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1009",
+    "descricao": "Beneficiário com pagamento em aberto"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1010",
+    "descricao": "Assinatura do Titular / Responsável inexistente"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1011",
+    "descricao": "Identificação do beneficiário não consistente"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1012",
+    "descricao": "Serviço Profissional Hospitalar não é coberto pelo plano do beneficiário"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1013",
+    "descricao": "Cadastro do beneficiário com problemas"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1014",
+    "descricao": "Beneficiário com data de exclusão"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1015",
+    "descricao": "Idade do Beneficiário acima idade limite"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1016",
+    "descricao": "Beneficiário com atendimento suspenso"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1017",
+    "descricao": "Data Validade Vencida"
+  },
+  {
+    "grupo": "Elegibilidade",
+    "codigo": "1023",
+    "descricao": "Nome do titular inválido"
+  },
+  { "grupo": "Elegibilidade", "codigo": "1099", "descricao": "Outros" },
+  {
+    "grupo": "Protocolo",
+    "codigo": "1102",
+    "descricao": "Protocolo é de re-apresentação"
+  },
+  { "grupo": "Protocolo", "codigo": "1199", "descricao": "Outros" },
+  {
+    "grupo": "Prestador",
+    "codigo": "1201",
+    "descricao": "Atendimento fora da vigência do contrato com o credenciado"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1202",
+    "descricao": "Número do CNES invadido"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1203",
+    "descricao": "Código Prestador inválido"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1204",
+    "descricao": "Admissão anterior à inclusão do credenciado na rede"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1205",
+    "descricao": "Admissão após o desligamento do credenciado da rede"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1206",
+    "descricao": "CPF / CNPJ inválido"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1207",
+    "descricao": "Credenciado não pertence à Rede Credenciada"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1208",
+    "descricao": "Solicitação anterior à inclusão do Credenciado"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1209",
+    "descricao": "Solicitação após o desligamento do Credenciado"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1210",
+    "descricao": "Solicitante Credenciado não cadastrado"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1211",
+    "descricao": "Assinatura / Carimbo do Credenciado inexistente"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1212",
+    "descricao": "Atendimento / Referência fora da vigência do contrato"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1213",
+    "descricao": "CBO-S (especialidade) inválido"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1214",
+    "descricao": "Credenciado não habilitado a realizar o procedimento"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1216",
+    "descricao": "Especialidade não cadastrada"
+  },
+  {
+    "grupo": "Prestador",
+    "codigo": "1217",
+    "descricao": "Especialidade não cadastrada para o prestador"
+  },
+  { "grupo": "Prestador", "codigo": "1299", "descricao": "Outros" },
+  { "grupo": "Guia", "codigo": "1301", "descricao": "Tipo guia inválido" },
+  {
+    "grupo": "Guia",
+    "codigo": "1302",
+    "descricao": "Código tipo Guia Principal e Número Guias Incompatíveis"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1303",
+    "descricao": "Não existe o Número Guia Principal informado"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1304",
+    "descricao": "Cobrança em guia indevida"
+  },
+  { "grupo": "Guia", "codigo": "1305", "descricao": "Item pago em outra Guia" },
+  {
+    "grupo": "Guia",
+    "codigo": "1306",
+    "descricao": "Não existe Número Guia Principal e/ou Código Guia Principal"
+  },
+  { "grupo": "Guia", "codigo": "1307", "descricao": "Número da guia inválido" },
+  { "grupo": "Guia", "codigo": "1308", "descricao": "Guia já apresentada" },
+  {
+    "grupo": "Guia",
+    "codigo": "1309",
+    "descricao": "Procedimento contratado não está de acordo com o tipo de guia utilizado"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1310",
+    "descricao": "Serviço do tipo cirúrgico e invasivo. Equipe médica não informada na guia"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1311",
+    "descricao": "Prestador executante não informado"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1312",
+    "descricao": "Prestador contratado não informado"
+  },
+  { "grupo": "Guia", "codigo": "1313", "descricao": "Guia com rasura" },
+  {
+    "grupo": "Guia",
+    "codigo": "1314",
+    "descricao": "Guia sem assinatura e/ou carimbo do credenciado"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1315",
+    "descricao": "Guia sem data do ato cirúrgico"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1316",
+    "descricao": "Guia com local de atendimento preenchido incorretamente"
+  },
+  {
+    "grupo": "Guia",
+    "codigo": "1317",
+    "descricao": "Guia sem data do atendimento"
+  }
+]

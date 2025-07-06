@@ -1,5 +1,4 @@
-
-import { BellOff } from "lucide-react";
+import { BellOff } from 'lucide-react';
 
 export const EmptyNotifications = () => {
   return (

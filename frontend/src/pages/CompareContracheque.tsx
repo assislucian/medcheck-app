@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
@@ -8,14 +7,20 @@ import ComparisonView from '@/components/ComparisonView';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { FileBarChart, FileText, Upload } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 
 const CompareContracheque = () => {
   const location = useLocation();
   const [analysisId, setAnalysisId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Extract analysis ID from query params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -28,7 +33,7 @@ const CompareContracheque = () => {
       <Helmet>
         <title>Comparativo | MedCheck</title>
       </Helmet>
-      
+
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -38,7 +43,7 @@ const CompareContracheque = () => {
             </p>
           </div>
         </div>
-        
+
         {analysisId ? (
           <ComparisonView analysisId={analysisId} />
         ) : (
@@ -64,7 +69,7 @@ const CompareContracheque = () => {
                     </Link>
                   </Button>
                 </Card>
-                
+
                 <Card className="flex flex-col items-center p-6 hover:bg-accent/5 transition-colors">
                   <FileBarChart className="h-12 w-12 text-primary mb-4" />
                   <h3 className="text-lg font-medium mb-2">Demonstrativos</h3>
@@ -79,11 +84,9 @@ const CompareContracheque = () => {
                   </Button>
                 </Card>
               </div>
-              
+
               <div className="border-t pt-4 flex justify-center">
-                <Link to="/history">
-                  Ver análises anteriores
-                </Link>
+                <Link to="/history">Ver análises anteriores</Link>
               </div>
             </CardContent>
           </Card>

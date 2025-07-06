@@ -8,12 +8,14 @@
     <title>Vite + React + TS</title>
     <!-- Script anti-FOUC para dark mode -->
     <script>
-      (function() {
+      (function () {
         try {
           var storageKey = 'medcheck-theme';
           var theme = localStorage.getItem(storageKey);
           if (!theme) {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
           }
           document.documentElement.classList.remove('light', 'dark');
           document.documentElement.classList.add(theme);

@@ -1,7 +1,6 @@
-
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { QuoteIcon } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { QuoteIcon } from 'lucide-react';
 
 interface TestimonialCardProps {
   name: string;
@@ -13,7 +12,7 @@ interface TestimonialCardProps {
 export function TestimonialCard({ name, role, content, avatar }: TestimonialCardProps) {
   const initials = name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .join('')
     .toUpperCase();
 
@@ -23,9 +22,9 @@ export function TestimonialCard({ name, role, content, avatar }: TestimonialCard
         <div className="mb-4 text-primary">
           <QuoteIcon className="h-8 w-8" />
         </div>
-        
+
         <p className="text-muted-foreground mb-6 flex-grow">{content}</p>
-        
+
         <div className="flex items-center">
           <Avatar className="h-10 w-10 mr-3">
             <AvatarImage src={avatar} alt={name} />

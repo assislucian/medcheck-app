@@ -1,27 +1,39 @@
 @layer base {
   :root {
     /* superfícies neutras */
-    --surface-0: 255 255 255;  /* #FFFFFF  (base)          */
-    --surface-1: 249 250 251;  /* #F9FAFB (card)           */
-    --surface-2: 243 244 246;  /* #F3F4F6 (header tabela)  */
-    --surface-3: 229 231 235;  /* #E5E7EB (border shade)   */
+    --surface-0: 255 255 255; /* #FFFFFF  (base)          */
+    --surface-1: 249 250 251; /* #F9FAFB (card)           */
+    --surface-2: 243 244 246; /* #F3F4F6 (header tabela)  */
+    --surface-3: 229 231 235; /* #E5E7EB (border shade)   */
 
     /* textos padrão */
-    --text-body:   17 24 39;   /* #111827 */
+    --text-body: 17 24 39; /* #111827 */
   }
   .dark {
-    --surface-0: 15 17 23;     /* #0F1117  */
-    --surface-1: 20 23 29;     /* #14171D  */
-    --surface-2: 26 29 36;     /* #1A1D24  */
-    --surface-3: 32 36 44;     /* #20242C  */
-    --text-body: 229 231 235;  /* #E5E7EB */
+    --surface-0: 15 17 23; /* #0F1117  */
+    --surface-1: 20 23 29; /* #14171D  */
+    --surface-2: 26 29 36; /* #1A1D24  */
+    --surface-3: 32 36 44; /* #20242C  */
+    --text-body: 229 231 235; /* #E5E7EB */
   }
 }
 
 @layer components {
-  .toolbar-surface { @apply bg-background/60 backdrop-blur-sm rounded-lg p-4; }
-  .table-header, .th-sticky { @apply sticky top-0 bg-surface-2 shadow-sm z-10; }
-  tr:nth-child(even) { @apply bg-surface-1; }
-  tr:hover { @apply bg-primary/5; }
-  td.w-10, td.w-12 { @apply p-0 align-middle; }
-} 
+  .toolbar-surface {
+    @apply bg-background/60 backdrop-blur-sm rounded-lg p-4;
+  }
+  .table-header,
+  .th-sticky {
+    @apply sticky top-0 bg-surface-2 shadow-sm z-10;
+  }
+  tr:nth-child(even) {
+    @apply bg-surface-1;
+  }
+  tr:hover {
+    @apply bg-primary/5;
+  }
+  td.w-10,
+  td.w-12 {
+    @apply p-0 align-middle;
+  }
+}

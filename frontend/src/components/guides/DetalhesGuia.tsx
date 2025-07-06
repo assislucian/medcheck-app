@@ -1,11 +1,17 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Eye, X } from "lucide-react";
-import { DataGrid } from "@/components/ui/data-grid";
-import React from "react";
-import { GuideProcedure } from "@/types/medical";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Eye, X } from 'lucide-react';
+import { DataGrid } from '@/components/ui/data-grid';
+import React from 'react';
+import { GuideProcedure } from '@/types/medical';
 
 interface DetalhesGuiaProps {
   guia: string;
@@ -20,15 +26,40 @@ const detalhesColumns = [
   { field: 'papel', headerName: 'Papel', width: 120 },
   { field: 'crm', headerName: 'CRM', width: 100 },
   { field: 'qtd', headerName: 'Qtd', width: 80 },
-  { field: 'status', headerName: 'Status', width: 120, renderCell: ({ value }: { value: string }) => <Badge variant={value === "Fechada" ? "success" : value === "Pendente" ? "warning" : "default"}>{value || "-"}</Badge> },
-  { field: 'prestador', headerName: 'Prestador', width: 200, renderCell: ({ value }: { value: string }) => value || "-" },
+  {
+    field: 'status',
+    headerName: 'Status',
+    width: 120,
+    renderCell: ({ value }: { value: string }) => (
+      <Badge
+        variant={
+          value === 'Fechada' ? 'success' : value === 'Pendente' ? 'warning' : 'default'
+        }
+      >
+        {value || '-'}
+      </Badge>
+    ),
+  },
+  {
+    field: 'prestador',
+    headerName: 'Prestador',
+    width: 200,
+    renderCell: ({ value }: { value: string }) => value || '-',
+  },
 ];
 
-const DetalhesGuia: React.FC<DetalhesGuiaProps> = ({ guia, procedimentos, onClose }) => {
+const DetalhesGuia: React.FC<DetalhesGuiaProps> = ({
+  guia,
+  procedimentos,
+  onClose,
+}) => {
   if (!procedimentos || procedimentos.length === 0) return null;
-  const beneficiario = procedimentos[0]?.beneficiario || "";
-  const prestador = procedimentos[0]?.prestador || "";
-  const data = procedimentos.map(p => p.data).sort().reverse()[0];
+  const beneficiario = procedimentos[0]?.beneficiario || '';
+  const prestador = procedimentos[0]?.prestador || '';
+  const data = procedimentos
+    .map((p) => p.data)
+    .sort()
+    .reverse()[0];
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -80,4 +111,4 @@ const DetalhesGuia: React.FC<DetalhesGuiaProps> = ({ guia, procedimentos, onClos
   );
 };
 
-export default DetalhesGuia; 
+export default DetalhesGuia;

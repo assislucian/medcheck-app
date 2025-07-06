@@ -14,6 +14,7 @@ O MedCheck é uma plataforma SaaS para auditoria de guias e demonstrativos médi
 ---
 
 ## 🏗️ Arquitetura & Diferenciais
+
 - Parser avançado de PDFs médicos
 - Validação e comparação de demonstrativos
 - Gestão de usuários médicos e auditoria
@@ -48,6 +49,7 @@ npm install
 Crie um arquivo `.env` na raiz do projeto e outro em `frontend/` conforme exemplos abaixo:
 
 ### Backend (`.env` na raiz)
+
 ```
 DATABASE_URL=sqlite:///./medicos.db
 SECRET_KEY=changeme
@@ -57,6 +59,7 @@ JWT_SECRET=dev-secret-change-me  # Troque em produção por um valor forte e sec
 ```
 
 ### Frontend (`frontend/.env`)
+
 ```
 VITE_API_URL=http://localhost:8000
 ```
@@ -68,22 +71,28 @@ VITE_API_URL=http://localhost:8000
 ## 🏃 Como Rodar
 
 ### Backend (FastAPI)
+
 ```bash
 uvicorn src.main:app --reload
 ```
+
 Acesse: http://localhost:8000/docs
 
 ### Frontend (React + Vite)
+
 ```bash
 cd frontend
 npm run dev
 ```
+
 Acesse: http://localhost:8080
 
 ### Docker Compose (opcional, para ambiente integrado)
+
 ```bash
 docker-compose up --build
 ```
+
 - Backend: http://localhost:3000
 - Banco de dados: Postgres em http://localhost:5432
 - Prometheus: http://localhost:9090
@@ -114,17 +123,21 @@ Este projeto pode ser publicado gratuitamente para testes usando o Railway, perm
 ## Passo a Passo para Deploy Backend (FastAPI) no Railway
 
 ### 1. Crie Conta e Projeto
+
 - Acesse https://railway.app/
 - Faça login com GitHub.
 - Clique em "New Project" e selecione "Deploy from GitHub repo".
 - Escolha este repositório.
 
 ### 2. Configure o Banco de Dados
+
 - No painel do projeto, clique em "Add Plugin" > "PostgreSQL".
 - Copie a string de conexão gerada (ex: `postgresql://...`).
 
 ### 3. Configure Variáveis de Ambiente
+
 No painel "Variables" do Railway, adicione:
+
 - `DATABASE_URL` = (cole a string do passo anterior)
 - `JWT_SECRET` = (valor forte, ex: `um-segredo-para-teste`)
 - `FRONTEND_ORIGINS` = (URL do frontend, ex: `https://seufrontend.vercel.app`)
@@ -132,15 +145,18 @@ No painel "Variables" do Railway, adicione:
 - `CRM_LOGADO` = `6091` (opcional, CRM de teste)
 
 ### 4. Deploy
+
 - O Railway detecta o Dockerfile e faz o build automaticamente.
 - Após o deploy, acesse a URL pública gerada (ex: `https://medical-honorarium-validator.up.railway.app`).
 - Teste a API em `/docs` (Swagger UI).
 
 ### 5. Integração com Frontend
+
 - No frontend (Vercel/Netlify/local), configure a variável de ambiente para apontar para a URL do backend Railway:
   - Exemplo (React): `REACT_APP_API_URL=https://medical-honorarium-validator.up.railway.app`
 
 ### 6. Observações
+
 - O plano gratuito do Railway pode dormir após inatividade, mas é suficiente para testes.
 - Não use dados sensíveis neste ambiente.
 - Para dúvidas, consulte a documentação oficial do Railway.
@@ -148,6 +164,7 @@ No painel "Variables" do Railway, adicione:
 ---
 
 ## Dicas para Testes
+
 - Use o endpoint `/api/v1/register` para cadastrar médicos.
 - Use `/token` para autenticação (ou SKIP_AUTH para pular login).
 - Uploads e validações funcionam normalmente.
@@ -155,6 +172,7 @@ No painel "Variables" do Railway, adicione:
 ---
 
 ## Suporte
+
 Em caso de dúvidas, abra uma issue ou entre em contato com o time técnico.
 
 ---
@@ -168,6 +186,7 @@ Veja instruções em `frontend/README.md`.
 ## 🧪 Testes & Lint
 
 ### Backend
+
 ```bash
 pytest           # Testes automatizados
 flake8 src/      # Lint
@@ -176,6 +195,7 @@ isort src/       # Imports
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm test         # Testes (Jest)
@@ -186,6 +206,7 @@ npm run build    # Build de produção
 ---
 
 ## 🔐 Autenticação & Segurança
+
 - Autenticação JWT (login via `/token`)
 - Rate limiting (SlowAPI)
 - CORS restrito (ajuste em produção)
@@ -194,6 +215,7 @@ npm run build    # Build de produção
 - Nunca exponha segredos no frontend
 
 ### Exemplo de login via curl
+
 ```bash
 curl -X POST http://localhost:8000/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
@@ -203,6 +225,7 @@ curl -X POST http://localhost:8000/token \
 ---
 
 ## 🚢 Deploy & Boas Práticas
+
 - Deploy backend: AWS EC2/ECS, Supabase, ou Docker
 - Deploy frontend: Vercel, Netlify, ou build estático
 - Configure variáveis de ambiente e segredos em produção
@@ -212,6 +235,7 @@ curl -X POST http://localhost:8000/token \
 ---
 
 ## 📚 Links Úteis
+
 - [docs/technical.md](docs/technical.md): stack, padrões, variáveis
 - [DEPLOY_PLAN.md](DEPLOY_PLAN.md): checklist de deploy seguro
 - [.notes/](.notes/): visão geral, tarefas, histórico
@@ -220,6 +244,7 @@ curl -X POST http://localhost:8000/token \
 ---
 
 ## ❓ FAQ
+
 - **Como aponto o frontend para produção?** Edite `VITE_API_URL` no `.env` do frontend.
 - **Como faço deploy?** Veja `DEPLOY_PLAN.md`.
 - **Como contribuo?** Siga as premissas de segurança, documentação e boas práticas do projeto.

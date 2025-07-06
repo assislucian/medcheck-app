@@ -1,11 +1,14 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { getFallbackComparisonData, createSimulationData } from './comparisonFallback';
 
 /**
  * Try to get CBHPM comparison from Edge Function, fallback to DB, then simulation
  */
-export async function fetchComparisonData(analysisId: string, crm: string | null, role: string) {
+export async function fetchComparisonData(
+  analysisId: string,
+  crm: string | null,
+  role: string
+) {
   if (!analysisId) {
     return null;
   }

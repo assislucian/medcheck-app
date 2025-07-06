@@ -1,4 +1,3 @@
-
 export const monthlyData = [
   { name: 'Jan', recebido: 12400, glosado: 1800 },
   { name: 'Fev', recebido: 14200, glosado: 2100 },

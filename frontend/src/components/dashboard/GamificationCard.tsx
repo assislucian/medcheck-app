@@ -1,6 +1,6 @@
-import { Trophy } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { Trophy } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 interface GamificationCardProps {
   /**
@@ -18,14 +18,18 @@ interface GamificationCardProps {
  * Exibe um cartão com barra de progresso mostrando quanto o usuário recuperou
  * em relação à meta mensal. Inclui mensagem de incentivo e ícone de troféu.
  */
-export const GamificationCard = ({ recovered, goal = 20000, className }: GamificationCardProps) => {
+export const GamificationCard = ({
+  recovered,
+  goal = 20000,
+  className,
+}: GamificationCardProps) => {
   const percent = Math.min(100, Math.round((recovered / goal) * 100));
   const remaining = Math.max(0, goal - recovered);
 
   return (
     <div
       className={cn(
-        "w-full rounded-xl border bg-gradient-to-br from-amber-50/60 to-white p-6 shadow-sm dark:from-amber-950/40 dark:to-background",
+        'w-full rounded-xl border bg-gradient-to-br from-amber-50/60 to-white p-6 shadow-sm dark:from-amber-950/40 dark:to-background',
         className
       )}
     >
@@ -39,17 +43,26 @@ export const GamificationCard = ({ recovered, goal = 20000, className }: Gamific
             {percent >= 100 ? (
               <>Parabéns! Meta atingida 🎉</>
             ) : (
-              <>Faltam <span className="font-bold">R$ {remaining.toLocaleString("pt-BR")}</span> para sua meta</>
+              <>
+                Faltam{' '}
+                <span className="font-bold">
+                  R$ {remaining.toLocaleString('pt-BR')}
+                </span>{' '}
+                para sua meta
+              </>
             )}
           </h3>
         </div>
       </div>
       <div className="mt-4 space-y-1">
-        <Progress value={percent} indicatorClassName="bg-gradient-to-r from-emerald-400 to-blue-500" />
+        <Progress
+          value={percent}
+          indicatorClassName="bg-gradient-to-r from-emerald-400 to-blue-500"
+        />
         <p className="text-xs text-muted-foreground">
-          {percent}% de R$ {goal.toLocaleString("pt-BR")} recuperados este mês
+          {percent}% de R$ {goal.toLocaleString('pt-BR')} recuperados este mês
         </p>
       </div>
     </div>
   );
-}; 
+};

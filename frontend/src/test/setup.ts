@@ -1,13 +1,13 @@
-import '@testing-library/jest-dom/vitest'
-import { beforeAll, vi } from 'vitest'
-import { supabase } from '@/integrations/supabase/client'
+import '@testing-library/jest-dom/vitest';
+import { beforeAll, vi } from 'vitest';
+import { supabase } from '@/integrations/supabase/client';
 
 beforeAll(() => {
   // Ensure we're using test environment
   if (process.env.NODE_ENV !== 'test') {
-    throw new Error('Tests must run in test environment')
+    throw new Error('Tests must run in test environment');
   }
-})
+});
 
 // Mock only the hooks we need while preserving actual implementation
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -24,7 +24,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // Alias jest -> vi for backward compatibility with older test files
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-globalThis.jest = vi
+globalThis.jest = vi;
 
 // Generic stub user & auth context
 const mockUser = { name: 'Test User', crm: '1234', uf: 'RN' };

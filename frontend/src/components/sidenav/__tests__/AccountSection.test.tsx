@@ -1,9 +1,8 @@
+import { render, screen } from '@testing-library/react';
+import { AccountSection } from '../AccountSection';
+import { BrowserRouter } from 'react-router-dom';
 
-import { render, screen } from "@testing-library/react";
-import { AccountSection } from "../AccountSection";
-import { BrowserRouter } from "react-router-dom";
-
-describe("AccountSection", () => {
+describe('AccountSection', () => {
   const renderComponent = () => {
     return render(
       <BrowserRouter>
@@ -12,23 +11,23 @@ describe("AccountSection", () => {
     );
   };
 
-  it("renders account section", () => {
+  it('renders account section', () => {
     renderComponent();
-    expect(screen.getByText("Conta")).toBeInTheDocument();
+    expect(screen.getByText('Conta')).toBeInTheDocument();
   });
 
-  it("renders profile and settings links", () => {
+  it('renders profile and settings links', () => {
     renderComponent();
-    expect(screen.getByRole("link", { name: /perfil/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /configurações/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /perfil/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /configurações/i })).toBeInTheDocument();
   });
 
-  it("has correct navigation links", () => {
+  it('has correct navigation links', () => {
     renderComponent();
-    const profileLink = screen.getByRole("link", { name: /perfil/i });
-    const settingsLink = screen.getByRole("link", { name: /configurações/i });
-    
-    expect(profileLink).toHaveAttribute("href", "/profile");
-    expect(settingsLink).toHaveAttribute("href", "/settings");
+    const profileLink = screen.getByRole('link', { name: /perfil/i });
+    const settingsLink = screen.getByRole('link', { name: /configurações/i });
+
+    expect(profileLink).toHaveAttribute('href', '/profile');
+    expect(settingsLink).toHaveAttribute('href', '/settings');
   });
 });

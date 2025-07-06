@@ -1,4 +1,3 @@
-
 import { Profile } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,24 +11,28 @@ export async function getProfileData(userId: string): Promise<Profile | null> {
       .maybeSingle();
 
     if (error) {
-      console.error("Error fetching profile:", error);
+      console.error('Error fetching profile:', error);
       return null;
     }
-    
+
     if (!data) {
       console.log('No profile found for user:', userId);
       return null;
     }
-    
+
     console.log('Profile data retrieved successfully');
     return data as Profile;
   } catch (error) {
-    console.error("Exception in getProfileData:", error);
+    console.error('Exception in getProfileData:', error);
     return null;
   }
 }
 
-export async function updateProfile(supabaseClient: any, userId: string, data: ProfileUpdatePayload) {
+export async function updateProfile(
+  supabaseClient: any,
+  userId: string,
+  data: ProfileUpdatePayload
+) {
   try {
     const { error } = await supabaseClient
       .from('profiles')
@@ -39,7 +42,7 @@ export async function updateProfile(supabaseClient: any, userId: string, data: P
     if (error) throw error;
     return true;
   } catch (error) {
-    console.error("Error updating profile:", error);
+    console.error('Error updating profile:', error);
     return false;
   }
 }

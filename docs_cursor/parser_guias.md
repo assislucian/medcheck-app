@@ -1,6 +1,7 @@
 Função: Extrair informações estruturadas de guias em PDF.
 
 ### Objetivo
+
 - Ler cada ocorrência de procedimento contida na guia, sem supor quantidade fixa.
 - Garantir que todos os campos (guia, data, código, descrição, qtd, status, beneficiário, prestador) reflitam exatamente o PDF.
 
@@ -47,6 +48,7 @@ Função: Extrair informações estruturadas de guias em PDF.
    - Após extrair todos os registros, aplicar filtro final para manter apenas aqueles cujo `crm` corresponda ao médico autenticado.
 
 ### Observações
+
 - **Não agrupar nem resumir** procedimentos: cada ocorrência no PDF vira exatamente uma entrada.
 - **Campo `qtd`** deve refletir a quantidade por procedimento, não o número de papéis.
 - **Manter status** vindo diretamente do PDF (campo `status`), sem substituir pelo status de participação.

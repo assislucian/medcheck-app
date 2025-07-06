@@ -140,7 +140,8 @@ export function AdvancedAnalytics() {
         throw new Error('Não autenticado');
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const apiUrl =
+        import.meta.env.VITE_API_URL || 'https://medcheck-backend.onrender.com';
       const headers = {
         Authorization: `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',

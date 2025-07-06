@@ -15,8 +15,8 @@ export function useDashboardStats() {
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const headers = {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         };
 
         // Nova rota consolidada
@@ -34,7 +34,8 @@ export function useDashboardStats() {
         const mappedProcedures = (payload.procedures || []).map((p: any): any => {
           const valorCBHPM = p.valorTabela2015 ?? p.valorCBHPM ?? 0;
           const valorPago = p.valorPago ?? p.liberado ?? 0;
-          const diferenca = valorCBHPM > 0 ? ((valorPago - valorCBHPM) / valorCBHPM) * 100 : 0;
+          const diferenca =
+            valorCBHPM > 0 ? ((valorPago - valorCBHPM) / valorCBHPM) * 100 : 0;
           return {
             id: p.id ?? `${p.codigo}-${p.guia}`,
             codigo: p.codigo,
@@ -52,13 +53,19 @@ export function useDashboardStats() {
 
         let totals = payload.totals || {};
         if (!totals.totalRecebido && mappedProcedures.length) {
-          totals.totalRecebido = mappedProcedures.reduce((acc, p) => acc + (p.valorPago || 0), 0);
+          totals.totalRecebido = mappedProcedures.reduce(
+            (acc, p) => acc + (p.valorPago || 0),
+            0
+          );
         }
         if (!totals.totalProcedimentos) {
           totals.totalProcedimentos = mappedProcedures.length;
         }
         if (!totals.totalGlosado && Array.isArray(payload.glosas)) {
-          totals.totalGlosado = payload.glosas.reduce((acc: number, g: any) => acc + (g.valorGlosa || 0), 0);
+          totals.totalGlosado = payload.glosas.reduce(
+            (acc: number, g: any) => acc + (g.valorGlosa || 0),
+            0
+          );
         }
 
         return {
@@ -83,6 +90,6 @@ export function useDashboardStats() {
     retryDelay: 1000,
     staleTime: 30000, // 30 segundos
     cacheTime: 5 * 60 * 1000, // 5 minutos
-    enabled: !!session?.access_token // Só executa a query se houver token
+    enabled: !!session?.access_token, // Só executa a query se houver token
   });
 }

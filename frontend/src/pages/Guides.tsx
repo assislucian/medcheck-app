@@ -449,8 +449,11 @@ const GuidesPage = () => {
       // Define o total de beneficiários únicos
       setTotalBeneficiarios(allMacroRows.length);
 
-      // Aplica paginação local aos beneficiários agrupados
-      const startIndex = page * pageSize;
+      // **BUG FIX**: Reset página para 0 após upload para garantir que dados sejam visíveis
+      setPage(0);
+
+      // Aplica paginação local aos beneficiários agrupados (usando página 0)
+      const startIndex = 0 * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
 
@@ -632,8 +635,11 @@ const GuidesPage = () => {
       // Define o total de beneficiários únicos
       setTotalBeneficiarios(allMacroRows.length);
 
-      // Aplica paginação local aos beneficiários agrupados
-      const startIndex = page * pageSize;
+      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
+      setPage(0);
+
+      // Aplica paginação local aos beneficiários agrupados (usando página 0)
+      const startIndex = 0 * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
 
@@ -791,8 +797,11 @@ const GuidesPage = () => {
       // Define o total de beneficiários únicos
       setTotalBeneficiarios(allMacroRows.length);
 
-      // Aplica paginação local aos beneficiários agrupados
-      const startIndex = page * pageSize;
+      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
+      setPage(0);
+
+      // Aplica paginação local aos beneficiários agrupados (usando página 0)
+      const startIndex = 0 * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
 

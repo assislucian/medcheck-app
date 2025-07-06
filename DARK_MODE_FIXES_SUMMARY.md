@@ -253,7 +253,6 @@ dark:bg-gray-800/60 backdrop-blur-sm
    ```
 
 2. **Verificar Contraste:**
-
    - Use ferramentas de acessibilidade do browser
    - Teste com diferentes brilhos de tela
    - Verifique em dispositivos móveis

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,13 +5,15 @@ import { Label } from '@/components/ui/label';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { z } from 'zod';
 
-const passwordSchema = z.object({
-  password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
-  confirmPassword: z.string()
-}).refine(data => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
-  path: ["confirmPassword"]
-});
+const passwordSchema = z
+  .object({
+    password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
 interface PasswordFormProps {
   onSubmit: (password: string) => Promise<void>;
@@ -24,7 +25,9 @@ const PasswordForm = ({ onSubmit, isLoading }: PasswordFormProps) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{password?: string, confirmPassword?: string}>({});
+  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>(
+    {}
+  );
 
   const validateForm = () => {
     try {
@@ -33,10 +36,11 @@ const PasswordForm = ({ onSubmit, isLoading }: PasswordFormProps) => {
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const newErrors: {password?: string, confirmPassword?: string} = {};
+        const newErrors: { password?: string; confirmPassword?: string } = {};
         error.errors.forEach((err) => {
           if (err.path[0] === 'password') newErrors.password = err.message;
-          if (err.path[0] === 'confirmPassword') newErrors.confirmPassword = err.message;
+          if (err.path[0] === 'confirmPassword')
+            newErrors.confirmPassword = err.message;
         });
         setErrors(newErrors);
       }
@@ -61,7 +65,7 @@ const PasswordForm = ({ onSubmit, isLoading }: PasswordFormProps) => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={`pr-10 ${errors.password ? "border-destructive" : ""}`}
+            className={`pr-10 ${errors.password ? 'border-destructive' : ''}`}
             required
           />
           <button
@@ -89,7 +93,7 @@ const PasswordForm = ({ onSubmit, isLoading }: PasswordFormProps) => {
             placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className={`pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
+            className={`pr-10 ${errors.confirmPassword ? 'border-destructive' : ''}`}
             required
           />
           <button

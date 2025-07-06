@@ -30,7 +30,7 @@ const UploadSection = () => {
     showComparison,
     processingStage,
     processingMsg,
-    handleFileChangeByType
+    handleFileChangeByType,
   } = fileUpload;
 
   const {
@@ -39,7 +39,7 @@ const UploadSection = () => {
     analysisId,
     handleProcess,
     handleViewComparison,
-    setError
+    setError,
   } = useUploadProcessing(processUploadedFiles);
 
   const onDropFiles = async (type: FileType, fileList: FileList) => {
@@ -65,7 +65,7 @@ const UploadSection = () => {
       toast.error('Selecione pelo menos um tipo de documento');
       return;
     }
-    
+
     try {
       await handleProcess();
     } catch (err) {
@@ -128,7 +128,7 @@ const UploadSection = () => {
           />
         </CardFooter>
       </Card>
-      
+
       {showSuccess && <UploadSuccess onViewComparison={handleViewComparison} />}
       {showComparison && <ComparisonView analysisId={analysisId} />}
     </div>

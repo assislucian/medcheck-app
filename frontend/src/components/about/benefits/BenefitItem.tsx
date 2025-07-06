@@ -1,6 +1,5 @@
-
-import { motion } from "framer-motion";
-import { ReactNode } from "react";
+import { motion } from 'framer-motion';
+import { ReactNode } from 'react';
 
 interface BenefitItemProps {
   title: string;
@@ -18,9 +17,7 @@ export function BenefitItem({ title, description, icon, index }: BenefitItemProp
       viewport={{ once: true }}
     >
       <div className="flex items-start">
-        <div className="mr-4 p-2 rounded-full bg-primary/10">
-          {icon}
-        </div>
+        <div className="mr-4 p-2 rounded-full bg-primary/10">{icon}</div>
         <div>
           <h3 className="text-xl font-semibold mb-2">{title}</h3>
           <p className="text-muted-foreground">{description}</p>

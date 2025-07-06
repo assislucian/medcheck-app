@@ -1,8 +1,8 @@
-import React from "react";
-import { Button } from "./button";
-import { PanelLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSidebarContext } from "../../contexts/SidebarContext";
+import React from 'react';
+import { Button } from './button';
+import { PanelLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useSidebarContext } from '../../contexts/SidebarContext';
 
 interface SidebarTriggerWrapperProps extends React.ComponentProps<typeof Button> {
   className?: string;
@@ -20,7 +20,7 @@ export const SidebarTriggerWrapper = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className)}
+      className={cn('h-7 w-7', className)}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
@@ -33,4 +33,4 @@ export const SidebarTriggerWrapper = React.forwardRef<
   );
 });
 
-SidebarTriggerWrapper.displayName = "SidebarTriggerWrapper"; 
+SidebarTriggerWrapper.displayName = 'SidebarTriggerWrapper';

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,12 +28,12 @@ export function DemoRequestForm() {
 
     try {
       const validatedData = demoRequestSchema.parse(formData);
-      
+
       // Here we would typically send this to a backend endpoint
       console.log('Demo request:', validatedData);
-      
+
       toast.success('Solicitação enviada com sucesso! Em breve entraremos em contato.');
-      
+
       // Reset form
       setFormData({
         name: '',
@@ -58,36 +57,36 @@ export function DemoRequestForm() {
       <Input
         placeholder="Nome completo"
         value={formData.name}
-        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+        onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
         className="w-full"
         required
       />
-      
+
       <Input
         type="email"
         placeholder="Email profissional"
         value={formData.email}
-        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+        onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
         className="w-full"
         required
       />
-      
+
       <Input
         type="tel"
         placeholder="Telefone/WhatsApp"
         value={formData.phone}
-        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+        onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
         className="w-full"
         required
       />
-      
+
       <Input
         placeholder="Empresa (opcional)"
         value={formData.company}
-        onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+        onChange={(e) => setFormData((prev) => ({ ...prev, company: e.target.value }))}
         className="w-full"
       />
-      
+
       <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
         {isLoading ? 'Enviando...' : 'Solicitar Demonstração'}
       </Button>

@@ -1,4 +1,3 @@
-
 import { TicketStatus, TicketPriority } from './types';
 
 /**

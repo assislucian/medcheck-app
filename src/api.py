@@ -14,11 +14,9 @@ import time
 import zipfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
-import bcrypt
-import jwt
 import pandas as pd
 import sqlalchemy
 from fastapi import (
@@ -38,6 +36,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -848,7 +847,10 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     db = SessionLocal()
     try:
         medico = db.query(Medico).filter_by(crm=crm, uf=uf).first()
-        if not medico or not bcrypt.checkpw(senha.encode(), medico.senha_hash.encode()):
+        from passlib.context import CryptContext
+
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        if not medico or not pwd_context.verify(senha, medico.senha_hash):
             log_audit(
                 "login_failed",
                 user_crm=crm,
@@ -1165,193 +1167,140 @@ def upload_demonstrativos(
     lote: str = Form(None),
     user: dict = Depends(get_current_user),
 ):
+    """
+    Upload e processamento de demonstrativos de pagamento.
+    Valida arquivos, detecta duplicatas e processa PDFs de demonstrativo.
+    """
     # Validar número de arquivos
     if len(files) > MAX_UPLOAD_FILES:
         raise HTTPException(
-            status_code=400, detail=f"Muitos arquivos. Máximo: {MAX_UPLOAD_FILES}"
+            status_code=400,
+            detail=f"Número máximo de arquivos excedido. Limite: {MAX_UPLOAD_FILES}",
         )
 
-    # Sanitizar inputs
-    if periodo:
-        periodo = sanitize_text(periodo, max_length=50)
-    if lote:
-        lote = sanitize_text(lote, max_length=50)
+    crm = user.get("crm")
+    uf = user.get("uf")
 
-    # Validar cada arquivo
-    for file in files:
-        is_valid, error_msg = validate_upload_file(file)
-        if not is_valid:
-            raise HTTPException(
-                status_code=400, detail=f"Arquivo '{file.filename}': {error_msg}"
-            )
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
 
-    db = SessionLocal()
     results = []
+    db = SessionLocal()
+
     try:
         for file in files:
             try:
+                # Validações básicas do arquivo
+                is_valid, error_msg = validate_upload_file(file)
+                if not is_valid:
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": error_msg,
+                        }
+                    )
+                    continue
+
+                # Salvar arquivo temporário com nome único
                 job_id = str(uuid4())
                 filename = f"{job_id}_{file.filename}"
                 file_path = os.path.join(UPLOAD_DIR, filename)
+
                 with open(file_path, "wb") as f:
                     shutil.copyfileobj(file.file, f)
 
-                # Calcular hash SHA-256 do conteúdo para detectar duplicações
-                import hashlib
+                # Calcular hash para detectar duplicatas
+                file_hash = calculate_file_hash(file_path)
 
-                sha256 = hashlib.sha256()
-                with open(file_path, "rb") as fh:
-                    for chunk in iter(lambda: fh.read(8192), b""):
-                        sha256.update(chunk)
-                file_hash = sha256.hexdigest()
-
-                # Checar duplicidade por hash (mesmo CRM e UF)
-                exists_hash = (
+                # Verificar se já existe demonstrativo com mesmo hash
+                existing = (
                     db.query(Demonstrativo)
-                    .filter_by(crm=user["crm"], uf=user["uf"], file_hash=file_hash)
+                    .filter_by(file_hash=file_hash, crm=crm, uf=uf)
                     .first()
                 )
-                if exists_hash:
-                    logger.warning(
-                        f"[UPLOAD] Duplicidade por hash detectada: CRM={user['crm']} UF={user['uf']} | hash={file_hash}"
-                    )
-                    results.append(
-                        {
-                            "filename": file.filename,
-                            "success": False,
-                            "error": "Este demonstrativo já foi enviado anteriormente.",
-                        }
-                    )
-                    # Remover arquivo salvo para evitar acúmulo de duplicatas
+
+                if existing:
+                    # Remove arquivo temporário e reporta duplicata
                     try:
                         os.remove(file_path)
-                    except Exception:
+                    except:
                         pass
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": f"Arquivo duplicado. Demonstrativo já processado anteriormente.",
+                            "duplicate": True,
+                            "existing_periodo": existing.periodo,
+                            "existing_upload_time": (
+                                existing.upload_time.isoformat()
+                                if existing.upload_time
+                                else None
+                            ),
+                        }
+                    )
                     continue
 
+                # Processar demonstrativo
+                from src.parsers.demonstrativo_parser import DemonstrativoParser
+
                 try:
-                    from src.parsers.demonstrativo_parser import DemonstrativoParser
-
                     parser = DemonstrativoParser(file_path)
+                    payments = parser.get_payments()
                     summary = parser.get_summary()
-
-                    # Validação dos dados extraídos
-                    if not summary:
-                        raise Exception("Parser retornou summary vazio")
-
-                    total_procedimentos = summary.get("total_procedures", 0)
-                    apresentado = summary.get("total_presented", 0.0)
-                    liberado = summary.get("total_approved", 0.0)
-                    glosa = summary.get("total_glosa", 0.0)
-
-                    # Sempre priorizar o período extraído do parser
-                    periodo_extracted = summary.get("period") or periodo
-
-                    logger.info(
-                        f"[UPLOAD] Parser executado com sucesso para {file.filename} (CRM={user['crm']} UF={user['uf']}): {total_procedimentos} procedimentos, R$ {apresentado:,.2f} apresentado"
-                    )
-
-                    # Sanitizar campos livres apenas se summary existir
-                    if summary and "period" in summary:
-                        summary["period"] = sanitize_text(summary["period"])
-                    if summary and "total_presented" in summary:
-                        summary["total_presented"] = sanitize_text(
-                            str(summary["total_presented"])
-                        )
-                    if summary and "total_approved" in summary:
-                        summary["total_approved"] = sanitize_text(
-                            str(summary["total_approved"])
-                        )
-                    if summary and "total_glosa" in summary:
-                        summary["total_glosa"] = sanitize_text(
-                            str(summary["total_glosa"])
-                        )
-
                 except Exception as e:
+                    # Remove arquivo temporário em caso de erro
+                    try:
+                        os.remove(file_path)
+                    except:
+                        pass
                     logger.error(
-                        f"[UPLOAD] Erro ao processar demonstrativo {file.filename} (CRM={user['crm']} UF={user['uf']}): {e}"
-                    )
-                    logger.error(f"[UPLOAD] Stack trace completo: ", exc_info=True)
-                    total_procedimentos = 0
-                    apresentado = 0.0
-                    liberado = 0.0
-                    glosa = 0.0
-                    periodo_extracted = periodo
-                # Log detalhado do upload
-                logger.info(
-                    f"[UPLOAD] CRM={user['crm']} UF={user['uf']} | periodo={periodo_extracted} | lote={lote or filename} | filename={filename}"
-                )
-                # Validação obrigatória do período
-                if not periodo_extracted:
-                    logger.error(
-                        f"[UPLOAD] Não foi possível extrair o período do demonstrativo: {file.filename} (CRM={user['crm']} UF={user['uf']})"
-                    )
-                    # Tentar extrair período do nome do arquivo como fallback
-                    filename_lower = file.filename.lower()
-                    if "outubro" in filename_lower:
-                        periodo_extracted = "outubro de 2024"
-                    elif "novembro" in filename_lower:
-                        periodo_extracted = "novembro de 2024"
-                    elif "dezembro" in filename_lower:
-                        periodo_extracted = "dezembro de 2024"
-                    elif "janeiro" in filename_lower:
-                        periodo_extracted = "janeiro de 2025"
-                    elif "fevereiro" in filename_lower:
-                        periodo_extracted = "fevereiro de 2025"
-                    elif "março" in filename_lower or "marco" in filename_lower:
-                        periodo_extracted = "março de 2025"
-                    elif "abril" in filename_lower:
-                        periodo_extracted = "abril de 2025"
-                    elif "maio" in filename_lower:
-                        periodo_extracted = "maio de 2025"
-                    elif "junho" in filename_lower:
-                        periodo_extracted = "junho de 2025"
-                    elif "julho" in filename_lower:
-                        periodo_extracted = "julho de 2025"
-                    elif "agosto" in filename_lower:
-                        periodo_extracted = "agosto de 2025"
-                    elif "setembro" in filename_lower:
-                        periodo_extracted = "setembro de 2025"
-                    else:
-                        results.append(
-                            {
-                                "filename": file.filename,
-                                "success": False,
-                                "error": "Não foi possível extrair o período do demonstrativo. Verifique o PDF.",
-                            }
-                        )
-                        continue
-                # Trava de duplicidade: não permitir demonstrativo duplicado para mesmo CRM, UF, período e lote (ou filename se lote não informado)
-                unique_lote = lote or filename
-                exists = (
-                    db.query(Demonstrativo)
-                    .filter_by(
-                        crm=user["crm"],
-                        uf=user["uf"],
-                        periodo=periodo_extracted,
-                        lote=unique_lote,
-                    )
-                    .first()
-                )
-                if exists:
-                    logger.warning(
-                        f"[UPLOAD] Duplicidade detectada: CRM={user['crm']} UF={user['uf']} | periodo={periodo_extracted} | lote={unique_lote}"
+                        f"Erro ao processar demonstrativo {file.filename}: {e}"
                     )
                     results.append(
                         {
                             "filename": file.filename,
                             "success": False,
-                            "error": "Já existe demonstrativo para este período e lote.",
+                            "error": f"Erro ao processar PDF: {str(e)}",
                         }
                     )
                     continue
-                # Validação final antes de salvar
-                if not periodo_extracted:
-                    raise Exception("Período não pode ser vazio")
 
+                if not payments:
+                    # Remove arquivo se não há procedimentos
+                    try:
+                        os.remove(file_path)
+                    except:
+                        pass
+                    results.append(
+                        {
+                            "filename": file.filename,
+                            "success": False,
+                            "error": "Nenhum procedimento encontrado no demonstrativo",
+                        }
+                    )
+                    continue
+
+                # Extrair informações do demonstrativo
+                periodo_extracted = summary.get("period") or periodo or "Não informado"
+                total_procedimentos = summary.get("total_procedures", 0)
+
+                # Formatar valores monetários
+                apresentado = summary.get("total_presented", 0)
+                liberado = summary.get("total_approved", 0)
+                glosa = summary.get("total_glosa", 0)
+
+                # Gerar lote único se não fornecido
+                if not lote:
+                    unique_lote = f"{job_id}_{file.filename}"
+                else:
+                    unique_lote = lote
+
+                # Criar objeto Demonstrativo
                 demonstrativo = Demonstrativo(
-                    crm=user["crm"],
-                    uf=user["uf"],  # CRÍTICO: incluir UF
+                    crm=crm,
+                    uf=uf,
                     periodo=periodo_extracted,
                     lote=unique_lote,
                     filename=filename,
@@ -1366,24 +1315,31 @@ def upload_demonstrativos(
                     db.add(demonstrativo)
                     db.commit()
                     logger.info(
-                        f"[UPLOAD] Demonstrativo salvo com sucesso: ID={demonstrativo.id}, CRM={user['crm']}, UF={user['uf']}"
+                        f"Demonstrativo salvo: ID={demonstrativo.id}, CRM={crm}, UF={uf}"
                     )
                 except Exception as db_error:
-                    logger.error(f"[UPLOAD] Erro ao salvar no banco: {db_error}")
+                    logger.error(f"Erro ao salvar demonstrativo no banco: {db_error}")
                     db.rollback()
+                    # Remove arquivo em caso de erro no banco
+                    try:
+                        os.remove(file_path)
+                    except:
+                        pass
                     raise db_error
-                # Log de upload bem-sucedido
+
+                # Log de auditoria
                 log_audit(
                     "upload_demonstrativo",
-                    user_crm=user["crm"],
+                    user_crm=crm,
                     details={
-                        "filename": filename,
+                        "filename": file.filename,
                         "periodo": demonstrativo.periodo,
                         "lote": demonstrativo.lote,
                         "total_procedimentos": demonstrativo.total_procedimentos,
                         "result": "success",
                     },
                 )
+
                 results.append(
                     {
                         "filename": file.filename,
@@ -1397,12 +1353,15 @@ def upload_demonstrativos(
                         "glosa": demonstrativo.glosa,
                     }
                 )
+
             except Exception as e:
-                logger.error(f"[UPLOAD] Erro ao processar arquivo {file.filename}: {e}")
+                logger.error(
+                    f"Erro inesperado ao processar arquivo {file.filename}: {e}"
+                )
                 # Log de erro de upload
                 log_audit(
                     "upload_demonstrativo",
-                    user_crm=user["crm"],
+                    user_crm=crm,
                     details={
                         "filename": file.filename,
                         "result": "error",
@@ -1410,9 +1369,24 @@ def upload_demonstrativos(
                     },
                 )
                 results.append(
-                    {"filename": file.filename, "success": False, "error": str(e)}
+                    {
+                        "filename": file.filename,
+                        "success": False,
+                        "error": f"Erro interno: {str(e)}",
+                    }
                 )
+
+        logger.info(
+            f"Upload concluído: {len([r for r in results if r['success']])} sucessos, "
+            f"{len([r for r in results if not r['success']])} falhas"
+        )
         return {"results": results}
+
+    except Exception as e:
+        logger.error(f"Erro crítico no upload de demonstrativos: {e}")
+        raise HTTPException(
+            status_code=500, detail="Erro interno do servidor durante o upload"
+        )
     finally:
         db.close()
 
@@ -1551,57 +1525,197 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
 # --- Endpoint para obter procedimentos do demonstrativo ---
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
+    """
+    Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
+    """
     db = SessionLocal()
     try:
+        # Busca demonstrativo
         demo = (
             db.query(Demonstrativo)
-            .filter_by(id=demo_id, crm=user["crm"], uf=user["uf"])
+            .filter_by(
+                id=demo_id,
+                crm=user["crm"],
+                uf=user["uf"],  # CRÍTICO: incluir UF para isolamento
+            )
             .first()
         )
+
         if not demo:
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
+
         file_path = os.path.join(UPLOAD_DIR, demo.filename)
         if not os.path.exists(file_path):
             raise HTTPException(
                 status_code=404, detail="Arquivo do demonstrativo não encontrado"
             )
+
+        # Parse do demonstrativo
         from src.parsers.demonstrativo_parser import DemonstrativoParser
 
-        parser = DemonstrativoParser(file_path)
-        payments = parser.get_payments()
+        try:
+            parser = DemonstrativoParser(file_path)
+            payments = parser.get_payments()
+        except Exception as e:
+            logger.error(f"Erro ao processar demonstrativo {demo_id}: {e}")
+            raise HTTPException(
+                status_code=500, detail=f"Erro ao processar demonstrativo: {str(e)}"
+            )
+
+        if not payments:
+            logger.warning(f"Nenhum procedimento encontrado no demonstrativo {demo_id}")
+            return []
 
         # --- Associação de participações médicas ---
-        # Busca todas as guias do usuário (PDFs no UPLOAD_DIR com CRM do usuário)
         from src.parsers.guia_parser import parse_guia_pdf
 
         participacoes_map = {}
-        for fname in os.listdir(UPLOAD_DIR):
+
+        # Busca guias no diretório de uploads
+        upload_files = []
+        try:
+            upload_files = os.listdir(UPLOAD_DIR)
+        except Exception as e:
+            logger.error(f"Erro ao listar diretório de uploads: {e}")
+
+        for fname in upload_files:
             if not fname.lower().endswith(".pdf"):
                 continue
-            if "guia" not in fname.lower():
+            # Pula o próprio demonstrativo
+            if fname == demo.filename:
                 continue
+            # Pula arquivos que são claramente demonstrativos
+            if any(word in fname.lower() for word in ["demonstrativo", "demo"]):
+                continue
+
             guia_path = os.path.join(UPLOAD_DIR, fname)
             try:
+                logger.debug(f"Processando guia: {fname}")
                 procedimentos_guia = parse_guia_pdf(guia_path, user["crm"])
+                logger.debug(
+                    f"Encontrados {len(procedimentos_guia)} procedimentos na guia {fname}"
+                )
+
                 for proc in procedimentos_guia:
-                    key = (proc["guia"], proc["codigo"])
-                    participacoes_map[key] = proc.get("participacoes", [])
+                    key = (proc.get("guia"), proc.get("codigo"))
+                    if key not in participacoes_map:
+                        participacoes_map[key] = []
+
+                    # Adiciona todas as participações do procedimento
+                    participacoes = proc.get("participacoes", [])
+                    participacoes_map[key].extend(participacoes)
+
             except Exception as e:
+                logger.warning(f"Erro ao processar guia {fname}: {e}")
                 continue  # Ignora guias inválidas
 
-        # Para cada procedimento do demonstrativo, associa participações se houver
+        # --- Cruzamento com CBHPM ---
+        from src.parsers.cbhpm_parser import CBHPMParser
+
+        try:
+            cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
+        except Exception as e:
+            logger.error(f"Erro ao carregar CBHPM: {e}")
+            cbhpm_parser = None
+
+        # Para cada procedimento do demonstrativo, associa participações e CBHPM
         for p in payments:
-            key = (p.get("guia"), p.get("code") or p.get("codigo"))
+            codigo = p.get("code") or p.get("codigo")
+            guia = p.get("guia")
+            key = (guia, codigo)
+
+            # Busca participações
             participacoes = participacoes_map.get(key, [])
             p["participacoes"] = participacoes
+
             # Se houver participações do usuário, define papel_exercido
             papel_exercido = None
             for part in participacoes:
                 if str(part.get("crm")) == str(user["crm"]):
                     papel_exercido = part.get("papel")
                     break
+
             p["papel_exercido"] = papel_exercido or ""
+
+            # --- Cálculo de valores CBHPM ---
+            valor_cbhpm = None
+            diferenca = None
+            delta_percent = None
+
+            if codigo and papel_exercido and cbhpm_parser:
+                try:
+                    cbhpm = cbhpm_parser.get_procedure(str(codigo))
+                    if cbhpm:
+                        # Mapeia papel para valor CBHPM com mapeamentos mais robustos
+                        papel_normalizado = papel_exercido.lower().strip()
+
+                        if papel_normalizado in ["cirurgiao", "cirurgião"]:
+                            valor_cbhpm = cbhpm.get("surgeon_value", 0.0)
+                        elif papel_normalizado in ["anestesista"]:
+                            valor_cbhpm = cbhpm.get("anesthesiologist_value", 0.0)
+                        elif papel_normalizado in [
+                            "primeiro auxiliar",
+                            "1º auxiliar",
+                            "auxiliar",
+                        ]:
+                            valor_cbhpm = cbhpm.get("first_assistant_value", 0.0)
+                        elif papel_normalizado in ["segundo auxiliar", "2º auxiliar"]:
+                            # Segundo auxiliar normalmente recebe mesmo valor que primeiro auxiliar
+                            valor_cbhpm = cbhpm.get("first_assistant_value", 0.0)
+                        else:
+                            # Fallback para cirurgião se papel não reconhecido
+                            valor_cbhpm = cbhpm.get("surgeon_value", 0.0)
+                            logger.warning(
+                                f"Papel não reconhecido '{papel_exercido}' para procedimento {codigo}, usando valor de cirurgião"
+                            )
+
+                        # Garantir que valor_cbhpm é numérico
+                        if (
+                            valor_cbhpm
+                            and isinstance(valor_cbhpm, (int, float))
+                            and valor_cbhpm > 0
+                        ):
+                            # Calcula diferença e percentual
+                            approved_value = p.get("financial", {}).get(
+                                "approved_value", 0
+                            )
+                            if approved_value is not None:
+                                diferenca = float(approved_value) - float(valor_cbhpm)
+                                delta_percent = (diferenca / valor_cbhpm) * 100
+
+                            logger.debug(
+                                f"CBHPM calculado: código={codigo}, papel={papel_exercido}, "
+                                f"valor_cbhpm={valor_cbhpm}, aprovado={approved_value}, "
+                                f"diferenca={diferenca}, delta={delta_percent:.2f}%"
+                            )
+                        else:
+                            valor_cbhpm = None
+                            logger.warning(
+                                f"Valor CBHPM inválido para código {codigo} e papel {papel_exercido}"
+                            )
+
+                except Exception as e:
+                    logger.warning(
+                        f"Erro ao calcular CBHPM para procedimento {codigo}: {e}"
+                    )
+
+            # Garantir que valores são serializáveis para JSON
+            p["valor_cbhpm"] = float(valor_cbhpm) if valor_cbhpm else None
+            p["diferenca"] = float(diferenca) if diferenca is not None else None
+            p["delta_percent"] = (
+                float(delta_percent) if delta_percent is not None else None
+            )
+
+        logger.info(
+            f"Processados {len(payments)} procedimentos do demonstrativo {demo_id}"
+        )
         return payments
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erro inesperado no endpoint de procedimentos: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
     finally:
         db.close()
 

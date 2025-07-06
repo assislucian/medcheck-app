@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '@/components/Navbar';
@@ -23,7 +22,7 @@ export function PublicLayout({
   description,
   showGradientBackground = false,
   showFooter = true,
-  showBackButton = false
+  showBackButton = false,
 }: PublicLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,23 +38,25 @@ export function PublicLayout({
         <title>{title} | MedCheck</title>
         {description && <meta name="description" content={description} />}
       </Helmet>
-      <div className={`min-h-screen flex flex-col bg-background ${
-        showGradientBackground ? 'bg-gradient-to-b from-background to-muted/50' : ''
-      }`}>
+      <div
+        className={`min-h-screen flex flex-col bg-background ${
+          showGradientBackground ? 'bg-gradient-to-b from-background to-muted/50' : ''
+        }`}
+      >
         <Navbar isLoggedIn={false} showBackButton={isAboutPage || showBackButton} />
-        
-        <motion.main 
+
+        <motion.main
           className="flex-1 flex flex-col"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          {(showBackButton && !isAboutPage) && (
+          {showBackButton && !isAboutPage && (
             <div className="container pt-6 pl-4 sm:pl-8">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
-                onClick={handleGoBack} 
+                onClick={handleGoBack}
                 className="flex items-center gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -65,7 +66,7 @@ export function PublicLayout({
           )}
           {children}
         </motion.main>
-        
+
         {showFooter && <Footer />}
       </div>
     </>

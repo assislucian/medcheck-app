@@ -1,8 +1,7 @@
-
-import { Book } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Guide } from "@/types/help";
+import { Book } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Guide } from '@/types/help';
 
 interface GuidesListProps {
   guides: Guide[];
@@ -20,7 +19,7 @@ export const GuidesList = ({ guides, onShowAll }: GuidesListProps) => {
           </Button>
         )}
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {guides.map((guide) => (
           <Card key={guide.id} className="hover:shadow-md transition-shadow">
@@ -31,9 +30,7 @@ export const GuidesList = ({ guides, onShowAll }: GuidesListProps) => {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground line-clamp-2">
-                {guide.content}
-              </p>
+              <p className="text-muted-foreground line-clamp-2">{guide.content}</p>
             </CardContent>
           </Card>
         ))}
@@ -41,4 +38,3 @@ export const GuidesList = ({ guides, onShowAll }: GuidesListProps) => {
     </div>
   );
 };
-

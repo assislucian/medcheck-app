@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from './types';
 
@@ -25,7 +24,7 @@ export const useAuthActions = (userId: string | undefined) => {
       provider: 'google',
       options: {
         redirectTo: window.location.origin + '/auth/callback',
-      }
+      },
     });
   };
 
@@ -58,10 +57,7 @@ export const useAuthActions = (userId: string | undefined) => {
       throw new Error('User not authenticated');
     }
 
-    return await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId);
+    return await supabase.from('profiles').update(updates).eq('id', userId);
   };
 
   // Reset password
@@ -74,7 +70,7 @@ export const useAuthActions = (userId: string | undefined) => {
   // Update password
   const updatePassword = async (newPassword: string) => {
     return await supabase.auth.updateUser({
-      password: newPassword
+      password: newPassword,
     });
   };
 

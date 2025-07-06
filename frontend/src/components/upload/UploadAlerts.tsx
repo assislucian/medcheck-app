@@ -1,7 +1,6 @@
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { FileType } from "@/types/upload";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
+import { FileType } from '@/types/upload';
 
 interface UploadAlertsProps {
   hasGuiaDemonstrativoPair: boolean;
@@ -24,7 +23,8 @@ const UploadAlerts = ({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Alguns arquivos são inválidos e foram removidos. Por favor, verifique o formato e tamanho dos arquivos.
+            Alguns arquivos são inválidos e foram removidos. Por favor, verifique o
+            formato e tamanho dos arquivos.
           </AlertDescription>
         </Alert>
       )}
@@ -33,7 +33,8 @@ const UploadAlerts = ({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Nenhum arquivo válido para processamento. Por favor, adicione arquivos válidos.
+            Nenhum arquivo válido para processamento. Por favor, adicione arquivos
+            válidos.
           </AlertDescription>
         </Alert>
       )}

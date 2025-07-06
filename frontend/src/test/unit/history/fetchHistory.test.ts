@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi } from 'vitest';
 import { fetchHistoryData } from '@/services/history/fetchHistory';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,16 +7,19 @@ import { User } from '@supabase/supabase-js';
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     auth: {
-      getUser: vi.fn()
+      getUser: vi.fn(),
     },
-    from: vi.fn()
-  }
+    from: vi.fn(),
+  },
 }));
 
 describe('fetchHistoryData', () => {
   it('returns empty array when user is not authenticated', async () => {
-    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: null }, error: null });
-    
+    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: null },
+      error: null,
+    });
+
     const result = await fetchHistoryData();
     expect(result).toEqual([]);
   });
@@ -33,21 +35,26 @@ describe('fetchHistoryData', () => {
       phone: '',
       role: '',
       factors: null,
-      updated_at: '2024-01-01'
+      updated_at: '2024-01-01',
     };
 
-    const mockHistoryData = [{
-      id: '1',
-      date: '2025-01-01',
-      type: 'analysis',
-      description: 'Test',
-      procedimentos: 5,
-      glosados: 2,
-      status: 'complete'
-    }];
+    const mockHistoryData = [
+      {
+        id: '1',
+        date: '2025-01-01',
+        type: 'analysis',
+        description: 'Test',
+        procedimentos: 5,
+        glosados: 2,
+        status: 'complete',
+      },
+    ];
 
-    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({ data: { user: mockUser }, error: null });
-    
+    vi.spyOn(supabase.auth, 'getUser').mockResolvedValue({
+      data: { user: mockUser },
+      error: null,
+    });
+
     const mockOrder = vi.fn().mockResolvedValue({ data: mockHistoryData, error: null });
     const mockEq = vi.fn().mockReturnValue({ order: mockOrder });
     const mockSelect = vi.fn().mockReturnValue({ eq: mockEq });

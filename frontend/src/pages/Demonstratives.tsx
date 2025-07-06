@@ -382,9 +382,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
           `${
             import.meta.env.VITE_API_URL || 'http://localhost:8000'
           }/api/v1/demonstrativos/${demonstrative.id}/detalhes`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         // Mapear campos para nomes esperados, incluindo papel
         console.log(
@@ -396,25 +394,45 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         );
         const mapped = (res.data || []).map((p, idx) => {
           let participacao = '';
-          if (typeof p.papel === 'string') {
+
+          // Priorizar papel_exercido que vem do backend
+          if (p.papel_exercido && typeof p.papel_exercido === 'string') {
+            participacao = p.papel_exercido;
+          } else if (typeof p.papel === 'string') {
             participacao = p.papel;
-          } else if (p.participacao) {
+          } else if (p.participacao && typeof p.participacao === 'string') {
             participacao = p.participacao;
           } else if (p.participacoes) {
-            participacao = Array.isArray(p.participacoes)
-              ? p.participacoes.join('; ')
-              : p.participacoes;
+            // Se participacoes é um array de objetos, extrair papéis
+            if (Array.isArray(p.participacoes)) {
+              const papeis = p.participacoes
+                .filter((part) => part && typeof part === 'object' && part.papel)
+                .map((part) => part.papel);
+              participacao = papeis.length > 0 ? papeis[0] : ''; // Usar o primeiro papel encontrado
+            } else if (typeof p.participacoes === 'string') {
+              participacao = p.participacoes;
+            }
           }
+
           // Se não houver participação, marcar como 'Upload guia'
           if (!participacao || participacao === '--') {
             participacao = 'Upload guia';
           }
-          // Cálculo dos campos
+
+          // Cálculo dos campos CBHPM
           const cbhpm =
-            typeof p.cbhpm === 'string' ? parseBRL(cleanBRL(p.cbhpm)) : p.cbhpm ?? 0;
+            p.valor_cbhpm ||
+            (typeof p.cbhpm === 'string' ? parseBRL(cleanBRL(p.cbhpm)) : p.cbhpm) ||
+            0;
           const liberado = Number(p.financial?.approved_value ?? p.liberado) || 0;
-          const diferenca = liberado - cbhpm;
-          const delta_percent = cbhpm ? ((liberado - cbhpm) / cbhpm) * 100 : 0;
+          const diferenca = p.diferenca !== undefined ? p.diferenca : liberado - cbhpm;
+          const delta_percent =
+            p.delta_percent !== undefined
+              ? p.delta_percent
+              : cbhpm
+                ? ((liberado - cbhpm) / cbhpm) * 100
+                : 0;
+
           return {
             id: idx,
             guia: p.guia ?? p.guide ?? '',
@@ -1043,14 +1061,26 @@ const DemonstrativesPage = () => {
             const detalhes = Array.isArray(res.data) ? res.data : [];
             console.log('DEBUG detalhes demonstrativo', d.id, detalhes);
             const pendentes = detalhes.filter((p: any) => {
-              // Replicar lógica do modal: se não houver papel/participacao/participacoes, é pendente
+              // Usar a mesma lógica do modal: priorizar papel_exercido
               let participacao = '';
-              if (typeof p.papel === 'string') participacao = p.papel;
-              else if (p.participacao) participacao = p.participacao;
-              else if (p.participacoes)
-                participacao = Array.isArray(p.participacoes)
-                  ? p.participacoes.join('; ')
-                  : p.participacoes;
+
+              if (p.papel_exercido && typeof p.papel_exercido === 'string') {
+                participacao = p.papel_exercido;
+              } else if (typeof p.papel === 'string') {
+                participacao = p.papel;
+              } else if (p.participacao && typeof p.participacao === 'string') {
+                participacao = p.participacao;
+              } else if (p.participacoes) {
+                if (Array.isArray(p.participacoes)) {
+                  const papeis = p.participacoes
+                    .filter((part) => part && typeof part === 'object' && part.papel)
+                    .map((part) => part.papel);
+                  participacao = papeis.length > 0 ? papeis[0] : '';
+                } else if (typeof p.participacoes === 'string') {
+                  participacao = p.participacoes;
+                }
+              }
+
               if (!participacao || participacao === '--') participacao = 'Upload guia';
               return String(participacao).trim().toLowerCase() === 'upload guia';
             });
@@ -1076,9 +1106,7 @@ const DemonstrativesPage = () => {
         `${
           import.meta.env.VITE_API_URL || 'http://localhost:8000'
         }/api/v1/demonstrativos`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const mapped = (res.data || []).map((d: any) => {
         console.log('DEBUG demonstrativo:', d);
@@ -1114,9 +1142,7 @@ const DemonstrativesPage = () => {
         `${
           import.meta.env.VITE_API_URL || 'http://localhost:8000'
         }/api/v1/demonstrativos/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Demonstrativo excluído com sucesso', {
         id: `delete-success-${id}`,

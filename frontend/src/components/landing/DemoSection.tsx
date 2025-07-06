@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,18 +15,22 @@ export function DemoSection() {
 
   const handleRequestDemo = () => {
     setShowDemoForm(true);
-    
+
     // Example of using the mock supabase client
     const fetchData = async () => {
-      const { data, error } = await supabase.from('procedures').select('*').eq('id', '1').single();
-      
+      const { data, error } = await supabase
+        .from('procedures')
+        .select('*')
+        .eq('id', '1')
+        .single();
+
       if (error) {
         console.error('Error fetching demo data:', error);
       } else {
         console.log('Demo data fetched:', data);
       }
     };
-    
+
     fetchData();
   };
 
@@ -37,8 +40,8 @@ export function DemoSection() {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Veja o MedCheck em ação</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Descubra como nossa plataforma simplifica a auditoria e aumenta 
-            seus recebimentos em apenas alguns minutos.
+            Descubra como nossa plataforma simplifica a auditoria e aumenta seus
+            recebimentos em apenas alguns minutos.
           </p>
         </div>
 
@@ -55,7 +58,10 @@ export function DemoSection() {
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="text-primary mb-4">
-                  <PlayCircle className="h-16 w-16 cursor-pointer hover:scale-110 transition-transform" onClick={handlePlayVideo} />
+                  <PlayCircle
+                    className="h-16 w-16 cursor-pointer hover:scale-110 transition-transform"
+                    onClick={handlePlayVideo}
+                  />
                 </div>
                 <p className="font-medium">Assistir demonstração</p>
               </div>
@@ -74,8 +80,8 @@ export function DemoSection() {
               <div className="space-y-6">
                 <h3 className="text-2xl font-bold">Pronto para experimentar?</h3>
                 <p className="text-muted-foreground">
-                  Nossa equipe pode mostrar como o MedCheck se adapta à sua prática médica e
-                  ajuda a recuperar valores glosados indevidamente.
+                  Nossa equipe pode mostrar como o MedCheck se adapta à sua prática
+                  médica e ajuda a recuperar valores glosados indevidamente.
                 </p>
                 <ul className="space-y-2">
                   <li className="flex items-center">

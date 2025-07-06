@@ -1,10 +1,9 @@
-
-import { PublicLayout } from "@/layout/PublicLayout";
-import { PricingSection } from "@/components/landing/PricingSection";
+import { PublicLayout } from '@/layout/PublicLayout';
+import { PricingSection } from '@/components/landing/PricingSection';
 
 const PricingPage = () => {
   return (
-    <PublicLayout 
+    <PublicLayout
       title="Planos e Preços | MedCheck"
       description="Conheça nossos planos e escolha o ideal para sua necessidade"
       showBackButton={true}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { BadgeCheck, ArrowDown, ArrowUp, FileText } from 'lucide-react';
@@ -10,7 +9,12 @@ interface CBHPMSummaryCardsProps {
   acima: number;
 }
 
-const CBHPMSummaryCards: React.FC<CBHPMSummaryCardsProps> = ({ total, conforme, abaixo, acima }) => {
+const CBHPMSummaryCards: React.FC<CBHPMSummaryCardsProps> = ({
+  total,
+  conforme,
+  abaixo,
+  acima,
+}) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <Card>
@@ -22,7 +26,7 @@ const CBHPMSummaryCards: React.FC<CBHPMSummaryCardsProps> = ({ total, conforme, 
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center">
@@ -32,7 +36,7 @@ const CBHPMSummaryCards: React.FC<CBHPMSummaryCardsProps> = ({ total, conforme, 
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center">
@@ -42,7 +46,7 @@ const CBHPMSummaryCards: React.FC<CBHPMSummaryCardsProps> = ({ total, conforme, 
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center">

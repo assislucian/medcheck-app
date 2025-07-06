@@ -9,9 +9,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+} from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/utils';
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const GuestNavigation = () => {
   const location = useLocation();
@@ -28,7 +28,9 @@ export const GuestNavigation = () => {
       <NavigationMenu className="hidden md:flex">
         <NavigationMenuList>
           <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-foreground/80 hover:text-foreground">Produto</NavigationMenuTrigger>
+            <NavigationMenuTrigger className="text-foreground/80 hover:text-foreground">
+              Produto
+            </NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                 <li className="row-span-3">
@@ -42,7 +44,8 @@ export const GuestNavigation = () => {
                         Quem Somos
                       </div>
                       <p className="text-sm leading-tight text-muted-foreground">
-                        Conheça a história e a missão do MedCheck - desenvolvido por médicos para médicos
+                        Conheça a história e a missão do MedCheck - desenvolvido por
+                        médicos para médicos
                       </p>
                     </Link>
                   </NavigationMenuLink>
@@ -52,10 +55,12 @@ export const GuestNavigation = () => {
                     <Link
                       to="/how-it-works"
                       className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                       )}
                     >
-                      <div className="text-sm font-medium leading-none">Como Funciona</div>
+                      <div className="text-sm font-medium leading-none">
+                        Como Funciona
+                      </div>
                       <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                         Veja como nossa plataforma automatiza a auditoria médica
                       </p>
@@ -67,7 +72,7 @@ export const GuestNavigation = () => {
                     <Link
                       to="/pricing"
                       className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                       )}
                     >
                       <div className="text-sm font-medium leading-none">Planos</div>
@@ -81,15 +86,21 @@ export const GuestNavigation = () => {
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link to="/contact" className={cn(navigationMenuTriggerStyle(), "text-foreground/80 hover:text-foreground cursor-pointer")}>
+            <Link
+              to="/contact"
+              className={cn(
+                navigationMenuTriggerStyle(),
+                'text-foreground/80 hover:text-foreground cursor-pointer'
+              )}
+            >
               Contato
             </Link>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      
+
       <div className="hidden md:block border-l border-border h-6 mx-2" />
-      
+
       <div className="flex items-center gap-2">
         <ThemeToggle />
         <Button variant="ghost" asChild className="text-sm hidden md:flex">

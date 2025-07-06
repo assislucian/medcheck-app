@@ -1,12 +1,11 @@
-
-import { useProfile } from "@/hooks/use-profile";
-import { ProfileHeader } from "./ProfileHeader";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserCog, Lock, Bell } from "lucide-react";
-import { ProfileForm } from "./form/ProfileForm";
-import { SecurityForm } from "./security/SecurityForm";
-import { NotificationsTab } from "./tabs/NotificationsTab";
+import { useProfile } from '@/hooks/use-profile';
+import { ProfileHeader } from './ProfileHeader';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserCog, Lock, Bell } from 'lucide-react';
+import { ProfileForm } from './form/ProfileForm';
+import { SecurityForm } from './security/SecurityForm';
+import { NotificationsTab } from './tabs/NotificationsTab';
 
 export const ProfileContainer = () => {
   const { loading, updateProfile, updateNotificationPreferences } = useProfile();
@@ -14,7 +13,7 @@ export const ProfileContainer = () => {
   return (
     <div className="space-y-6">
       <ProfileHeader />
-      
+
       <Tabs defaultValue="profile" className="space-y-4">
         <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-auto gap-4">
           <TabsTrigger value="profile" className="gap-2">
@@ -44,9 +43,9 @@ export const ProfileContainer = () => {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <NotificationsTab 
-            loading={loading} 
-            onSubmit={updateNotificationPreferences} 
+          <NotificationsTab
+            loading={loading}
+            onSubmit={updateNotificationPreferences}
           />
         </TabsContent>
       </Tabs>

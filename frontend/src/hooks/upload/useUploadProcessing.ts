@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -12,14 +11,14 @@ export function useUploadProcessing(processUploadedFiles: () => Promise<any>) {
 
   const handleProcess = async () => {
     setError(null);
-    
+
     try {
       const result = await processUploadedFiles();
-      
+
       if (result && typeof result === 'object') {
         setShowSuccess(result.success || false);
         setAnalysisId(result.analysisId || null);
-        
+
         if (!result.success) {
           setError('Erro ao processar os arquivos.');
         }
@@ -49,6 +48,6 @@ export function useUploadProcessing(processUploadedFiles: () => Promise<any>) {
     analysisId,
     handleProcess,
     handleViewComparison,
-    setError
+    setError,
   };
 }

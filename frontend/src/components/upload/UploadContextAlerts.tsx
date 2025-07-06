@@ -1,15 +1,14 @@
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface UploadContextAlertsProps {
   showGuideAlert: boolean;
   showDemonstrativoAlert: boolean;
 }
 
-const UploadContextAlerts = ({ 
+const UploadContextAlerts = ({
   showGuideAlert,
-  showDemonstrativoAlert 
+  showDemonstrativoAlert,
 }: UploadContextAlertsProps) => {
   if (!showGuideAlert && !showDemonstrativoAlert) return null;
 
@@ -23,7 +22,7 @@ const UploadContextAlerts = ({
           </AlertDescription>
         </Alert>
       )}
-      
+
       {showDemonstrativoAlert && (
         <Alert>
           <AlertCircle className="h-4 w-4" />

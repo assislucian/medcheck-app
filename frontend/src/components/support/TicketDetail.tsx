@@ -1,13 +1,24 @@
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Send } from "lucide-react";
-import { Ticket, Message } from "./types";
-import { useState } from "react";
-import { getStatusClass, getStatusText, getPriorityClass, getPriorityText } from "./helpers";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, Send } from 'lucide-react';
+import { Ticket, Message } from './types';
+import { useState } from 'react';
+import {
+  getStatusClass,
+  getStatusText,
+  getPriorityClass,
+  getPriorityText,
+} from './helpers';
 
 interface TicketDetailProps {
   ticket: Ticket | null;
@@ -18,10 +29,10 @@ interface TicketDetailProps {
 
 /**
  * TicketDetail Component
- * 
+ *
  * Displays the details of a selected support ticket and its message history.
  * Provides functionality to send new messages if the ticket is still active.
- * 
+ *
  * @param ticket - The currently selected ticket object or null if none selected
  * @param messages - Array of message objects related to the ticket
  * @param onSendMessage - Function to handle sending a new message
@@ -31,7 +42,7 @@ export const TicketDetail = ({
   ticket,
   messages,
   onSendMessage,
-  onCreateTicket
+  onCreateTicket,
 }: TicketDetailProps) => {
   const [newMessage, setNewMessage] = useState('');
 
@@ -45,7 +56,7 @@ export const TicketDetail = ({
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   };
 
@@ -55,7 +66,7 @@ export const TicketDetail = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
-    
+
     await onSendMessage(newMessage);
     setNewMessage('');
   };
@@ -68,7 +79,8 @@ export const TicketDetail = ({
           <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">Nenhum ticket selecionado</h3>
           <p className="text-muted-foreground mb-6">
-            Selecione um ticket para visualizar a conversa ou crie um novo ticket de suporte.
+            Selecione um ticket para visualizar a conversa ou crie um novo ticket de
+            suporte.
           </p>
           <Button onClick={onCreateTicket}>Criar Novo Ticket</Button>
         </div>
@@ -105,14 +117,14 @@ export const TicketDetail = ({
               </p>
             ) : (
               messages.map((message) => (
-                <div 
-                  key={message.id} 
+                <div
+                  key={message.id}
                   className={`flex ${message.sent_by_user ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div 
+                  <div
                     className={`rounded-lg p-3 max-w-[80%] ${
-                      message.sent_by_user 
-                        ? 'bg-primary text-primary-foreground' 
+                      message.sent_by_user
+                        ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
                     }`}
                   >
@@ -136,9 +148,11 @@ export const TicketDetail = ({
               placeholder="Escreva sua mensagem..."
               disabled={['resolvido', 'fechado'].includes(ticket.status)}
             />
-            <Button 
-              type="submit" 
-              disabled={!newMessage.trim() || ['resolvido', 'fechado'].includes(ticket.status)}
+            <Button
+              type="submit"
+              disabled={
+                !newMessage.trim() || ['resolvido', 'fechado'].includes(ticket.status)
+              }
             >
               <Send className="h-4 w-4" />
               <span className="sr-only">Enviar</span>
@@ -146,7 +160,8 @@ export const TicketDetail = ({
           </div>
           {['resolvido', 'fechado'].includes(ticket.status) && (
             <p className="text-xs text-muted-foreground mt-2">
-              Este ticket está {ticket.status === 'resolvido' ? 'resolvido' : 'fechado'} e não pode receber novas mensagens.
+              Este ticket está {ticket.status === 'resolvido' ? 'resolvido' : 'fechado'}{' '}
+              e não pode receber novas mensagens.
             </p>
           )}
         </form>

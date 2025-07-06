@@ -12,10 +12,12 @@ def papel_do_procedimento(db, *, guia, codigo, data, crm):
         Papel do médico (str) ou '--' se não encontrado.
     """
     import logging
+
     logger = logging.getLogger("participacao")
     try:
         # Importação local para evitar import circular
         from src.api import Guia
+
         guia = str(guia).strip() if guia else None
         codigo = str(codigo).strip() if codigo else None
         data = str(data).strip() if data else None
@@ -23,21 +25,27 @@ def papel_do_procedimento(db, *, guia, codigo, data, crm):
         # Busca exata
         papel = (
             db.query(Guia.papel)
-              .filter_by(numero_guia=guia, codigo=codigo, data=data, user_id=crm)
-              .scalar()
+            .filter_by(numero_guia=guia, codigo=codigo, data=data, user_id=crm)
+            .scalar()
         )
         if papel:
-            logger.info(f"Match exato: guia={guia}, codigo={codigo}, data={data}, crm={crm} => papel={papel}")
+            logger.info(
+                f"Match exato: guia={guia}, codigo={codigo}, data={data}, crm={crm} => papel={papel}"
+            )
             return papel
         # Busca parcial (guia+codigo)
         matches = db.query(Guia).filter_by(numero_guia=guia, codigo=codigo).all()
         if matches:
-            logger.info(f"Match parcial: guia={guia}, codigo={codigo}, encontrados={len(matches)}")
+            logger.info(
+                f"Match parcial: guia={guia}, codigo={codigo}, encontrados={len(matches)}"
+            )
             for m in matches:
                 logger.info(f"Parcial: {m}")
             return matches[0].papel if matches[0].papel else "--"
-        logger.warning(f"Nenhum match: guia={guia}, codigo={codigo}, data={data}, crm={crm}")
+        logger.warning(
+            f"Nenhum match: guia={guia}, codigo={codigo}, data={data}, crm={crm}"
+        )
         return "--"
     except Exception as e:
         logger.error(f"Erro ao buscar papel: {e}")
-        return "--" 
+        return "--"

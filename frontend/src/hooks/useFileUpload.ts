@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useFileList } from './upload/useFileList';
 import { useProcessingStatus } from './upload/useProcessingStatus';
@@ -35,7 +34,7 @@ export function useFileUpload() {
       processingStatus.setProcessingStage,
       processingStatus.setProcessingMsg,
       crmRegistrado || processingStatus.crmRegistrado,
-      fileTypes,
+      fileTypes
     );
 
     processingStatus.setUploading(false);
@@ -61,7 +60,8 @@ export function useFileUpload() {
   return {
     ...fileList,
     ...processingStatus,
-    determineProcessingMode: () => fileUploadService.determineProcessingMode(fileList.files),
+    determineProcessingMode: () =>
+      fileUploadService.determineProcessingMode(fileList.files),
     processUploadedFiles,
     handleFileChangeByType,
     resetFiles,

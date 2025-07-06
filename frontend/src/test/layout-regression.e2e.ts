@@ -8,12 +8,7 @@ test.describe('Layout Consistency Tests', () => {
   });
 
   test('All pages should use consistent layout classes', async ({ page }) => {
-    const routes = [
-      '/dashboard',
-      '/guides', 
-      '/demonstratives',
-      '/unpaid-procedures'
-    ];
+    const routes = ['/dashboard', '/guides', '/demonstratives', '/unpaid-procedures'];
 
     for (const route of routes) {
       await page.goto(`http://localhost:8083${route}`);
@@ -29,10 +24,10 @@ test.describe('Layout Consistency Tests', () => {
 
       // Check that no page-level wrappers have conflicting padding/margin
       const pageWrappers = page.locator('main > div:not(.content-layout)');
-      for (let i = 0; i < await pageWrappers.count(); i++) {
+      for (let i = 0; i < (await pageWrappers.count()); i++) {
         const wrapper = pageWrappers.nth(i);
-        const className = await wrapper.getAttribute('class') || '';
-        
+        const className = (await wrapper.getAttribute('class')) || '';
+
         // Should not have px-, mx-, max-w- classes that could cause misalignment
         expect(className).not.toMatch(/px-[0-9]/);
         expect(className).not.toMatch(/mx-[0-9]/);
@@ -42,12 +37,7 @@ test.describe('Layout Consistency Tests', () => {
   });
 
   test('Sidebar offset should be consistent across all pages', async ({ page }) => {
-    const routes = [
-      '/dashboard',
-      '/guides',
-      '/demonstratives', 
-      '/unpaid-procedures'
-    ];
+    const routes = ['/dashboard', '/guides', '/demonstratives', '/unpaid-procedures'];
 
     let expectedOffset: string | null = null;
 
@@ -57,8 +47,8 @@ test.describe('Layout Consistency Tests', () => {
 
       // Get the computed left margin of the main content
       const mainElement = page.locator('main');
-      const leftMargin = await mainElement.evaluate(el => 
-        window.getComputedStyle(el).marginLeft
+      const leftMargin = await mainElement.evaluate(
+        (el) => window.getComputedStyle(el).marginLeft
       );
 
       if (expectedOffset === null) {
@@ -71,12 +61,7 @@ test.describe('Layout Consistency Tests', () => {
   });
 
   test('Content should not have horizontal gaps or misalignment', async ({ page }) => {
-    const routes = [
-      '/dashboard',
-      '/guides',
-      '/demonstratives',
-      '/unpaid-procedures'
-    ];
+    const routes = ['/dashboard', '/guides', '/demonstratives', '/unpaid-procedures'];
 
     for (const route of routes) {
       await page.goto(`http://localhost:8083${route}`);
@@ -84,17 +69,17 @@ test.describe('Layout Consistency Tests', () => {
 
       // Check that content doesn't overflow horizontally
       const body = page.locator('body');
-      const overflowX = await body.evaluate(el => 
-        window.getComputedStyle(el).overflowX
+      const overflowX = await body.evaluate(
+        (el) => window.getComputedStyle(el).overflowX
       );
       expect(overflowX).not.toBe('auto');
       expect(overflowX).not.toBe('scroll');
 
       // Check that main content is properly contained
       const main = page.locator('main');
-      const mainWidth = await main.evaluate(el => el.offsetWidth);
+      const mainWidth = await main.evaluate((el) => el.offsetWidth);
       const viewportWidth = await page.evaluate(() => window.innerWidth);
-      
+
       // Main content should not exceed viewport width
       expect(mainWidth).toBeLessThanOrEqual(viewportWidth);
     }
@@ -102,10 +87,10 @@ test.describe('Layout Consistency Tests', () => {
 
   test('Layout should be responsive across breakpoints', async ({ page }) => {
     const breakpoints = [
-      { width: 375, height: 667 },   // Mobile
-      { width: 768, height: 1024 },  // Tablet
-      { width: 1280, height: 720 },  // Desktop
-      { width: 1536, height: 864 }   // Large Desktop
+      { width: 375, height: 667 }, // Mobile
+      { width: 768, height: 1024 }, // Tablet
+      { width: 1280, height: 720 }, // Desktop
+      { width: 1536, height: 864 }, // Large Desktop
     ];
 
     for (const breakpoint of breakpoints) {
@@ -115,8 +100,8 @@ test.describe('Layout Consistency Tests', () => {
 
       // Check that layout adapts properly
       const main = page.locator('main');
-      const mainWidth = await main.evaluate(el => el.offsetWidth);
-      
+      const mainWidth = await main.evaluate((el) => el.offsetWidth);
+
       // Content should be properly sized for the viewport
       expect(mainWidth).toBeLessThanOrEqual(breakpoint.width);
       expect(mainWidth).toBeGreaterThan(breakpoint.width * 0.5); // At least 50% of viewport
@@ -133,13 +118,13 @@ test.describe('Layout Consistency Tests', () => {
       const main = document.querySelector('main');
       return {
         left: main?.getBoundingClientRect().left || 0,
-        width: main?.offsetWidth || 0
+        width: main?.offsetWidth || 0,
       };
     });
 
     // Navigate to other pages and check for layout shifts
     const routes = ['/guides', '/demonstratives', '/unpaid-procedures'];
-    
+
     for (const route of routes) {
       await page.goto(`http://localhost:8083${route}`);
       await page.waitForLoadState('networkidle');
@@ -148,7 +133,7 @@ test.describe('Layout Consistency Tests', () => {
         const main = document.querySelector('main');
         return {
           left: main?.getBoundingClientRect().left || 0,
-          width: main?.offsetWidth || 0
+          width: main?.offsetWidth || 0,
         };
       });
 
@@ -166,11 +151,11 @@ test.describe('Layout Consistency Tests', () => {
     const cssVariables = await page.evaluate(() => {
       const root = document.documentElement;
       const computedStyle = window.getComputedStyle(root);
-      
+
       return {
         sidebarWidth: computedStyle.getPropertyValue('--sidebar-width'),
         pageMaxWidth: computedStyle.getPropertyValue('--page-max-width'),
-        pageMinWidth: computedStyle.getPropertyValue('--page-min-width')
+        pageMinWidth: computedStyle.getPropertyValue('--page-min-width'),
       };
     });
 
@@ -178,4 +163,4 @@ test.describe('Layout Consistency Tests', () => {
     expect(cssVariables.pageMaxWidth).toBeTruthy();
     expect(cssVariables.pageMinWidth).toBeTruthy();
   });
-}); 
+});

@@ -1,4 +1,3 @@
-
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ErrorAlertProps {
@@ -7,7 +6,7 @@ interface ErrorAlertProps {
 
 const ErrorAlert = ({ message }: ErrorAlertProps) => {
   if (!message) return null;
-  
+
   return (
     <Alert variant="destructive" className="mb-4">
       <AlertDescription>{message}</AlertDescription>

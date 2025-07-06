@@ -1,54 +1,56 @@
 import { Card } from '../ui/card';
 import { useProfile } from '../../hooks/use-profile';
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Badge } from '../ui/badge';
-import { ProfileAvatar } from "./avatar/ProfileAvatar";
-import { Button } from "../ui/button";
-import { toast } from "sonner";
+import { ProfileAvatar } from './avatar/ProfileAvatar';
+import { Button } from '../ui/button';
+import { toast } from 'sonner';
 
 export const ProfileHeader = () => {
   const { fetchProfile } = useProfile();
   const { user } = useAuth();
-  
+
   const [profile, setProfile] = useState({
-    name: "",
-    specialty: "",
-    crm: "",
-    avatarUrl: "",
-    email: user?.email || ""
+    name: '',
+    specialty: '',
+    crm: '',
+    avatarUrl: '',
+    email: user?.email || '',
   });
 
   useEffect(() => {
     const loadProfile = async () => {
       const profileData = await fetchProfile();
       if (profileData) {
-        const avatarUrl = profileData.notification_preferences 
-          ? (profileData.notification_preferences as Record<string, any>)['avatar_url'] || ''
+        const avatarUrl = profileData.notification_preferences
+          ? (profileData.notification_preferences as Record<string, any>)[
+              'avatar_url'
+            ] || ''
           : '';
 
         setProfile({
-          name: profileData.name || "Usuário",
-          specialty: profileData.specialty || "Não informado",
-          crm: profileData.crm || "Não informado",
+          name: profileData.name || 'Usuário',
+          specialty: profileData.specialty || 'Não informado',
+          crm: profileData.crm || 'Não informado',
           avatarUrl: avatarUrl,
-          email: profileData.email || user?.email || ""
+          email: profileData.email || user?.email || '',
         });
       }
     };
-    
+
     loadProfile();
   }, [fetchProfile, user]);
 
   const handleAvatarUpdate = (url: string) => {
-    setProfile(prev => ({ ...prev, avatarUrl: url }));
+    setProfile((prev) => ({ ...prev, avatarUrl: url }));
   };
 
   return (
     <Card className="p-6">
       <div className="flex flex-col md:flex-row items-center gap-6 justify-between">
         <div className="flex flex-col md:flex-row items-center gap-6">
-          <ProfileAvatar 
+          <ProfileAvatar
             name={profile.name}
             avatarUrl={profile.avatarUrl}
             onAvatarUpdate={handleAvatarUpdate}
@@ -69,12 +71,13 @@ export const ProfileHeader = () => {
             </div>
 
             <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+              <Badge
+                variant="secondary"
+                className="bg-primary/10 text-primary hover:bg-primary/20"
+              >
                 {profile.specialty}
               </Badge>
-              <Badge variant="outline">
-                MedCheck Pro
-              </Badge>
+              <Badge variant="outline">MedCheck Pro</Badge>
             </div>
           </div>
         </div>
@@ -83,7 +86,9 @@ export const ProfileHeader = () => {
             variant="outline"
             onClick={async () => {
               try {
-                const res = await fetch("/api/v1/export-data", { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                const res = await fetch('/api/v1/export-data', {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!res.ok) throw new Error('Erro ao exportar dados');
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -103,12 +108,22 @@ export const ProfileHeader = () => {
           <Button
             variant="destructive"
             onClick={async () => {
-              if (!window.confirm('Tem certeza que deseja excluir sua conta e todos os dados? Esta ação é irreversível.')) return;
+              if (
+                !window.confirm(
+                  'Tem certeza que deseja excluir sua conta e todos os dados? Esta ação é irreversível.'
+                )
+              )
+                return;
               try {
-                const res = await fetch("/api/v1/delete-account", { method: 'DELETE', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                const res = await fetch('/api/v1/delete-account', {
+                  method: 'DELETE',
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 if (!res.ok) throw new Error('Erro ao excluir conta');
                 toast.success('Conta excluída com sucesso. Você será deslogado.');
-                setTimeout(() => { window.location.href = '/login'; }, 1500);
+                setTimeout(() => {
+                  window.location.href = '/login';
+                }, 1500);
               } catch (e) {
                 toast.error('Erro ao excluir conta.');
               }

@@ -1,4 +1,3 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -18,13 +17,11 @@ const EmailField = ({ email, setEmail, error }: EmailFieldProps) => {
         placeholder="seu.email@exemplo.com"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className={error ? "border-destructive" : ""}
+        className={error ? 'border-destructive' : ''}
         required
         autoComplete="email"
       />
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 };

@@ -1,13 +1,18 @@
-
 import { Helmet } from 'react-helmet-async';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useTrialStatus } from '@/hooks/use-trial-status';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { PublicLayout } from '@/components/layout/PublicLayout';
@@ -23,8 +28,12 @@ const WelcomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, session } = useAuth();
-  const { status: trialStatus, isLoading: trialLoading, error: trialError } = useTrialStatus();
-  
+  const {
+    status: trialStatus,
+    isLoading: trialLoading,
+    error: trialError,
+  } = useTrialStatus();
+
   // Get return path from location state, or default to dashboard
   const returnTo = location.state?.returnTo || '/dashboard';
 
@@ -37,9 +46,9 @@ const WelcomePage = () => {
   useEffect(() => {
     if (!trialLoading && trialStatus === 'active' && user) {
       console.log('Trial already active, redirecting to:', returnTo);
-      navigate(returnTo, { 
+      navigate(returnTo, {
         state: { startTour: true },
-        replace: true 
+        replace: true,
       });
     }
   }, [trialStatus, trialLoading, user, navigate, returnTo]);
@@ -49,12 +58,12 @@ const WelcomePage = () => {
       toast.error('Você precisa estar logado para ativar o trial');
       return;
     }
-    
+
     setIsActivating(true);
     try {
       console.log('Activating trial for user:', user.id);
       const { data, error } = await supabase.rpc('activate_trial', {
-        user_id: user.id
+        user_id: user.id,
       });
 
       if (error) {
@@ -63,11 +72,11 @@ const WelcomePage = () => {
         setIsActivating(false);
         return;
       }
-      
+
       // Type assertion with proper casting to ensure type safety
       const response = data as unknown as ActivateTrialResponse;
       console.log('Trial activation response:', response);
-      
+
       if (response) {
         if (!response.success) {
           toast.error(response.message || 'Erro ao ativar trial');
@@ -76,12 +85,12 @@ const WelcomePage = () => {
         }
 
         toast.success('Trial ativado com sucesso!');
-        
+
         // Short delay to allow the toast to be visible
         setTimeout(() => {
-          navigate(returnTo, { 
+          navigate(returnTo, {
             state: { startTour: true },
-            replace: true 
+            replace: true,
           });
         }, 1000);
       } else {
@@ -117,7 +126,8 @@ const WelcomePage = () => {
               Bem-vindo ao MedCheck!
             </CardTitle>
             <CardDescription className="text-lg">
-              Sua conta foi criada com sucesso. Aproveite 7 dias gratuitos de todas as funcionalidades premium.
+              Sua conta foi criada com sucesso. Aproveite 7 dias gratuitos de todas as
+              funcionalidades premium.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,7 +138,7 @@ const WelcomePage = () => {
                   'Identificação de glosas e inconsistências',
                   'Relatórios detalhados de pagamentos',
                   'Suporte prioritário via chat',
-                  'Exportação ilimitada de relatórios'
+                  'Exportação ilimitada de relatórios',
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-primary" />
@@ -136,7 +146,7 @@ const WelcomePage = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div className="mt-8 text-center">
                 <Button
                   size="lg"

@@ -10,19 +10,19 @@ const run = process.env.CI === 'true';
     jest.clearAllMocks();
   });
 
-  it("renders theme toggle and logout button", () => {
+  it('renders theme toggle and logout button', () => {
     render(<FooterSection onSignOut={mockSignOut} />);
-    
-    expect(screen.getByRole("button", { name: /toggle theme/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sair/i })).toBeInTheDocument();
+
+    expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sair/i })).toBeInTheDocument();
   });
 
-  it("calls onSignOut when logout button is clicked", async () => {
+  it('calls onSignOut when logout button is clicked', async () => {
     render(<FooterSection onSignOut={mockSignOut} />);
-    
-    const logoutButton = screen.getByRole("button", { name: /sair/i });
+
+    const logoutButton = screen.getByRole('button', { name: /sair/i });
     await userEvent.click(logoutButton);
-    
+
     expect(mockSignOut).toHaveBeenCalledTimes(1);
   });
 });

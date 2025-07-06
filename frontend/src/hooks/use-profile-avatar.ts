@@ -1,6 +1,5 @@
-
-import { useState } from "react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const useProfileAvatar = () => {
   const [uploading, setUploading] = useState(false);
@@ -10,7 +9,7 @@ export const useProfileAvatar = () => {
       setUploading(true);
       // Implementation for uploading avatar
       // This is just a placeholder that returns a mock URL
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate upload delay
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate upload delay
       return URL.createObjectURL(file);
     } catch (error) {
       console.error('Error uploading avatar:', error);
@@ -28,11 +27,11 @@ export const useProfileAvatar = () => {
       setUploading(true);
       const url = await uploadAvatar(file);
       if (url) {
-        toast.success("Foto atualizada com sucesso");
+        toast.success('Foto atualizada com sucesso');
         return url;
       }
     } catch (error) {
-      toast.error("Erro ao atualizar foto");
+      toast.error('Erro ao atualizar foto');
     } finally {
       setUploading(false);
     }
@@ -42,6 +41,6 @@ export const useProfileAvatar = () => {
   return {
     uploading,
     uploadAvatar,
-    handleAvatarChange
+    handleAvatarChange,
   };
 };

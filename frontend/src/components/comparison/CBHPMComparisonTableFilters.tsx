@@ -1,10 +1,15 @@
-
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Search, Filter, CheckSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Search, Filter, CheckSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FilterProps {
   filter: string;
@@ -36,7 +41,7 @@ const CBHPMComparisonTableFilters: React.FC<FilterProps> = ({
   filteredLength,
   toggleMatchValidation,
   showMatchStatus = false,
-  hasGuiaData = false
+  hasGuiaData = false,
 }) => (
   <div className="space-y-4">
     <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -45,7 +50,7 @@ const CBHPMComparisonTableFilters: React.FC<FilterProps> = ({
         <Input
           placeholder="Buscar por código ou descrição"
           value={filter}
-          onChange={e => setFilter(e.target.value)}
+          onChange={(e) => setFilter(e.target.value)}
           className="pl-8"
         />
       </div>
@@ -70,8 +75,10 @@ const CBHPMComparisonTableFilters: React.FC<FilterProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os papéis</SelectItem>
-            {roles.map(role => (
-              <SelectItem key={role} value={role}>{role}</SelectItem>
+            {roles.map((role) => (
+              <SelectItem key={role} value={role}>
+                {role}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -81,24 +88,28 @@ const CBHPMComparisonTableFilters: React.FC<FilterProps> = ({
           Exibindo {filteredLength} de {detailsLength} procedimentos
         </Badge>
         {filterActive && (
-          <Badge variant="outline" className="bg-primary/10 cursor-pointer" onClick={resetFilters}>
+          <Badge
+            variant="outline"
+            className="bg-primary/10 cursor-pointer"
+            onClick={resetFilters}
+          >
             Limpar filtros
           </Badge>
         )}
       </div>
     </div>
-    
+
     {toggleMatchValidation && (
       <div className="flex items-center">
-        <Button 
-          variant={showMatchStatus ? "default" : "outline"} 
-          size="sm" 
+        <Button
+          variant={showMatchStatus ? 'default' : 'outline'}
+          size="sm"
           onClick={toggleMatchValidation}
-          className={!hasGuiaData ? "opacity-50" : ""}
+          className={!hasGuiaData ? 'opacity-50' : ''}
           disabled={!hasGuiaData}
         >
           <CheckSquare className="h-4 w-4 mr-2" />
-          {showMatchStatus ? "Desativar validação contra guia" : "Validar contra guia"}
+          {showMatchStatus ? 'Desativar validação contra guia' : 'Validar contra guia'}
         </Button>
         {!hasGuiaData && (
           <span className="ml-2 text-sm text-muted-foreground">

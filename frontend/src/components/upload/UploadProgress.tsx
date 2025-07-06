@@ -1,4 +1,3 @@
-
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { ProcessingStage } from '@/types/upload';
@@ -14,7 +13,7 @@ const UploadProgress = ({ progress, show, stage = 'idle' }: UploadProgressProps)
 
   const isComplete = stage === 'complete';
   const isError = stage === 'error';
-  
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
@@ -38,11 +37,11 @@ const UploadProgress = ({ progress, show, stage = 'idle' }: UploadProgressProps)
         </span>
         <span className="font-medium">{progress}%</span>
       </div>
-      <Progress 
-        value={progress} 
+      <Progress
+        value={progress}
         className={`h-2 ${isComplete ? 'bg-green-100' : isError ? 'bg-red-100' : ''}`}
-        {...(isComplete && { className: "h-2 bg-muted [&>div]:bg-green-500" })}
-        {...(isError && { className: "h-2 bg-muted [&>div]:bg-red-500" })}
+        {...(isComplete && { className: 'h-2 bg-muted [&>div]:bg-green-500' })}
+        {...(isError && { className: 'h-2 bg-muted [&>div]:bg-red-500' })}
       />
     </div>
   );

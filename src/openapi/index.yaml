@@ -44,7 +44,7 @@ paths:
                       type: boolean
                       default: true
       responses:
-        '202':
+        "202":
           description: Validation jobs created successfully
           content:
             application/json:
@@ -57,10 +57,10 @@ paths:
                     type: array
                     items:
                       type: string
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
 
   /reports/{jobId}:
     get:
@@ -76,16 +76,16 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Validation report retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ValidationReport'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
+                $ref: "#/components/schemas/ValidationReport"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
 
   /reference/{code}:
     get:
@@ -102,16 +102,16 @@ paths:
             type: string
             pattern: '^\d{8}$'
       responses:
-        '200':
+        "200":
           description: CBHPM reference data retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CBHPMEntry'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalError'
+                $ref: "#/components/schemas/CBHPMEntry"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
 
 components:
   schemas:
@@ -151,9 +151,9 @@ components:
             records:
               type: array
               items:
-                $ref: '#/components/schemas/ValidationResult'
+                $ref: "#/components/schemas/ValidationResult"
             summary:
-              $ref: '#/components/schemas/ValidationSummary'
+              $ref: "#/components/schemas/ValidationSummary"
         error:
           type: string
 
@@ -161,9 +161,9 @@ components:
       type: object
       properties:
         record:
-          $ref: '#/components/schemas/DemonstrativoRecord'
+          $ref: "#/components/schemas/DemonstrativoRecord"
         cbhpmEntry:
-          $ref: '#/components/schemas/CBHPMEntry'
+          $ref: "#/components/schemas/CBHPMEntry"
         expectedValue:
           type: number
           format: float
@@ -274,4 +274,4 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: X-API-Key 
+      name: X-API-Key

@@ -1,4 +1,3 @@
-
 import { ProcessMode } from '@/types/upload';
 
 /**
@@ -7,7 +6,10 @@ import { ProcessMode } from '@/types/upload';
  * @param hasDemonstrativos Se há demonstrativos para processamento
  * @returns O modo de processamento determinado
  */
-export function getProcessMode(hasGuias: boolean, hasDemonstrativos: boolean): ProcessMode {
+export function getProcessMode(
+  hasGuias: boolean,
+  hasDemonstrativos: boolean
+): ProcessMode {
   if (hasGuias && hasDemonstrativos) {
     return 'complete';
   } else if (hasGuias) {

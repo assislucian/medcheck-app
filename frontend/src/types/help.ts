@@ -1,4 +1,3 @@
-
 export interface HelpArticle {
   id: string;
   title: string;

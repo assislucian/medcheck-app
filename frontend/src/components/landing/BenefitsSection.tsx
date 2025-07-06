@@ -1,38 +1,41 @@
-
-import { CheckCircle, Microscope, BriefcaseMedical, Shield } from "lucide-react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { CheckCircle, Microscope, BriefcaseMedical, Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const benefits = [
   {
     icon: Microscope,
-    title: "Análise Inteligente",
-    description: "Nossa tecnologia proprietária analisa automaticamente seus pagamentos e identifica inconsistências com precisão.",
-    color: "bg-blue-50 dark:bg-blue-950/30",
-    textColor: "text-blue-600 dark:text-blue-400"
+    title: 'Análise Inteligente',
+    description:
+      'Nossa tecnologia proprietária analisa automaticamente seus pagamentos e identifica inconsistências com precisão.',
+    color: 'bg-blue-50 dark:bg-blue-950/30',
+    textColor: 'text-blue-600 dark:text-blue-400',
   },
   {
     icon: CheckCircle,
-    title: "Validação CBHPM",
-    description: "Comparação automática entre valores cobrados e tabelas de referência atualizadas, garantindo que você seja pago corretamente.",
-    color: "bg-green-50 dark:bg-green-950/30",
-    textColor: "text-green-600 dark:text-green-400"
+    title: 'Validação CBHPM',
+    description:
+      'Comparação automática entre valores cobrados e tabelas de referência atualizadas, garantindo que você seja pago corretamente.',
+    color: 'bg-green-50 dark:bg-green-950/30',
+    textColor: 'text-green-600 dark:text-green-400',
   },
   {
     icon: BriefcaseMedical,
-    title: "Gestão Completa",
-    description: "Acompanhe todo o processo de contestação de glosas através de dashboards informativos e relatórios detalhados.",
-    color: "bg-purple-50 dark:bg-purple-950/30",
-    textColor: "text-purple-600 dark:text-purple-400"
+    title: 'Gestão Completa',
+    description:
+      'Acompanhe todo o processo de contestação de glosas através de dashboards informativos e relatórios detalhados.',
+    color: 'bg-purple-50 dark:bg-purple-950/30',
+    textColor: 'text-purple-600 dark:text-purple-400',
   },
   {
     icon: Shield,
-    title: "Segurança e Conformidade",
-    description: "Seus dados protegidos com a mais alta tecnologia em nuvem e em conformidade com a LGPD e requisitos do CFM.",
-    color: "bg-amber-50 dark:bg-amber-950/30",
-    textColor: "text-amber-600 dark:text-amber-400"
-  }
+    title: 'Segurança e Conformidade',
+    description:
+      'Seus dados protegidos com a mais alta tecnologia em nuvem e em conformidade com a LGPD e requisitos do CFM.',
+    color: 'bg-amber-50 dark:bg-amber-950/30',
+    textColor: 'text-amber-600 dark:text-amber-400',
+  },
 ];
 
 export function BenefitsSection() {
@@ -47,7 +50,10 @@ export function BenefitsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Por que milhares de médicos escolhem o <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">MedCheck</span>
+            Por que milhares de médicos escolhem o{' '}
+            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              MedCheck
+            </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Veja como nossa plataforma transforma o processo de auditoria médica
@@ -74,7 +80,7 @@ export function BenefitsSection() {
             </motion.div>
           ))}
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -82,14 +88,8 @@ export function BenefitsSection() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="text-center mt-12"
         >
-          <Button 
-            asChild 
-            size="lg" 
-            className="text-lg px-8 h-12 rounded-md"
-          >
-            <Link to="/register">
-              Experimente grátis por 14 dias
-            </Link>
+          <Button asChild size="lg" className="text-lg px-8 h-12 rounded-md">
+            <Link to="/register">Experimente grátis por 14 dias</Link>
           </Button>
         </motion.div>
       </div>

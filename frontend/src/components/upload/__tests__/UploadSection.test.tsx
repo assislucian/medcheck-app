@@ -1,18 +1,17 @@
-
 /// <reference types="jest" />
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom"; // Import jest-dom for the matchers
-import UploadSection from "../../UploadSection";
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom'; // Import jest-dom for the matchers
+import UploadSection from '../../UploadSection';
 
 // Make sure the global jest-dom types are loaded
 import '../../../types/jest-dom.d';
 
-describe("UploadSection Modes", () => {
-  it("guia-only: envia guia e chama função correta", async () => {
+describe('UploadSection Modes', () => {
+  it('guia-only: envia guia e chama função correta', async () => {
     render(<UploadSection />);
     const guiaInput = screen.getByLabelText(/guias médicas/i);
-    const file = new File(["content"], "guia_teste.pdf", { type: "application/pdf" });
+    const file = new File(['content'], 'guia_teste.pdf', { type: 'application/pdf' });
     fireEvent.change(guiaInput, { target: { files: [file] } });
 
     await waitFor(() => {
@@ -27,10 +26,12 @@ describe("UploadSection Modes", () => {
     // ...mais asserções específicas
   });
 
-  it("demonstrativo-only: envia demonstrativo e espera warning", async () => {
+  it('demonstrativo-only: envia demonstrativo e espera warning', async () => {
     render(<UploadSection />);
     const demoInput = screen.getByLabelText(/demonstrativos em PDF/i);
-    const file = new File(["pdf"], "demonstrativo_teste.pdf", { type: "application/pdf" });
+    const file = new File(['pdf'], 'demonstrativo_teste.pdf', {
+      type: 'application/pdf',
+    });
     fireEvent.change(demoInput, { target: { files: [file] } });
 
     await waitFor(() => {
@@ -43,13 +44,15 @@ describe("UploadSection Modes", () => {
     // ... mais asserções sobre warnings
   });
 
-  it("complete: envia ambos e executa rotina completa", async () => {
+  it('complete: envia ambos e executa rotina completa', async () => {
     render(<UploadSection />);
     const guiaInput = screen.getByLabelText(/guias médicas/i);
     const demoInput = screen.getByLabelText(/demonstrativos em PDF/i);
 
-    const guiaFile = new File(["content"], "guia.pdf", { type: "application/pdf" });
-    const demoFile = new File(["pdf"], "demonstrativo.pdf", { type: "application/pdf" });
+    const guiaFile = new File(['content'], 'guia.pdf', { type: 'application/pdf' });
+    const demoFile = new File(['pdf'], 'demonstrativo.pdf', {
+      type: 'application/pdf',
+    });
 
     fireEvent.change(guiaInput, { target: { files: [guiaFile] } });
     fireEvent.change(demoInput, { target: { files: [demoFile] } });
@@ -66,7 +69,7 @@ describe("UploadSection Modes", () => {
     // ... asserção sucesso
   });
 
-  it("não processa se nada selecionado", async () => {
+  it('não processa se nada selecionado', async () => {
     render(<UploadSection />);
     const processButton = screen.getByText(/processar documentos/i);
     expect(processButton).toBeDisabled();

@@ -1,4 +1,3 @@
-
 import { ProcessingStage } from '@/types/upload';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import UploadProgress from './UploadProgress';
@@ -10,11 +9,11 @@ interface ProcessingSectionProps {
   processingMsg: string;
 }
 
-const ProcessingSection = ({ 
-  uploading, 
-  progress, 
-  processingStage, 
-  processingMsg 
+const ProcessingSection = ({
+  uploading,
+  progress,
+  processingStage,
+  processingMsg,
 }: ProcessingSectionProps) => {
   if (!uploading) return null;
 
@@ -39,11 +38,7 @@ const ProcessingSection = ({
         )}
       </h5>
       <div className="text-sm text-muted-foreground mb-3">{processingMsg}</div>
-      <UploadProgress
-        progress={progress}
-        show={true}
-        stage={processingStage}
-      />
+      <UploadProgress progress={progress} show={true} stage={processingStage} />
     </div>
   );
 };

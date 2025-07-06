@@ -1,7 +1,12 @@
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpArticle } from "@/types/help";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { HelpArticle } from '@/types/help';
 
 interface SearchResultsProps {
   results: HelpArticle[];
@@ -27,11 +32,7 @@ export const SearchResults = ({ results, onClearResults }: SearchResultsProps) =
           </Card>
         ))}
       </div>
-      <Button 
-        variant="outline" 
-        className="mt-4"
-        onClick={onClearResults}
-      >
+      <Button variant="outline" className="mt-4" onClick={onClearResults}>
         Limpar resultados
       </Button>
     </div>

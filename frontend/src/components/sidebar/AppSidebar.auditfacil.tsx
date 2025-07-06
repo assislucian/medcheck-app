@@ -1,17 +1,16 @@
-
-import { 
-  LayoutDashboard, 
-  FileText, 
-  FileBarChart, 
+import {
+  LayoutDashboard,
+  FileText,
+  FileBarChart,
   FileX,
   History,
   HelpCircle,
   Bell,
   User,
   Play,
-  LogOut
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+  LogOut,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -23,11 +22,11 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-} from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "sonner";
+} from '@/components/ui/sidebar';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toast } from 'sonner';
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -36,21 +35,21 @@ export function AppSidebar() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("Logout realizado com sucesso");
-      navigate("/login");
+      toast.success('Logout realizado com sucesso');
+      navigate('/login');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      toast.error("Erro ao fazer logout");
+      toast.error('Erro ao fazer logout');
     }
   };
 
   const mainMenuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-    { icon: FileText, label: "Guias", href: "/guides" },
-    { icon: FileBarChart, label: "Demonstrativos", href: "/demonstratives" },
-    { icon: FileX, label: "Não Pagos", href: "/unpaid-procedures" },
-    { icon: History, label: "Histórico", href: "/history" },
-    { icon: HelpCircle, label: "Suporte", href: "/support" },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+    { icon: FileText, label: 'Guias', href: '/guides' },
+    { icon: FileBarChart, label: 'Demonstrativos', href: '/demonstratives' },
+    { icon: FileX, label: 'Não Pagos', href: '/unpaid-procedures' },
+    { icon: History, label: 'Histórico', href: '/history' },
+    { icon: HelpCircle, label: 'Suporte', href: '/support' },
   ];
 
   return (
@@ -94,7 +93,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => navigate("/notifications")}
+                  onClick={() => navigate('/notifications')}
                   tooltip="Notificações"
                 >
                   <Bell className="h-4 w-4" />
@@ -112,7 +111,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => navigate("/profile")}
+                  onClick={() => navigate('/profile')}
                   tooltip="Perfil"
                 >
                   <User className="h-4 w-4" />
@@ -128,7 +127,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              onClick={() => navigate("/tour")}
+              onClick={() => navigate('/tour')}
               variant="outline"
               tooltip="Tour"
             >

@@ -1,7 +1,6 @@
-
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { NotificationCard } from '@/components/notifications/NotificationCard';
 import { EmptyNotifications } from '@/components/notifications/EmptyNotifications';
@@ -19,9 +18,10 @@ import { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const NotificationsMenu = () => {
-  const { notifications, unreadCount, markAllAsRead, clearNotifications } = useNotifications();
+  const { notifications, unreadCount, markAllAsRead, clearNotifications } =
+    useNotifications();
   const [open, setOpen] = useState(false);
-  
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -40,9 +40,9 @@ export const NotificationsMenu = () => {
           <span>Notificações</span>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-8 px-2 flex items-center text-xs gap-1"
                 onClick={() => markAllAsRead()}
               >
@@ -51,9 +51,9 @@ export const NotificationsMenu = () => {
               </Button>
             )}
             {notifications.length > 0 && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-8 px-2 flex items-center text-xs gap-1 text-destructive hover:text-destructive"
                 onClick={() => clearNotifications()}
               >
@@ -64,12 +64,15 @@ export const NotificationsMenu = () => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         <ScrollArea className="h-[400px] overflow-y-auto p-1">
           {notifications.length > 0 ? (
             <DropdownMenuGroup className="space-y-2">
               {notifications.map((notification) => (
-                <DropdownMenuItem key={notification.id} className="p-0 focus:bg-transparent cursor-default">
+                <DropdownMenuItem
+                  key={notification.id}
+                  className="p-0 focus:bg-transparent cursor-default"
+                >
                   <NotificationCard notification={notification} />
                 </DropdownMenuItem>
               ))}
@@ -78,12 +81,12 @@ export const NotificationsMenu = () => {
             <EmptyNotifications />
           )}
         </ScrollArea>
-        
+
         <DropdownMenuSeparator />
         <div className="p-2 text-center">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="w-full text-xs"
             asChild
             onClick={() => setOpen(false)}

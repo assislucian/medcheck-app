@@ -1,7 +1,6 @@
-
 /**
  * MedCheck Design System - Color Tokens
- * 
+ *
  * This file defines all color tokens used throughout the application.
  */
 
@@ -19,7 +18,7 @@ export const colors = {
     800: '#2A4365',
     900: '#1A365D',
   },
-  
+
   // Secondary colors
   secondary: {
     50: '#F0F9E6',
@@ -33,7 +32,7 @@ export const colors = {
     800: '#256811',
     900: '#1E5209',
   },
-  
+
   // Neutral colors
   neutral: {
     50: '#F7FAFC',
@@ -47,7 +46,7 @@ export const colors = {
     800: '#1A202C',
     900: '#171923',
   },
-  
+
   // Feedback colors
   success: {
     100: '#E3F5E6',
@@ -69,7 +68,7 @@ export const colors = {
     500: '#4299E1',
     700: '#2B6CB0',
   },
-  
+
   // Base colors
   white: '#FFFFFF',
   black: '#000000',

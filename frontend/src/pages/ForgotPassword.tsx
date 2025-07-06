@@ -1,15 +1,21 @@
-
-import { PublicLayout } from "@/components/layout/PublicLayout";
+import { PublicLayout } from '@/components/layout/PublicLayout';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Link } from 'react-router-dom';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -21,21 +27,21 @@ const ForgotPassword = () => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
-    
+
     if (!email || !email.includes('@')) {
       setError('Por favor, insira um email válido.');
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password',
       });
-      
+
       if (error) throw error;
-      
+
       setSuccess(true);
       toast.success('Link de redefinição de senha enviado para seu email.');
     } catch (err: any) {
@@ -51,7 +57,9 @@ const ForgotPassword = () => {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md mx-auto glass-card">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Recuperar senha</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Recuperar senha
+            </CardTitle>
             <CardDescription className="text-center">
               Digite seu email para receber o link de recuperação
             </CardDescription>
@@ -62,7 +70,7 @@ const ForgotPassword = () => {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             {success ? (
               <div className="text-center space-y-4">
                 <div className="flex justify-center mb-4">
@@ -83,7 +91,8 @@ const ForgotPassword = () => {
                 </div>
                 <p>Email enviado com sucesso para {email}</p>
                 <p className="text-sm text-muted-foreground">
-                  Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.
+                  Verifique sua caixa de entrada e siga as instruções para redefinir sua
+                  senha.
                 </p>
               </div>
             ) : (
@@ -99,17 +108,15 @@ const ForgotPassword = () => {
                     required
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <LoadingSpinner size="sm" />
                       Enviando...
                     </span>
-                  ) : 'Enviar link de redefinição'}
+                  ) : (
+                    'Enviar link de redefinição'
+                  )}
                 </Button>
               </form>
             )}

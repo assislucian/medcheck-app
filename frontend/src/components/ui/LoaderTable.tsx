@@ -5,5 +5,5 @@ export default function LoaderTable() {
         <div key={i} className="h-10 w-full rounded-lg bg-ink-low/10 animate-pulse" />
       ))}
     </div>
-  )
-} 
+  );
+}

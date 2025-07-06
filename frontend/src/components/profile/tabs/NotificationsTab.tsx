@@ -1,9 +1,14 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Bell, Mail, MessageSquare } from "lucide-react";
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Bell, Mail, MessageSquare } from 'lucide-react';
 
 interface NotificationsTabProps {
   loading: boolean;
@@ -16,22 +21,26 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
       newReports: true,
       systemUpdates: true,
       tips: false,
-      newsletter: false
+      newsletter: false,
     },
     sms: {
       criticalAlerts: true,
       paymentRecovery: false,
-      invoiceReminders: false
-    }
+      invoiceReminders: false,
+    },
   });
 
-  const handleToggleChange = (category: 'email' | 'sms', name: string, checked: boolean) => {
-    setNotifications(prev => ({
+  const handleToggleChange = (
+    category: 'email' | 'sms',
+    name: string,
+    checked: boolean
+  ) => {
+    setNotifications((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [name]: checked
-      }
+        [name]: checked,
+      },
     }));
   };
 
@@ -66,13 +75,15 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Receba alertas sobre novos relatórios por email
                 </p>
               </div>
-              <Switch 
-                checked={notifications.email.newReports} 
-                onCheckedChange={(checked) => handleToggleChange('email', 'newReports', checked)}
+              <Switch
+                checked={notifications.email.newReports}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('email', 'newReports', checked)
+                }
                 disabled={loading}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Atualizações do Sistema</p>
@@ -80,9 +91,11 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Seja notificado sobre atualizações importantes
                 </p>
               </div>
-              <Switch 
-                checked={notifications.email.systemUpdates} 
-                onCheckedChange={(checked) => handleToggleChange('email', 'systemUpdates', checked)}
+              <Switch
+                checked={notifications.email.systemUpdates}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('email', 'systemUpdates', checked)
+                }
                 disabled={loading}
               />
             </div>
@@ -94,9 +107,11 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Receba dicas e melhores práticas
                 </p>
               </div>
-              <Switch 
-                checked={notifications.email.tips} 
-                onCheckedChange={(checked) => handleToggleChange('email', 'tips', checked)}
+              <Switch
+                checked={notifications.email.tips}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('email', 'tips', checked)
+                }
                 disabled={loading}
               />
             </div>
@@ -108,15 +123,17 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Receba nossa newsletter mensal
                 </p>
               </div>
-              <Switch 
-                checked={notifications.email.newsletter} 
-                onCheckedChange={(checked) => handleToggleChange('email', 'newsletter', checked)}
+              <Switch
+                checked={notifications.email.newsletter}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('email', 'newsletter', checked)
+                }
                 disabled={loading}
               />
             </div>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           <h3 className="font-medium flex items-center gap-2 text-base">
             <MessageSquare className="h-4 w-4" />
@@ -130,13 +147,15 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Receba alertas importantes por SMS
                 </p>
               </div>
-              <Switch 
-                checked={notifications.sms.criticalAlerts} 
-                onCheckedChange={(checked) => handleToggleChange('sms', 'criticalAlerts', checked)}
+              <Switch
+                checked={notifications.sms.criticalAlerts}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('sms', 'criticalAlerts', checked)
+                }
                 disabled={loading}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Recuperação de Valores</p>
@@ -144,9 +163,11 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Notificações sobre valores recuperados
                 </p>
               </div>
-              <Switch 
-                checked={notifications.sms.paymentRecovery} 
-                onCheckedChange={(checked) => handleToggleChange('sms', 'paymentRecovery', checked)}
+              <Switch
+                checked={notifications.sms.paymentRecovery}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('sms', 'paymentRecovery', checked)
+                }
                 disabled={loading}
               />
             </div>
@@ -158,18 +179,20 @@ export const NotificationsTab = ({ loading, onSubmit }: NotificationsTabProps) =
                   Receba lembretes sobre faturas pendentes
                 </p>
               </div>
-              <Switch 
-                checked={notifications.sms.invoiceReminders} 
-                onCheckedChange={(checked) => handleToggleChange('sms', 'invoiceReminders', checked)}
+              <Switch
+                checked={notifications.sms.invoiceReminders}
+                onCheckedChange={(checked) =>
+                  handleToggleChange('sms', 'invoiceReminders', checked)
+                }
                 disabled={loading}
               />
             </div>
           </div>
         </div>
-        
+
         <div className="pt-4 border-t flex justify-end">
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Salvando..." : "Salvar Preferências"}
+            {loading ? 'Salvando...' : 'Salvar Preferências'}
           </Button>
         </div>
       </CardContent>

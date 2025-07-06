@@ -1,7 +1,6 @@
-
-import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/use-theme";
-import { Moon, Sun } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { useTheme } from '@/hooks/use-theme';
+import { Moon, Sun } from 'lucide-react';
 
 interface ThemeToggleProps {
   className?: string;
@@ -16,15 +15,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       size="icon"
       onClick={toggleTheme}
       className={className}
-      aria-label={theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
+      aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
     >
-      {theme === "light" ? (
-        <Moon className="h-5 w-5" />
-      ) : (
-        <Sun className="h-5 w-5" />
-      )}
+      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
       <span className="sr-only">
-        {theme === "light" ? "Ativar modo escuro" : "Ativar modo claro"}
+        {theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
       </span>
     </Button>
   );

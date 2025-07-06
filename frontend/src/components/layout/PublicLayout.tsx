@@ -17,7 +17,7 @@ export function PublicLayout({
   title,
   description,
   showGradientBackground = false,
-  showFooter = true
+  showFooter = true,
 }: PublicLayoutProps) {
   return (
     <>
@@ -25,11 +25,13 @@ export function PublicLayout({
         <title>{title} | MedCheck</title>
         {description && <meta name="description" content={description} />}
       </Helmet>
-      <div className={`min-h-screen flex flex-col bg-background ${
-        showGradientBackground ? 'bg-gradient-to-b from-background to-muted/50' : ''
-      }`}>
+      <div
+        className={`min-h-screen flex flex-col bg-background ${
+          showGradientBackground ? 'bg-gradient-to-b from-background to-muted/50' : ''
+        }`}
+      >
         <Navbar isLoggedIn={false} />
-        <motion.main 
+        <motion.main
           className="flex-1 flex flex-col px-4 md:px-8 max-w-7xl mx-auto w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

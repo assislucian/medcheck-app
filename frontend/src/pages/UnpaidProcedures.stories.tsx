@@ -11,4 +11,4 @@ export const PrazoExpirado = () => <PrazoBadge dias={0} />;
 
 PrazoOk.storyName = 'Prazo OK (verde)';
 PrazoCritico.storyName = 'Prazo Crítico (amarelo)';
-PrazoExpirado.storyName = 'Prazo Expirado (vermelho)'; 
+PrazoExpirado.storyName = 'Prazo Expirado (vermelho)';

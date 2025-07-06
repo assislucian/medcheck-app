@@ -1,40 +1,73 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { useEffect, useState } from "react";
-import { fetchMonthlyData } from "@/services/reports";
-import { Loader2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
+import { useEffect, useState } from 'react';
+import { fetchMonthlyData } from '@/services/reports';
+import { Loader2 } from 'lucide-react';
 
 export function OverviewCharts() {
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const loadMonthlyData = async () => {
       const data = await fetchMonthlyData();
       setMonthlyData(data);
       setLoading(false);
     };
-    
+
     loadMonthlyData();
   }, []);
-  
+
   // Dados para o gráfico de pizza
   const pieData = [
     { name: 'Pago', value: monthlyData.reduce((sum, item) => sum + item.recebido, 0) },
-    { name: 'Glosado', value: monthlyData.reduce((sum, item) => sum + item.glosado, 0) }
+    {
+      name: 'Glosado',
+      value: monthlyData.reduce((sum, item) => sum + item.glosado, 0),
+    },
   ];
-  
+
   const COLORS = ['#1E40AF', '#EF4444'];
-  
+
   const RADIAN = Math.PI / 180;
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }: any) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  
+
     return (
-      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
@@ -59,17 +92,34 @@ export function OverviewCharts() {
                 <BarChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" />
-                  <YAxis tickFormatter={(value) => `R$${value/1000}k`} />
-                  <Tooltip formatter={(value) => [`R$ ${value.toLocaleString('pt-BR')}`, undefined]} />
-                  <Bar dataKey="recebido" name="Recebido" fill="#1E40AF" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                  <Bar dataKey="glosado" name="Glosado" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  <YAxis tickFormatter={(value) => `R$${value / 1000}k`} />
+                  <Tooltip
+                    formatter={(value) => [
+                      `R$ ${value.toLocaleString('pt-BR')}`,
+                      undefined,
+                    ]}
+                  />
+                  <Bar
+                    dataKey="recebido"
+                    name="Recebido"
+                    fill="#1E40AF"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
+                  />
+                  <Bar
+                    dataKey="glosado"
+                    name="Glosado"
+                    fill="#EF4444"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Distribuição de Pagamentos</CardTitle>
@@ -96,11 +146,19 @@ export function OverviewCharts() {
                     dataKey="value"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Legend />
-                  <Tooltip formatter={(value) => [`R$ ${value.toLocaleString('pt-BR')}`, undefined]} />
+                  <Tooltip
+                    formatter={(value) => [
+                      `R$ ${value.toLocaleString('pt-BR')}`,
+                      undefined,
+                    ]}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>

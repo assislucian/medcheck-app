@@ -1,4 +1,3 @@
-
 import { Helmet } from 'react-helmet-async';
 import PasswordForm from '@/components/auth/PasswordForm';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,10 +29,7 @@ const UpdatePasswordPage = () => {
       <div className="container mx-auto py-8">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold mb-6">Atualizar Senha</h1>
-          <PasswordForm 
-            onSubmit={handleUpdatePassword}
-            isLoading={isLoading}
-          />
+          <PasswordForm onSubmit={handleUpdatePassword} isLoading={isLoading} />
         </div>
       </div>
     </>

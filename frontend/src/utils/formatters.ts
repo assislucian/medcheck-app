@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for formatting and validation
  */
@@ -12,16 +11,16 @@ export const formatCurrency = (value: number | undefined | null): string => {
   if (value === undefined || value === null) {
     return 'R$ 0,00';
   }
-  
+
   try {
     // Ensure the value is a number
     const numValue = typeof value === 'number' ? value : Number(value);
-    
+
     // Check if it's a valid number
     if (isNaN(numValue)) {
       return 'R$ 0,00';
     }
-    
+
     return numValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   } catch (error) {
     console.error('Erro ao formatar valor:', error);
@@ -48,13 +47,13 @@ export const validateCRM = (crm: string): boolean => {
 export const formatCRM = (crm: string): string => {
   // Remove all spaces and make uppercase
   const cleanCRM = crm.replace(/\s/g, '').toUpperCase();
-  
+
   // If we have at least 2 characters and some digits
   if (cleanCRM.length >= 3) {
     const state = cleanCRM.substring(0, 2);
     const number = cleanCRM.substring(2);
     return `${state} ${number}`;
   }
-  
+
   return crm;
 };
