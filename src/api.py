@@ -138,13 +138,11 @@ class Demonstrativo(Base):
     __tablename__ = "demonstrativos"
     id = Column(Integer, primary_key=True, index=True)
     crm = Column(String, nullable=False, index=True)
-    uf = Column(
-        String, nullable=False, index=True
-    )  # CRÍTICO: adicionar UF para isolamento
+    uf = Column(String, nullable=False, index=True)
     periodo = Column(String, nullable=True, index=True)
     lote = Column(String, nullable=True)
-    filename = Column(String, nullable=False)
-    # Hash SHA-256 do conteúdo do arquivo para detectar duplicações mesmo com nomes diferentes
+    filename = Column(String, nullable=False)  # Nome do arquivo no sistema
+    nome_arquivo = Column(String, nullable=False)  # Nome original do arquivo
     file_hash = Column(String(64), nullable=True, index=True)
     total_procedimentos = Column(Integer, nullable=False, default=0)
     apresentado = Column(String, nullable=False, default="R$ 0,00")
@@ -1303,7 +1301,8 @@ def upload_demonstrativos(
                     uf=uf,
                     periodo=periodo_extracted,
                     lote=unique_lote,
-                    filename=filename,
+                    filename=filename,  # Nome do arquivo no sistema
+                    nome_arquivo=file.filename,  # Nome original do arquivo
                     file_hash=file_hash,
                     total_procedimentos=total_procedimentos,
                     apresentado=f"R$ {apresentado:,.2f}".replace(".", ","),

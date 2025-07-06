@@ -36,4 +36,16 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='demonstrativos' AND column_name='upload_time') THEN
         ALTER TABLE demonstrativos ADD COLUMN upload_time TIMESTAMP;
     END IF;
+END$$;
+
+-- Adiciona coluna nome_arquivo se não existir
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='demonstrativos' AND column_name='nome_arquivo') THEN
+        ALTER TABLE demonstrativos ADD COLUMN nome_arquivo VARCHAR;
+        -- Preenche nome_arquivo com o valor de filename para registros existentes
+        UPDATE demonstrativos SET nome_arquivo = filename WHERE nome_arquivo IS NULL;
+        -- Adiciona constraint NOT NULL
+        ALTER TABLE demonstrativos ALTER COLUMN nome_arquivo SET NOT NULL;
+    END IF;
 END$$; 
