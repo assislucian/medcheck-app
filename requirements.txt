@@ -20,6 +20,8 @@ PyPDF2==3.0.1
 python-magic==0.4.27
 pdfplumber==0.10.3  # PDF text extraction and parsing
 PyMuPDF==1.23.26  # PDF processing (imported as fitz)
+pdf2image==1.17.0  # PDF to image conversion
+pytesseract==0.3.10  # OCR for image text extraction
 
 # Data validation
 pydantic==2.5.2
@@ -33,3 +35,5 @@ requests==2.31.0
 python-dotenv==1.0.0
 python-dateutil==2.8.2
 pytz==2023.3
+rich==14.0.0  # Pretty printing and logging
+structlog==24.1.0  # Structured logging
