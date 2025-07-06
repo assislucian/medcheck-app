@@ -7,7 +7,8 @@ import {
 } from '@/components/ui/card';
 import { useProfile } from '@/hooks/use-profile';
 import { ProfileForm } from './form/ProfileForm';
-import { User, Spinner } from 'lucide-react';
+import { User } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 export const ProfileTabs = () => {
   const { loading } = useProfile();
@@ -26,7 +27,7 @@ export const ProfileTabs = () => {
       <CardContent className="p-6">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Spinner className="h-8 w-8 text-neutral-400" />
+            <LoadingSpinner className="h-8 w-8 text-neutral-400" />
           </div>
         ) : (
           <ProfileForm />
