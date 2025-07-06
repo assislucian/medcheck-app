@@ -8,15 +8,18 @@ Função: Extrair informações estruturadas de guias em PDF.
 ### Fluxo de Parsing
 
 1. **Leitura do cabeçalho**
+
    - Extrair nome do beneficiário: procurar padrão `Beneficiário: \d+ - (.+)` na primeira página.
    - Extrair prestador: procurar padrão `Prestador: (.+)` na primeira página.
 
 2. **Normalização do texto**
+
    - Concatenar texto de todas as páginas.
    - Remover quebras de linha após hífen (`-\n` → `''`).
    - Quebras de linha restantes dividem em linhas não vazias.
 
 3. **Detecção de blocos de procedimento**
+
    - Identificar início de cada procedimento por regex:
      ```regex
      ^(?P<guia>\d{8})\s+(?P<data>\d{2}/\d{2}/\d{4})\s+(?P<codigo>30\d{6})
@@ -24,6 +27,7 @@ Função: Extrair informações estruturadas de guias em PDF.
    - Cada vez que esse padrão aparecer, iniciar um novo bloco até o próximo.
 
 4. **Extração de campos de procedimento**
+
    - Dentro de cada bloco, usar regex para capturar exatamente:
      - `guia`, `data`, `codigo`
      - `descricao`: todo texto até o próximo número que corresponda à quantidade antes do status
@@ -34,6 +38,7 @@ Função: Extrair informações estruturadas de guias em PDF.
      ```
 
 5. **Extração de participações**
+
    - Ainda no mesmo bloco, localizar a seção “Participação Médico” e, para cada linha que contenha:
      ```regex
      (?P<papel>Anestesista|Cirurgiao|Primeiro Auxiliar|Segundo Auxiliar)\s+(?P<crm>\d+)
@@ -42,6 +47,7 @@ Função: Extrair informações estruturadas de guias em PDF.
    - Não substituir o `status` global do procedimento por status de participação.
 
 6. **Propagação de beneficiário e prestador**
+
    - Incluir em cada entrada os valores extraídos no cabeçalho.
 
 7. **Filtragem por CRM**

@@ -45,7 +45,6 @@ import { toast } from 'sonner';
 import {
   getGuides,
   deleteGuide,
-  uploadGuide,
   uploadGuides,
   GuidesQueryParams,
 } from '../services/guides';
@@ -297,17 +296,10 @@ const GuidesPage = () => {
     },
   ];
 
-  const fileUpload = useFileUpload() || {};
-  const {
-    files = [],
-    isUploading = false,
-    removeFile = () => {},
-    resetFiles = () => {},
-    handleFileChangeByType = () => {},
-    processUploadedFiles = () => {},
-  } = fileUpload;
+  const { files, isUploading, removeFile, resetFiles, handleFileChangeByType } =
+    useFileUpload();
 
-  const { userProfile, signOut } = useAuth();
+  const { userProfile } = useAuth();
 
   // Carrega guias já salvas
   useEffect(() => {
@@ -325,7 +317,8 @@ const GuidesPage = () => {
         const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
         setAllGuides(allProcedures);
         setTotal(allRes.total || 0);
-        setExtractedGuides(allProcedures);
+
+        // Agrupa por número de guia para calcular total de guias
         const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
           (acc, proc) => {
             acc[proc.numero_guia] = acc[proc.numero_guia] || [];
@@ -334,7 +327,34 @@ const GuidesPage = () => {
           },
           {}
         );
-        setTotalBeneficiarios(Object.keys(allGrouped).length);
+
+        const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => ({
+          numero_guia,
+          data: procs[0]?.data || '',
+          beneficiario: procs[0]?.beneficiario || '',
+          prestador: procs[0]?.prestador || '',
+          qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
+          status: procs[0]?.status || '',
+          detalhes: procs,
+        }));
+
+        // Ordenação por data mais recente
+        allMacroRows.sort((a, b) => {
+          const dateA = formatDateToISO(a.data);
+          const dateB = formatDateToISO(b.data);
+          return dateB.localeCompare(dateA);
+        });
+
+        setTotalBeneficiarios(allMacroRows.length);
+
+        // Aplica paginação local
+        const startIndex = page * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
+
+        // Converte de volta para lista de procedimentos da página atual
+        const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
+        setExtractedGuides(currentPageProcedures);
       } catch (err: any) {
         // Só mostrar erro se for erro real de rede/backend
         if (err?.response?.status && err.response.status !== 200) {
@@ -349,7 +369,7 @@ const GuidesPage = () => {
       }
     };
     fetchSavedGuias();
-  }, [search, status, data]);
+  }, [search, status, data, page, pageSize]);
 
   // Upload/processamento
   const handleUploadGuias = async () => {
@@ -387,8 +407,7 @@ const GuidesPage = () => {
         toast.error('Resposta inesperada do servidor.');
       }
 
-      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
-      // Busca TODOS os dados para recalcular totais globais e paginação local
+      // Recarrega os dados após o upload
       const allParams: GuidesQueryParams = {
         page: 1,
         pageSize: 10000,
@@ -402,7 +421,7 @@ const GuidesPage = () => {
       setAllGuides(allProcedures);
       setTotal(allRes.total || 0);
 
-      // Agrupa TODOS os dados por número de guia para paginação local
+      // Agrupa por número de guia para paginação local
       const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
         (acc, proc) => {
           acc[proc.numero_guia] = acc[proc.numero_guia] || [];
@@ -412,48 +431,30 @@ const GuidesPage = () => {
         {}
       );
 
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-        const numeroGuiaStr = String(numero_guia).trim();
-        const datas = procs.map((p) => p.data).sort();
-        const dataMaisRecente = datas[datas.length - 1] || '';
-        const beneficiario = procs[0]?.beneficiario || '';
-        const prestador = procs[0]?.prestador || '';
-        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-        const statusCount = procs.reduce(
-          (acc, p) => {
-            acc[p.status] = (acc[p.status] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
-        const statusComum =
-          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-        return {
-          numero_guia: numeroGuiaStr,
-          data: dataMaisRecente,
-          beneficiario,
-          prestador,
-          qtdProcedimentos,
-          status: statusComum,
-          detalhes: procs,
-        };
-      });
+      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => ({
+        numero_guia,
+        data: procs[0]?.data || '',
+        beneficiario: procs[0]?.beneficiario || '',
+        prestador: procs[0]?.prestador || '',
+        qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
+        status: procs[0]?.status || '',
+        detalhes: procs,
+      }));
 
-      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
+      // Ordenação por data mais recente
       allMacroRows.sort((a, b) => {
         const dateA = formatDateToISO(a.data);
         const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
+        return dateB.localeCompare(dateA);
       });
 
-      // Define o total de beneficiários únicos
       setTotalBeneficiarios(allMacroRows.length);
 
-      // **BUG FIX**: Reset página para 0 após upload para garantir que dados sejam visíveis
+      // Reset para primeira página após upload
       setPage(0);
 
-      // Aplica paginação local aos beneficiários agrupados (usando página 0)
-      const startIndex = 0 * pageSize;
+      // Aplica paginação local na primeira página
+      const startIndex = 0;
       const endIndex = startIndex + pageSize;
       const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
 
@@ -500,14 +501,11 @@ const GuidesPage = () => {
   };
 
   // Agrupa por número de guia
-  const grouped = extractedGuides.reduce<Record<string, GuideProcedure[]>>(
-    (acc, proc) => {
-      acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-      acc[proc.numero_guia].push(proc);
-      return acc;
-    },
-    {}
-  );
+  const grouped = allGuides.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
+    acc[proc.numero_guia] = acc[proc.numero_guia] || [];
+    acc[proc.numero_guia].push(proc);
+    return acc;
+  }, {});
 
   // Monta linhas macro
   const macroRows = Object.entries(grouped).map(([numero_guia, procs]) => {
@@ -516,9 +514,7 @@ const GuidesPage = () => {
     const dataMaisRecente = datas[datas.length - 1] || '';
     const beneficiario = procs[0]?.beneficiario || '';
     const prestador = procs[0]?.prestador || '';
-    // Soma o campo qtd
     const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-    // Status mais comum
     const statusCount = procs.reduce(
       (acc, p) => {
         acc[p.status] = (acc[p.status] || 0) + 1;
@@ -557,7 +553,12 @@ const GuidesPage = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedRows(filteredMacroRows.map((row) => row.numero_guia));
+      // Calcula o índice inicial e final da página atual
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      // Pega apenas as guias da página atual
+      const currentPageRows = filteredMacroRows.slice(startIndex, endIndex);
+      setSelectedRows(currentPageRows.map((row) => row.numero_guia));
     } else {
       setSelectedRows([]);
     }

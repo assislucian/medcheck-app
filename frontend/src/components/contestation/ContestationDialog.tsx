@@ -90,7 +90,9 @@ export function ContestationDialog({
 
       // Save PDF
       doc.save(
-        `contestacao-${procedureDetails.codigo}-${new Date().toISOString().split('T')[0]}.pdf`
+        `contestacao-${procedureDetails.codigo}-${
+          new Date().toISOString().split('T')[0]
+        }.pdf`
       );
 
       toast.success('PDF baixado com sucesso');
@@ -105,7 +107,9 @@ export function ContestationDialog({
       const element = document.createElement('a');
       const file = new Blob([contestationText], { type: 'text/plain' });
       element.href = URL.createObjectURL(file);
-      element.download = `contestacao-${procedureDetails.codigo}-${new Date().toISOString().split('T')[0]}.txt`;
+      element.download = `contestacao-${procedureDetails.codigo}-${
+        new Date().toISOString().split('T')[0]
+      }.txt`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
@@ -159,12 +163,20 @@ export function ContestationDialog({
                 </div>
 
                 <div
-                  className={`p-4 rounded-md ${procedureDetails.diferenca < 0 ? 'bg-red-100 border border-red-200' : 'bg-green-100 border border-green-200'}`}
+                  className={`p-4 rounded-md ${
+                    procedureDetails.diferenca < 0
+                      ? 'bg-red-100 border border-red-200'
+                      : 'bg-green-100 border border-green-200'
+                  }`}
                 >
                   <h4 className="font-medium">
                     {procedureDetails.diferenca < 0
-                      ? `Detectamos uma diferença de ${formatCurrency(Math.abs(procedureDetails.diferenca))}`
-                      : `Detectamos um pagamento excedente de ${formatCurrency(procedureDetails.diferenca)}`}
+                      ? `Detectamos uma diferença de ${formatCurrency(
+                          Math.abs(procedureDetails.diferenca)
+                        )}`
+                      : `Detectamos um pagamento excedente de ${formatCurrency(
+                          procedureDetails.diferenca
+                        )}`}
                   </h4>
                   <p className="text-sm mt-1">
                     {procedureDetails.diferenca < 0

@@ -232,6 +232,7 @@ O sistema **FALHA AO INICIAR** se em produção:
    ```
 
 2. **Bloquear usuário específico:**
+
    - Usar endpoint administrativo com `ADMIN_SECRET`
 
 3. **Restaurar sistema:**

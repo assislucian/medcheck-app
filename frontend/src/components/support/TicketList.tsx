@@ -146,7 +146,11 @@ export const TicketList = ({
               {tickets.map((ticket) => (
                 <Card
                   key={ticket.id}
-                  className={`cursor-pointer transition-colors ${selectedTicket?.id === ticket.id ? 'border-primary' : 'hover:border-primary/50'}`}
+                  className={`cursor-pointer transition-colors ${
+                    selectedTicket?.id === ticket.id
+                      ? 'border-primary'
+                      : 'hover:border-primary/50'
+                  }`}
                   onClick={() => onSelectTicket(ticket)}
                 >
                   <CardContent className="p-4">

@@ -123,7 +123,9 @@ export function PaymentForm({
                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
               >
                 <div
-                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'credit_card' ? 'ring-2 ring-primary' : ''}`}
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${
+                    paymentMethod === 'credit_card' ? 'ring-2 ring-primary' : ''
+                  }`}
                 >
                   <RadioGroupItem value="credit_card" id="credit_card" />
                   <Label
@@ -135,7 +137,9 @@ export function PaymentForm({
                 </div>
 
                 <div
-                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'bank_slip' ? 'ring-2 ring-primary' : ''}`}
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${
+                    paymentMethod === 'bank_slip' ? 'ring-2 ring-primary' : ''
+                  }`}
                 >
                   <RadioGroupItem value="bank_slip" id="bank_slip" />
                   <Label
@@ -147,7 +151,9 @@ export function PaymentForm({
                 </div>
 
                 <div
-                  className={`border rounded-md p-4 flex items-center space-x-3 ${paymentMethod === 'pix' ? 'ring-2 ring-primary' : ''}`}
+                  className={`border rounded-md p-4 flex items-center space-x-3 ${
+                    paymentMethod === 'pix' ? 'ring-2 ring-primary' : ''
+                  }`}
                 >
                   <RadioGroupItem value="pix" id="pix" />
                   <Label

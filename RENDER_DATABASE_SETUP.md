@@ -10,6 +10,7 @@ O backend está rodando no Render, mas **sem banco de dados configurado**. Atual
 
 1. **Acessar Render Dashboard**: https://render.com/dashboard
 2. **Criar Novo Banco**:
+
    - Clicar em **"New +"** → **"PostgreSQL"**
    - **Nome**: `medcheck-database`
    - **Database**: `medcheck`

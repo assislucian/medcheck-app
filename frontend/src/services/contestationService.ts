@@ -89,7 +89,9 @@ Venho por meio desta contestar a glosa/pagamento inadequado do procedimento acim
 1. VALOR DE REFERÊNCIA CBHPM 2015:
    Valor estabelecido: R$ ${cbhpmValue.toFixed(2)}
    Valor pago: R$ ${paidValue.toFixed(2)}
-   Diferença: R$ ${Math.abs(difference).toFixed(2)} (${difference < 0 ? 'valor inferior ao previsto' : 'valor superior ao previsto'})
+   Diferença: R$ ${Math.abs(difference).toFixed(2)} (${
+     difference < 0 ? 'valor inferior ao previsto' : 'valor superior ao previsto'
+   })
 
 2. JUSTIFICATIVA TÉCNICA:
 ${standardResponseText}

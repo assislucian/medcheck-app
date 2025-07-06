@@ -159,6 +159,7 @@ npm run dev
 ### Para Produção
 
 1. **Railway (Backend):**
+
    - URL: `https://medcheck-app-medcheck.up.railway.app`
    - Health Check: `/healthz`
 
@@ -184,6 +185,7 @@ npm run dev
    ```
 
 2. **Verificar build do Vercel:**
+
    - Acessar Vercel Dashboard
    - Verificar logs de build e runtime
 

@@ -270,7 +270,7 @@
         - MainNavigation.tsx
         - NotificationsSection.tsx
         - ProfileSection.tsx
-        - ****tests**/**
+        - \***\*tests**/\*\*
           - AccountSection.test.tsx
           - FooterSection.test.tsx
           - HelpSection.test.tsx
@@ -357,7 +357,7 @@
         - UploadSection.tsx
         - UploadStatus.tsx
         - UploadSuccess.tsx
-        - ****tests**/**
+        - \***\*tests**/\*\*
           - UploadSection.test.tsx
     - **context/**
       - AuthContext.tsx
@@ -654,7 +654,7 @@
   - parsers.py
   - schema.py
   - **services/**
-    - ****tests**/**
+    - \***\*tests**/\*\*
       - validation.service.test.ts
   - **uploads/**
     - 0fdfac2a-39f0-4a67-bd92-28add0f32e3b_Demonstrativo-outubro_2024.pdf
@@ -936,7 +936,7 @@
         - MainNavigation.tsx
         - NotificationsSection.tsx
         - ProfileSection.tsx
-        - ****tests**/**
+        - \***\*tests**/\*\*
           - AccountSection.test.tsx
           - FooterSection.test.tsx
           - HelpSection.test.tsx
@@ -1022,7 +1022,7 @@
         - UploadSection.tsx
         - UploadStatus.tsx
         - UploadSuccess.tsx
-        - ****tests**/**
+        - \***\*tests**/\*\*
           - UploadSection.test.tsx
     - **contexts/**
       - AuthContext.ts

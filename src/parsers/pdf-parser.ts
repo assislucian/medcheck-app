@@ -36,7 +36,9 @@ export class PDFParser implements Parser {
       // return records.filter(r => r.crm === headerInfo.crm);
     } catch (error) {
       throw new ParsingError(
-        `Failed to parse PDF '${this.filePath}': ${error instanceof Error ? error.message : error}`,
+        `Failed to parse PDF '${this.filePath}': ${
+          error instanceof Error ? error.message : error
+        }`,
       );
     }
   }

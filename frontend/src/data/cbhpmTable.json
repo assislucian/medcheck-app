@@ -474,7 +474,7 @@
   },
   {
     "codigo": 40301818,
-    "procedimento": "Fenilalanina, pesquisa e\/ou dosagem ",
+    "procedimento": "Fenilalanina, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,053 ",
     "n_aux": null,
@@ -650,7 +650,7 @@
   },
   {
     "codigo": 40322467,
-    "procedimento": "Índice de ácido úrico \/ creatinina ",
+    "procedimento": "Índice de ácido úrico / creatinina ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,180 ",
     "n_aux": null,
@@ -661,7 +661,7 @@
   },
   {
     "codigo": 40322475,
-    "procedimento": "Índice de cálcio \/ creatinina ",
+    "procedimento": "Índice de cálcio / creatinina ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,263 ",
     "n_aux": null,
@@ -672,7 +672,7 @@
   },
   {
     "codigo": 40322483,
-    "procedimento": "Índice de proteína \/ creatinina ",
+    "procedimento": "Índice de proteína / creatinina ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": 1.208,
     "n_aux": null,
@@ -892,7 +892,7 @@
   },
   {
     "codigo": 40302563,
-    "procedimento": "Tripsina imunorreativa (IRT), pesquisa e\/ou dosagem ",
+    "procedimento": "Tripsina imunorreativa (IRT), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,413 ",
     "n_aux": null,
@@ -1024,7 +1024,7 @@
   },
   {
     "codigo": 40303012,
-    "procedimento": "Alfa-1-antitripsina, (fezes), pesquisa e\/ou dosagem ",
+    "procedimento": "Alfa-1-antitripsina, (fezes), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,413 ",
     "n_aux": null,
@@ -1057,7 +1057,7 @@
   },
   {
     "codigo": 40304027,
-    "procedimento": "Anticorpo anti A e B, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticorpo anti A e B, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,350 ",
     "n_aux": null,
@@ -1629,7 +1629,7 @@
   },
   {
     "codigo": 40316408,
-    "procedimento": "Progesterona, pesquisa e\/ou dosagem ",
+    "procedimento": "Progesterona, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "2,330 ",
     "n_aux": null,
@@ -1838,7 +1838,7 @@
   },
   {
     "codigo": 40306747,
-    "procedimento": "Complemento CH-50, pesquisa e\/ou dosagem ",
+    "procedimento": "Complemento CH-50, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,01de1A",
     "cust_oper": "1,170 ",
     "n_aux": null,
@@ -2960,7 +2960,7 @@
   },
   {
     "codigo": 40305074,
-    "procedimento": "17-cetosteroides relação alfa\/beta ",
+    "procedimento": "17-cetosteroides relação alfa/beta ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,670 ",
     "n_aux": null,
@@ -3422,7 +3422,7 @@
   },
   {
     "codigo": 40307913,
-    "procedimento": "Anti-DMP, pesquisa e\/ou dosagem ",
+    "procedimento": "Anti-DMP, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -3433,7 +3433,7 @@
   },
   {
     "codigo": 40306062,
-    "procedimento": "Anti-DNA, pesquisa e\/ou dosagem ",
+    "procedimento": "Anti-DNA, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,413 ",
     "n_aux": null,
@@ -3455,7 +3455,7 @@
   },
   {
     "codigo": 40306089,
-    "procedimento": "Anti-LA\/SSB, pesquisa ",
+    "procedimento": "Anti-LA/SSB, pesquisa ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -3477,7 +3477,7 @@
   },
   {
     "codigo": 40306119,
-    "procedimento": "Anti-Ro\/SSA, pesquisa ",
+    "procedimento": "Anti-Ro/SSA, pesquisa ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -3554,7 +3554,7 @@
   },
   {
     "codigo": 40306178,
-    "procedimento": "Anticorpo anti-DNAse B, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticorpo anti-DNAse B, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,170 ",
     "n_aux": null,
@@ -3565,7 +3565,7 @@
   },
   {
     "codigo": 40306216,
-    "procedimento": "Anticorpos anti-influenza A, IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticorpos anti-influenza A, IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -3576,7 +3576,7 @@
   },
   {
     "codigo": 40306224,
-    "procedimento": "Anticorpos anti-influenza A, IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticorpos anti-influenza A, IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -3873,7 +3873,7 @@
   },
   {
     "codigo": 40324265,
-    "procedimento": "Cadeias leves livres Kappa\/Lambda, dosagem, sangue ",
+    "procedimento": "Cadeias leves livres Kappa/Lambda, dosagem, sangue ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": 21.988,
     "n_aux": null,
@@ -3917,7 +3917,7 @@
   },
   {
     "codigo": 40306658,
-    "procedimento": "Cisticercose, AC, pesquisa e\/ou dosagem ",
+    "procedimento": "Cisticercose, AC, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -3928,7 +3928,7 @@
   },
   {
     "codigo": 40306682,
-    "procedimento": "Clostridium difficile, toxina A, pesquisa e\/ou dosagem ",
+    "procedimento": "Clostridium difficile, toxina A, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -3939,7 +3939,7 @@
   },
   {
     "codigo": 40306739,
-    "procedimento": "Complemento CH-100, pesquisa e\/ou dosagem ",
+    "procedimento": "Complemento CH-100, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,413 ",
     "n_aux": null,
@@ -4005,7 +4005,7 @@
   },
   {
     "codigo": 40306879,
-    "procedimento": "Filaria sorologia, pesquisa e\/ou dosagem ",
+    "procedimento": "Filaria sorologia, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4016,7 +4016,7 @@
   },
   {
     "codigo": 40308049,
-    "procedimento": "Frei (linfogranuloma venéreo), IDeR, pesquisa e\/ou dosagem ",
+    "procedimento": "Frei (linfogranuloma venéreo), IDeR, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "0,720 ",
     "n_aux": null,
@@ -4038,7 +4038,7 @@
   },
   {
     "codigo": 40308324,
-    "procedimento": "Gonococo – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Gonococo – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4049,7 +4049,7 @@
   },
   {
     "codigo": 40308332,
-    "procedimento": "Gonococo – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Gonococo – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -4060,7 +4060,7 @@
   },
   {
     "codigo": 40306933,
-    "procedimento": "Hepatite A – HAV – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite A – HAV – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4071,7 +4071,7 @@
   },
   {
     "codigo": 40306941,
-    "procedimento": "Hepatite A – HAV – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite A – HAV – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4082,7 +4082,7 @@
   },
   {
     "codigo": 40306950,
-    "procedimento": "Hepatite B – HBCAC – IgG (anti-core IgG ou Acoreg), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBCAC – IgG (anti-core IgG ou Acoreg), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4093,7 +4093,7 @@
   },
   {
     "codigo": 40306968,
-    "procedimento": "Hepatite B – HBCAC – IgM (anti-core IgM ou Acorem), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBCAC – IgM (anti-core IgM ou Acorem), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4104,7 +4104,7 @@
   },
   {
     "codigo": 40306976,
-    "procedimento": "Hepatite B – HBeAC (anti HBE), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBeAC (anti HBE), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4115,7 +4115,7 @@
   },
   {
     "codigo": 40306984,
-    "procedimento": "Hepatite B – HBeAG (antígeno “E”), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBeAG (antígeno “E”), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4126,7 +4126,7 @@
   },
   {
     "codigo": 40306992,
-    "procedimento": "Hepatite B – HBsAC (anti-antígeno de superfície), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBsAC (anti-antígeno de superfície), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4137,7 +4137,7 @@
   },
   {
     "codigo": 40307018,
-    "procedimento": "Hepatite B – HBsAG (AU, antígeno austrália), pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite B – HBsAG (AU, antígeno austrália), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,600 ",
     "n_aux": null,
@@ -4148,7 +4148,7 @@
   },
   {
     "codigo": 40307026,
-    "procedimento": "Hepatite C – anti-HCV, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite C – anti-HCV, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -4181,7 +4181,7 @@
   },
   {
     "codigo": 40307107,
-    "procedimento": "Herpes zoster – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Herpes zoster – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4192,7 +4192,7 @@
   },
   {
     "codigo": 40307115,
-    "procedimento": "Herpes zoster – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Herpes zoster – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4236,7 +4236,7 @@
   },
   {
     "codigo": 40324079,
-    "procedimento": "HIV1\/2, anticorpos (teste rápido) ",
+    "procedimento": "HIV1/2, anticorpos (teste rápido) ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "6,273 ",
     "n_aux": null,
@@ -4291,7 +4291,7 @@
   },
   {
     "codigo": 40307328,
-    "procedimento": "Imunocomplexos circulantes, com células Raji, pesquisa e\/ou dosagem ",
+    "procedimento": "Imunocomplexos circulantes, com células Raji, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -4302,7 +4302,7 @@
   },
   {
     "codigo": 40307310,
-    "procedimento": "Imunocomplexos circulantes, pesquisa e\/ou dosagem ",
+    "procedimento": "Imunocomplexos circulantes, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4313,7 +4313,7 @@
   },
   {
     "codigo": 40307344,
-    "procedimento": "Inibidor de C1 esterase, pesquisa e\/ou dosagem ",
+    "procedimento": "Inibidor de C1 esterase, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -4412,7 +4412,7 @@
   },
   {
     "codigo": 40307484,
-    "procedimento": "Malária – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Malária – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4423,7 +4423,7 @@
   },
   {
     "codigo": 40307492,
-    "procedimento": "Malária – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Malária – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4445,7 +4445,7 @@
   },
   {
     "codigo": 40307565,
-    "procedimento": "Mononucleose – Epstein BARR – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Mononucleose – Epstein BARR – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4456,7 +4456,7 @@
   },
   {
     "codigo": 40307573,
-    "procedimento": "Mononucleose, anti-VCA (EBV) IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Mononucleose, anti-VCA (EBV) IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4467,7 +4467,7 @@
   },
   {
     "codigo": 40307581,
-    "procedimento": "Mononucleose, anti-VCA (EBV) IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Mononucleose, anti-VCA (EBV) IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,484 ",
     "n_aux": null,
@@ -4511,7 +4511,7 @@
   },
   {
     "codigo": 40308413,
-    "procedimento": "Paracoccidioidomicose, anticorpos totais \/ IgG, dosagem ",
+    "procedimento": "Paracoccidioidomicose, anticorpos totais / IgG, dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "5,624 ",
     "n_aux": null,
@@ -4588,7 +4588,7 @@
   },
   {
     "codigo": 40307794,
-    "procedimento": "Toxocara cannis – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Toxocara cannis – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -4599,7 +4599,7 @@
   },
   {
     "codigo": 40307808,
-    "procedimento": "Toxocara cannis – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Toxocara cannis – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "2,187 ",
     "n_aux": null,
@@ -4643,7 +4643,7 @@
   },
   {
     "codigo": 40307867,
-    "procedimento": "Waaler-Rose (fator reumatoide), pesquisa e\/ou dosagem ",
+    "procedimento": "Waaler-Rose (fator reumatoide), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "0,720 ",
     "n_aux": null,
@@ -4753,7 +4753,7 @@
   },
   {
     "codigo": 40309428,
-    "procedimento": "Fosfolipídios (relação lecitina\/esfingomielina), pesquisa e\/ou dosagem em líquidos orgânicos ",
+    "procedimento": "Fosfolipídios (relação lecitina/esfingomielina), pesquisa e/ou dosagem em líquidos orgânicos ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5017,7 +5017,7 @@
   },
   {
     "codigo": 40311023,
-    "procedimento": "Ácido homogentísico, pesquisa e\/ou dosagem na urina ",
+    "procedimento": "Ácido homogentísico, pesquisa e/ou dosagem na urina ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,053 ",
     "n_aux": null,
@@ -5050,7 +5050,7 @@
   },
   {
     "codigo": 40311074,
-    "procedimento": "Coproporfirina III, pesquisa e\/ou dosagem na urina ",
+    "procedimento": "Coproporfirina III, pesquisa e/ou dosagem na urina ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5237,7 +5237,7 @@
   },
   {
     "codigo": 40313018,
-    "procedimento": "Ácido delta aminolevulínico (para chumbo inorgânico), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido delta aminolevulínico (para chumbo inorgânico), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,053 ",
     "n_aux": null,
@@ -5248,7 +5248,7 @@
   },
   {
     "codigo": 40313042,
-    "procedimento": "Ácido hipúrico (para tolueno), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido hipúrico (para tolueno), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5259,7 +5259,7 @@
   },
   {
     "codigo": 40313050,
-    "procedimento": "Ácido mandélico (para estireno), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido mandélico (para estireno), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5281,7 +5281,7 @@
   },
   {
     "codigo": 40313093,
-    "procedimento": "Carboxihemoglobina (para monóxido de carbono diclorometano), pesquisa e\/ou dosagem ",
+    "procedimento": "Carboxihemoglobina (para monóxido de carbono diclorometano), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "0,900 ",
     "n_aux": null,
@@ -5303,7 +5303,7 @@
   },
   {
     "codigo": 40313123,
-    "procedimento": "Coproporfirinas (para chumbo inorgânico), pesquisa e\/ou dosagem ",
+    "procedimento": "Coproporfirinas (para chumbo inorgânico), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5314,7 +5314,7 @@
   },
   {
     "codigo": 40313166,
-    "procedimento": "Flúor (para fluoretos), pesquisa e\/ou dosagem ",
+    "procedimento": "Flúor (para fluoretos), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5336,7 +5336,7 @@
   },
   {
     "codigo": 40313212,
-    "procedimento": "P-aminofenol (para anilina), pesquisa e\/ou dosagem ",
+    "procedimento": "P-aminofenol (para anilina), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -5347,7 +5347,7 @@
   },
   {
     "codigo": 40313220,
-    "procedimento": "P-nitrofenol (para nitrobenzeno), pesquisa e\/ou dosagem ",
+    "procedimento": "P-nitrofenol (para nitrobenzeno), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5358,7 +5358,7 @@
   },
   {
     "codigo": 40313239,
-    "procedimento": "Protoporfirinas livres (para chumbo inorgânico), pesquisa e\/ou dosagem ",
+    "procedimento": "Protoporfirinas livres (para chumbo inorgânico), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5369,7 +5369,7 @@
   },
   {
     "codigo": 40313247,
-    "procedimento": "Protoporfirinas Zn (para chumbo inorgânico), pesquisa e\/ou dosagem ",
+    "procedimento": "Protoporfirinas Zn (para chumbo inorgânico), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,04de1A",
     "cust_oper": "1,440 ",
     "n_aux": null,
@@ -5600,7 +5600,7 @@
   },
   {
     "codigo": 40301095,
-    "procedimento": "Ácido glioxílico, pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido glioxílico, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -5963,7 +5963,7 @@
   },
   {
     "codigo": 40301907,
-    "procedimento": "Fosfatase alcalina fração óssea – Elisa, pesquisa e\/ou dosagem ",
+    "procedimento": "Fosfatase alcalina fração óssea – Elisa, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -6205,7 +6205,7 @@
   },
   {
     "codigo": 40302776,
-    "procedimento": "Peptídeo natriurético BNP\/PROBNP, dosagem ",
+    "procedimento": "Peptídeo natriurético BNP/PROBNP, dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "8,091 ",
     "n_aux": null,
@@ -6227,7 +6227,7 @@
   },
   {
     "codigo": 40302750,
-    "procedimento": "Perfil lipídico \/ lipidograma (lipídios totais, colesterol, triglicerídios e eletroforese lipoproteínas), dosagem ",
+    "procedimento": "Perfil lipídico / lipidograma (lipídios totais, colesterol, triglicerídios e eletroforese lipoproteínas), dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -6458,7 +6458,7 @@
   },
   {
     "codigo": 40304043,
-    "procedimento": "Anticorpos irregulares, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticorpos irregulares, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,204 ",
     "n_aux": null,
@@ -6469,7 +6469,7 @@
   },
   {
     "codigo": 40304086,
-    "procedimento": "CD... (antígeno de dif. Celular, cada determinação), pesquisa e\/ou dosagem ",
+    "procedimento": "CD... (antígeno de dif. Celular, cada determinação), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "7,434 ",
     "n_aux": null,
@@ -6535,7 +6535,7 @@
   },
   {
     "codigo": 40304116,
-    "procedimento": "Enzimas eritrocitárias, (adenilatoquinase, desidrogenase láctica, fosfofructoquinase, fosfoglicerato quinase, gliceraldeído, 3 – fosfato desidrogenase, glicose fosfato isomerase, glicose 6 – fosfato desidrogenase, glutation peroxidase, glutation), pesquisa e\/ou dosagem ",
+    "procedimento": "Enzimas eritrocitárias, (adenilatoquinase, desidrogenase láctica, fosfofructoquinase, fosfoglicerato quinase, gliceraldeído, 3 – fosfato desidrogenase, glicose fosfato isomerase, glicose 6 – fosfato desidrogenase, glutation peroxidase, glutation), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,350 ",
     "n_aux": null,
@@ -6876,7 +6876,7 @@
   },
   {
     "codigo": 40304655,
-    "procedimento": "Tromboelastograma, pesquisa e\/ou dosagem ",
+    "procedimento": "Tromboelastograma, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "8,091 ",
     "n_aux": null,
@@ -7151,7 +7151,7 @@
   },
   {
     "codigo": 40316386,
-    "procedimento": "Osteocalcina, pesquisa e\/ou dosagem ",
+    "procedimento": "Osteocalcina, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "5,330 ",
     "n_aux": null,
@@ -7382,7 +7382,7 @@
   },
   {
     "codigo": 40306283,
-    "procedimento": "Anticórtex suprarrenal, pesquisa e\/ou dosagem ",
+    "procedimento": "Anticórtex suprarrenal, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "4,050 ",
     "n_aux": null,
@@ -7646,7 +7646,7 @@
   },
   {
     "codigo": 40306917,
-    "procedimento": "Helicobacter pylori – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Helicobacter pylori – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,844 ",
     "n_aux": null,
@@ -7657,7 +7657,7 @@
   },
   {
     "codigo": 40306925,
-    "procedimento": "Helicobacter pylori – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Helicobacter pylori – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,294 ",
     "n_aux": null,
@@ -7668,7 +7668,7 @@
   },
   {
     "codigo": 40307034,
-    "procedimento": "Hepatite C – anti-HCV – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite C – anti-HCV – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,294 ",
     "n_aux": null,
@@ -7679,7 +7679,7 @@
   },
   {
     "codigo": 40307050,
-    "procedimento": "Hepatite delta, anticorpo IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite delta, anticorpo IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "4,050 ",
     "n_aux": null,
@@ -7690,7 +7690,7 @@
   },
   {
     "codigo": 40307069,
-    "procedimento": "Hepatite delta, anticorpo IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite delta, anticorpo IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,960 ",
     "n_aux": null,
@@ -7701,7 +7701,7 @@
   },
   {
     "codigo": 40307077,
-    "procedimento": "Hepatite delta, antígeno, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite delta, antígeno, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,960 ",
     "n_aux": null,
@@ -7789,7 +7789,7 @@
   },
   {
     "codigo": 40307468,
-    "procedimento": "Lyme – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Lyme – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,294 ",
     "n_aux": null,
@@ -7800,7 +7800,7 @@
   },
   {
     "codigo": 40307476,
-    "procedimento": "Lyme – IgM, pesquisa e\/ou dosagem ",
+    "procedimento": "Lyme – IgM, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,294 ",
     "n_aux": null,
@@ -7811,7 +7811,7 @@
   },
   {
     "codigo": 40307514,
-    "procedimento": "MCA (antígeno cárcino-mamário), pesquisa e\/ou dosagem ",
+    "procedimento": "MCA (antígeno cárcino-mamário), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,294 ",
     "n_aux": null,
@@ -7921,7 +7921,7 @@
   },
   {
     "codigo": 40307859,
-    "procedimento": "Vírus sincicial respiratório – Elisa – IgG, pesquisa e\/ou dosagem ",
+    "procedimento": "Vírus sincicial respiratório – Elisa – IgG, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "4,050 ",
     "n_aux": null,
@@ -8020,7 +8020,7 @@
   },
   {
     "codigo": 40309525,
-    "procedimento": "Rotina líquido sinovial – caracteres físicos, citologia, proteínas, ácido úrico, látex p\/ F.R., BACT. ",
+    "procedimento": "Rotina líquido sinovial – caracteres físicos, citologia, proteínas, ácido úrico, látex p/ F.R., BACT. ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": 2.097,
     "n_aux": null,
@@ -8053,7 +8053,7 @@
   },
   {
     "codigo": 40310035,
-    "procedimento": "Antibiograma p\/ bacilos álcool-resistentes – drogas de 2 linhas ",
+    "procedimento": "Antibiograma p/ bacilos álcool-resistentes – drogas de 2 linhas ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,177 ",
     "n_aux": null,
@@ -8273,7 +8273,7 @@
   },
   {
     "codigo": 40311279,
-    "procedimento": "Bartituratos, pesquisa e\/ou dosagem na urina ",
+    "procedimento": "Bartituratos, pesquisa e/ou dosagem na urina ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -8295,7 +8295,7 @@
   },
   {
     "codigo": 40311058,
-    "procedimento": "Catecolaminas fracionadas – dopamina, epinefrina, norepinefrina (cada), pesquisa e\/ou dosagem na urina ",
+    "procedimento": "Catecolaminas fracionadas – dopamina, epinefrina, norepinefrina (cada), pesquisa e/ou dosagem na urina ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -8306,7 +8306,7 @@
   },
   {
     "codigo": 40311244,
-    "procedimento": "Cistina, pesquisa e\/ou dosagem na urina ",
+    "procedimento": "Cistina, pesquisa e/ou dosagem na urina ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -8482,7 +8482,7 @@
   },
   {
     "codigo": 40312127,
-    "procedimento": "Perfil reumatológico (ácido úrico, eletroforese de proteínas, FAN, VHS, prova do látex P\/F. R, W. Rose) ",
+    "procedimento": "Perfil reumatológico (ácido úrico, eletroforese de proteínas, FAN, VHS, prova do látex P/F. R, W. Rose) ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "7,551 ",
     "n_aux": null,
@@ -8526,7 +8526,7 @@
   },
   {
     "codigo": 40313026,
-    "procedimento": "Ácido delta aminolevulínico desidratase (para chumbo inorgânico), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido delta aminolevulínico desidratase (para chumbo inorgânico), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8537,7 +8537,7 @@
   },
   {
     "codigo": 40313034,
-    "procedimento": "Ácido fenilglioxílico (para estireno), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido fenilglioxílico (para estireno), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8548,7 +8548,7 @@
   },
   {
     "codigo": 40313069,
-    "procedimento": "Ácido metilhipúrico (para xilenos), pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido metilhipúrico (para xilenos), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8559,7 +8559,7 @@
   },
   {
     "codigo": 40313077,
-    "procedimento": "Ácido salicílico, pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido salicílico, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -8581,7 +8581,7 @@
   },
   {
     "codigo": 40313310,
-    "procedimento": "Cromo, pesquisa e\/ou dosagem ",
+    "procedimento": "Cromo, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -8592,7 +8592,7 @@
   },
   {
     "codigo": 40313131,
-    "procedimento": "Dialdeído malônico, pesquisa e\/ou dosagem ",
+    "procedimento": "Dialdeído malônico, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,340 ",
     "n_aux": null,
@@ -8603,7 +8603,7 @@
   },
   {
     "codigo": 40313140,
-    "procedimento": "Etanol, pesquisa e\/ou dosagem ",
+    "procedimento": "Etanol, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -8614,7 +8614,7 @@
   },
   {
     "codigo": 40313158,
-    "procedimento": "Fenol (para benzeno, fenol), pesquisa e\/ou dosagem ",
+    "procedimento": "Fenol (para benzeno, fenol), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8625,7 +8625,7 @@
   },
   {
     "codigo": 40313174,
-    "procedimento": "Formoldeído, pesquisa e\/ou dosagem ",
+    "procedimento": "Formoldeído, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -8636,7 +8636,7 @@
   },
   {
     "codigo": 40313190,
-    "procedimento": "Metais Al, As, Cd, Cr, Mn, Hg, Ni, Zn, Co, outro (s) absorção atômica (cada), pesquisa e\/ou dosagem ",
+    "procedimento": "Metais Al, As, Cd, Cr, Mn, Hg, Ni, Zn, Co, outro (s) absorção atômica (cada), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,727 ",
     "n_aux": null,
@@ -8647,7 +8647,7 @@
   },
   {
     "codigo": 40313204,
-    "procedimento": "Metanol, pesquisa e\/ou dosagem ",
+    "procedimento": "Metanol, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8658,7 +8658,7 @@
   },
   {
     "codigo": 40313344,
-    "procedimento": "Metil Etil Cetona, pesquisa e\/ou dosagem ",
+    "procedimento": "Metil Etil Cetona, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,727 ",
     "n_aux": null,
@@ -8680,7 +8680,7 @@
   },
   {
     "codigo": 40313271,
-    "procedimento": "Tiocianato (para cianetos nitrilas alifáticas), pesquisa e\/ou dosagem ",
+    "procedimento": "Tiocianato (para cianetos nitrilas alifáticas), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,097 ",
     "n_aux": null,
@@ -8691,7 +8691,7 @@
   },
   {
     "codigo": 40313280,
-    "procedimento": "Triclorocompostos totais (para tetracloroetileno, tricloroetano, tricloroetileno), pesquisa e\/ou dosagem ",
+    "procedimento": "Triclorocompostos totais (para tetracloroetileno, tricloroetano, tricloroetileno), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "1,647 ",
     "n_aux": null,
@@ -8702,7 +8702,7 @@
   },
   {
     "codigo": 40313328,
-    "procedimento": "Zinco, pesquisa e\/ou dosagem ",
+    "procedimento": "Zinco, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "3,267 ",
     "n_aux": null,
@@ -8779,7 +8779,7 @@
   },
   {
     "codigo": 40402010,
-    "procedimento": "Material descartável (kit) e soluções para utilização de processadora automática de sangue \/ auto transfusão intra-operatória ",
+    "procedimento": "Material descartável (kit) e soluções para utilização de processadora automática de sangue / auto transfusão intra-operatória ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "104,000 ",
     "n_aux": "– ",
@@ -8790,7 +8790,7 @@
   },
   {
     "codigo": 40402029,
-    "procedimento": "Material descartável (kit) e soluções para utilização de processadora automática de sangue\/aférese ",
+    "procedimento": "Material descartável (kit) e soluções para utilização de processadora automática de sangue/aférese ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "100,000 ",
     "n_aux": "– ",
@@ -9043,7 +9043,7 @@
   },
   {
     "codigo": 40403890,
-    "procedimento": "NAT\/HBV – por componente hemoterápico ",
+    "procedimento": "NAT/HBV – por componente hemoterápico ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "11,870 ",
     "n_aux": "0 ",
@@ -9054,7 +9054,7 @@
   },
   {
     "codigo": 40403262,
-    "procedimento": "NAT\/HCV por componente hemoterápico ",
+    "procedimento": "NAT/HCV por componente hemoterápico ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "11,870 ",
     "n_aux": "0 ",
@@ -9065,7 +9065,7 @@
   },
   {
     "codigo": 40403289,
-    "procedimento": "NAT\/HIV por componente hemoterápico ",
+    "procedimento": "NAT/HIV por componente hemoterápico ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "11,870 ",
     "n_aux": "0 ",
@@ -9076,7 +9076,7 @@
   },
   {
     "codigo": 40403335,
-    "procedimento": "Pesquisa de anticorpos séricos antieritrocitários, anti-A e\/ou anti-B – em tubo ",
+    "procedimento": "Pesquisa de anticorpos séricos antieritrocitários, anti-A e/ou anti-B – em tubo ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "0,410 ",
     "n_aux": "0 ",
@@ -9087,7 +9087,7 @@
   },
   {
     "codigo": 40403327,
-    "procedimento": "Pesquisa de anticorpos séricos antieritrocitários, anti-A e\/ou anti-B – gel teste ",
+    "procedimento": "Pesquisa de anticorpos séricos antieritrocitários, anti-A e/ou anti-B – gel teste ",
     "porte_cirurgiao": "0,10de1A",
     "cust_oper": "2,470 ",
     "n_aux": "0 ",
@@ -9890,7 +9890,7 @@
   },
   {
     "codigo": 40305449,
-    "procedimento": "N-telopeptídeo, pesquisa e\/ou dosagem ",
+    "procedimento": "N-telopeptídeo, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,25de1A",
     "cust_oper": "6,660 ",
     "n_aux": null,
@@ -9989,7 +9989,7 @@
   },
   {
     "codigo": 40306909,
-    "procedimento": "Helicobacter pylori – IgA, pesquisa e\/ou dosagem ",
+    "procedimento": "Helicobacter pylori – IgA, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,25de1A",
     "cust_oper": "12,591 ",
     "n_aux": null,
@@ -10110,7 +10110,7 @@
   },
   {
     "codigo": 40308251,
-    "procedimento": "Proteína Amiloide A, pesquisa e\/ou dosagem ",
+    "procedimento": "Proteína Amiloide A, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,25de1A",
     "cust_oper": "5,580 ",
     "n_aux": null,
@@ -10418,7 +10418,7 @@
   },
   {
     "codigo": 40314162,
-    "procedimento": "HTLV I \/ II por PCR (cada), pesquisa ",
+    "procedimento": "HTLV I / II por PCR (cada), pesquisa ",
     "porte_cirurgiao": "0,25de1A",
     "cust_oper": "29,970 ",
     "n_aux": null,
@@ -10847,7 +10847,7 @@
   },
   {
     "codigo": 40304736,
-    "procedimento": "Imunofenotipagem para linfoma não Hodgkin \/ síndrome linfoproliferativa crônica (*) ",
+    "procedimento": "Imunofenotipagem para linfoma não Hodgkin / síndrome linfoproliferativa crônica (*) ",
     "porte_cirurgiao": "0,50de1A",
     "cust_oper": "15,372 ",
     "n_aux": null,
@@ -10869,7 +10869,7 @@
   },
   {
     "codigo": 40304400,
-    "procedimento": "Inibidor do TPA (PAI), pesquisa e\/ou dosagem ",
+    "procedimento": "Inibidor do TPA (PAI), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,50de1A",
     "cust_oper": "12,686 ",
     "n_aux": null,
@@ -11045,7 +11045,7 @@
   },
   {
     "codigo": 40307042,
-    "procedimento": "Hepatite C – imunoblot, pesquisa e\/ou dosagem ",
+    "procedimento": "Hepatite C – imunoblot, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,50de1A",
     "cust_oper": "15,435 ",
     "n_aux": null,
@@ -11078,7 +11078,7 @@
   },
   {
     "codigo": 40307336,
-    "procedimento": "Imunoeletroforese (estudo da gamopatia), pesquisa e\/ou dosagem ",
+    "procedimento": "Imunoeletroforese (estudo da gamopatia), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,50de1A",
     "cust_oper": "12,168 ",
     "n_aux": null,
@@ -11287,7 +11287,7 @@
   },
   {
     "codigo": 40314448,
-    "procedimento": "HPV oncoproteínas virais E6\/E7, pesquisa ",
+    "procedimento": "HPV oncoproteínas virais E6/E7, pesquisa ",
     "porte_cirurgiao": "0,50de1A",
     "cust_oper": "65,029 ",
     "n_aux": null,
@@ -11507,7 +11507,7 @@
   },
   {
     "codigo": 40302741,
-    "procedimento": "Lamotrigina, pesquisa e\/ou dosagem ",
+    "procedimento": "Lamotrigina, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,75de1A",
     "cust_oper": "27,684 ",
     "n_aux": null,
@@ -11595,7 +11595,7 @@
   },
   {
     "codigo": 40307662,
-    "procedimento": "Proteína eosinofílica catiônica (ECP), pesquisa e\/ou dosagem ",
+    "procedimento": "Proteína eosinofílica catiônica (ECP), pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,75de1A",
     "cust_oper": "11,331 ",
     "n_aux": null,
@@ -11628,7 +11628,7 @@
   },
   {
     "codigo": 40313301,
-    "procedimento": "Ácido metil malônico, pesquisa e\/ou dosagem ",
+    "procedimento": "Ácido metil malônico, pesquisa e/ou dosagem ",
     "porte_cirurgiao": "0,75de1A",
     "cust_oper": "29,790 ",
     "n_aux": null,
@@ -11969,7 +11969,7 @@
   },
   {
     "codigo": 30715601,
-    "procedimento": "Localização\/intervenção estereotáxica de lesões\/estruturas de crânio por neuronavegação com intervenção ",
+    "procedimento": "Localização/intervenção estereotáxica de lesões/estruturas de crânio por neuronavegação com intervenção ",
     "porte_cirurgiao": "10A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -12101,7 +12101,7 @@
   },
   {
     "codigo": 30728207,
-    "procedimento": "Tratamento cirúrgico da fratura de três maléolos e\/ou luxações ao nível do tornozelo ",
+    "procedimento": "Tratamento cirúrgico da fratura de três maléolos e/ou luxações ao nível do tornozelo ",
     "porte_cirurgiao": "10A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -12244,7 +12244,7 @@
   },
   {
     "codigo": 30915066,
-    "procedimento": "Pericardiotomia \/ Pericardiectomia por vídeo ",
+    "procedimento": "Pericardiotomia / Pericardiectomia por vídeo ",
     "porte_cirurgiao": "10A",
     "cust_oper": "38,500 ",
     "n_aux": "1 ",
@@ -12574,7 +12574,7 @@
   },
   {
     "codigo": 31008038,
-    "procedimento": "Diálise peritoneal ambulatorial contínua (CAPD) por mês\/ paciente ",
+    "procedimento": "Diálise peritoneal ambulatorial contínua (CAPD) por mês/ paciente ",
     "porte_cirurgiao": "10A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -12596,7 +12596,7 @@
   },
   {
     "codigo": 31009239,
-    "procedimento": "Onfalocele\/gastrosquise – segundo tempo – tratamento cirúrgico ",
+    "procedimento": "Onfalocele/gastrosquise – segundo tempo – tratamento cirúrgico ",
     "porte_cirurgiao": "10A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -12893,7 +12893,7 @@
   },
   {
     "codigo": 31401414,
-    "procedimento": "Localização\/intervenção estereotáxica de lesões\/estruturas de crânio por neuronavegação com intervenção ",
+    "procedimento": "Localização/intervenção estereotáxica de lesões/estruturas de crânio por neuronavegação com intervenção ",
     "porte_cirurgiao": "10A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -13630,7 +13630,7 @@
   },
   {
     "codigo": 30725240,
-    "procedimento": "Tratamento cirúrgico das fraturas supracondilianas e\/ou intercondilianas do fêmur com fixação interna ",
+    "procedimento": "Tratamento cirúrgico das fraturas supracondilianas e/ou intercondilianas do fêmur com fixação interna ",
     "porte_cirurgiao": "10B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -13850,7 +13850,7 @@
   },
   {
     "codigo": 30912130,
-    "procedimento": "Oclusão percutânea de fístula e\/ou conexões sistêmico pulmonares ",
+    "procedimento": "Oclusão percutânea de fístula e/ou conexões sistêmico pulmonares ",
     "porte_cirurgiao": "10B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -14697,7 +14697,7 @@
   },
   {
     "codigo": 30717108,
-    "procedimento": "Fraturas e\/ou fratura luxação em 2 partes (colo anatômico, colo cirúrgico ou tubérculos) ",
+    "procedimento": "Fraturas e/ou fratura luxação em 2 partes (colo anatômico, colo cirúrgico ou tubérculos) ",
     "porte_cirurgiao": "10C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -14708,7 +14708,7 @@
   },
   {
     "codigo": 30717132,
-    "procedimento": "Pseudoartroses e\/ou osteotomia da clavícula ou escápula ",
+    "procedimento": "Pseudoartroses e/ou osteotomia da clavícula ou escápula ",
     "porte_cirurgiao": "10C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -14741,7 +14741,7 @@
   },
   {
     "codigo": 30723167,
-    "procedimento": "Tratamento cirúrgico das fraturas e\/ou luxações do anel pélvico (instabilidade unidirecional com abordagem única) ",
+    "procedimento": "Tratamento cirúrgico das fraturas e/ou luxações do anel pélvico (instabilidade unidirecional com abordagem única) ",
     "porte_cirurgiao": "10C",
     "cust_oper": "2 ",
     "n_aux": "5 ",
@@ -14818,7 +14818,7 @@
   },
   {
     "codigo": 30729041,
-    "procedimento": "Artrodese de tarso e\/ou médio pé – tratamento cirúrgico ",
+    "procedimento": "Artrodese de tarso e/ou médio pé – tratamento cirúrgico ",
     "porte_cirurgiao": "10C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -14895,7 +14895,7 @@
   },
   {
     "codigo": 30733049,
-    "procedimento": "Osteocondroplastia – estabilização, ressecção e\/ou plastia # ",
+    "procedimento": "Osteocondroplastia – estabilização, ressecção e/ou plastia # ",
     "porte_cirurgiao": "10C",
     "cust_oper": "38,500 ",
     "n_aux": "1 ",
@@ -15027,7 +15027,7 @@
   },
   {
     "codigo": 30735068,
-    "procedimento": "Reparo artroscópico da ruptura manguito rotador (transfixante\/ completa ou parcial de 1 tendão) ",
+    "procedimento": "Reparo artroscópico da ruptura manguito rotador (transfixante/ completa ou parcial de 1 tendão) ",
     "porte_cirurgiao": "10C",
     "cust_oper": "38,500 ",
     "n_aux": "2 ",
@@ -15038,7 +15038,7 @@
   },
   {
     "codigo": 30737044,
-    "procedimento": "Osteocondroplastia – estabilização, ressecção e\/ou plastia (enxertia) ",
+    "procedimento": "Osteocondroplastia – estabilização, ressecção e/ou plastia (enxertia) ",
     "porte_cirurgiao": "10C",
     "cust_oper": "38,500 ",
     "n_aux": "1 ",
@@ -15148,7 +15148,7 @@
   },
   {
     "codigo": 30912091,
-    "procedimento": "Implante de prótese intravascular na aorta\/pulmonar ou ramos com ou sem angioplastia ",
+    "procedimento": "Implante de prótese intravascular na aorta/pulmonar ou ramos com ou sem angioplastia ",
     "porte_cirurgiao": "10C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -15214,7 +15214,7 @@
   },
   {
     "codigo": 30912237,
-    "procedimento": "Tratamento percutâneo do aneurisma\/dissecção da aorta ",
+    "procedimento": "Tratamento percutâneo do aneurisma/dissecção da aorta ",
     "porte_cirurgiao": "10C",
     "cust_oper": "– ",
     "n_aux": "3 ",
@@ -15896,7 +15896,7 @@
   },
   {
     "codigo": 30715105,
-    "procedimento": "Dorso curvo \/ escoliose \/ giba costal – tratamento cirúrgico ",
+    "procedimento": "Dorso curvo / escoliose / giba costal – tratamento cirúrgico ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -15918,7 +15918,7 @@
   },
   {
     "codigo": 30717272,
-    "procedimento": "Fratura e\/ou fratura luxação em 3 partes ",
+    "procedimento": "Fratura e/ou fratura luxação em 3 partes ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -15929,7 +15929,7 @@
   },
   {
     "codigo": 30717280,
-    "procedimento": "Fratura e\/ou fratura luxação em 4 partes ",
+    "procedimento": "Fratura e/ou fratura luxação em 4 partes ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -15940,7 +15940,7 @@
   },
   {
     "codigo": 30717299,
-    "procedimento": "Pseudoartrose e\/ou osteotomia do úmero proximal ",
+    "procedimento": "Pseudoartrose e/ou osteotomia do úmero proximal ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -16028,7 +16028,7 @@
   },
   {
     "codigo": 30729220,
-    "procedimento": "Pé plano\/pé cavo\/coalisão tarsal – tratamento cirúrgico ",
+    "procedimento": "Pé plano/pé cavo/coalisão tarsal – tratamento cirúrgico ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -16105,7 +16105,7 @@
   },
   {
     "codigo": 30802024,
-    "procedimento": "Broncotomia e\/ou broncorrafia ",
+    "procedimento": "Broncotomia e/ou broncorrafia ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -16171,7 +16171,7 @@
   },
   {
     "codigo": 30904153,
-    "procedimento": "Remoção de cabo-eletrodo de marcapasso e\/ou cardiodesfibrilador implantável com auxílio de dilatador mecânico, laser ou radiofrequência ",
+    "procedimento": "Remoção de cabo-eletrodo de marcapasso e/ou cardiodesfibrilador implantável com auxílio de dilatador mecânico, laser ou radiofrequência ",
     "porte_cirurgiao": "11A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -16941,7 +16941,7 @@
   },
   {
     "codigo": 30802016,
-    "procedimento": "Broncoplastia e\/ou arterioplastia ",
+    "procedimento": "Broncoplastia e/ou arterioplastia ",
     "porte_cirurgiao": "11B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -17821,7 +17821,7 @@
   },
   {
     "codigo": 30729327,
-    "procedimento": "Tratamento cirúrgico de polidactilia múltipla e\/ou complexa ",
+    "procedimento": "Tratamento cirúrgico de polidactilia múltipla e/ou complexa ",
     "porte_cirurgiao": "11C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -18745,7 +18745,7 @@
   },
   {
     "codigo": 30502012,
-    "procedimento": "Angiofibroma – ressecção transmaxilar e\/ou transpalatina ",
+    "procedimento": "Angiofibroma – ressecção transmaxilar e/ou transpalatina ",
     "porte_cirurgiao": "12B",
     "cust_oper": "– ",
     "n_aux": "3 ",
@@ -18976,7 +18976,7 @@
   },
   {
     "codigo": 30802059,
-    "procedimento": "Broncotomia e\/ou broncorrafia por videotoracoscopia ",
+    "procedimento": "Broncotomia e/ou broncorrafia por videotoracoscopia ",
     "porte_cirurgiao": "12B",
     "cust_oper": "42,900 ",
     "n_aux": "2 ",
@@ -19295,7 +19295,7 @@
   },
   {
     "codigo": 31001157,
-    "procedimento": "Ressecção do esôfago cervical e\/ou torácico e transplante com microcirurgia ",
+    "procedimento": "Ressecção do esôfago cervical e/ou torácico e transplante com microcirurgia ",
     "porte_cirurgiao": "12B",
     "cust_oper": "– ",
     "n_aux": "3 ",
@@ -19801,7 +19801,7 @@
   },
   {
     "codigo": 30723159,
-    "procedimento": "Tratamento cirúrgico das fraturas e\/ou luxações do anel pélvico (instabilidade multidirecional com abordagens múltiplas) ",
+    "procedimento": "Tratamento cirúrgico das fraturas e/ou luxações do anel pélvico (instabilidade multidirecional com abordagens múltiplas) ",
     "porte_cirurgiao": "12C",
     "cust_oper": "2 ",
     "n_aux": "6 ",
@@ -19823,7 +19823,7 @@
   },
   {
     "codigo": 30729289,
-    "procedimento": "Tratamento cirúrgico da sindactilia complexa e\/ou múltipla ",
+    "procedimento": "Tratamento cirúrgico da sindactilia complexa e/ou múltipla ",
     "porte_cirurgiao": "12C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -19878,7 +19878,7 @@
   },
   {
     "codigo": 30802040,
-    "procedimento": "Broncoplastia e\/ou arterioplastia por videotoracoscopia ",
+    "procedimento": "Broncoplastia e/ou arterioplastia por videotoracoscopia ",
     "porte_cirurgiao": "12C",
     "cust_oper": "42,900 ",
     "n_aux": "2 ",
@@ -19999,7 +19999,7 @@
   },
   {
     "codigo": 31009220,
-    "procedimento": "Onfalocele\/gastrosquise em 1 tempo ou primeiro tempo ou prótese – tratamento cirúrgico ",
+    "procedimento": "Onfalocele/gastrosquise em 1 tempo ou primeiro tempo ou prótese – tratamento cirúrgico ",
     "porte_cirurgiao": "12C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -20989,7 +20989,7 @@
   },
   {
     "codigo": 30732220,
-    "procedimento": "Ressecção de tumor ósseo e\/ou de partes moles com rotação de retalho ",
+    "procedimento": "Ressecção de tumor ósseo e/ou de partes moles com rotação de retalho ",
     "porte_cirurgiao": "13C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -21363,7 +21363,7 @@
   },
   {
     "codigo": 41203020,
-    "procedimento": "Radiocirurgia (RTC) – nível 1, lesão única e\/ou um isocentro – por tratamento ",
+    "procedimento": "Radiocirurgia (RTC) – nível 1, lesão única e/ou um isocentro – por tratamento ",
     "porte_cirurgiao": "14A",
     "cust_oper": "756,930 ",
     "n_aux": null,
@@ -21418,7 +21418,7 @@
   },
   {
     "codigo": 41203038,
-    "procedimento": "Radiocirurgia (RTC) – nível 2, duas lesões e\/ou dois a quatro isocentros – por tratamento ",
+    "procedimento": "Radiocirurgia (RTC) – nível 2, duas lesões e/ou dois a quatro isocentros – por tratamento ",
     "porte_cirurgiao": "14B",
     "cust_oper": "908,320 ",
     "n_aux": null,
@@ -21517,7 +21517,7 @@
   },
   {
     "codigo": 41203046,
-    "procedimento": "Radiocirurgia (RTC) – nível 3, três lesões e\/ou de mais de quatro isocentros – por tratamento ",
+    "procedimento": "Radiocirurgia (RTC) – nível 3, três lesões e/ou de mais de quatro isocentros – por tratamento ",
     "porte_cirurgiao": "14C",
     "cust_oper": "1067,130 ",
     "n_aux": null,
@@ -21616,7 +21616,7 @@
   },
   {
     "codigo": 20103581,
-    "procedimento": "Programa de exercício supervisionado com obtenção de eletrocardiograma e\/ou saturação de O2 – sessão coletiva ",
+    "procedimento": "Programa de exercício supervisionado com obtenção de eletrocardiograma e/ou saturação de O2 – sessão coletiva ",
     "porte_cirurgiao": "1A",
     "cust_oper": "–",
     "n_aux": null,
@@ -21627,7 +21627,7 @@
   },
   {
     "codigo": 20103573,
-    "procedimento": "Programa de exercício supervisionado com obtenção de eletrocardiograma e\/ou saturação de O2 – sessão individual ",
+    "procedimento": "Programa de exercício supervisionado com obtenção de eletrocardiograma e/ou saturação de O2 – sessão individual ",
     "porte_cirurgiao": "1A",
     "cust_oper": "– ",
     "n_aux": null,
@@ -21638,7 +21638,7 @@
   },
   {
     "codigo": 20103603,
-    "procedimento": "Programa de exercício supervisionado sem obtenção de eletrocardiograma e\/ou saturação de O2 – sessão coletiva ",
+    "procedimento": "Programa de exercício supervisionado sem obtenção de eletrocardiograma e/ou saturação de O2 – sessão coletiva ",
     "porte_cirurgiao": "1A",
     "cust_oper": "– ",
     "n_aux": null,
@@ -21649,7 +21649,7 @@
   },
   {
     "codigo": 20103590,
-    "procedimento": "Programa de exercício supervisionado sem obtenção de eletrocardiograma e\/ou saturação de O2 – sessão individual ",
+    "procedimento": "Programa de exercício supervisionado sem obtenção de eletrocardiograma e/ou saturação de O2 – sessão individual ",
     "porte_cirurgiao": "1A",
     "cust_oper": "– ",
     "n_aux": null,
@@ -21759,7 +21759,7 @@
   },
   {
     "codigo": 40104036,
-    "procedimento": "Curva I\/T – medida de latência de nervo periférico ",
+    "procedimento": "Curva I/T – medida de latência de nervo periférico ",
     "porte_cirurgiao": "1A",
     "cust_oper": "1,210 ",
     "n_aux": null,
@@ -22122,7 +22122,7 @@
   },
   {
     "codigo": 40502198,
-    "procedimento": "Dosagem quantitativa de metabólitos por cromatografia \/ espectrometria de massa (CG\/MS ou HPLC\/MS) para o diagnóstico de EIM ",
+    "procedimento": "Dosagem quantitativa de metabólitos por cromatografia / espectrometria de massa (CG/MS ou HPLC/MS) para o diagnóstico de EIM ",
     "porte_cirurgiao": "1A",
     "cust_oper": 191.67,
     "n_aux": null,
@@ -22133,7 +22133,7 @@
   },
   {
     "codigo": 40502201,
-    "procedimento": "Dosagem quantitativa de metabólitos por espectrometria de massa ou espectrometria de massa em TANDEM (MS OU MS\/MS) para o diagnóstico de EIM ",
+    "procedimento": "Dosagem quantitativa de metabólitos por espectrometria de massa ou espectrometria de massa em TANDEM (MS OU MS/MS) para o diagnóstico de EIM ",
     "porte_cirurgiao": "1A",
     "cust_oper": "191,670 ",
     "n_aux": null,
@@ -22353,7 +22353,7 @@
   },
   {
     "codigo": 41204026,
-    "procedimento": "Filme de verificação (cheque-filme) – 1 por incidência planejada\/semana – filme a parte ",
+    "procedimento": "Filme de verificação (cheque-filme) – 1 por incidência planejada/semana – filme a parte ",
     "porte_cirurgiao": "1A",
     "cust_oper": "1,800 ",
     "n_aux": null,
@@ -22925,7 +22925,7 @@
   },
   {
     "codigo": 30101093,
-    "procedimento": "Calosidade e\/ou mal perfurante – desbastamento (por lesão) ",
+    "procedimento": "Calosidade e/ou mal perfurante – desbastamento (por lesão) ",
     "porte_cirurgiao": "1B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -22969,7 +22969,7 @@
   },
   {
     "codigo": 30602068,
-    "procedimento": "Drenagem e\/ou aspiração de seroma ",
+    "procedimento": "Drenagem e/ou aspiração de seroma ",
     "porte_cirurgiao": "1B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -24168,7 +24168,7 @@
   },
   {
     "codigo": 20103310,
-    "procedimento": "Lesão nervosa periférica afetando mais de um nervo com alterações sensitivas e\/ ou motoras ",
+    "procedimento": "Lesão nervosa periférica afetando mais de um nervo com alterações sensitivas e/ ou motoras ",
     "porte_cirurgiao": "1C",
     "cust_oper": "0,400 ",
     "n_aux": null,
@@ -24179,7 +24179,7 @@
   },
   {
     "codigo": 20103328,
-    "procedimento": "Lesão nervosa periférica afetando um nervo com alterações sensitivas e\/ou motoras ",
+    "procedimento": "Lesão nervosa periférica afetando um nervo com alterações sensitivas e/ou motoras ",
     "porte_cirurgiao": "1C",
     "cust_oper": "0,400 ",
     "n_aux": null,
@@ -24223,7 +24223,7 @@
   },
   {
     "codigo": 20103441,
-    "procedimento": "Paraparesia\/tetraparesia ",
+    "procedimento": "Paraparesia/tetraparesia ",
     "porte_cirurgiao": "1C",
     "cust_oper": "0,660 ",
     "n_aux": null,
@@ -24377,7 +24377,7 @@
   },
   {
     "codigo": 20203020,
-    "procedimento": "Eletroestimulação do assoalho pélvico e\/ou outra técnica de exercícios perineais – por sessão ",
+    "procedimento": "Eletroestimulação do assoalho pélvico e/ou outra técnica de exercícios perineais – por sessão ",
     "porte_cirurgiao": "1C",
     "cust_oper": "– ",
     "n_aux": null,
@@ -24564,7 +24564,7 @@
   },
   {
     "codigo": 40302768,
-    "procedimento": "PAPP-A, dosagem e\/ou pesquisa ",
+    "procedimento": "PAPP-A, dosagem e/ou pesquisa ",
     "porte_cirurgiao": "1C",
     "cust_oper": "7,434 ",
     "n_aux": null,
@@ -24597,7 +24597,7 @@
   },
   {
     "codigo": 40501132,
-    "procedimento": "Cultura de tecido para ensaio enzimático e\/ou extração de DNA ",
+    "procedimento": "Cultura de tecido para ensaio enzimático e/ou extração de DNA ",
     "porte_cirurgiao": "1C",
     "cust_oper": "56,270 ",
     "n_aux": null,
@@ -24608,7 +24608,7 @@
   },
   {
     "codigo": 40501183,
-    "procedimento": "Líquido amniótico, vilosidades coriônicas, subcultura para dosagens bioquímicas e\/ou moleculares (adicional) ",
+    "procedimento": "Líquido amniótico, vilosidades coriônicas, subcultura para dosagens bioquímicas e/ou moleculares (adicional) ",
     "porte_cirurgiao": "1C",
     "cust_oper": "42,500 ",
     "n_aux": null,
@@ -24619,7 +24619,7 @@
   },
   {
     "codigo": 40501213,
-    "procedimento": "Pesquisa de Translocação PML\/RAR-a ",
+    "procedimento": "Pesquisa de Translocação PML/RAR-a ",
     "porte_cirurgiao": "1C",
     "cust_oper": "19,140 ",
     "n_aux": null,
@@ -24630,7 +24630,7 @@
   },
   {
     "codigo": 40501191,
-    "procedimento": "Subcultura de pele para dosagens bioquímicas e\/ou moleculares (adicional) ",
+    "procedimento": "Subcultura de pele para dosagens bioquímicas e/ou moleculares (adicional) ",
     "porte_cirurgiao": "1C",
     "cust_oper": "42,500 ",
     "n_aux": null,
@@ -25169,7 +25169,7 @@
   },
   {
     "codigo": 41401026,
-    "procedimento": "Avaliação da função muscular (por movimento) com equipamento mecânico (dinamometria\/módulos de cargas) ",
+    "procedimento": "Avaliação da função muscular (por movimento) com equipamento mecânico (dinamometria/módulos de cargas) ",
     "porte_cirurgiao": "1C",
     "cust_oper": "– ",
     "n_aux": null,
@@ -25620,7 +25620,7 @@
   },
   {
     "codigo": 30101859,
-    "procedimento": "Tratamento de anomalias pilosas a laser\/photoderm – por sessão ",
+    "procedimento": "Tratamento de anomalias pilosas a laser/photoderm – por sessão ",
     "porte_cirurgiao": "2A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -25631,7 +25631,7 @@
   },
   {
     "codigo": 30101905,
-    "procedimento": "Tratamento de lesões cutâneas e vasculares a laser\/photoderm – por sessão ",
+    "procedimento": "Tratamento de lesões cutâneas e vasculares a laser/photoderm – por sessão ",
     "porte_cirurgiao": "2A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -26643,7 +26643,7 @@
   },
   {
     "codigo": 20101457,
-    "procedimento": "Acompanhamento clínico ambulatorial de uveítes anteriores agudas e\/ou coriorretinites focal ou disseminada em atividade por avaliação do 1 ao 30º dia, até 5 avaliações, em consultório ",
+    "procedimento": "Acompanhamento clínico ambulatorial de uveítes anteriores agudas e/ou coriorretinites focal ou disseminada em atividade por avaliação do 1 ao 30º dia, até 5 avaliações, em consultório ",
     "porte_cirurgiao": "2B",
     "cust_oper": "– ",
     "n_aux": null,
@@ -26830,7 +26830,7 @@
   },
   {
     "codigo": 20202059,
-    "procedimento": "Potencial evocado intra-operatório – monitorização cirúrgica (PE\/IO) ",
+    "procedimento": "Potencial evocado intra-operatório – monitorização cirúrgica (PE/IO) ",
     "porte_cirurgiao": "2B",
     "cust_oper": "8,260 ",
     "n_aux": null,
@@ -27270,7 +27270,7 @@
   },
   {
     "codigo": 31004067,
-    "procedimento": "Dilatação digital ou instrumental do ânus e\/ou do reto ",
+    "procedimento": "Dilatação digital ou instrumental do ânus e/ou do reto ",
     "porte_cirurgiao": "2B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -27699,7 +27699,7 @@
   },
   {
     "codigo": 40323404,
-    "procedimento": "Hepatite E – IgM\/IgG ",
+    "procedimento": "Hepatite E – IgM/IgG ",
     "porte_cirurgiao": "2B",
     "cust_oper": "78,620 ",
     "n_aux": null,
@@ -27765,7 +27765,7 @@
   },
   {
     "codigo": 40502082,
-    "procedimento": "Dosagem quantitativa de metabólitos na urina e\/ou sangue para o diagnóstico de erros inatos do metabolismo (cada) ",
+    "procedimento": "Dosagem quantitativa de metabólitos na urina e/ou sangue para o diagnóstico de erros inatos do metabolismo (cada) ",
     "porte_cirurgiao": "2B",
     "cust_oper": "83,330 ",
     "n_aux": null,
@@ -27886,7 +27886,7 @@
   },
   {
     "codigo": 40703010,
-    "procedimento": "Cintilografia da tireoide e\/ou captação (iodo – 123) ",
+    "procedimento": "Cintilografia da tireoide e/ou captação (iodo – 123) ",
     "porte_cirurgiao": "2B",
     "cust_oper": "12,617 ",
     "n_aux": "0,1900 ",
@@ -27897,7 +27897,7 @@
   },
   {
     "codigo": 40703029,
-    "procedimento": "Cintilografia da tireoide e\/ou captação (iodo – 131) ",
+    "procedimento": "Cintilografia da tireoide e/ou captação (iodo – 131) ",
     "porte_cirurgiao": "2B",
     "cust_oper": "12,617 ",
     "n_aux": "0,1900 ",
@@ -27908,7 +27908,7 @@
   },
   {
     "codigo": 40703037,
-    "procedimento": "Cintilografia da tireoide e\/ou captação (tecnécio – 99m TC) ",
+    "procedimento": "Cintilografia da tireoide e/ou captação (tecnécio – 99m TC) ",
     "porte_cirurgiao": "2B",
     "cust_oper": "8,927 ",
     "n_aux": "0,1900 ",
@@ -28557,7 +28557,7 @@
   },
   {
     "codigo": 30723060,
-    "procedimento": "Fraturas e\/ou luxações do anel pélvico – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações do anel pélvico – redução incruenta ",
     "porte_cirurgiao": "2C",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -28579,7 +28579,7 @@
   },
   {
     "codigo": 30726115,
-    "procedimento": "Fraturas e\/ou luxações ao nível do joelho – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações ao nível do joelho – redução incruenta ",
     "porte_cirurgiao": "2C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -28667,7 +28667,7 @@
   },
   {
     "codigo": 31301088,
-    "procedimento": "Exérese de lesão da vulva e\/ou do períneo (por grupo de até 5 lesões) ",
+    "procedimento": "Exérese de lesão da vulva e/ou do períneo (por grupo de até 5 lesões) ",
     "porte_cirurgiao": "2C",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -28722,7 +28722,7 @@
   },
   {
     "codigo": 40202720,
-    "procedimento": "Retossigmoidoscopia rígida com biópsia e\/ou citologia ",
+    "procedimento": "Retossigmoidoscopia rígida com biópsia e/ou citologia ",
     "porte_cirurgiao": "2C",
     "cust_oper": "3,000 ",
     "n_aux": "– ",
@@ -29668,7 +29668,7 @@
   },
   {
     "codigo": 30726093,
-    "procedimento": "Fratura e\/ou luxação de patela (inclusive osteocondral) – redução incruenta ",
+    "procedimento": "Fratura e/ou luxação de patela (inclusive osteocondral) – redução incruenta ",
     "porte_cirurgiao": "3A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -29800,7 +29800,7 @@
   },
   {
     "codigo": 40103021,
-    "procedimento": "Análise computadorizada de papila e\/ou fibras nervosas – monocular ",
+    "procedimento": "Análise computadorizada de papila e/ou fibras nervosas – monocular ",
     "porte_cirurgiao": "3A",
     "cust_oper": "3,770 ",
     "n_aux": null,
@@ -31010,7 +31010,7 @@
   },
   {
     "codigo": 30722446,
-    "procedimento": "Fraturas e\/ou luxações de metacarpianos – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações de metacarpianos – redução incruenta ",
     "porte_cirurgiao": "3B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -31032,7 +31032,7 @@
   },
   {
     "codigo": 30724171,
-    "procedimento": "Fratura e\/ou luxação e\/ou avulsão coxo-femoral – redução incruenta ",
+    "procedimento": "Fratura e/ou luxação e/ou avulsão coxo-femoral – redução incruenta ",
     "porte_cirurgiao": "3B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -31428,7 +31428,7 @@
   },
   {
     "codigo": 40201066,
-    "procedimento": "Cistoscopia e\/ou uretroscopia ",
+    "procedimento": "Cistoscopia e/ou uretroscopia ",
     "porte_cirurgiao": "3B",
     "cust_oper": "2,780 ",
     "n_aux": "– ",
@@ -32385,7 +32385,7 @@
   },
   {
     "codigo": 30101468,
-    "procedimento": "Exérese de lesão \/ tumor de pele e mucosas ",
+    "procedimento": "Exérese de lesão / tumor de pele e mucosas ",
     "porte_cirurgiao": "3C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -32506,7 +32506,7 @@
   },
   {
     "codigo": 30501091,
-    "procedimento": "Corpos estranhos – retirada sob anestesia geral \/ hospital ",
+    "procedimento": "Corpos estranhos – retirada sob anestesia geral / hospital ",
     "porte_cirurgiao": "3C",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -32616,7 +32616,7 @@
   },
   {
     "codigo": 30722390,
-    "procedimento": "Fratura\/artrodese com fixador externo ",
+    "procedimento": "Fratura/artrodese com fixador externo ",
     "porte_cirurgiao": "3C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -33188,7 +33188,7 @@
   },
   {
     "codigo": 40202690,
-    "procedimento": "Retossigmoidoscopia flexível com biópsia e\/ou citologia ",
+    "procedimento": "Retossigmoidoscopia flexível com biópsia e/ou citologia ",
     "porte_cirurgiao": "3C",
     "cust_oper": "4,059 ",
     "n_aux": "– ",
@@ -34585,7 +34585,7 @@
   },
   {
     "codigo": 30501474,
-    "procedimento": "Corpos estranhos – retirada sob anestesia geral \/ hospital (nariz) – por videoendoscopia ",
+    "procedimento": "Corpos estranhos – retirada sob anestesia geral / hospital (nariz) – por videoendoscopia ",
     "porte_cirurgiao": "4A",
     "cust_oper": "33,800 ",
     "n_aux": "– ",
@@ -34651,7 +34651,7 @@
   },
   {
     "codigo": 30719097,
-    "procedimento": "Fraturas e\/ou luxações – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações – redução incruenta ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -34662,7 +34662,7 @@
   },
   {
     "codigo": 30720109,
-    "procedimento": "Fratura e\/ou luxações (incluindo descolamento epifisário) – redução incruenta ",
+    "procedimento": "Fratura e/ou luxações (incluindo descolamento epifisário) – redução incruenta ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -34673,7 +34673,7 @@
   },
   {
     "codigo": 30721180,
-    "procedimento": "Fraturas e\/ou luxações do punho – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações do punho – redução incruenta ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -34684,7 +34684,7 @@
   },
   {
     "codigo": 30722420,
-    "procedimento": "Fraturas e\/ou luxações de falanges (interfalangeanas) – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações de falanges (interfalangeanas) – redução incruenta ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -34717,7 +34717,7 @@
   },
   {
     "codigo": 30907152,
-    "procedimento": "Varizes – ressecção de colaterais com anestesia local em consultório\/ambulatório (por grupo de até 3 vasos) ",
+    "procedimento": "Varizes – ressecção de colaterais com anestesia local em consultório/ambulatório (por grupo de até 3 vasos) ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -34772,7 +34772,7 @@
   },
   {
     "codigo": 31303056,
-    "procedimento": "Curetagem ginecológica semiótica e\/ou terapêutica com ou sem dilatação de colo uterino ",
+    "procedimento": "Curetagem ginecológica semiótica e/ou terapêutica com ou sem dilatação de colo uterino ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -34904,7 +34904,7 @@
   },
   {
     "codigo": 40202437,
-    "procedimento": "Laringoscopia\/traqueoscopia para diagnóstico e biópsia com aparelho flexível ",
+    "procedimento": "Laringoscopia/traqueoscopia para diagnóstico e biópsia com aparelho flexível ",
     "porte_cirurgiao": "4A",
     "cust_oper": "13,000 ",
     "n_aux": "– ",
@@ -34937,7 +34937,7 @@
   },
   {
     "codigo": 40403017,
-    "procedimento": "Acompanhamento hospitalar\/dia do transplante de medula óssea por médico hematologista e\/ou hemoterapeuta ",
+    "procedimento": "Acompanhamento hospitalar/dia do transplante de medula óssea por médico hematologista e/ou hemoterapeuta ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "0 ",
@@ -35003,7 +35003,7 @@
   },
   {
     "codigo": 40809188,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura superficial orientada por RM, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura superficial orientada por RM, (não inclui o exame de base) ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -35014,7 +35014,7 @@
   },
   {
     "codigo": 40809153,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura superficial orientada por RX, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura superficial orientada por RX, (não inclui o exame de base) ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -35025,7 +35025,7 @@
   },
   {
     "codigo": 40809170,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura superficial orientada por TC, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura superficial orientada por TC, (não inclui o exame de base) ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -35036,7 +35036,7 @@
   },
   {
     "codigo": 40809161,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura superficial orientada por US, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura superficial orientada por US, (não inclui o exame de base) ",
     "porte_cirurgiao": "4A",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -35443,7 +35443,7 @@
   },
   {
     "codigo": 30913012,
-    "procedimento": "Implante de cateter venoso central por punção, para NPP, QT, Hemodepuração ou para infusão de soros\/drogas ",
+    "procedimento": "Implante de cateter venoso central por punção, para NPP, QT, Hemodepuração ou para infusão de soros/drogas ",
     "porte_cirurgiao": "4B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -35641,7 +35641,7 @@
   },
   {
     "codigo": 40202038,
-    "procedimento": "Endoscopia digestiva alta com biópsia e\/ou citologia ",
+    "procedimento": "Endoscopia digestiva alta com biópsia e/ou citologia ",
     "porte_cirurgiao": "4B",
     "cust_oper": "15,450 ",
     "n_aux": "– ",
@@ -35652,7 +35652,7 @@
   },
   {
     "codigo": 40202747,
-    "procedimento": "Endoscopia digestiva alta com cromoscopia e biópsia e\/ou citologia ",
+    "procedimento": "Endoscopia digestiva alta com cromoscopia e biópsia e/ou citologia ",
     "porte_cirurgiao": "4B",
     "cust_oper": "15,450 ",
     "n_aux": "– ",
@@ -35729,7 +35729,7 @@
   },
   {
     "codigo": 41401794,
-    "procedimento": "Teste de contato bateria medicamentos \/ corticoides ",
+    "procedimento": "Teste de contato bateria medicamentos / corticoides ",
     "porte_cirurgiao": "4B",
     "cust_oper": "6,070 ",
     "n_aux": null,
@@ -35971,7 +35971,7 @@
   },
   {
     "codigo": 30713145,
-    "procedimento": "Punção extra-articular diagnóstica ou terapêutica (infiltração\/ agulhamento seco). Quando orientada por RX, US, TC e RM, cobrar código correspondente ",
+    "procedimento": "Punção extra-articular diagnóstica ou terapêutica (infiltração/ agulhamento seco). Quando orientada por RX, US, TC e RM, cobrar código correspondente ",
     "porte_cirurgiao": "4C",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -35982,7 +35982,7 @@
   },
   {
     "codigo": 30717094,
-    "procedimento": "Fraturas e\/ou luxações e\/ou avulsões – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações e/ou avulsões – redução incruenta ",
     "porte_cirurgiao": "4C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -36004,7 +36004,7 @@
   },
   {
     "codigo": 30720141,
-    "procedimento": "Ressecção da cabeça do rádio e\/ou da extremidade distal ulna – tratamento cirúrgico ",
+    "procedimento": "Ressecção da cabeça do rádio e/ou da extremidade distal ulna – tratamento cirúrgico ",
     "porte_cirurgiao": "4C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -36202,7 +36202,7 @@
   },
   {
     "codigo": 30731100,
-    "procedimento": "Tenólise\/tendonese – tratamento cirúrgico ",
+    "procedimento": "Tenólise/tendonese – tratamento cirúrgico ",
     "porte_cirurgiao": "4C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -36763,7 +36763,7 @@
   },
   {
     "codigo": 40503178,
-    "procedimento": "Produção de DOT\/SLOT-BLOT, por BLOT, por amostra ",
+    "procedimento": "Produção de DOT/SLOT-BLOT, por BLOT, por amostra ",
     "porte_cirurgiao": "4C",
     "cust_oper": "12,540 ",
     "n_aux": null,
@@ -37137,7 +37137,7 @@
   },
   {
     "codigo": 30307031,
-    "procedimento": "Endolaser\/Endodiatermia ",
+    "procedimento": "Endolaser/Endodiatermia ",
     "porte_cirurgiao": "5A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -37401,7 +37401,7 @@
   },
   {
     "codigo": 30722047,
-    "procedimento": "Alongamento\/transporte ósseo com fixador externo ",
+    "procedimento": "Alongamento/transporte ósseo com fixador externo ",
     "porte_cirurgiao": "5A",
     "cust_oper": "– ",
     "n_aux": "3 ",
@@ -37445,7 +37445,7 @@
   },
   {
     "codigo": 30722276,
-    "procedimento": "Dedo em gatilho, capsulotomia \/ fasciotomia – tratamento cirúrgico ",
+    "procedimento": "Dedo em gatilho, capsulotomia / fasciotomia – tratamento cirúrgico ",
     "porte_cirurgiao": "5A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -37588,7 +37588,7 @@
   },
   {
     "codigo": 30911095,
-    "procedimento": "Cateterismo E e estudo cineangiográfico da aorta e\/ou seus ramos ",
+    "procedimento": "Cateterismo E e estudo cineangiográfico da aorta e/ou seus ramos ",
     "porte_cirurgiao": "5A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -37830,7 +37830,7 @@
   },
   {
     "codigo": 40202445,
-    "procedimento": "Laringoscopia\/traqueoscopia para intubação oro ou nasotraqueal ",
+    "procedimento": "Laringoscopia/traqueoscopia para intubação oro ou nasotraqueal ",
     "porte_cirurgiao": "5A",
     "cust_oper": "13,000 ",
     "n_aux": "– ",
@@ -38710,7 +38710,7 @@
   },
   {
     "codigo": 30715156,
-    "procedimento": "Fratura e\/ou luxação de coluna vertebral – redução incruenta ",
+    "procedimento": "Fratura e/ou luxação de coluna vertebral – redução incruenta ",
     "porte_cirurgiao": "5B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -38974,7 +38974,7 @@
   },
   {
     "codigo": 30918065,
-    "procedimento": "Punção transeptal com introdução de cateter multipolar nas câmaras esquerdas e\/ou veias pulmonares ",
+    "procedimento": "Punção transeptal com introdução de cateter multipolar nas câmaras esquerdas e/ou veias pulmonares ",
     "porte_cirurgiao": "5B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -39238,7 +39238,7 @@
   },
   {
     "codigo": 31306047,
-    "procedimento": "Perineorrafia (não obstétrica) e\/ou episiotomia e\/ou episiorrafia ",
+    "procedimento": "Perineorrafia (não obstétrica) e/ou episiotomia e/ou episiorrafia ",
     "porte_cirurgiao": "5B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -39458,7 +39458,7 @@
   },
   {
     "codigo": 40202364,
-    "procedimento": "Laringoscopia com microscopia para exérese de pólipo\/nódulo\/papiloma ",
+    "procedimento": "Laringoscopia com microscopia para exérese de pólipo/nódulo/papiloma ",
     "porte_cirurgiao": "5B",
     "cust_oper": "16,000 ",
     "n_aux": "–",
@@ -39623,7 +39623,7 @@
   },
   {
     "codigo": 30722012,
-    "procedimento": "Abscesso de mão e dedos – tenossinovites \/ espaços palmares \/ dorsais e comissurais – tratamento cirúrgico ",
+    "procedimento": "Abscesso de mão e dedos – tenossinovites / espaços palmares / dorsais e comissurais – tratamento cirúrgico ",
     "porte_cirurgiao": "5C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -39777,7 +39777,7 @@
   },
   {
     "codigo": 40103145,
-    "procedimento": "Variação de contingente negativo (PE\/Tardio) ",
+    "procedimento": "Variação de contingente negativo (PE/Tardio) ",
     "porte_cirurgiao": "5C",
     "cust_oper": "22,685 ",
     "n_aux": null,
@@ -40206,7 +40206,7 @@
   },
   {
     "codigo": 30722438,
-    "procedimento": "Fraturas e\/ou luxações de falanges (interfalangeanas) – tratamento cirúrgico ",
+    "procedimento": "Fraturas e/ou luxações de falanges (interfalangeanas) – tratamento cirúrgico ",
     "porte_cirurgiao": "6A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -40305,7 +40305,7 @@
   },
   {
     "codigo": 30727090,
-    "procedimento": "Epifisiodese de tíbia\/fíbula – tratamento cirúrgico ",
+    "procedimento": "Epifisiodese de tíbia/fíbula – tratamento cirúrgico ",
     "porte_cirurgiao": "6A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -40349,7 +40349,7 @@
   },
   {
     "codigo": 30731119,
-    "procedimento": "Tenoplastia \/ enxerto de tendão – tratamento cirúrgico ",
+    "procedimento": "Tenoplastia / enxerto de tendão – tratamento cirúrgico ",
     "porte_cirurgiao": "6A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -40426,7 +40426,7 @@
   },
   {
     "codigo": 30913152,
-    "procedimento": "Retirada\/desativação de fístula AV para hemodiálise ",
+    "procedimento": "Retirada/desativação de fístula AV para hemodiálise ",
     "porte_cirurgiao": "6A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -40459,7 +40459,7 @@
   },
   {
     "codigo": 31002056,
-    "procedimento": "Gastrostomia confecção \/ fechamento ",
+    "procedimento": "Gastrostomia confecção / fechamento ",
     "porte_cirurgiao": "6A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41196,7 +41196,7 @@
   },
   {
     "codigo": 31303153,
-    "procedimento": "Traquelectomia – amputação, conização – (com ou sem cirurgia de alta frequência \/ CAF) ",
+    "procedimento": "Traquelectomia – amputação, conização – (com ou sem cirurgia de alta frequência / CAF) ",
     "porte_cirurgiao": "6B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41295,7 +41295,7 @@
   },
   {
     "codigo": 40202666,
-    "procedimento": "Colonoscopia com biópsia e\/ou citologia ",
+    "procedimento": "Colonoscopia com biópsia e/ou citologia ",
     "porte_cirurgiao": "6B",
     "cust_oper": "15,450 ",
     "n_aux": "– ",
@@ -41405,7 +41405,7 @@
   },
   {
     "codigo": 30720095,
-    "procedimento": "Fratura e\/ou luxações (incluindo descolamento epifisário cotovelo-punho) – tratamento cirúrgico ",
+    "procedimento": "Fratura e/ou luxações (incluindo descolamento epifisário cotovelo-punho) – tratamento cirúrgico ",
     "porte_cirurgiao": "6C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41427,7 +41427,7 @@
   },
   {
     "codigo": 30721199,
-    "procedimento": "Fraturas e\/ou luxações do punho – tratamento cirúrgico ",
+    "procedimento": "Fraturas e/ou luxações do punho – tratamento cirúrgico ",
     "porte_cirurgiao": "6C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41460,7 +41460,7 @@
   },
   {
     "codigo": 30728118,
-    "procedimento": "Fraturas e\/ou luxações ao nível do tornozelo – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações ao nível do tornozelo – redução incruenta ",
     "porte_cirurgiao": "6C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41471,7 +41471,7 @@
   },
   {
     "codigo": 30729165,
-    "procedimento": "Fraturas e\/ou luxações do antepé – redução incruenta ",
+    "procedimento": "Fraturas e/ou luxações do antepé – redução incruenta ",
     "porte_cirurgiao": "6C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41482,7 +41482,7 @@
   },
   {
     "codigo": 30729149,
-    "procedimento": "Fratura e\/ou luxações do pé (exceto antepé) – redução incruenta ",
+    "procedimento": "Fratura e/ou luxações do pé (exceto antepé) – redução incruenta ",
     "porte_cirurgiao": "6C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -41570,7 +41570,7 @@
   },
   {
     "codigo": 40103188,
-    "procedimento": "EEG intra-operatório para monitorização cirúrgica (EEG\/IO) – por hora de monitorização ",
+    "procedimento": "EEG intra-operatório para monitorização cirúrgica (EEG/IO) – por hora de monitorização ",
     "porte_cirurgiao": "6C",
     "cust_oper": "53,941 ",
     "n_aux": null,
@@ -42285,7 +42285,7 @@
   },
   {
     "codigo": 40202372,
-    "procedimento": "Laringoscopia com retirada de corpo estranho de laringe\/faringe (tubo flexível) ",
+    "procedimento": "Laringoscopia com retirada de corpo estranho de laringe/faringe (tubo flexível) ",
     "porte_cirurgiao": "7A",
     "cust_oper": "21,501 ",
     "n_aux": "– ",
@@ -42296,7 +42296,7 @@
   },
   {
     "codigo": 40202429,
-    "procedimento": "Laringoscopia\/traqueoscopia para diagnóstico e biópsia (tubo rígido) ",
+    "procedimento": "Laringoscopia/traqueoscopia para diagnóstico e biópsia (tubo rígido) ",
     "porte_cirurgiao": "7A",
     "cust_oper": "21,501 ",
     "n_aux": "– ",
@@ -42318,7 +42318,7 @@
   },
   {
     "codigo": 40601056,
-    "procedimento": "Necrópsia de embrião\/feto até 500 gramas ",
+    "procedimento": "Necrópsia de embrião/feto até 500 gramas ",
     "porte_cirurgiao": "7A",
     "cust_oper": "5,800 ",
     "n_aux": null,
@@ -42417,7 +42417,7 @@
   },
   {
     "codigo": 30726107,
-    "procedimento": "Fratura e\/ou luxação de patela – tratamento cirúrgico ",
+    "procedimento": "Fratura e/ou luxação de patela – tratamento cirúrgico ",
     "porte_cirurgiao": "7B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -42461,7 +42461,7 @@
   },
   {
     "codigo": 30729025,
-    "procedimento": "Amputação\/desarticulação de pododáctilos (por segmento) – tratamento cirúrgico ",
+    "procedimento": "Amputação/desarticulação de pododáctilos (por segmento) – tratamento cirúrgico ",
     "porte_cirurgiao": "7B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -42505,7 +42505,7 @@
   },
   {
     "codigo": 30911133,
-    "procedimento": "Estudo hemodinâmico de cardiopatias congênitas e\/ou valvopatias com ou sem cinecoronariografia ou oximetria ",
+    "procedimento": "Estudo hemodinâmico de cardiopatias congênitas e/ou valvopatias com ou sem cinecoronariografia ou oximetria ",
     "porte_cirurgiao": "7B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -42945,7 +42945,7 @@
   },
   {
     "codigo": 30306060,
-    "procedimento": "Implante secundário \/ explante \/ fixação escleral ou iriana ",
+    "procedimento": "Implante secundário / explante / fixação escleral ou iriana ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -43253,7 +43253,7 @@
   },
   {
     "codigo": 30722144,
-    "procedimento": "Artroplastia interfalangeana \/ metacarpofalangeana – tratamento cirúrgico ",
+    "procedimento": "Artroplastia interfalangeana / metacarpofalangeana – tratamento cirúrgico ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -43286,7 +43286,7 @@
   },
   {
     "codigo": 30727014,
-    "procedimento": "Alongamento \/ transporte ósseo \/ pseudoartrose com fixador externo ",
+    "procedimento": "Alongamento / transporte ósseo / pseudoartrose com fixador externo ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -43385,7 +43385,7 @@
   },
   {
     "codigo": 30911044,
-    "procedimento": "Cateterismo cardíaco D e\/ou E com ou sem cinecoronariografia \/ cineangiografia com avaliação de reatividade vascular pulmonar ou teste de sobrecarga hemodinânica ",
+    "procedimento": "Cateterismo cardíaco D e/ou E com ou sem cinecoronariografia / cineangiografia com avaliação de reatividade vascular pulmonar ou teste de sobrecarga hemodinânica ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -43396,7 +43396,7 @@
   },
   {
     "codigo": 30911079,
-    "procedimento": "Cateterismo cardíaco E e\/ou D com cineangiocoronariografia e ventriculografia ",
+    "procedimento": "Cateterismo cardíaco E e/ou D com cineangiocoronariografia e ventriculografia ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -43418,7 +43418,7 @@
   },
   {
     "codigo": 30911141,
-    "procedimento": "Estudo por imagem intravascular e\/ou intracavitário do coração ",
+    "procedimento": "Estudo por imagem intravascular e/ou intracavitário do coração ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -43528,7 +43528,7 @@
   },
   {
     "codigo": 31005330,
-    "procedimento": "Radioablação \/ termoablação de tumores hepáticos ",
+    "procedimento": "Radioablação / termoablação de tumores hepáticos ",
     "porte_cirurgiao": "7C",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -44001,7 +44001,7 @@
   },
   {
     "codigo": 30311039,
-    "procedimento": "Estrabismo ciclo vertical\/transposição – monocular ",
+    "procedimento": "Estrabismo ciclo vertical/transposição – monocular ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -44122,7 +44122,7 @@
   },
   {
     "codigo": 30602289,
-    "procedimento": "Ressecção do linfonodo sentinela \/ torácica lateral ",
+    "procedimento": "Ressecção do linfonodo sentinela / torácica lateral ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -44199,7 +44199,7 @@
   },
   {
     "codigo": 30717345,
-    "procedimento": "Tenotomia\/tenodese do cabo longo do bíceps – cirurgia aberta ",
+    "procedimento": "Tenotomia/tenodese do cabo longo do bíceps – cirurgia aberta ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -44287,7 +44287,7 @@
   },
   {
     "codigo": 30726140,
-    "procedimento": "Lesões agudas e\/ou luxações de meniscos (1 ou ambos) – tratamento cirúrgico ",
+    "procedimento": "Lesões agudas e/ou luxações de meniscos (1 ou ambos) – tratamento cirúrgico ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -44397,7 +44397,7 @@
   },
   {
     "codigo": 30728126,
-    "procedimento": "Tratamento cirúrgico da fratura de um maléolo e\/ou luxações ao nível do tornozelo ",
+    "procedimento": "Tratamento cirúrgico da fratura de um maléolo e/ou luxações ao nível do tornozelo ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -44430,7 +44430,7 @@
   },
   {
     "codigo": 30729203,
-    "procedimento": "Osteotomia ou pseudoartrose dos metatarsos\/falanges – tratamento cirúrgico ",
+    "procedimento": "Osteotomia ou pseudoartrose dos metatarsos/falanges – tratamento cirúrgico ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -44595,7 +44595,7 @@
   },
   {
     "codigo": 30911087,
-    "procedimento": "Cateterismo cardíaco E e\/ou D com cineangiocoronariografia, ventriculografia e estudo angiográfico da aorta e\/ou ramos tóraco-abdominais e\/ou membros ",
+    "procedimento": "Cateterismo cardíaco E e/ou D com cineangiocoronariografia, ventriculografia e estudo angiográfico da aorta e/ou ramos tóraco-abdominais e/ou membros ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -44705,7 +44705,7 @@
   },
   {
     "codigo": 31003320,
-    "procedimento": "Enterotomia e\/ou enterorrafia de qualquer segmento (por sutura ou ressecção) ",
+    "procedimento": "Enterotomia e/ou enterorrafia de qualquer segmento (por sutura ou ressecção) ",
     "porte_cirurgiao": "8A",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -45090,7 +45090,7 @@
   },
   {
     "codigo": 31303170,
-    "procedimento": "Histeroscopia cirúrgica com biópsia e\/ou curetagem uterina, lise de sinéquias, retirada de corpo estranho ",
+    "procedimento": "Histeroscopia cirúrgica com biópsia e/ou curetagem uterina, lise de sinéquias, retirada de corpo estranho ",
     "porte_cirurgiao": "8A",
     "cust_oper": "24,330 ",
     "n_aux": "1 ",
@@ -45299,7 +45299,7 @@
   },
   {
     "codigo": 40202399,
-    "procedimento": "Laringoscopia\/traqueoscopia com exérese de pólipo\/nódulo\/papiloma ",
+    "procedimento": "Laringoscopia/traqueoscopia com exérese de pólipo/nódulo/papiloma ",
     "porte_cirurgiao": "8A",
     "cust_oper": "52,000 ",
     "n_aux": "– ",
@@ -45310,7 +45310,7 @@
   },
   {
     "codigo": 40202763,
-    "procedimento": "Laringoscopia\/traqueoscopia com laser para exérese de papiloma\/tumor ",
+    "procedimento": "Laringoscopia/traqueoscopia com laser para exérese de papiloma/tumor ",
     "porte_cirurgiao": "8A",
     "cust_oper": "52,000 ",
     "n_aux": "1 ",
@@ -45750,7 +45750,7 @@
   },
   {
     "codigo": 30721024,
-    "procedimento": "Alongamento do rádio\/ulna – tratamento cirúrgico ",
+    "procedimento": "Alongamento do rádio/ulna – tratamento cirúrgico ",
     "porte_cirurgiao": "8B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -45772,7 +45772,7 @@
   },
   {
     "codigo": 30721121,
-    "procedimento": "Encurtamento rádio\/ulnar ",
+    "procedimento": "Encurtamento rádio/ulnar ",
     "porte_cirurgiao": "8B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -45783,7 +45783,7 @@
   },
   {
     "codigo": 30722110,
-    "procedimento": "Artrodese interfalangeana \/ metacarpofalangeana – tratamento cirúrgico ",
+    "procedimento": "Artrodese interfalangeana / metacarpofalangeana – tratamento cirúrgico ",
     "porte_cirurgiao": "8B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -45827,7 +45827,7 @@
   },
   {
     "codigo": 30724023,
-    "procedimento": "Artrodese \/ fratura de acetábulo (ligamentotaxia) com fixador externo ",
+    "procedimento": "Artrodese / fratura de acetábulo (ligamentotaxia) com fixador externo ",
     "porte_cirurgiao": "8B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -45849,7 +45849,7 @@
   },
   {
     "codigo": 30725011,
-    "procedimento": "Alongamento \/ transporte ósseo \/ pseudoartrose com fixador externo ",
+    "procedimento": "Alongamento / transporte ósseo / pseudoartrose com fixador externo ",
     "porte_cirurgiao": "8B",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -46718,7 +46718,7 @@
   },
   {
     "codigo": 30602297,
-    "procedimento": "Ressecção do linfonodo sentinela \/ torácica medial ",
+    "procedimento": "Ressecção do linfonodo sentinela / torácica medial ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -46795,7 +46795,7 @@
   },
   {
     "codigo": 30719216,
-    "procedimento": "Reinserção do tendão distal do bíceps\/tríceps ",
+    "procedimento": "Reinserção do tendão distal do bíceps/tríceps ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -46817,7 +46817,7 @@
   },
   {
     "codigo": 30719232,
-    "procedimento": "Ressecção parcial do olecrâneo\/cabeça do rádio ",
+    "procedimento": "Ressecção parcial do olecrâneo/cabeça do rádio ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -46905,7 +46905,7 @@
   },
   {
     "codigo": 30727170,
-    "procedimento": "Transposição de fíbula\/tíbia – tratamento cirúrgico ",
+    "procedimento": "Transposição de fíbula/tíbia – tratamento cirúrgico ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -47114,7 +47114,7 @@
   },
   {
     "codigo": 30904102,
-    "procedimento": "Recolocação de eletrodo \/ gerador com ou sem troca de unidades ",
+    "procedimento": "Recolocação de eletrodo / gerador com ou sem troca de unidades ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -47136,7 +47136,7 @@
   },
   {
     "codigo": 30911052,
-    "procedimento": "Cateterismo cardíaco D e\/ou E com estudo cineangiográfico e de revascularização cirúrgica do miocárdio ",
+    "procedimento": "Cateterismo cardíaco D e/ou E com estudo cineangiográfico e de revascularização cirúrgica do miocárdio ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -47213,7 +47213,7 @@
   },
   {
     "codigo": 30915040,
-    "procedimento": "Pericardiotomia \/ Pericardiectomia ",
+    "procedimento": "Pericardiotomia / Pericardiectomia ",
     "porte_cirurgiao": "8C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48115,7 +48115,7 @@
   },
   {
     "codigo": 30717329,
-    "procedimento": "Reparo aberto da ruptura manguito rotador (parcial ou transfixante\/completa de 1 tendão) ",
+    "procedimento": "Reparo aberto da ruptura manguito rotador (parcial ou transfixante/completa de 1 tendão) ",
     "porte_cirurgiao": "9A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48159,7 +48159,7 @@
   },
   {
     "codigo": 30718090,
-    "procedimento": "Pseudoartroses, osteotomias, alongamentos\/encurtamentos – tratamento cirúrgico ",
+    "procedimento": "Pseudoartroses, osteotomias, alongamentos/encurtamentos – tratamento cirúrgico ",
     "porte_cirurgiao": "9A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48313,7 +48313,7 @@
   },
   {
     "codigo": 30723086,
-    "procedimento": "Osteotomias \/ artrodeses – tratamento cirúrgico ",
+    "procedimento": "Osteotomias / artrodeses – tratamento cirúrgico ",
     "porte_cirurgiao": "9A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48489,7 +48489,7 @@
   },
   {
     "codigo": 30727162,
-    "procedimento": "Osteotomias e\/ou pseudoartroses – tratamento cirúrgico ",
+    "procedimento": "Osteotomias e/ou pseudoartroses – tratamento cirúrgico ",
     "porte_cirurgiao": "9A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48511,7 +48511,7 @@
   },
   {
     "codigo": 30728215,
-    "procedimento": "Tratamento cirúrgico da fratura de dois maléolos e\/ou luxações ao nível do tornozelo ",
+    "procedimento": "Tratamento cirúrgico da fratura de dois maléolos e/ou luxações ao nível do tornozelo ",
     "porte_cirurgiao": "9A",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -48742,7 +48742,7 @@
   },
   {
     "codigo": 31005640,
-    "procedimento": "Radioablação \/ termoablação de tumores hepáticos por videolaparoscopia ",
+    "procedimento": "Radioablação / termoablação de tumores hepáticos por videolaparoscopia ",
     "porte_cirurgiao": "9A",
     "cust_oper": "28,390 ",
     "n_aux": "– ",
@@ -49061,7 +49061,7 @@
   },
   {
     "codigo": 40601048,
-    "procedimento": "Necrópsia de adulto\/criança e natimorto com suspeita de anomalia genética ",
+    "procedimento": "Necrópsia de adulto/criança e natimorto com suspeita de anomalia genética ",
     "porte_cirurgiao": "9A",
     "cust_oper": "16,000 ",
     "n_aux": null,
@@ -49864,7 +49864,7 @@
   },
   {
     "codigo": 30722853,
-    "procedimento": "Tratamento cirúrgico da polidactilia múltipla e\/ou complexa ",
+    "procedimento": "Tratamento cirúrgico da polidactilia múltipla e/ou complexa ",
     "porte_cirurgiao": "9B",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -50612,7 +50612,7 @@
   },
   {
     "codigo": 40202496,
-    "procedimento": "Papilotomia biópsia e\/ou citologia biliar e pancreática ",
+    "procedimento": "Papilotomia biópsia e/ou citologia biliar e pancreática ",
     "porte_cirurgiao": "9B",
     "cust_oper": "30,517 ",
     "n_aux": "1 ",
@@ -50645,7 +50645,7 @@
   },
   {
     "codigo": 40809196,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura profunda orientada por RM, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura profunda orientada por RM, (não inclui o exame de base) ",
     "porte_cirurgiao": "9B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -50656,7 +50656,7 @@
   },
   {
     "codigo": 40809200,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura profunda orientada por RX, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura profunda orientada por RX, (não inclui o exame de base) ",
     "porte_cirurgiao": "9B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -50667,7 +50667,7 @@
   },
   {
     "codigo": 40809218,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura profunda orientada por TC, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura profunda orientada por TC, (não inclui o exame de base) ",
     "porte_cirurgiao": "9B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -50678,7 +50678,7 @@
   },
   {
     "codigo": 40809226,
-    "procedimento": "Punção biópsia\/aspirativa de órgão ou estrutura profunda orientada por US, (não inclui o exame de base) ",
+    "procedimento": "Punção biópsia/aspirativa de órgão ou estrutura profunda orientada por US, (não inclui o exame de base) ",
     "porte_cirurgiao": "9B",
     "cust_oper": "– ",
     "n_aux": "– ",
@@ -50920,7 +50920,7 @@
   },
   {
     "codigo": 30312035,
-    "procedimento": "Exérese de tumor de coroide e\/ou corpo ciliar ",
+    "procedimento": "Exérese de tumor de coroide e/ou corpo ciliar ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "1 ",
@@ -51041,7 +51041,7 @@
   },
   {
     "codigo": 30602262,
-    "procedimento": "Reconstrução da mama com prótese e\/ou expansor ",
+    "procedimento": "Reconstrução da mama com prótese e/ou expansor ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51074,7 +51074,7 @@
   },
   {
     "codigo": 30715091,
-    "procedimento": "Descompressão medular e\/ou cauda equina ",
+    "procedimento": "Descompressão medular e/ou cauda equina ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51228,7 +51228,7 @@
   },
   {
     "codigo": 30719291,
-    "procedimento": "Tratamento da fratura do úmero distal intra-articular (capítulo e\/ ou tróclea) ",
+    "procedimento": "Tratamento da fratura do úmero distal intra-articular (capítulo e/ ou tróclea) ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51261,7 +51261,7 @@
   },
   {
     "codigo": 30723051,
-    "procedimento": "Tratamento cirúrgico das fraturas e\/ou luxações do anel pélvico (com uma ou mais abordagens) ",
+    "procedimento": "Tratamento cirúrgico das fraturas e/ou luxações do anel pélvico (com uma ou mais abordagens) ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51283,7 +51283,7 @@
   },
   {
     "codigo": 30724180,
-    "procedimento": "Fratura e\/ou luxação e\/ou avulsão coxo-femoral – tratamento cirúrgico ",
+    "procedimento": "Fratura e/ou luxação e/ou avulsão coxo-femoral – tratamento cirúrgico ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51316,7 +51316,7 @@
   },
   {
     "codigo": 30725151,
-    "procedimento": "Pseudoartroses e\/ou osteotomias – tratamento cirúrgico ",
+    "procedimento": "Pseudoartroses e/ou osteotomias – tratamento cirúrgico ",
     "porte_cirurgiao": "9C",
     "cust_oper": "– ",
     "n_aux": "2 ",
@@ -51360,7 +51360,7 @@
   },
   {
     "codigo": 30733081,
-    "procedimento": "Fratura com redução e\/ou estabilização da superfície articular – um compartimento # ",
+    "procedimento": "Fratura com redução e/ou estabilização da superfície articular – um compartimento # ",
     "porte_cirurgiao": "9C",
     "cust_oper": "33,800 ",
     "n_aux": "1 ",
@@ -51536,7 +51536,7 @@
   },
   {
     "codigo": 30738024,
-    "procedimento": "Sinovectomia parcial e\/ou remoção de corpos livres ",
+    "procedimento": "Sinovectomia parcial e/ou remoção de corpos livres ",
     "porte_cirurgiao": "9C",
     "cust_oper": "33,800 ",
     "n_aux": "1 ",

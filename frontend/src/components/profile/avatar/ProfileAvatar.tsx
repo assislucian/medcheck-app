@@ -65,7 +65,9 @@ export const ProfileAvatar = ({
 
       <label
         htmlFor="avatar-upload"
-        className={`absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-200 ${isHovering || uploading ? 'opacity-100' : ''}`}
+        className={`absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-200 ${
+          isHovering || uploading ? 'opacity-100' : ''
+        }`}
       >
         {uploading ? (
           <div className="h-8 w-8 border-2 border-t-white border-r-transparent border-b-white border-l-transparent rounded-full animate-spin" />

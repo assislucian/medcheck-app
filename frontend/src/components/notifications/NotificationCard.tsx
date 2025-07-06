@@ -72,7 +72,9 @@ export const NotificationCard = ({
           <span className="font-medium">{notification.title}</span>
         </div>
         <div
-          className={`transition-opacity duration-200 ${isHovering || !fullWidth ? 'opacity-100' : 'opacity-0'}`}
+          className={`transition-opacity duration-200 ${
+            isHovering || !fullWidth ? 'opacity-100' : 'opacity-0'
+          }`}
         >
           {!notification.read ? (
             <Button

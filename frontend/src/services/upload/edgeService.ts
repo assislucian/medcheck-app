@@ -103,7 +103,9 @@ export async function processFiles(
       setCurrentAnalysis(processingData.extractedData, processingData.analysisId);
 
       toast.success('Processamento concluído', {
-        description: `Foram processados ${processingData.proceduresCount || 0} procedimentos.`,
+        description: `Foram processados ${
+          processingData.proceduresCount || 0
+        } procedimentos.`,
       });
 
       return {

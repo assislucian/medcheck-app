@@ -119,7 +119,9 @@ async function saveAnalysisHistory(
             ? 'Guia'
             : 'Demonstrativo',
       hospital: extractedData.demonstrativoInfo?.hospital || null,
-      description: `${extractedData.demonstrativoInfo?.hospital || 'Hospital'} - ${extractedData.demonstrativoInfo?.competencia || 'Competência não informada'}`,
+      description: `${extractedData.demonstrativoInfo?.hospital || 'Hospital'} - ${
+        extractedData.demonstrativoInfo?.competencia || 'Competência não informada'
+      }`,
       procedimentos: extractedData.procedimentos?.length || 0,
       glosados: extractedData.totais?.procedimentosNaoPagos || 0,
       status: 'Analisado',

@@ -105,7 +105,9 @@ export function HistoryTable({ items }: HistoryTableProps) {
                     <TableCell className="text-center">{item.procedimentos}</TableCell>
                     <TableCell className="text-center">
                       <span
-                        className={`font-medium ${item.glosados > 0 ? 'text-destructive' : 'text-success'}`}
+                        className={`font-medium ${
+                          item.glosados > 0 ? 'text-destructive' : 'text-success'
+                        }`}
                       >
                         {item.glosados}
                       </span>

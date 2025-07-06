@@ -119,7 +119,9 @@ export const TicketDetail = ({
               messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.sent_by_user ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${
+                    message.sent_by_user ? 'justify-end' : 'justify-start'
+                  }`}
                 >
                   <div
                     className={`rounded-lg p-3 max-w-[80%] ${
