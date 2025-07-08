@@ -254,3 +254,185 @@ Para reportar vulnerabilidades de segurança:
 **🔒 Sistema auditado e aprovado para uso profissional**  
 **Data da auditoria:** 2025-01-14  
 **Próxima revisão:** 2025-04-14
+
+# Security Policy
+
+## 🔒 Supported Versions
+
+| Version | Supported |
+| ------- | --------- |
+| Latest  | ✅ Yes    |
+| < 1.0   | ❌ No     |
+
+## 🛡️ Security Features
+
+### Frontend Security
+
+- ✅ **No vulnerabilities** - All dependencies audited and secure
+- ✅ **ExcelJS** - Replaced vulnerable xlsx with secure alternative
+- ✅ **Vite 6.3.5+** - Latest secure version
+- ✅ **ESLint security rules** - Automated security linting
+- ✅ **Dependency scanning** - Daily automated vulnerability checks
+
+### Backend Security
+
+- ✅ **Safety scanning** - Python dependencies audited with Safety
+- ✅ **Bandit analysis** - Static security analysis for Python
+- ✅ **Pillow 11.3.0** - Latest secure image processing library
+- ✅ **JWT authentication** - Secure token-based authentication
+- ✅ **Rate limiting** - Protection against abuse
+- ✅ **Input validation** - Pydantic models for data validation
+
+### Infrastructure Security
+
+- ✅ **HTTPS only** - All communications encrypted
+- ✅ **CORS protection** - Restricted to trusted domains
+- ✅ **Environment variables** - Secrets properly managed
+- ✅ **CodeQL analysis** - GitHub security scanning
+- ✅ **Dependabot** - Automated dependency updates
+
+## 🚨 Reporting Security Vulnerabilities
+
+We take security seriously. If you discover a security vulnerability, please follow these steps:
+
+### For Critical Vulnerabilities
+
+1. **DO NOT** create a public issue
+2. Email: assislucian@gmail.com
+3. Include detailed description and reproduction steps
+4. We will respond within 24 hours
+
+### For Non-Critical Issues
+
+1. Create a private security advisory on GitHub
+2. Use the "Security" tab in the repository
+3. Follow the security advisory template
+
+## 🔍 Security Monitoring
+
+### Automated Monitoring
+
+- **Daily security scans** at 2 AM UTC
+- **Dependency updates** every Monday
+- **CodeQL analysis** on every push/PR
+- **Pre-deployment security checks**
+
+### Manual Reviews
+
+- Security review for all PRs
+- Monthly security assessment
+- Quarterly dependency audit
+
+## 📋 Security Checklist
+
+### For Developers
+
+- [ ] Run `npm audit` before committing frontend changes
+- [ ] Run `safety check` before committing backend changes
+- [ ] Never commit secrets or API keys
+- [ ] Use environment variables for configuration
+- [ ] Follow secure coding practices
+- [ ] Update dependencies regularly
+
+### For Deployments
+
+- [ ] Security scans passed
+- [ ] All tests passing
+- [ ] No high/critical vulnerabilities
+- [ ] Environment variables configured
+- [ ] HTTPS enabled
+- [ ] CORS properly configured
+
+## 🛠️ Security Tools
+
+### Frontend
+
+```bash
+cd frontend
+npm audit                    # Security audit
+npm audit fix               # Auto-fix vulnerabilities
+npx eslint src/ --fix       # Security linting
+```
+
+### Backend
+
+```bash
+safety check                # Python dependency audit
+bandit -r src/             # Static security analysis
+pip-audit                  # Alternative dependency scanner
+```
+
+### Full Security Suite
+
+```bash
+# Install security tools
+pip install safety bandit pip-audit
+npm install -g audit-ci
+
+# Run complete security audit
+./scripts/security-audit.sh
+```
+
+## 📚 Security Best Practices
+
+### Code Security
+
+1. **Input Validation**: Always validate user inputs
+2. **SQL Injection Prevention**: Use parameterized queries
+3. **XSS Prevention**: Sanitize outputs and use CSP
+4. **Authentication**: Implement secure JWT handling
+5. **Authorization**: Check permissions on every request
+
+### Infrastructure Security
+
+1. **Environment Separation**: Dev/staging/prod isolation
+2. **Secret Management**: Use environment variables
+3. **Logging**: Comprehensive security logging
+4. **Monitoring**: Real-time security alerts
+5. **Backup**: Regular encrypted backups
+
+### Dependency Security
+
+1. **Regular Updates**: Keep dependencies current
+2. **Vulnerability Scanning**: Automated daily scans
+3. **License Compliance**: Ensure compatible licenses
+4. **Minimal Dependencies**: Use only necessary packages
+5. **Trusted Sources**: Verify package integrity
+
+## 🔄 Incident Response
+
+### Detection
+
+1. Automated alerts from security tools
+2. User reports of suspicious activity
+3. Manual security reviews
+
+### Response Process
+
+1. **Immediate**: Assess severity and impact
+2. **Short-term**: Implement temporary fixes
+3. **Long-term**: Develop permanent solutions
+4. **Communication**: Notify stakeholders
+5. **Documentation**: Record lessons learned
+
+## 📈 Security Metrics
+
+We track the following security metrics:
+
+- Time to patch critical vulnerabilities: < 24 hours
+- Time to patch high vulnerabilities: < 7 days
+- Dependency update frequency: Weekly
+- Security scan coverage: 100%
+- False positive rate: < 5%
+
+## 🤝 Security Community
+
+- Follow security best practices from OWASP
+- Participate in responsible disclosure
+- Contribute to security improvements
+- Share security knowledge with the team
+
+---
+
+**Last Updated**: January 2025  
+**Next Review**: April 2025

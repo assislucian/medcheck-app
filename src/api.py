@@ -409,7 +409,7 @@ def decode_jwt(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload
-    except jwt.PyJWTError:
+    except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido ou expirado")
 
 
@@ -2678,3 +2678,119 @@ def calculate_file_hash(path):
 
 
 # redeploy for demonstrativos columns
+
+
+# TEMPORARY ENDPOINT FOR TESTING - Remove after debugging
+@app.get("/api/v1/test-demonstrativo-detalhes")
+def test_demonstrativo_detalhes():
+    """
+    Endpoint temporário para testar se o frontend consegue receber e exibir dados corretos.
+    Retorna dados mockados que sabemos que funcionam.
+    """
+    return [
+        {
+            "guia": "10467538",
+            "data": "19/08/2024",
+            "paciente": "THAYSE BORGES",
+            "codigo": "30602203",
+            "descricao": "Quadrantectomia Ressecção Se",
+            "papel_exercido": "Primeiro Auxiliar",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 156.57,
+                "approved_value": 156.57,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 200.691,
+            "diferenca": -44.121,
+            "delta_percent": -22.0,
+        },
+        {
+            "guia": "10467538",
+            "data": "19/08/2024",
+            "paciente": "THAYSE BORGES",
+            "codigo": "30602246",
+            "descricao": "Reconstrução Mamária Com Retal",
+            "papel_exercido": "Primeiro Auxiliar",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 228.82,
+                "approved_value": 228.82,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 308.592,
+            "diferenca": -79.772,
+            "delta_percent": -25.9,
+        },
+        {
+            "guia": "10714706",
+            "data": "05/09/2024",
+            "paciente": "NUBIA KATIA PEREIRA",
+            "codigo": "30602173",
+            "descricao": "Mastoplastia Em Mama Oposta Ap",
+            "papel_exercido": "Cirurgiao",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 558.92,
+                "approved_value": 558.92,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 722.16,
+            "diferenca": -163.24,
+            "delta_percent": -22.6,
+        },
+    ]

@@ -37,39 +37,45 @@ export default defineConfig(({ mode }) => ({
 
   // Configurações de build otimizadas para Vercel
   build: {
-    target: 'esnext',
-    minify: 'esbuild',
-    chunkSizeWarningLimit: 1600,
-    sourcemap: false, // Desabilita sourcemaps em produção para reduzir tamanho
+    outDir: 'dist',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           ui: [
             '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            'lucide-react',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tabs',
           ],
           router: ['react-router-dom'],
           forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
-          pdf: ['jspdf', 'jspdf-autotable'],
-          excel: ['xlsx'],
+          utils: ['date-fns', 'clsx', 'classnames'],
+          query: ['@tanstack/react-query'],
+          supabase: ['@supabase/supabase-js'],
+          chart: ['recharts'],
+          pdf: ['jspdf', 'jspdf-autotable', 'pdfjs-dist'],
+          excel: ['exceljs'],
         },
-        // Otimiza nomes de arquivos para cache
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash].[ext]',
+      },
+    },
+    sourcemap: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
       },
     },
   },
 
   // Otimizações para dependências
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'xlsx'],
-    exclude: ['@vercel/analytics'],
+    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'exceljs'],
+    exclude: ['@supabase/supabase-js'],
   },
   ssr: {
-    noExternal: ['jspdf', 'jspdf-autotable', 'xlsx'],
+    noExternal: ['jspdf', 'jspdf-autotable', 'exceljs'],
   },
   resolve: {
     alias: {
@@ -95,5 +101,10 @@ export default defineConfig(({ mode }) => ({
       'src/test/smoke/**',
       'src/test/layout-*.e2e.ts',
     ],
+  },
+
+  preview: {
+    port: 8080,
+    host: true,
   },
 }));
