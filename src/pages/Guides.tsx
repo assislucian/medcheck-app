@@ -1,3 +1,3 @@
-import DataTable from "@/components/custom/DataTable";
+import DataTable from "../../frontend/src/components/custom/DataTable";
 
 // ... existing code ...
