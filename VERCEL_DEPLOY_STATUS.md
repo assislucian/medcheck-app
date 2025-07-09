@@ -49,7 +49,7 @@ frontend/src/pages/
 
 ### **Como Testar**
 
-1. **Acesse o sistema** com suas credenciais (RN, 7546, @Luassis90)
+1. **Acesse o sistema** com suas credenciais (RN, 7546, password123)
 2. **Verifique layout único** - UserMenu deve aparecer apenas no header top-right
 3. **Navegue entre páginas** - layout consistente e espaçamento adequado
 4. **Teste dark mode** - footer e layout otimizados

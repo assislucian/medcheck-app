@@ -20,7 +20,7 @@
 Credenciais:
 - UF: RN
 - CRM: 7546
-- Senha: @Luassis90
+- Senha: password123
 
 Token gerado: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Status: ✅ FUNCIONANDO
@@ -133,7 +133,7 @@ Status: ✅ FUNCIONANDO
 
 ### **SISTEMA 100% FUNCIONAL E OPERACIONAL**
 
-1. **✅ Login funcionando** com credenciais RN/7546/@Luassis90
+1. **✅ Login funcionando** com credenciais RN/7546/password123
 2. **✅ Backend respondendo** corretamente em todas as rotas
 3. **✅ Frontend renderizando** com layout premium
 4. **✅ Componentes corrigidos** e props compatíveis

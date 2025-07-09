@@ -34,7 +34,7 @@ const BASE_URL = __ENV.BASE_URL || "http://localhost:8000";
 const TEST_USER = {
   uf: "RN",
   crm: "6091",
-  password: "@Luassis90",
+  password: "password123",
 };
 
 /**

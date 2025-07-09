@@ -93,7 +93,7 @@ Após o deploy, teste:
 
 1. **Frontend**: https://medcheck-app.vercel.app
 2. **Health Check via Vercel**: https://medcheck-app.vercel.app/health
-3. **Login**: Use as credenciais UF=RN, CRM=6091, senha=@Luassis90
+3. **Login**: Use as credenciais UF=RN, CRM=6091, senha=password123
 
 ## 🔧 Configurações Avançadas
 

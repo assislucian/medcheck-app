@@ -21,7 +21,7 @@ class TestAuthenticationFlow:
         # Act - Fazer login
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
 
         # Assert - Verificar redirecionamento para dashboard
@@ -75,7 +75,7 @@ class TestAuthenticationFlow:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
 
@@ -145,7 +145,7 @@ class TestDashboardFlow:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
 
@@ -240,7 +240,7 @@ class TestGuiasUploadFlow:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
 
@@ -306,7 +306,7 @@ class TestDemonstrativosFlow:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
 
@@ -371,7 +371,7 @@ class TestAccessibilityAndUsability:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
 
@@ -440,6 +440,6 @@ class TestPerformanceAndReliability:
         page.goto("http://localhost:3000")
         page.fill('input[name="uf"]', "RN")
         page.fill('input[name="crm"]', "6091")
-        page.fill('input[name="password"]', "@Luassis90")
+        page.fill('input[name="password"]', "password123")
         page.click('button[type="submit"]')
         expect(page).to_have_url("http://localhost:3000/dashboard")
