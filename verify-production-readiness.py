@@ -33,7 +33,7 @@ import requests
 # Configurações
 BACKEND_URL = "http://localhost:8000"
 FRONTEND_URL = "http://localhost:8080"
-TEST_USER = {"uf": "RN", "crm": "6091", "password": "@Luassis90"}
+TEST_USER = {"uf": "RN", "crm": "6091", "password": "password123"}
 
 
 class Colors:

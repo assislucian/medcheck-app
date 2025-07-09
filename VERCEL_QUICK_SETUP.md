@@ -44,7 +44,7 @@ VITE_ENABLE_ERROR_REPORTING=true
 
 ### 4. Teste
 
-- Login: UF=RN, CRM=6091, senha=@Luassis90
+- Login: UF=RN, CRM=6091, senha=password123
 - Verifique se API calls funcionam
 
 ## ✅ Checklist Rápido

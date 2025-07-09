@@ -83,7 +83,7 @@ async def async_client(test_db) -> AsyncGenerator[AsyncClient, None]:
 @pytest.fixture(scope="function")
 def sample_user_data():
     """Dados de usuário para testes."""
-    return {"uf": "RN", "crm": "6091", "password": "@Luassis90"}
+    return {"uf": "RN", "crm": "6091", "password": "password123"}
 
 
 @pytest.fixture(scope="function")
