@@ -252,6 +252,12 @@ curl -X POST http://localhost:8000/token \
 
 ---
 
+## 📄 Licença
+
+Este projeto está licenciado sob a [Licença MIT](LICENSE).
+
+---
+
 ## Configuração de Ambiente
 
 Crie um arquivo `.env` na raiz do projeto com base no `.env.example`:
