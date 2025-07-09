@@ -54,3 +54,12 @@ uploads/*
 logs/*
 !logs/.gitkeep
 .vercel
+
+# Python
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+venv/
+.venv/
+*.py[cod]
+*.egg-info/
