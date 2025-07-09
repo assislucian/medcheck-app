@@ -37,9 +37,20 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+# (Opcional) Dependências de desenvolvimento e testes
+pip install -r requirements-dev.txt
+
 # Frontend
 cd frontend
 npm install
+```
+
+## 📦 Dependências de Desenvolvimento
+
+Para rodar testes, linters e outras ferramentas auxiliares, instale também:
+
+```bash
+pip install -r requirements-dev.txt
 ```
 
 ---
