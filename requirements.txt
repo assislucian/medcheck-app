@@ -1,7 +1,7 @@
 # FastAPI core
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-slowapi==0.1.8  # Rate limiting for FastAPI
+slowapi==0.1.9  # Rate limiting for FastAPI
 
 # Database
 sqlalchemy==2.0.23
