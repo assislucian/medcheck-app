@@ -71,8 +71,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://medcheck-backend.onrender.com/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://medcheck-backend.onrender.com/api/$1"
     },
     {
       "source": "/token",
@@ -81,10 +81,24 @@
     {
       "source": "/health",
       "destination": "https://medcheck-backend.onrender.com/health"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "headers": {
+        "cache-control": "max-age=31536000, immutable"
+      }
     },
     {
-      "source": "/((?!.*\\.).*)",
-      "destination": "/index.html"
+      "src": "/(.*\\.(js|css|woff2?|png|jpe?g|svg|ico|webp))$",
+      "headers": {
+        "cache-control": "max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "cleanUrls": true,
