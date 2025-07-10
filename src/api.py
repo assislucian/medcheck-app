@@ -1139,7 +1139,7 @@ def validate_upload_file(file: UploadFile) -> tuple[bool, str]:
             f"Tipo de arquivo não permitido. Permitidos: {', '.join(allowed_extensions)}",
         )
 
-    # Verificar tipo MIME
+    # Verificar tipo MIME - ser mais permissivo para PDFs
     allowed_mimes = {
         "application/pdf",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1147,7 +1147,17 @@ def validate_upload_file(file: UploadFile) -> tuple[bool, str]:
         "text/csv",
         "application/csv",
     }
-    if file.content_type not in allowed_mimes:
+
+    # Se content_type for None, validar pela extensão do arquivo
+    if file.content_type is None:
+        if file.filename and file.filename.lower().endswith(".pdf"):
+            pass  # Aceitar PDFs mesmo sem content_type
+        else:
+            return (
+                False,
+                f"Tipo MIME não informado e extensão não é PDF: {file.filename}",
+            )
+    elif file.content_type not in allowed_mimes:
         return False, f"Tipo MIME não permitido: {file.content_type}"
 
     # Verificar nome do arquivo contra path traversal
