@@ -81,24 +81,10 @@
     {
       "source": "/health",
       "destination": "https://medcheck-backend.onrender.com/health"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "headers": {
-        "cache-control": "max-age=31536000, immutable"
-      }
     },
     {
-      "src": "/(.*\\.(js|css|woff2?|png|jpe?g|svg|ico|webp))$",
-      "headers": {
-        "cache-control": "max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "cleanUrls": true,
