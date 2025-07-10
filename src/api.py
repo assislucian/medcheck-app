@@ -407,7 +407,7 @@ def decode_jwt(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         return payload
-    except jwt.PyJWTError:
+    except JWTError:
         raise HTTPException(status_code=401, detail="Token inválido ou expirado")
 
 
@@ -1570,29 +1570,37 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
 
         participacoes_map = {}
 
-        # Busca guias no diretório de uploads
-        upload_files = []
-        try:
-            upload_files = os.listdir(UPLOAD_DIR)
-        except Exception as e:
-            logger.error(f"Erro ao listar diretório de uploads: {e}")
+        # Busca guias registradas no banco de dados do usuário atual
+        guias_registradas = (
+            db.query(Guia).filter_by(crm=user["crm"], uf=user["uf"]).all()
+        )
 
-        for fname in upload_files:
-            if not fname.lower().endswith(".pdf"):
-                continue
-            # Pula o próprio demonstrativo
-            if fname == demo.filename:
-                continue
-            # Pula arquivos que são claramente demonstrativos
-            if any(word in fname.lower() for word in ["demonstrativo", "demo"]):
+        logger.info(
+            f"[DEBUG] Guias registradas no banco para usuário {user['crm']}: {[g.numero_guia for g in guias_registradas]}"
+        )
+
+        # Processa apenas as guias registradas no banco
+        for guia in guias_registradas:
+            if not guia.filename:
+                logger.warning(f"Guia {guia.numero_guia} não tem filename associado")
                 continue
 
-            guia_path = os.path.join(UPLOAD_DIR, fname)
+            guia_path = os.path.join(UPLOAD_DIR, guia.filename)
+
+            # Verifica se o arquivo ainda existe no diretório
+            if not os.path.exists(guia_path):
+                logger.warning(
+                    f"Arquivo da guia {guia.numero_guia} não encontrado: {guia.filename}"
+                )
+                continue
+
             try:
-                logger.debug(f"Processando guia: {fname}")
+                logger.debug(
+                    f"Processando guia registrada: {guia.filename} (número: {guia.numero_guia})"
+                )
                 procedimentos_guia = parse_guia_pdf(guia_path, user["crm"])
                 logger.debug(
-                    f"Encontrados {len(procedimentos_guia)} procedimentos na guia {fname}"
+                    f"Encontrados {len(procedimentos_guia)} procedimentos na guia {guia.numero_guia}"
                 )
 
                 for proc in procedimentos_guia:
@@ -1605,8 +1613,10 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
                     participacoes_map[key].extend(participacoes)
 
             except Exception as e:
-                logger.warning(f"Erro ao processar guia {fname}: {e}")
+                logger.warning(f"Erro ao processar guia {guia.numero_guia}: {e}")
                 continue  # Ignora guias inválidas
+
+        logger.info(f"[DEBUG] Participações mapeadas: {list(participacoes_map.keys())}")
 
         # --- Cruzamento com CBHPM ---
         from src.parsers.cbhpm_parser import CBHPMParser
@@ -2123,24 +2133,59 @@ def list_guias(
 def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
     db = SessionLocal()
     try:
+        # Primeiro busca a guia para obter o filename
+        guia = (
+            db.query(Guia)
+            .filter_by(numero_guia=numero_guia, crm=user["crm"], uf=user["uf"])
+            .first()
+        )
+
+        if not guia:
+            raise HTTPException(status_code=404, detail="Guia não encontrada.")
+
+        # Remove o arquivo específico se existir
+        arquivo_removido = None
+        if guia.filename:
+            file_path = os.path.join(UPLOAD_DIR, guia.filename)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    arquivo_removido = guia.filename
+                    logger.info(f"Arquivo removido: {guia.filename}")
+                except Exception as e:
+                    logger.warning(f"Erro ao remover arquivo {guia.filename}: {e}")
+            else:
+                logger.warning(f"Arquivo não encontrado: {guia.filename}")
+
+        # Remove o registro do banco
         deleted = (
             db.query(Guia)
             .filter_by(numero_guia=numero_guia, crm=user["crm"], uf=user["uf"])
             .delete()
         )
         db.commit()
+
         # Log de remoção
         log_audit(
             "delete_guia",
             user_crm=user["crm"],
             details={
                 "numero_guia": numero_guia,
+                "arquivo_removido": arquivo_removido,
                 "result": "success" if deleted else "not_found",
             },
         )
-        if not deleted:
-            raise HTTPException(status_code=404, detail="Guia não encontrada.")
+
+        logger.info(
+            f"Guia {numero_guia} removida com sucesso. Arquivo: {arquivo_removido}"
+        )
         return
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erro ao deletar guia {numero_guia}: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
     finally:
         db.close()
 
@@ -2677,3 +2722,119 @@ def calculate_file_hash(path):
 
 
 # redeploy for demonstrativos columns
+
+
+# TEMPORARY ENDPOINT FOR TESTING - Remove after debugging
+@app.get("/api/v1/test-demonstrativo-detalhes")
+def test_demonstrativo_detalhes():
+    """
+    Endpoint temporário para testar se o frontend consegue receber e exibir dados corretos.
+    Retorna dados mockados que sabemos que funcionam.
+    """
+    return [
+        {
+            "guia": "10467538",
+            "data": "19/08/2024",
+            "paciente": "THAYSE BORGES",
+            "codigo": "30602203",
+            "descricao": "Quadrantectomia Ressecção Se",
+            "papel_exercido": "Primeiro Auxiliar",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 156.57,
+                "approved_value": 156.57,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 200.691,
+            "diferenca": -44.121,
+            "delta_percent": -22.0,
+        },
+        {
+            "guia": "10467538",
+            "data": "19/08/2024",
+            "paciente": "THAYSE BORGES",
+            "codigo": "30602246",
+            "descricao": "Reconstrução Mamária Com Retal",
+            "papel_exercido": "Primeiro Auxiliar",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 228.82,
+                "approved_value": 228.82,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 308.592,
+            "diferenca": -79.772,
+            "delta_percent": -25.9,
+        },
+        {
+            "guia": "10714706",
+            "data": "05/09/2024",
+            "paciente": "NUBIA KATIA PEREIRA",
+            "codigo": "30602173",
+            "descricao": "Mastoplastia Em Mama Oposta Ap",
+            "papel_exercido": "Cirurgiao",
+            "participacoes": [
+                {
+                    "papel": "Anestesista",
+                    "crm": "4127",
+                    "nome": "LILIANE ANNUZA DA SILVA",
+                },
+                {
+                    "papel": "Cirurgiao",
+                    "crm": "6091",
+                    "nome": "MOISES DE OLIVEIRA SCHOTS",
+                },
+                {
+                    "papel": "Primeiro Auxiliar",
+                    "crm": "8425",
+                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+                },
+            ],
+            "quantidade": 1,
+            "financial": {
+                "presented_value": 558.92,
+                "approved_value": 558.92,
+                "pro_rata": 0.0,
+                "glosa": 0.0,
+            },
+            "valor_cbhpm": 722.16,
+            "diferenca": -163.24,
+            "delta_percent": -22.6,
+        },
+    ]

@@ -1,0 +1,530 @@
+[
+  {
+    "guia": "10467538",
+    "data": "19/08/2024",
+    "paciente": "THAYSE BORGES",
+    "codigo": "30602203",
+    "descricao": "Quadrantectomia Ressecção Se",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "4127",
+        "nome": "LILIANE ANNUZA DA SILVA",
+        "inicio": "19/08/2024 15:17",
+        "fim": "19/08/2024 15:43",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "8425",
+        "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+        "inicio": "19/08/2024 14:09",
+        "fim": "19/08/2024 15:24",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "19/08/2024 14:15",
+        "fim": "19/08/2024 15:17",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 156.57,
+      "approved_value": 156.57,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 200.691,
+    "diferenca": -44.12100000000001,
+    "delta_percent": -21.984543402544215
+  },
+  {
+    "guia": "10467538",
+    "data": "19/08/2024",
+    "paciente": "THAYSE BORGES",
+    "codigo": "30602246",
+    "descricao": "Reconstrução Mamária Com Retal",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "4127",
+        "nome": "LILIANE ANNUZA DA SILVA",
+        "inicio": "19/08/2024 15:17",
+        "fim": "19/08/2024 15:43",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "8425",
+        "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+        "inicio": "19/08/2024 14:09",
+        "fim": "19/08/2024 15:24",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "19/08/2024 14:15",
+        "fim": "19/08/2024 15:17",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 228.82,
+      "approved_value": 228.82,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 308.59200000000004,
+    "diferenca": -79.77200000000005,
+    "delta_percent": -25.85031368279153
+  },
+  {
+    "guia": "10467538",
+    "data": "19/08/2024",
+    "paciente": "THAYSE BORGES",
+    "codigo": "30602076",
+    "descricao": "Exérese De Lesão Da Mama Por M",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "4127",
+        "nome": "LILIANE ANNUZA DA SILVA",
+        "inicio": "19/08/2024 15:17",
+        "fim": "19/08/2024 15:43",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "8425",
+        "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+        "inicio": "19/08/2024 14:09",
+        "fim": "19/08/2024 15:24",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "19/08/2024 14:15",
+        "fim": "19/08/2024 15:17",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 167.68,
+      "approved_value": 167.68,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 216.648,
+    "diferenca": -48.96799999999999,
+    "delta_percent": -22.602562682323395
+  },
+  {
+    "guia": "10467538",
+    "data": "19/08/2024",
+    "paciente": "THAYSE BORGES",
+    "codigo": "30602246",
+    "descricao": "Reconstrução Mamária Com Retal",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "4127",
+        "nome": "LILIANE ANNUZA DA SILVA",
+        "inicio": "19/08/2024 15:17",
+        "fim": "19/08/2024 15:43",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "8425",
+        "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+        "inicio": "19/08/2024 14:09",
+        "fim": "19/08/2024 15:24",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "19/08/2024 14:15",
+        "fim": "19/08/2024 15:17",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 457.64,
+      "approved_value": 457.64,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 308.59200000000004,
+    "diferenca": 149.04799999999994,
+    "delta_percent": 48.29937263441694
+  },
+  {
+    "guia": "10507705",
+    "data": "21/08/2024",
+    "paciente": "RODRIGO BERNARDO CIR",
+    "codigo": "30602203",
+    "descricao": "Quadrantectomia Ressecção Se",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "5576",
+        "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+        "inicio": "21/08/2024 16:52",
+        "fim": "21/08/2024 16:52",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "4999",
+        "nome": "FLAVIO ROCHA DE MEDEIROS",
+        "inicio": "21/08/2024 16:06",
+        "fim": "21/08/2024 16:49",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "21/08/2024 16:06",
+        "fim": "21/08/2024 16:49",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 313.14,
+      "approved_value": 313.14,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 200.691,
+    "diferenca": 112.44899999999998,
+    "delta_percent": 56.03091319491157
+  },
+  {
+    "guia": "10507705",
+    "data": "21/08/2024",
+    "paciente": "RODRIGO BERNARDO CIR",
+    "codigo": "30602203",
+    "descricao": "Quadrantectomia Ressecção Se",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "5576",
+        "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+        "inicio": "21/08/2024 16:52",
+        "fim": "21/08/2024 16:52",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "4999",
+        "nome": "FLAVIO ROCHA DE MEDEIROS",
+        "inicio": "21/08/2024 16:06",
+        "fim": "21/08/2024 16:49",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "21/08/2024 16:06",
+        "fim": "21/08/2024 16:49",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 156.57,
+      "approved_value": 156.57,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 200.691,
+    "diferenca": -44.12100000000001,
+    "delta_percent": -21.984543402544215
+  },
+  {
+    "guia": "10696456",
+    "data": "04/09/2024",
+    "paciente": "NOIVANA CAVALCANTI D",
+    "codigo": "30602076",
+    "descricao": "Exérese De Lesão Da Mama Por M",
+    "papel_exercido": "Cirurgiao",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "5576",
+        "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+        "inicio": "04/09/2024 17:50",
+        "fim": "04/09/2024 17:50",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "04/09/2024 17:06",
+        "fim": "04/09/2024 17:53",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "5775",
+        "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+        "inicio": "04/09/2024 17:06",
+        "fim": "04/09/2024 17:41",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 1117.84,
+      "approved_value": 1117.84,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 722.16,
+    "diferenca": 395.67999999999995,
+    "delta_percent": 54.79118200952697
+  },
+  {
+    "guia": "10696456",
+    "data": "04/09/2024",
+    "paciente": "NOIVANA CAVALCANTI D",
+    "codigo": "30602203",
+    "descricao": "Quadrantectomia Ressecção Se",
+    "papel_exercido": "Cirurgiao",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "5576",
+        "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+        "inicio": "04/09/2024 17:50",
+        "fim": "04/09/2024 17:50",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "04/09/2024 17:06",
+        "fim": "04/09/2024 17:53",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "5775",
+        "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+        "inicio": "04/09/2024 17:06",
+        "fim": "04/09/2024 17:41",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 521.91,
+      "approved_value": 521.91,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 668.97,
+    "diferenca": -147.06000000000006,
+    "delta_percent": -21.98304856720033
+  },
+  {
+    "guia": "10714706",
+    "data": "05/09/2024",
+    "paciente": "NUBIA KATIA PEREIRA",
+    "codigo": "30602076",
+    "descricao": "Exérese De Lesão Da Mama Por M",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "7897",
+        "nome": "DIEGO HERBERT DUARTE DA SILVA",
+        "inicio": "05/09/2024 18:38",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "7546",
+        "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+        "inicio": "05/09/2024 18:10",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "05/09/2024 18:11",
+        "fim": "05/09/2024 22:25",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 167.68,
+      "approved_value": 167.68,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 216.648,
+    "diferenca": -48.96799999999999,
+    "delta_percent": -22.602562682323395
+  },
+  {
+    "guia": "10714706",
+    "data": "05/09/2024",
+    "paciente": "NUBIA KATIA PEREIRA",
+    "codigo": "30602289",
+    "descricao": "Ressecção Do Linfonodo Sentine",
+    "papel_exercido": "Primeiro Auxiliar",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "7897",
+        "nome": "DIEGO HERBERT DUARTE DA SILVA",
+        "inicio": "05/09/2024 18:38",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "7546",
+        "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+        "inicio": "05/09/2024 18:10",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "05/09/2024 18:11",
+        "fim": "05/09/2024 22:25",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 0,
+    "financial": {
+      "presented_value": 167.68,
+      "approved_value": 0.0,
+      "pro_rata": 0.0,
+      "glosa": 167.68
+    },
+    "valor_cbhpm": 216.648,
+    "diferenca": -216.648,
+    "delta_percent": -100.0
+  },
+  {
+    "guia": "10714706",
+    "data": "05/09/2024",
+    "paciente": "NUBIA KATIA PEREIRA",
+    "codigo": "30602173",
+    "descricao": "Mastoplastia Em Mama Oposta Ap",
+    "papel_exercido": "Cirurgiao",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "7897",
+        "nome": "DIEGO HERBERT DUARTE DA SILVA",
+        "inicio": "05/09/2024 18:38",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "05/09/2024 18:11",
+        "fim": "05/09/2024 22:25",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "7546",
+        "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+        "inicio": "05/09/2024 18:10",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 558.92,
+      "approved_value": 558.92,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 722.16,
+    "diferenca": -163.24,
+    "delta_percent": -22.604408995236515
+  },
+  {
+    "guia": "10714706",
+    "data": "05/09/2024",
+    "paciente": "NUBIA KATIA PEREIRA",
+    "codigo": "30602246",
+    "descricao": "Reconstrução Mamária Com Retal",
+    "papel_exercido": "Cirurgiao",
+    "participacoes": [
+      {
+        "papel": "Anestesista",
+        "crm": "7897",
+        "nome": "DIEGO HERBERT DUARTE DA SILVA",
+        "inicio": "05/09/2024 18:38",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Cirurgiao",
+        "crm": "6091",
+        "nome": "MOISES DE OLIVEIRA SCHOTS",
+        "inicio": "05/09/2024 18:11",
+        "fim": "05/09/2024 22:25",
+        "status": "Fechada"
+      },
+      {
+        "papel": "Primeiro Auxiliar",
+        "crm": "7546",
+        "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+        "inicio": "05/09/2024 18:10",
+        "fim": "05/09/2024 22:15",
+        "status": "Fechada"
+      }
+    ],
+    "quantidade": 1,
+    "financial": {
+      "presented_value": 1525.45,
+      "approved_value": 1525.45,
+      "pro_rata": 0.0,
+      "glosa": 0.0
+    },
+    "valor_cbhpm": 1028.64,
+    "diferenca": 496.80999999999995,
+    "delta_percent": 48.297752372064075
+  }
+]

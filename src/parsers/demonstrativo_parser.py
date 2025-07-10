@@ -11,14 +11,23 @@ class DemonstrativoParser:
         self.glosas_detalhadas = (
             {}
         )  # Novo: dicionário auxiliar para motivos de glosa detalhados
+        self.totals = {}  # Novo: para armazenar os totais capturados
         self._parse_pdf()
 
     def _extract_honorarios_section(self, text: str) -> str:
         """Extrai apenas a seção de honorários do texto, delimitada por '[PM] HONORÁRIOS' até o próximo marcador de seção, 'TOTALIZADORES' ou 'Página'."""
-        start = text.find("[PM] HONORÁRIOS")
+        # Procura por diferentes variações do marcador
+        markers = ["[PM] HONORÁRIOS", "[PM]HONORÁRIOS", "PM HONORÁRIOS"]
+        start = -1
+        for marker in markers:
+            start = text.find(marker)
+            if start != -1:
+                break
+
         if start == -1:
             print("[DEBUG] Marcador [PM] HONORÁRIOS não encontrado!")
             return ""
+
         # Procura o próximo marcador de seção (linha que começa com '[')
         after = text[start + 1 :]
         end_match = re.search(r"\n\[[A-Z]+.*?\]", after)
@@ -31,6 +40,40 @@ class DemonstrativoParser:
             end = start + 1 + end_match2.start()
             return text[start:end]
         return text[start:]
+
+    def _parse_totals_line(self, line: str):
+        """Extrai totais de uma linha que contém informações de totais."""
+        # Padrão para linha de totais: "Total Procedimentos: X R$ Y,ZZ R$ Y,ZZ R$ Y,ZZ R$ Y,ZZ"
+        total_pattern = (
+            r"Total Procedimentos:\s*(\d+)\s+R\$\s*([\d.,]+)\s+R\$\s*"
+            r"([\d.,]+)\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)"
+        )
+        match = re.search(total_pattern, line)
+        if match:
+            return {
+                "total_procedimentos": int(match.group(1)),
+                "apresentado": float(match.group(2).replace(".", "").replace(",", ".")),
+                "liberado": float(match.group(3).replace(".", "").replace(",", ".")),
+                "pro_rata": float(match.group(4).replace(".", "").replace(",", ".")),
+                "glosa": float(match.group(5).replace(".", "").replace(",", ".")),
+            }
+
+        # Padrão alternativo: "[PM] HONORÁRIOS X Y,ZZ Y,ZZ Y,ZZ Y,ZZ"
+        alt_pattern = (
+            r"\[PM\]\s+HONORÁRIOS\s+(\d+)\s+([\d.,]+)\s+"
+            r"([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)"
+        )
+        match = re.search(alt_pattern, line)
+        if match:
+            return {
+                "total_procedimentos": int(match.group(1)),
+                "apresentado": float(match.group(2).replace(".", "").replace(",", ".")),
+                "liberado": float(match.group(3).replace(".", "").replace(",", ".")),
+                "pro_rata": float(match.group(4).replace(".", "").replace(",", ".")),
+                "glosa": float(match.group(5).replace(".", "").replace(",", ".")),
+            }
+
+        return None
 
     def _parse_pdf(self):
         """Parse the payment statement PDF and extract payments only from the honorários section."""
@@ -63,16 +106,25 @@ class DemonstrativoParser:
                 i = 0
                 while i < len(honorarios_lines):
                     line = honorarios_lines[i]
-                    # Pula cabeçalho e totais
+
+                    # Verifica se é uma linha de totais
+                    totals = self._parse_totals_line(line)
+                    if totals:
+                        self.totals = totals
+                        print(f"[DEBUG] Totais capturados: {totals}")
+                        i += 1
+                        continue
+
+                    # Pula cabeçalho
                     if (
                         line.strip().startswith("[PM]")
                         or "Lote Conta Guia" in line
-                        or "Total Procedimentos" in line
-                        or "T otal Procedimentos" in line
+                        or line.strip() == ""
                     ):
-                        print(f"[DEBUG] Linha de cabeçalho/total ignorada: {line}")
+                        print(f"[DEBUG] Linha de cabeçalho ignorada: {line}")
                         i += 1
                         continue
+
                     parts = re.split(r"\s+", line.strip())
                     acom_idx = next(
                         (
@@ -84,7 +136,8 @@ class DemonstrativoParser:
                     )
                     if acom_idx is None or acom_idx < 6 or len(parts) < acom_idx + 7:
                         print(
-                            f"[DEBUG] Linha ignorada (não encontrou campo Acom. ou poucos campos): {line}"
+                            f"[DEBUG] Linha ignorada (não encontrou campo Acom. ou poucos campos): "
+                            f"{line}"
                         )
                         i += 1
                         continue
@@ -230,6 +283,17 @@ class DemonstrativoParser:
 
     def get_summary(self):
         """Retorna o resumo do demonstrativo: período, totais e quantidade de procedimentos extraídos da seção de honorários."""
+        # Se temos totais capturados do PDF, usamos eles
+        if self.totals:
+            return {
+                "period": self.payments[0]["period"] if self.payments else None,
+                "total_presented": self.totals["apresentado"],
+                "total_approved": self.totals["liberado"],
+                "total_glosa": self.totals["glosa"],
+                "total_procedures": self.totals["total_procedimentos"],
+            }
+
+        # Caso contrário, calculamos dos procedimentos
         total_presented = sum(p["financial"]["presented_value"] for p in self.payments)
         total_approved = sum(p["financial"]["approved_value"] for p in self.payments)
         total_glosa = sum(p["financial"]["glosa"] for p in self.payments)
