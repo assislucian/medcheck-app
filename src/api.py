@@ -529,6 +529,7 @@ else:
         "https://medcheck-app.vercel.app",  # Vercel produção (duplicado para garantir)
         "https://medcheck-app.vercel.app/",  # Vercel produção com trailing slash
         "https://www.medcheck-app.vercel.app/",  # Vercel produção com www e trailing slash
+        "https://medcheck-frontend.onrender.com",  # NOVO: Render frontend
     ]
 
 # Garantir que endereços locais comuns estejam sempre presentes
