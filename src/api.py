@@ -1596,18 +1596,35 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
                 logger.warning(f"Guia {guia.numero_guia} não tem filename associado")
                 continue
 
-            guia_path = os.path.join(UPLOAD_DIR, guia.filename)
+            # CORREÇÃO CRÍTICA: Procurar arquivo em múltiplos diretórios
+            guia_path = None
 
-            # Verifica se o arquivo ainda existe no diretório
-            if not os.path.exists(guia_path):
+            # Primeiro tentar em uploads/ (padrão)
+            uploads_path = os.path.join(UPLOAD_DIR, guia.filename)
+            if os.path.exists(uploads_path):
+                guia_path = uploads_path
+            else:
+                # Se não existir em uploads/, tentar em data/guias/
+                data_path = os.path.join("data/guias", guia.filename)
+                if os.path.exists(data_path):
+                    guia_path = data_path
+                    logger.info(
+                        f"[CROSSCHECK] Arquivo encontrado em data/guias/: {guia.filename}"
+                    )
+
+            # Verifica se o arquivo foi encontrado em algum lugar
+            if not guia_path:
                 logger.warning(
                     f"Arquivo da guia {guia.numero_guia} não encontrado: {guia.filename}"
+                )
+                logger.warning(
+                    f"Tentativas: uploads/{guia.filename}, data/guias/{guia.filename}"
                 )
                 continue
 
             try:
                 logger.debug(
-                    f"Processando guia registrada: {guia.filename} (número: {guia.numero_guia})"
+                    f"Processando guia registrada: {guia.filename} (número: {guia.numero_guia}) em {guia_path}"
                 )
                 procedimentos_guia = parse_guia_pdf(guia_path, user["crm"])
                 logger.debug(
@@ -1619,15 +1636,21 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
                     if key not in participacoes_map:
                         participacoes_map[key] = []
 
-                    # Adiciona todas as participações do procedimento
+                    # CORREÇÃO CRÍTICA: Adicionar as participações individuais do procedimento
                     participacoes = proc.get("participacoes", [])
                     participacoes_map[key].extend(participacoes)
+
+                    # LOG DETALHADO para debug
+                    logger.info(
+                        f"[CROSSCHECK] Mapeado: Guia {key[0]}, Código {key[1]} → {len(participacoes)} participações"
+                    )
 
             except Exception as e:
                 logger.warning(f"Erro ao processar guia {guia.numero_guia}: {e}")
                 continue  # Ignora guias inválidas
 
         logger.info(f"[DEBUG] Participações mapeadas: {list(participacoes_map.keys())}")
+        logger.info(f"[DEBUG] Total de chaves no mapa: {len(participacoes_map)}")
 
         # --- Cruzamento com CBHPM ---
         from src.parsers.cbhpm_parser import CBHPMParser
@@ -1644,9 +1667,22 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
             guia = p.get("guia")
             key = (guia, codigo)
 
-            # Busca participações
+            # Busca participações - CORREÇÃO: Garantir que a busca funcione
             participacoes = participacoes_map.get(key, [])
             p["participacoes"] = participacoes
+
+            # LOG DETALHADO do matching
+            logger.info(f"[CROSSCHECK] Buscando: Guia {guia}, Código {codigo}")
+            logger.info(f"[CROSSCHECK] Chave: {key}")
+            logger.info(f"[CROSSCHECK] Participações encontradas: {len(participacoes)}")
+            if participacoes:
+                for part in participacoes:
+                    logger.info(
+                        f"[CROSSCHECK]   → CRM {part.get('crm')}: {part.get('papel')}"
+                    )
+
+            # CORREÇÃO: Garantir que guia_encontrada seja definida corretamente
+            p["guia_encontrada"] = len(participacoes) > 0
 
             # Se houver participações do usuário, define papel_exercido
             papel_exercido = None
@@ -1656,6 +1692,11 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
                     break
 
             p["papel_exercido"] = papel_exercido or ""
+
+            # LOG do papel exercido
+            logger.info(
+                f"[CROSSCHECK] Papel exercido pelo usuário CRM {user['crm']}: {papel_exercido}"
+            )
 
             # --- Cálculo de valores CBHPM ---
             valor_cbhpm = None
@@ -1797,27 +1838,73 @@ def upload_guias(
                 finally:
                     db.close()
 
-                # Processar o PDF
+                # Processar o PDF com fallback inteligente
                 from src.parsers.guia_parser import parse_guia_pdf
+                from src.parsers.scanned_guia_parser import parse_scanned_guia_pdf
 
+                # Tentar parser principal primeiro
                 procedures = parse_guia_pdf(tmp_path, crm)
+                parser_used = "padrão TISS"
+
+                # Se não encontrou procedimentos, tentar parser de escaneados
+                if not procedures:
+                    logger.info(
+                        f"Parser padrão não encontrou procedimentos em {file.filename}, tentando parser de escaneados..."
+                    )
+                    procedures = parse_scanned_guia_pdf(tmp_path, crm)
+                    parser_used = "escaneado/OCR"
 
                 if not procedures:
                     results.append(
                         {
                             "filename": file.filename,
                             "success": False,
-                            "error": "Não foi possível extrair procedimentos do PDF.",
+                            "error": "Não foi possível extrair procedimentos do PDF. Tente escaneá-lo novamente com melhor qualidade ou verifique se é um arquivo de guia médica válido.",
+                            "parsers_tried": ["padrão TISS", "escaneado/OCR"],
                         }
                     )
                     continue
 
-                # Sanitizar dados
+                logger.info(
+                    f"Arquivo {file.filename} processado com sucesso usando parser {parser_used}: {len(procedures)} procedimentos encontrados"
+                )
+
+                # Carregar CBHPM para buscar descrições
+                from src.parsers.cbhpm_parser import CBHPMParser
+
+                cbhpm_parser = None
+                try:
+                    cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
+                except Exception as e:
+                    logger.warning(f"Erro ao carregar CBHPM para descrições: {e}")
+
+                # Sanitizar dados e buscar descrições da CBHPM
                 for proc in procedures:
                     proc["beneficiario"] = sanitize_text(proc.get("beneficiario", ""))
-                    proc["descricao"] = sanitize_text(proc.get("descricao", ""))
                     proc["prestador"] = sanitize_text(proc.get("prestador", ""))
                     proc["nome"] = sanitize_text(proc.get("nome", ""))
+
+                    # CORREÇÃO CRÍTICA: Buscar descrição da CBHPM usando o código
+                    codigo = proc.get("codigo")
+                    descricao_cbhpm = None
+
+                    if codigo and cbhpm_parser:
+                        try:
+                            cbhpm_data = cbhpm_parser.get_procedure(str(codigo))
+                            if cbhpm_data:
+                                descricao_cbhpm = cbhpm_data.get("description", "")
+                        except Exception as e:
+                            logger.warning(
+                                f"Erro ao buscar descrição CBHPM para código {codigo}: {e}"
+                            )
+
+                    # Se não encontrou na CBHPM, usar descrição do parser (para guias TISS) ou fallback
+                    if descricao_cbhpm:
+                        proc["descricao"] = sanitize_text(descricao_cbhpm)
+                    elif proc.get("descricao"):
+                        proc["descricao"] = sanitize_text(proc.get("descricao", ""))
+                    else:
+                        proc["descricao"] = f"Procedimento código {codigo}"
 
                 db = SessionLocal()
                 guias_adicionadas = 0
@@ -2067,6 +2154,7 @@ def list_guias(
     """
     Retorna todas as guias do usuário autenticado, com paginação e filtros.
     Permite busca por texto, filtro por status e data.
+    Inclui análise inteligente de status de pagamento baseado no crosscheck com demonstrativos.
     """
     db = SessionLocal()
     crm = user.get("crm")
@@ -2091,7 +2179,17 @@ def list_guias(
                 | (Guia.prestador.ilike(search_term))
             )
 
-        if status:
+        # Filtro especial para status inteligente de pagamento
+        if status and status not in [
+            "ALL",
+            "Fechada",
+            "Pendente",
+            "Processada",
+            "Gerado pela execução",
+        ]:
+            # Aplicaremos o filtro após calcular o status de pagamento
+            pass
+        elif status and status != "ALL":
             query = query.filter(Guia.status == status)
 
         if data:
@@ -2109,30 +2207,272 @@ def list_guias(
 
         guias = query.all()
 
+        # --- NOVA FUNCIONALIDADE: Análise inteligente de status de pagamento ---
+        # Buscar todos os demonstrativos do usuário para crosscheck
+        demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
+
+        # Criar mapa detalhado de procedimentos dos demonstrativos
+        demonstrativo_procedures = {}  # (guia, codigo) -> detailed_payment_info
+        all_demonstrativo_procedures = []
+
+        for demo in demonstrativos:
+            try:
+                file_path = os.path.join(UPLOAD_DIR, demo.filename)
+                if os.path.exists(file_path):
+                    from src.parsers.demonstrativo_parser import DemonstrativoParser
+
+                    parser = DemonstrativoParser(file_path)
+                    payments = parser.get_payments()
+
+                    for payment in payments:
+                        guia_num = payment.get("guia")
+                        codigo = payment.get("code") or payment.get("codigo")
+                        if guia_num and codigo:
+                            key = (str(guia_num), str(codigo))
+
+                            # Extrair informações financeiras detalhadas
+                            financial = payment.get("financial", {})
+                            approved_value = financial.get("approved_value", 0)
+                            presented_value = financial.get("presented_value", 0)
+                            glosa = financial.get("glosa", 0)
+
+                            demonstrativo_procedures[key] = {
+                                "is_paid": approved_value > 0,
+                                "approved_value": approved_value,
+                                "presented_value": presented_value,
+                                "glosa": glosa,
+                                "payment_date": demo.periodo,
+                                "demonstrativo_id": demo.id,
+                                "demonstrativo_filename": demo.filename,
+                                # Análise inteligente
+                                "is_partial_payment": approved_value > 0
+                                and approved_value < presented_value,
+                                "is_full_glosa": approved_value == 0
+                                and presented_value > 0,
+                                "glosa_percentage": (
+                                    (glosa / presented_value * 100)
+                                    if presented_value > 0
+                                    else 0
+                                ),
+                            }
+
+                            all_demonstrativo_procedures.append(
+                                {
+                                    **demonstrativo_procedures[key],
+                                    "guia": guia_num,
+                                    "codigo": codigo,
+                                }
+                            )
+            except Exception as e:
+                logger.warning(
+                    f"Erro ao processar demonstrativo {demo.id} para análise de pagamento: {e}"
+                )
+                continue
+
+        # Calcular status inteligente para cada procedimento
+        procedures_with_smart_status = []
+
+        # Primeiro: Calcular status individual para cada procedimento
+        individual_procedure_status = {}  # (guia, codigo) -> status_info
+
+        for g in guias:
+            key = (str(g.numero_guia), str(g.codigo))
+            demo_info = demonstrativo_procedures.get(key)
+
+            # Status inteligente baseado na análise individual
+            if demo_info:
+                if demo_info["is_paid"]:
+                    if demo_info["is_partial_payment"]:
+                        smart_status = "parcialmente_pago"
+                        smart_reason = f"Pago R$ {demo_info['approved_value']:.2f} de R$ {demo_info['presented_value']:.2f} apresentado"
+                    else:
+                        smart_status = "pago"
+                        smart_reason = (
+                            f"Pago integralmente R$ {demo_info['approved_value']:.2f}"
+                        )
+                else:
+                    if demo_info["is_full_glosa"]:
+                        smart_status = "glosado"
+                        smart_reason = f"Glosa total - R$ {demo_info['presented_value']:.2f} negado"
+                    else:
+                        smart_status = "nao_pago"
+                        smart_reason = "Não consta pagamento no demonstrativo"
+            else:
+                # Verificar se há demonstrativo carregado
+                if demonstrativos:
+                    smart_status = "nao_encontrado"
+                    smart_reason = (
+                        "Procedimento não encontrado nos demonstrativos carregados"
+                    )
+                else:
+                    smart_status = "sem_demonstrativo"
+                    smart_reason = "Nenhum demonstrativo carregado para análise"
+
+            # Armazenar status individual do procedimento
+            individual_procedure_status[key] = {
+                "status": smart_status,
+                "reason": smart_reason,
+                "demonstrativo_info": demo_info,
+                "has_demonstrativo": len(demonstrativos) > 0,
+            }
+
+            procedure_data = {
+                "numero_guia": g.numero_guia,
+                "data": g.data,
+                "beneficiario": g.paciente,
+                "codigo": g.codigo,
+                "descricao": g.descricao,
+                "papel": g.papel,
+                "crm": g.crm,
+                "qtd": g.qtd,
+                "status": g.status,
+                "prestador": g.prestador,
+                "nome_medico": g.nome_medico,
+                "dt_inicio": g.dt_inicio,
+                "dt_fim": g.dt_fim,
+                "status_part": g.status_part,
+                # Status inteligente individual do procedimento
+                "smart_payment_status": individual_procedure_status[key],
+            }
+
+            # Aplicar filtro de status inteligente se especificado
+            if status and status in [
+                "pago",
+                "parcialmente_pago",
+                "glosado",
+                "nao_pago",
+                "nao_encontrado",
+                "sem_demonstrativo",
+                "sem_analise",
+            ]:
+                # Filtro unificado para análise pendente
+                if status == "sem_analise":
+                    if smart_status in ["nao_encontrado", "sem_demonstrativo"]:
+                        procedures_with_smart_status.append(procedure_data)
+                elif smart_status == status:
+                    procedures_with_smart_status.append(procedure_data)
+            else:
+                procedures_with_smart_status.append(procedure_data)
+
+        # Recalcular total se filtro inteligente foi aplicado
+        if status and status in [
+            "pago",
+            "parcialmente_pago",
+            "glosado",
+            "nao_pago",
+            "nao_encontrado",
+            "sem_demonstrativo",
+            "sem_analise",
+        ]:
+            total = len(procedures_with_smart_status)
+
+        # Segundo: Calcular status agregado por guia baseado nos procedimentos
+        # Agrupar procedimentos por guia para calcular status agregado
+        guide_aggregated_status = {}
+        guide_procedures = {}
+
+        for proc in procedures_with_smart_status:
+            guia_num = proc["numero_guia"]
+            if guia_num not in guide_procedures:
+                guide_procedures[guia_num] = []
+            guide_procedures[guia_num].append(proc)
+
+        # Calcular status agregado para cada guia
+        for guia_num, procs in guide_procedures.items():
+            status_counts = {
+                "pago": 0,
+                "parcialmente_pago": 0,
+                "glosado": 0,
+                "nao_pago": 0,
+                "nao_encontrado": 0,
+                "sem_demonstrativo": 0,
+            }
+
+            total_procs = len(procs)
+            for proc in procs:
+                proc_status = proc["smart_payment_status"]["status"]
+                if proc_status in status_counts:
+                    status_counts[proc_status] += 1
+
+            # Determinar status agregado da guia baseado na hierarquia de prioridade
+            if status_counts["pago"] == total_procs:
+                # Todos os procedimentos foram pagos
+                aggregated_status = "pago"
+                aggregated_reason = f"Todos os {total_procs} procedimentos foram pagos"
+            elif status_counts["glosado"] > 0:
+                # Há pelo menos uma glosa
+                if status_counts["pago"] > 0 or status_counts["parcialmente_pago"] > 0:
+                    aggregated_status = "parcialmente_pago"
+                    aggregated_reason = f"{status_counts['glosado']} glosado(s), {status_counts['pago'] + status_counts['parcialmente_pago']} pago(s)"
+                else:
+                    aggregated_status = "glosado"
+                    aggregated_reason = f"{status_counts['glosado']} de {total_procs} procedimentos glosados"
+            elif status_counts["parcialmente_pago"] > 0:
+                # Há pagamentos parciais
+                aggregated_status = "parcialmente_pago"
+                aggregated_reason = f"{status_counts['parcialmente_pago']} procedimentos com pagamento parcial"
+            elif status_counts["pago"] > 0:
+                # Alguns pagos, outros pendentes
+                aggregated_status = "parcialmente_pago"
+                aggregated_reason = (
+                    f"{status_counts['pago']} pagos de {total_procs} procedimentos"
+                )
+            elif (
+                status_counts["nao_encontrado"] > 0
+                or status_counts["sem_demonstrativo"] > 0
+            ):
+                # Procedimentos sem análise
+                aggregated_status = (
+                    "sem_demonstrativo"
+                    if status_counts["sem_demonstrativo"] > 0
+                    else "nao_encontrado"
+                )
+                aggregated_reason = "Guia sem análise de pagamento"
+            else:
+                # Não pagos
+                aggregated_status = "nao_pago"
+                aggregated_reason = f"{total_procs} procedimentos não pagos"
+
+            guide_aggregated_status[guia_num] = {
+                "status": aggregated_status,
+                "reason": aggregated_reason,
+                "breakdown": status_counts,
+                "total_procedures": total_procs,
+            }
+
+        # Terceiro: Adicionar status agregado aos procedimentos
+        for proc in procedures_with_smart_status:
+            guia_num = proc["numero_guia"]
+            proc["guide_aggregated_status"] = guide_aggregated_status.get(guia_num)
+
         # Retornar no formato esperado pelo frontend
         result = {
-            "procedures": [
-                {
-                    "numero_guia": g.numero_guia,
-                    "data": g.data,
-                    "beneficiario": g.paciente,
-                    "codigo": g.codigo,
-                    "descricao": g.descricao,
-                    "papel": g.papel,
-                    "crm": g.crm,
-                    "qtd": g.qtd,
-                    "status": g.status,
-                    "prestador": g.prestador,
-                    "nome_medico": g.nome_medico,
-                    "dt_inicio": g.dt_inicio,
-                    "dt_fim": g.dt_fim,
-                    "status_part": g.status_part,
-                }
-                for g in guias
-            ],
+            "procedures": procedures_with_smart_status,
             "total": total,
             "page": page,
             "pageSize": pageSize,
+            # Estatísticas adicionais para o dashboard
+            "payment_analytics": {
+                "total_demonstrativos": len(demonstrativos),
+                "total_paid_procedures": len(
+                    [p for p in all_demonstrativo_procedures if p["is_paid"]]
+                ),
+                "total_glosa_procedures": len(
+                    [p for p in all_demonstrativo_procedures if p["is_full_glosa"]]
+                ),
+                "total_partial_payments": len(
+                    [p for p in all_demonstrativo_procedures if p["is_partial_payment"]]
+                ),
+                "total_glosa_value": sum(
+                    p["glosa"] for p in all_demonstrativo_procedures
+                ),
+                "total_paid_value": sum(
+                    p["approved_value"] for p in all_demonstrativo_procedures
+                ),
+                "crosscheck_coverage": (
+                    len(demonstrativo_procedures) / len(guias) * 100 if guias else 0
+                ),
+            },
         }
         return result
     finally:
@@ -2849,3 +3189,767 @@ def test_demonstrativo_detalhes():
             "delta_percent": -22.6,
         },
     ]
+
+
+@app.get("/api/v1/unpaid-procedures")
+def get_unpaid_procedures(user: dict = Depends(get_current_user)):
+    """
+    Retorna lista de procedimentos que foram adicionados via guias
+    mas ainda não foram pagos (não aparecem nos demonstrativos).
+    Inclui informações enriquecidas como urgência, valor estimado e tempo decorrido.
+    """
+    crm = user.get("crm")
+    uf = user.get("uf")
+
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    db = SessionLocal()
+    try:
+        # Buscar todos os procedimentos das guias do usuário
+        guias_procedures = db.query(Guia).filter_by(crm=crm, uf=uf).all()
+
+        # Buscar todos os procedimentos pagos dos demonstrativos
+        paid_procedures = set()
+        demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
+
+        for demo in demonstrativos:
+            # Buscar detalhes do demonstrativo
+            try:
+                procedures_response = get_demonstrativo_procedures(demo.id, user)
+                if procedures_response:
+                    for proc in procedures_response:
+                        # Marcar como pago se valor pago > 0
+                        financial = proc.get("financial", {})
+                        if financial.get("approved_value", 0) > 0:
+                            key = (proc.get("codigo"), proc.get("guia"))
+                            paid_procedures.add(key)
+            except Exception as e:
+                logger.warning(
+                    f"Erro ao buscar procedimentos do demonstrativo {demo.id}: {e}"
+                )
+                continue
+
+        # Carregar CBHPM para estimativas de valor
+        from src.parsers.cbhpm_parser import CBHPMParser
+
+        cbhpm_parser = None
+        try:
+            cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
+        except Exception as e:
+            logger.warning(f"Erro ao carregar CBHPM: {e}")
+
+        # Identificar procedimentos não pagos
+        unpaid_list = []
+        for guia_proc in guias_procedures:
+            key = (guia_proc.codigo, guia_proc.numero_guia)
+            if key not in paid_procedures:
+                # Calcular dias desde a execução
+                days_since = 0
+                try:
+                    from datetime import datetime
+
+                    if guia_proc.data:
+                        # Assumindo formato DD/MM/YYYY
+                        parts = guia_proc.data.split("/")
+                        if len(parts) == 3:
+                            proc_date = datetime(
+                                int(parts[2]), int(parts[1]), int(parts[0])
+                            )
+                            days_since = (datetime.now() - proc_date).days
+                except Exception:
+                    days_since = 0
+
+                # Estimar valor usando CBHPM
+                estimated_value = 0
+                if cbhpm_parser and guia_proc.codigo and guia_proc.papel:
+                    try:
+                        cbhpm_data = cbhpm_parser.get_procedure(str(guia_proc.codigo))
+                        if cbhpm_data:
+                            papel_normalizado = guia_proc.papel.lower().strip()
+                            if papel_normalizado in ["cirurgiao", "cirurgião"]:
+                                estimated_value = cbhpm_data.get("surgeon_value", 0.0)
+                            elif papel_normalizado in ["anestesista"]:
+                                estimated_value = cbhpm_data.get(
+                                    "anesthesiologist_value", 0.0
+                                )
+                            elif papel_normalizado in [
+                                "primeiro auxiliar",
+                                "1º auxiliar",
+                                "auxiliar",
+                            ]:
+                                estimated_value = cbhpm_data.get(
+                                    "first_assistant_value", 0.0
+                                )
+                            elif papel_normalizado in [
+                                "segundo auxiliar",
+                                "2º auxiliar",
+                            ]:
+                                estimated_value = cbhpm_data.get(
+                                    "first_assistant_value", 0.0
+                                )
+                    except Exception:
+                        estimated_value = 0
+
+                # Determinar urgência baseada no tempo
+                urgency = "low"
+                if days_since > 90:
+                    urgency = "high"
+                elif days_since > 30:
+                    urgency = "medium"
+
+                unpaid_list.append(
+                    {
+                        "numero_guia": guia_proc.numero_guia,
+                        "data": guia_proc.data,
+                        "beneficiario": guia_proc.paciente or "",
+                        "codigo": guia_proc.codigo,
+                        "descricao": guia_proc.descricao,
+                        "papel": guia_proc.papel,
+                        "prestador": guia_proc.prestador or "",
+                        "qtd": guia_proc.qtd,
+                        "crm": guia_proc.crm,
+                        "nome_medico": guia_proc.nome_medico or "",
+                        "dt_inicio": guia_proc.dt_inicio or "",
+                        "dt_fim": guia_proc.dt_fim or "",
+                        "status_part": guia_proc.status_part or "",
+                        "days_since": days_since,
+                        "estimated_value": (
+                            float(estimated_value) if estimated_value else 0
+                        ),
+                        "urgency": urgency,
+                    }
+                )
+
+        # Calcular estatísticas
+        total_estimated_value = sum(
+            proc.get("estimated_value", 0) for proc in unpaid_list
+        )
+        unique_patients = len(
+            set(
+                proc.get("beneficiario")
+                for proc in unpaid_list
+                if proc.get("beneficiario")
+            )
+        )
+        oldest_days = max(
+            (proc.get("days_since", 0) for proc in unpaid_list), default=0
+        )
+
+        return {
+            "total_procedures": len(guias_procedures),
+            "paid_procedures": len(paid_procedures),
+            "unpaid_procedures": len(unpaid_list),
+            "total_patients": unique_patients,
+            "total_estimated_value": total_estimated_value,
+            "oldest_procedure_days": oldest_days,
+            "unpaid_list": unpaid_list,
+        }
+
+    except Exception as e:
+        logger.error(f"Erro ao buscar procedimentos não pagos: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+    finally:
+        db.close()
+
+
+@app.get("/api/v1/payment-status/{guia_number}")
+def get_payment_status(guia_number: str, user: dict = Depends(get_current_user)):
+    """
+    Verifica se uma guia específica foi paga, retornando status detalhado.
+    """
+    crm = user.get("crm")
+    uf = user.get("uf")
+
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    db = SessionLocal()
+    try:
+        # Buscar procedimentos da guia
+        guia_procedures = (
+            db.query(Guia).filter_by(numero_guia=guia_number, crm=crm, uf=uf).all()
+        )
+
+        if not guia_procedures:
+            raise HTTPException(status_code=404, detail="Guia não encontrada")
+
+        # Verificar status de pagamento de cada procedimento
+        payment_status = []
+        total_procedures = len(guia_procedures)
+        paid_procedures = 0
+
+        # Buscar demonstrativos do usuário
+        demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
+
+        for proc in guia_procedures:
+            proc_status = {
+                "codigo": proc.codigo,
+                "descricao": proc.descricao,
+                "papel": proc.papel,
+                "pago": False,
+                "valor_pago": 0,
+                "data_pagamento": None,
+                "motivo_nao_pago": None,
+            }
+
+            # Verificar se foi pago em algum demonstrativo
+            for demo in demonstrativos:
+                try:
+                    demo_procedures = get_demonstrativo_procedures(demo.id, user)
+                    for demo_proc in demo_procedures:
+                        if (
+                            demo_proc.get("codigo") == proc.codigo
+                            and demo_proc.get("guia") == proc.numero_guia
+                        ):
+                            if demo_proc.get("valorPago", 0) > 0:
+                                proc_status["pago"] = True
+                                proc_status["valor_pago"] = demo_proc.get(
+                                    "valorPago", 0
+                                )
+                                proc_status["data_pagamento"] = demo.periodo
+                                paid_procedures += 1
+                            else:
+                                proc_status["motivo_nao_pago"] = demo_proc.get(
+                                    "motivo_glosa", "Procedimento glosado"
+                                )
+                            break
+                except Exception:
+                    continue
+
+            if not proc_status["pago"] and not proc_status["motivo_nao_pago"]:
+                proc_status["motivo_nao_pago"] = (
+                    "Procedimento não encontrado nos demonstrativos"
+                )
+
+            payment_status.append(proc_status)
+
+        # Calcular resumo
+        payment_rate = (
+            (paid_procedures / total_procedures * 100) if total_procedures > 0 else 0
+        )
+
+        return {
+            "guia": guia_number,
+            "total_procedures": total_procedures,
+            "paid_procedures": paid_procedures,
+            "payment_rate": round(payment_rate, 2),
+            "status": (
+                "pago"
+                if payment_rate == 100
+                else "parcialmente_pago" if payment_rate > 0 else "nao_pago"
+            ),
+            "procedures": payment_status,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            f"Erro ao verificar status de pagamento da guia {guia_number}: {e}"
+        )
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+    finally:
+        db.close()
+
+
+@app.get("/api/v1/reports/generate")
+def generate_report(
+    format: str = "excel", period: str = None, user: dict = Depends(get_current_user)
+):
+    """
+    Gera relatório de procedimentos, pagamentos e glosas em Excel, PDF ou JSON.
+    """
+    crm = user.get("crm")
+    uf = user.get("uf")
+
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    if format not in ["excel", "pdf", "json"]:
+        raise HTTPException(
+            status_code=400, detail="Formato deve ser 'excel', 'pdf' ou 'json'"
+        )
+
+    try:
+        import os
+        import tempfile
+        from datetime import datetime
+
+        import pandas as pd
+
+        # Buscar dados com fallback seguro
+        try:
+            unpaid_response = get_unpaid_procedures(user)
+        except Exception as e:
+            logger.warning(f"Erro ao buscar procedimentos não pagos: {e}")
+            unpaid_response = {
+                "total_procedures": 0,
+                "paid_procedures": 0,
+                "unpaid_procedures": 0,
+                "unpaid_list": [],
+            }
+
+        db = SessionLocal()
+        try:
+            # Buscar demonstrativos e seus procedimentos
+            demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
+
+            paid_procedures = []
+            for demo in demonstrativos:
+                try:
+                    procedures = get_demonstrativo_procedures(demo.id, user)
+                    for proc in procedures:
+                        proc["periodo"] = demo.periodo
+                        proc["demonstrativo_id"] = demo.id
+                        paid_procedures.append(proc)
+                except Exception as e:
+                    logger.warning(f"Erro ao processar demonstrativo {demo.id}: {e}")
+                    continue
+
+            # Criar DataFrames
+            df_paid = (
+                pd.DataFrame(paid_procedures) if paid_procedures else pd.DataFrame()
+            )
+            df_unpaid = (
+                pd.DataFrame(unpaid_response["unpaid_list"])
+                if unpaid_response["unpaid_list"]
+                else pd.DataFrame()
+            )
+
+            # Calcular valores com fallback seguro
+            total_value = 0
+            paid_value = 0
+            glossed_value = 0
+
+            for proc in paid_procedures:
+                try:
+                    financial = proc.get("financial", {})
+                    if isinstance(financial, dict):
+                        total_value += float(financial.get("presented_value", 0) or 0)
+                        paid_value += float(financial.get("approved_value", 0) or 0)
+                        glossed_value += float(financial.get("glosa", 0) or 0)
+                except (ValueError, TypeError, AttributeError):
+                    continue
+
+            # Gerar arquivo temporário
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"relatorio_medcheck_{crm}_{timestamp}"
+
+            if format == "json":
+                # Retornar dados em formato JSON para uso no frontend
+                return {
+                    "summary": {
+                        "total_procedures": unpaid_response["total_procedures"],
+                        "paid_procedures": unpaid_response["paid_procedures"],
+                        "unpaid_procedures": unpaid_response["unpaid_procedures"],
+                        "payment_rate": (
+                            round(
+                                (
+                                    unpaid_response["paid_procedures"]
+                                    / unpaid_response["total_procedures"]
+                                    * 100
+                                ),
+                                2,
+                            )
+                            if unpaid_response["total_procedures"] > 0
+                            else 0
+                        ),
+                        "total_value": total_value,
+                        "paid_value": paid_value,
+                        "glossed_value": glossed_value,
+                    },
+                    "monthly_revenue": [],  # Implementar análise mensal futuramente
+                    "procedure_analysis": [],  # Implementar análise por procedimento futuramente
+                    "hospital_analysis": [],  # Implementar análise por hospital futuramente
+                    "paid_procedures": paid_procedures,
+                    "unpaid_procedures": unpaid_response["unpaid_list"],
+                }
+
+            elif format == "excel":
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+                with pd.ExcelWriter(temp_file.name, engine="openpyxl") as writer:
+                    if not df_paid.empty:
+                        df_paid.to_excel(
+                            writer, sheet_name="Procedimentos Pagos", index=False
+                        )
+                    if not df_unpaid.empty:
+                        df_unpaid.to_excel(
+                            writer, sheet_name="Procedimentos Não Pagos", index=False
+                        )
+
+                    # Adicionar sheet de resumo
+                    summary_data = {
+                        "Métrica": [
+                            "Total de Procedimentos nas Guias",
+                            "Procedimentos Pagos",
+                            "Procedimentos Não Pagos",
+                            "Taxa de Pagamento (%)",
+                            "Valor Total Recebido (R$)",
+                            "Data do Relatório",
+                        ],
+                        "Valor": [
+                            unpaid_response["total_procedures"],
+                            unpaid_response["paid_procedures"],
+                            unpaid_response["unpaid_procedures"],
+                            (
+                                round(
+                                    (
+                                        unpaid_response["paid_procedures"]
+                                        / unpaid_response["total_procedures"]
+                                        * 100
+                                    ),
+                                    2,
+                                )
+                                if unpaid_response["total_procedures"] > 0
+                                else 0
+                            ),
+                            paid_value,
+                            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                        ],
+                    }
+                    pd.DataFrame(summary_data).to_excel(
+                        writer, sheet_name="Resumo", index=False
+                    )
+
+                return FileResponse(
+                    temp_file.name,
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    filename=f"{filename}.xlsx",
+                )
+
+            else:  # PDF format
+                # Para PDF, seria necessário implementar geração com reportlab ou similar
+                raise HTTPException(
+                    status_code=501,
+                    detail="Formato PDF não implementado ainda. Use format=excel",
+                )
+
+        finally:
+            db.close()
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar relatório: {e}")
+        # Retornar dados vazios mas válidos em caso de erro
+        if format == "json":
+            return {
+                "summary": {
+                    "total_procedures": 0,
+                    "paid_procedures": 0,
+                    "unpaid_procedures": 0,
+                    "payment_rate": 0,
+                    "total_value": 0,
+                    "paid_value": 0,
+                    "glossed_value": 0,
+                },
+                "monthly_revenue": [],
+                "procedure_analysis": [],
+                "hospital_analysis": [],
+                "paid_procedures": [],
+                "unpaid_procedures": [],
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Erro ao gerar relatório")
+
+
+# --- Endpoint para Server-Sent Events (Tempo Real) ---
+@app.get("/api/v1/events/stream")
+async def stream_events(user: dict = Depends(get_current_user)):
+    """
+    Server-Sent Events endpoint para updates em tempo real.
+    Usado por SaaS profissionais para sincronização instantânea.
+    """
+    import asyncio
+    import json
+
+    from fastapi.responses import StreamingResponse
+
+    async def event_stream():
+        crm = user["crm"]
+        uf = user["uf"]
+
+        # Headers SSE
+        yield "data: " + json.dumps(
+            {
+                "type": "connected",
+                "message": "Conectado ao sistema de tempo real",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        ) + "\n\n"
+
+        # Loop para enviar updates periódicos (otimizado)
+        last_activity_check = datetime.utcnow()
+
+        while True:
+            try:
+                # Verificar se há novas atividades desde último check
+                current_time = datetime.utcnow()
+
+                # Simular verificação de atividades (em produção seria do DB)
+                # Por enquanto, enviar heartbeat a cada 30s
+                if (current_time - last_activity_check).seconds >= 30:
+                    yield "data: " + json.dumps(
+                        {"type": "heartbeat", "timestamp": current_time.isoformat()}
+                    ) + "\n\n"
+                    last_activity_check = current_time
+
+                await asyncio.sleep(5)  # Check a cada 5 segundos
+
+            except Exception as e:
+                logger.error(f"Erro no SSE stream: {e}")
+                break
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
+
+
+# --- Endpoint para notificar updates ---
+@app.post("/api/v1/events/notify")
+async def notify_update(
+    event_type: str = Body(...),
+    data: dict = Body({}),
+    user: dict = Depends(get_current_user),
+):
+    """
+    Endpoint para notificar outros clientes sobre updates.
+    Usado quando uma ação é realizada e precisa sincronizar outras abas/usuários.
+    """
+    # Em produção, isso seria enviado via WebSocket, Redis pub/sub, etc.
+    # Por agora, vamos usar BroadcastChannel no frontend
+
+    log_audit(
+        action=f"real_time_event_{event_type}", user_crm=user.get("crm"), details=data
+    )
+
+    return {"status": "notified", "event_type": event_type}
+
+
+# --- Endpoint para analytics/intelligence ---
+@app.get("/api/v1/analytics")
+def get_analytics(user: dict = Depends(get_current_user)):
+    """
+    Retorna analytics avançados para o Intelligence Hub.
+    """
+    db = SessionLocal()
+    try:
+        crm = user["crm"]
+        uf = user["uf"]
+
+        # Buscar todos os demonstrativos do usuário
+        demonstrativos = (
+            db.query(Demonstrativo)
+            .filter_by(crm=crm, uf=uf)
+            .order_by(Demonstrativo.upload_time.desc())
+            .all()
+        )
+
+        # Buscar todas as guias do usuário
+        guias = db.query(Guia).filter_by(crm=crm, uf=uf).all()
+
+        # Cálculos básicos
+        total_demonstrativos = len(demonstrativos)
+        total_guias = len(guias)
+
+        # Parse valores dos demonstrativos
+        total_apresentado = 0
+        total_liberado = 0
+        total_glosa = 0
+
+        for demo in demonstrativos:
+            try:
+                apresentado = float(
+                    demo.apresentado.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+                liberado = float(
+                    demo.liberado.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+                glosa = float(
+                    demo.glosa.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+
+                total_apresentado += apresentado
+                total_liberado += liberado
+                total_glosa += glosa
+            except:
+                continue
+
+        # Taxa de recuperação
+        taxa_recuperacao = (
+            (total_liberado / total_apresentado * 100) if total_apresentado > 0 else 0
+        )
+
+        # Performance mensal (últimos 12 meses)
+        import calendar
+        from collections import defaultdict
+
+        monthly_data = defaultdict(
+            lambda: {"apresentado": 0, "liberado": 0, "glosa": 0, "procedimentos": 0}
+        )
+
+        for demo in demonstrativos[-12:]:  # Últimos 12 demonstrativos
+            try:
+                # Extrair mês do período (assumindo formato "MM/YYYY" ou similar)
+                periodo = demo.periodo or "01/2024"
+                if "/" in periodo:
+                    mes_ano = periodo.split("/")
+                    if len(mes_ano) >= 2:
+                        mes = int(mes_ano[0])
+                        ano = int(mes_ano[1])
+                        key = f"{calendar.month_abbr[mes]}/{ano}"
+                    else:
+                        key = periodo
+                else:
+                    key = periodo
+
+                apresentado = float(
+                    demo.apresentado.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+                liberado = float(
+                    demo.liberado.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+                glosa = float(
+                    demo.glosa.replace("R$", "")
+                    .replace(".", "")
+                    .replace(",", ".")
+                    .strip()
+                )
+
+                monthly_data[key]["apresentado"] += apresentado
+                monthly_data[key]["liberado"] += liberado
+                monthly_data[key]["glosa"] += glosa
+                monthly_data[key]["procedimentos"] += demo.total_procedimentos
+            except:
+                continue
+
+        # Converter para lista ordenada
+        monthly_performance = []
+        for key, data in monthly_data.items():
+            taxa_glosa = (
+                (data["glosa"] / data["apresentado"] * 100)
+                if data["apresentado"] > 0
+                else 0
+            )
+            monthly_performance.append(
+                {
+                    "name": key,
+                    "recebido": data["liberado"],
+                    "glosado": data["glosa"],
+                    "taxa_glosa": taxa_glosa,
+                    "procedimentos": data["procedimentos"],
+                }
+            )
+
+        # Melhor mês
+        melhor_mes = (
+            max(monthly_performance, key=lambda x: x["recebido"])
+            if monthly_performance
+            else None
+        )
+
+        # Top procedimentos (baseado nas guias)
+        procedure_stats = defaultdict(lambda: {"count": 0, "total_qtd": 0})
+        for guia in guias:
+            key = f"{guia.codigo} - {guia.descricao[:50]}"
+            procedure_stats[key]["count"] += 1
+            procedure_stats[key]["total_qtd"] += guia.qtd
+
+        top_procedures = [
+            {
+                "codigo": key.split(" - ")[0],
+                "descricao": key.split(" - ")[1] if " - " in key else key,
+                "count": data["count"],
+                "recebido_total": 0,  # Placeholder
+                "glosado_total": 0,  # Placeholder
+            }
+            for key, data in sorted(
+                procedure_stats.items(), key=lambda x: x[1]["count"], reverse=True
+            )[:10]
+        ]
+
+        # Alertas inteligentes
+        alerts = []
+        if taxa_recuperacao < 85:
+            alerts.append(
+                {
+                    "type": "warning",
+                    "title": "Taxa de Recuperação Baixa",
+                    "message": f"Sua taxa atual é de {taxa_recuperacao:.1f}%. Recomendamos revisão.",
+                    "action": "revisar_demonstrativos",
+                }
+            )
+
+        if total_glosa > total_liberado * 0.2:
+            alerts.append(
+                {
+                    "type": "danger",
+                    "title": "Glosas Altas",
+                    "message": "Glosas representam mais de 20% do valor apresentado.",
+                    "action": "analisar_glosas",
+                }
+            )
+
+        # Recomendações
+        recommendations = []
+        if len(demonstrativos) < 3:
+            recommendations.append(
+                {
+                    "type": "info",
+                    "title": "Adicione Mais Demonstrativos",
+                    "description": "Para análises mais precisas, adicione mais demonstrativos.",
+                    "impact": "Alta",
+                    "action": "upload_demonstrativos",
+                }
+            )
+
+        # Resposta final
+        analytics_data = {
+            "summary": {
+                "total_recebido_historico": total_liberado,
+                "total_glosado_historico": total_glosa,
+                "taxa_recuperacao_media": taxa_recuperacao,
+                "projecao_anual": total_liberado * 12 if len(demonstrativos) > 0 else 0,
+                "valor_medio_procedimento": (
+                    total_liberado / total_guias if total_guias > 0 else 0
+                ),
+                "total_procedimentos_historico": sum(g.qtd for g in guias),
+                "demonstrativos_processados": total_demonstrativos,
+            },
+            "temporal_analytics": {
+                "monthly_performance": monthly_performance,
+                "melhor_mes": melhor_mes,
+            },
+            "performance_analytics": {"top_procedures": top_procedures},
+            "alerts": alerts,
+            "recommendations": recommendations,
+        }
+
+        return analytics_data
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar analytics: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar analytics")
+    finally:
+        db.close()

@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/AuthContext';
+import { useRealTimeSync } from '../../hooks/useRealTimeSync';
 import { toast } from 'sonner';
 import Brand from './Brand';
 import SidebarFooter from './Footer';
@@ -36,6 +37,14 @@ export function AppSidebar() {
   const [pendingGlosas, setPendingGlosas] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // Tempo real: atualizações automáticas da sidebar
+  const {} = useRealTimeSync({
+    onActivityUpdate: () => {
+      console.log('🔄 Sidebar: atualizando contadores...');
+      fetchPendingGlosas();
+    },
+  });
 
   // Buscar dados reais de glosas pendentes
   useEffect(() => {
@@ -84,15 +93,22 @@ export function AppSidebar() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        // Contar atividades recentes como "não lidas" (últimas 2 horas)
-        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
-        const activities = Array.isArray(activityResponse.data)
-          ? activityResponse.data
+        // Contar atividades recentes como "não lidas" (últimas 1 hora)
+        const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+        const activities = Array.isArray(activityResponse.data.activities)
+          ? activityResponse.data.activities
           : [];
         const recentActivities = activities.filter(
-          (activity: any) => new Date(activity.timestamp) > twoHoursAgo
+          (activity: any) => new Date(activity.timestamp) > oneHourAgo
         );
         setUnreadNotifications(recentActivities.length);
+
+        // Log para debug
+        if (recentActivities.length > 0) {
+          console.log(
+            `📊 ${recentActivities.length} atividade(s) recente(s) detectada(s)`
+          );
+        }
       } catch (error) {
         console.error('Erro ao buscar dados da sidebar:', error);
         // Manter valores padrão em caso de erro
@@ -105,9 +121,12 @@ export function AppSidebar() {
 
     fetchPendingGlosas();
 
-    // Atualizar a cada 5 minutos
+    // Atualizar a cada 5 minutos (reduzido - tempo real cuida do resto)
     const interval = setInterval(fetchPendingGlosas, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const isActive = (route: string) => location.pathname.startsWith(route);

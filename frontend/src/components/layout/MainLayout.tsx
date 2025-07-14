@@ -8,7 +8,7 @@ import QuickActions from '../ui/QuickActions';
 import { useAuth } from '../../contexts/auth/AuthContext';
 import { UserMenu } from '../navbar/UserMenu';
 import { AuthFooter } from './AuthFooter';
-import { SyncStatusIndicator } from '../common/SyncStatusIndicator';
+
 import { Loader2 } from 'lucide-react';
 
 interface MainLayoutProps {
@@ -113,7 +113,6 @@ export function MainLayout({
               {/* Search e User Menu consolidado */}
               <div className="flex items-center space-x-6">
                 {/* Sync Status Indicator */}
-                <SyncStatusIndicator compact />
 
                 {/* Deploy Version Indicator */}
                 <div className="hidden xl:flex items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">

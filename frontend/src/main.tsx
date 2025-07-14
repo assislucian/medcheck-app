@@ -4,7 +4,7 @@ import './index.css';
 import { ThemeProvider } from './hooks/use-theme';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RealTimeSyncProvider } from './providers/RealTimeSyncProvider';
+
 // import { MuiThemeProvider } from './mui-theme'
 
 // Teste incremental: comece apenas com <App />
@@ -13,9 +13,7 @@ createRoot(document.getElementById('root')!).render(
   <ThemeProvider>
     <NotificationProvider>
       <QueryClientProvider client={queryClient}>
-        <RealTimeSyncProvider>
-          <App />
-        </RealTimeSyncProvider>
+        <App />
       </QueryClientProvider>
     </NotificationProvider>
   </ThemeProvider>

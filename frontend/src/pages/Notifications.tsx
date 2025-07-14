@@ -1,40 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { DataGrid } from '@/components/ui/data-grid';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Activity,
-  CheckCircle,
-  AlertCircle,
+  Search,
+  RefreshCw,
+  Calendar,
+  User,
   FileText,
   Upload,
   Download,
   Trash2,
   Edit,
-  UserPlus,
-  Settings,
-  DollarSign,
-  FileBarChart,
-  AlertTriangle,
+  Eye,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Info,
   Clock,
   Filter,
-  Search,
-  XCircle,
-  Info,
-  BarChart2,
-  User,
-  Shield,
+  ArrowUpDown,
   Loader2,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import axios from 'axios';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import { useRealTimeSync, REAL_TIME_EVENTS } from '@/hooks/useRealTimeSync';
 import {
   Select,
   SelectContent,
@@ -44,506 +38,593 @@ import {
 } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Helmet } from 'react-helmet-async';
-import { usePageTitle } from '@/hooks/usePageTitle';
-import { toast } from 'sonner';
-
-// Tipos de atividade mais realísticos para sistema médico
-type ActivityType =
-  | 'upload'
-  | 'analysis'
-  | 'payment'
-  | 'gloss'
-  | 'contest'
-  | 'export'
-  | 'profile'
-  | 'settings'
-  | 'login'
-  | 'system';
 
 interface ActivityLog {
   id: string;
-  type: ActivityType;
   action: string;
-  description: string;
+  target: Record<string, any> | null;
+  result: string | null;
+  details: string | null;
   timestamp: string;
-  status: 'success' | 'warning' | 'error' | 'info';
-  details?: string;
-  value?: number;
-  entity?: string; // guia, demonstrativo, etc
+  crm: string;
+  ip: string | null;
+  risk_level: string | null;
+  impact_score: number | null;
+  tags: string[] | null;
+  duration: number | null;
+  compliance_flags: string[] | null;
 }
 
-interface ActivityLogsResponse {
-  activities: ActivityLog[];
-  total: number;
-  user_crm: string;
-  generated_at: string;
+interface ActivityStats {
+  total_activities: number;
+  today_activities: number;
+  high_risk_activities: number;
+  failed_activities: number;
+  most_common_action: string;
+  average_session_duration: number;
 }
 
-// Função para obter ícone baseado no tipo de atividade
-const getActivityIcon = (type: ActivityType, status: string) => {
-  const iconProps = { className: 'h-4 w-4' };
-
-  switch (type) {
-    case 'upload':
-      return (
-        <Upload
-          {...iconProps}
-          className={`h-4 w-4 ${
-            status === 'success' ? 'text-blue-500' : 'text-gray-500'
-          }`}
-        />
-      );
-    case 'analysis':
-      return (
-        <FileBarChart
-          {...iconProps}
-          className={`h-4 w-4 ${
-            status === 'success'
-              ? 'text-green-500'
-              : status === 'warning'
-                ? 'text-amber-500'
-                : 'text-blue-500'
-          }`}
-        />
-      );
-    case 'payment':
-      return <DollarSign {...iconProps} className="h-4 w-4 text-green-500" />;
-    case 'gloss':
-      return <AlertTriangle {...iconProps} className="h-4 w-4 text-red-500" />;
-    case 'contest':
-      return <FileText {...iconProps} className="h-4 w-4 text-blue-500" />;
-    case 'export':
-      return <Download {...iconProps} className="h-4 w-4 text-purple-500" />;
-    case 'profile':
-      return <Edit {...iconProps} className="h-4 w-4 text-indigo-500" />;
-    case 'login':
-      return <UserPlus {...iconProps} className="h-4 w-4 text-green-500" />;
-    case 'settings':
-      return <Settings {...iconProps} className="h-4 w-4 text-gray-500" />;
-    case 'system':
-      return <Activity {...iconProps} className="h-4 w-4 text-gray-500" />;
-    default:
-      return <Activity {...iconProps} className="h-4 w-4 text-gray-500" />;
-  }
-};
-
-// Colunas do DataGrid
-const activityColumns = [
-  {
-    field: 'activity',
-    headerName: 'Atividade',
-    flex: 1,
-    renderCell: ({ row }: { row: ActivityLog }) => (
-      <div className="flex items-start gap-3 py-2">
-        <div className="mt-1">{getActivityIcon(row.type, row.status)}</div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-gray-900">{row.action}</span>
-            <Badge
-              variant={
-                row.status === 'success'
-                  ? 'default'
-                  : row.status === 'warning'
-                    ? 'secondary'
-                    : row.status === 'error'
-                      ? 'destructive'
-                      : 'outline'
-              }
-              className="text-xs"
-            >
-              {row.status === 'success'
-                ? 'Sucesso'
-                : row.status === 'warning'
-                  ? 'Atenção'
-                  : row.status === 'error'
-                    ? 'Erro'
-                    : 'Info'}
-            </Badge>
-          </div>
-          <p className="text-sm text-gray-600 mb-1">{row.description}</p>
-          {row.details && <p className="text-xs text-gray-500">{row.details}</p>}
-          {row.entity && (
-            <div className="flex items-center gap-1 mt-1">
-              <FileText className="h-3 w-3 text-gray-400" />
-              <span className="text-xs text-gray-500">{row.entity}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    ),
-  },
-  {
-    field: 'value',
-    headerName: 'Valor',
-    width: 120,
-    renderCell: ({ row }: { row: ActivityLog }) =>
-      row.value ? (
-        <div className="text-right">
-          <span
-            className={`font-medium ${
-              row.type === 'payment'
-                ? 'text-green-600'
-                : row.type === 'gloss'
-                  ? 'text-red-600'
-                  : 'text-blue-600'
-            }`}
-          >
-            {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(row.value)}
-          </span>
-        </div>
-      ) : null,
-  },
-  {
-    field: 'timestamp',
-    headerName: 'Quando',
-    width: 150,
-    renderCell: ({ row }: { row: ActivityLog }) => (
-      <div className="text-sm text-gray-500">
-        <div>
-          {formatDistanceToNow(new Date(row.timestamp), {
-            addSuffix: true,
-            locale: ptBR,
-          })}
-        </div>
-        <div className="text-xs text-gray-400">
-          {new Date(row.timestamp).toLocaleString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </div>
-      </div>
-    ),
-  },
-];
-
-const ActivityLogPage = () => {
-  const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-
-  // SEO e Título Premium
+const NotificationsPage = () => {
   usePageTitle({
-    title: 'Activity Log',
+    title: 'Log de Atividades',
     description:
-      'Log completo de atividades do sistema com rastreabilidade total das operações realizadas',
+      'Monitoramento em tempo real das atividades do sistema e auditoria de ações',
     keywords:
-      'activity log, log atividades, auditoria sistema, rastreabilidade, histórico operações',
+      'log de atividades, auditoria, monitoramento, segurança, atividades sistema',
   });
 
-  // Buscar dados reais do backend
-  const fetchActivityLogs = async () => {
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
+  const [filteredActivities, setFilteredActivities] = useState<ActivityLog[]>([]);
+  const [stats, setStats] = useState<ActivityStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [actionFilter, setActionFilter] = useState('all');
+  const [riskFilter, setRiskFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Tempo real profissional
+  const { isConnected, triggerUpdate } = useRealTimeSync({
+    onActivityUpdate: () => {
+      console.log('🔄 Tempo real: atualizando atividades...');
+      loadActivities(true);
+    },
+    onDataChange: (event) => {
+      if (
+        event.type.includes('activity') ||
+        event.type.includes('delete') ||
+        event.type.includes('upload')
+      ) {
+        console.log('📡 Evento tempo real recebido:', event.type);
+        loadActivities(true);
+      }
+    },
+  });
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [activities, searchTerm, actionFilter, riskFilter, dateFilter, sortOrder]);
+
+  const loadActivities = async (showToast = false) => {
     try {
-      setLoading(true);
-      setError(null);
+      setLoading(showToast ? false : true);
+      setRefreshing(showToast);
 
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/activity-logs?limit=50', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/activity-logs?limit=100`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const activityData = response.data.activities || [];
+      setActivities(activityData);
+
+      // Calcular estatísticas
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      const todayActivities = activityData.filter(
+        (activity: ActivityLog) => new Date(activity.timestamp) >= today
+      );
+
+      const highRiskActivities = activityData.filter(
+        (activity: ActivityLog) => activity.risk_level === 'high'
+      );
+
+      const failedActivities = activityData.filter(
+        (activity: ActivityLog) =>
+          activity.result === 'error' || activity.result === 'failed'
+      );
+
+      const actionCounts = activityData.reduce(
+        (acc: Record<string, number>, activity: ActivityLog) => {
+          acc[activity.action] = (acc[activity.action] || 0) + 1;
+          return acc;
         },
+        {}
+      );
+
+      const mostCommonAction =
+        Object.entries(actionCounts).length > 0
+          ? Object.entries(actionCounts).reduce((a, b) =>
+              actionCounts[a[0]] > actionCounts[b[0]] ? a : b
+            )[0]
+          : 'N/A';
+
+      const avgDuration =
+        activityData
+          .filter((a: ActivityLog) => a.duration !== null)
+          .reduce((acc: number, a: ActivityLog) => acc + (a.duration || 0), 0) /
+          activityData.filter((a: ActivityLog) => a.duration !== null).length || 0;
+
+      setStats({
+        total_activities: activityData.length,
+        today_activities: todayActivities.length,
+        high_risk_activities: highRiskActivities.length,
+        failed_activities: failedActivities.length,
+        most_common_action: mostCommonAction,
+        average_session_duration: avgDuration,
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro ao buscar logs: ${response.status}`);
+      if (showToast) {
+        toast.success('Atividades atualizadas com sucesso');
       }
-
-      const data: ActivityLogsResponse = await response.json();
-      const activitiesArray = Array.isArray(data.activities) ? data.activities : [];
-      setActivities(activitiesArray);
     } catch (error) {
-      console.error('Erro ao buscar activity logs:', error);
-      setError(error instanceof Error ? error.message : 'Erro desconhecido');
-      toast.error('Erro ao carregar logs de atividade');
+      console.error('Erro ao carregar atividades:', error);
+      toast.error('Erro ao carregar log de atividades');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    fetchActivityLogs();
-  }, []);
+  const applyFilters = () => {
+    let filtered = [...activities];
 
-  // Função para retry
-  const handleRetry = () => {
-    fetchActivityLogs();
+    // Filtro de busca
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (activity) =>
+          activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          activity.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          activity.target?.tipo?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filtro por ação
+    if (actionFilter !== 'all') {
+      filtered = filtered.filter((activity) => activity.action === actionFilter);
+    }
+
+    // Filtro por risco
+    if (riskFilter !== 'all') {
+      filtered = filtered.filter((activity) => activity.risk_level === riskFilter);
+    }
+
+    // Filtro por data
+    if (dateFilter !== 'all') {
+      const now = new Date();
+      let dateThreshold: Date;
+
+      switch (dateFilter) {
+        case 'today':
+          dateThreshold = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          dateThreshold = new Date(0);
+      }
+
+      filtered = filtered.filter(
+        (activity) => new Date(activity.timestamp) >= dateThreshold
+      );
+    }
+
+    // Ordenação
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.timestamp).getTime();
+      const dateB = new Date(b.timestamp).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
+    setFilteredActivities(filtered);
   };
 
-  // Filtros
-  const filteredActivities = activities.filter((activity) => {
-    const matchesType = filterType === 'all' || activity.type === filterType;
-    const matchesStatus = filterStatus === 'all' || activity.status === filterStatus;
-    const matchesSearch =
-      searchTerm === '' ||
-      activity.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (activity.details &&
-        activity.details.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    return matchesType && matchesStatus && matchesSearch;
-  });
-
-  // Estatísticas rápidas
-  const stats = {
-    total: activities.length,
-    success: activities.filter((a) => a.status === 'success').length,
-    warnings: activities.filter((a) => a.status === 'warning').length,
-    errors: activities.filter((a) => a.status === 'error').length,
+  const getActionIcon = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'upload_guia':
+      case 'upload_demonstrativo':
+        return <Upload className="h-4 w-4" />;
+      case 'download':
+        return <Download className="h-4 w-4" />;
+      case 'delete_guia':
+      case 'delete_demonstrativo':
+        return <Trash2 className="h-4 w-4" />;
+      case 'view_demonstrativo':
+      case 'view_guia':
+        return <Eye className="h-4 w-4" />;
+      case 'login':
+        return <User className="h-4 w-4" />;
+      case 'export':
+        return <Download className="h-4 w-4" />;
+      default:
+        return <Activity className="h-4 w-4" />;
+    }
   };
 
-  return (
-    <>
-      <Helmet>
-        <title>Activity Log | MedCheck</title>
-        <meta
-          name="description"
-          content="Log completo de atividades do sistema com rastreabilidade total"
-        />
-        <meta
-          name="keywords"
-          content="activity log, auditoria sistema, rastreabilidade médica"
-        />
-      </Helmet>
+  const getResultBadge = (result: string | null, riskLevel: string | null) => {
+    if (riskLevel === 'high') {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          Alto Risco
+        </Badge>
+      );
+    }
 
-      <AuthenticatedLayout title="Activity Log">
+    switch (result) {
+      case 'success':
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+            Sucesso
+          </Badge>
+        );
+      case 'error':
+      case 'failed':
+        return (
+          <Badge variant="destructive" className="text-xs">
+            Erro
+          </Badge>
+        );
+      case 'warning':
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+            Aviso
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="text-xs">
+            Info
+          </Badge>
+        );
+    }
+  };
+
+  const formatActionName = (action: string) => {
+    const actionMap: Record<string, string> = {
+      upload_guia: 'Upload de Guia',
+      upload_demonstrativo: 'Upload de Demonstrativo',
+      delete_guia: 'Exclusão de Guia',
+      delete_demonstrativo: 'Exclusão de Demonstrativo',
+      view_demonstrativo: 'Visualização de Demonstrativo',
+      view_guia: 'Visualização de Guia',
+      login: 'Login no Sistema',
+      export: 'Exportação de Dados',
+      validate: 'Validação de Dados',
+      crosscheck: 'Cruzamento de Dados',
+    };
+
+    return (
+      actionMap[action] ||
+      action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setActionFilter('all');
+    setRiskFilter('all');
+    setDateFilter('all');
+  };
+
+  const uniqueActions = Array.from(new Set(activities.map((a) => a.action)));
+
+  if (loading) {
+    return (
+      <AuthenticatedLayout>
         <div className="space-y-6">
-          {/* Header com estatísticas */}
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-5 w-5 bg-gray-200 rounded animate-pulse" />
-                      <div className="space-y-2">
-                        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-                        <div className="h-6 w-8 bg-gray-200 rounded animate-pulse" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Carregando log de atividades...</p>
             </div>
-          ) : error ? (
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 text-red-700">
-                  <XCircle className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">Erro ao carregar dados</p>
-                    <p className="text-sm text-red-600">{error}</p>
-                  </div>
-                  <Button
-                    onClick={handleRetry}
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto"
-                  >
-                    Tentar novamente
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Total</p>
-                      <p className="text-2xl font-bold">{stats.total}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Sucessos</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {stats.success}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-orange-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Avisos</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        {stats.warnings}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="h-5 w-5 text-red-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Erros</p>
-                      <p className="text-2xl font-bold text-red-600">{stats.errors}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Filtros */}
-          {!loading && !error && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Filtros</CardTitle>
-                <CardDescription>
-                  Filtre as atividades por tipo, status ou busque por palavra-chave
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Tipo de Atividade</label>
-                    <Select value={filterType} onValueChange={setFilterType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os tipos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os tipos</SelectItem>
-                        <SelectItem value="upload">Upload</SelectItem>
-                        <SelectItem value="analysis">Análise</SelectItem>
-                        <SelectItem value="payment">Pagamento</SelectItem>
-                        <SelectItem value="gloss">Glosa</SelectItem>
-                        <SelectItem value="login">Login</SelectItem>
-                        <SelectItem value="system">Sistema</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Status</label>
-                    <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Todos os status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os status</SelectItem>
-                        <SelectItem value="success">Sucesso</SelectItem>
-                        <SelectItem value="warning">Aviso</SelectItem>
-                        <SelectItem value="error">Erro</SelectItem>
-                        <SelectItem value="info">Informação</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Buscar</label>
-                    <Input
-                      placeholder="Buscar nas atividades..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Log de Atividades */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-primary" />
-                  Log de Atividades
-                  {loading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRetry}
-                    disabled={loading}
-                  >
-                    <Clock className="w-4 h-4 mr-2" />
-                    {loading ? 'Carregando...' : 'Atualizar'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={activities.length === 0}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Exportar
-                  </Button>
-                </div>
-              </div>
-              {!loading && !error && (
-                <CardDescription>
-                  Exibindo {filteredActivities.length} de {activities.length} atividades
-                  encontradas
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2 text-muted-foreground">
-                    Carregando atividades...
-                  </span>
-                </div>
-              ) : error ? (
-                <div className="text-center p-8">
-                  <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                  <p className="text-red-700 font-medium">
-                    Não foi possível carregar as atividades
-                  </p>
-                  <p className="text-red-600 text-sm mb-4">{error}</p>
-                  <Button onClick={handleRetry} variant="outline">
-                    Tentar novamente
-                  </Button>
-                </div>
-              ) : activities.length === 0 ? (
-                <div className="text-center p-8">
-                  <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">
-                    Nenhuma atividade encontrada
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    Use o sistema e suas atividades aparecerão aqui.
-                  </p>
-                </div>
-              ) : (
-                <DataGrid
-                  rows={filteredActivities}
-                  columns={activityColumns}
-                  pageSize={15}
-                  rowsPerPageOptions={[15, 30, 50]}
-                  disableSelectionOnClick
-                  className="min-h-[600px]"
-                  getRowHeight={() => 'auto'}
-                />
-              )}
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </AuthenticatedLayout>
-    </>
+    );
+  }
+
+  return (
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Log de Atividades</h1>
+            <p className="text-muted-foreground">
+              Monitoramento e auditoria de todas as ações realizadas no sistema
+            </p>
+          </div>
+          <Button
+            onClick={() => loadActivities(true)}
+            variant="outline"
+            size="sm"
+            disabled={refreshing}
+          >
+            {refreshing ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Atualizar
+          </Button>
+        </div>
+
+        {/* Estatísticas */}
+        {stats && (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium">Total de Atividades</p>
+                    <p className="text-2xl font-bold">{stats.total_activities}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium">Hoje</p>
+                    <p className="text-2xl font-bold">{stats.today_activities}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600" />
+                  <div>
+                    <p className="text-sm font-medium">Alto Risco</p>
+                    <p className="text-2xl font-bold">{stats.high_risk_activities}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <XCircle className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <p className="text-sm font-medium">Erros</p>
+                    <p className="text-2xl font-bold">{stats.failed_activities}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Filtros */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar atividades..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              <Select value={actionFilter} onValueChange={setActionFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas as ações" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as ações</SelectItem>
+                  {uniqueActions.map((action) => (
+                    <SelectItem key={action} value={action}>
+                      {formatActionName(action)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={riskFilter} onValueChange={setRiskFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os riscos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os riscos</SelectItem>
+                  <SelectItem value="low">Baixo risco</SelectItem>
+                  <SelectItem value="medium">Médio risco</SelectItem>
+                  <SelectItem value="high">Alto risco</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={dateFilter} onValueChange={setDateFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os períodos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os períodos</SelectItem>
+                  <SelectItem value="today">Hoje</SelectItem>
+                  <SelectItem value="week">Última semana</SelectItem>
+                  <SelectItem value="month">Último mês</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button variant="outline" onClick={clearFilters} className="w-full">
+                Limpar Filtros
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Lista de Atividades */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Atividades ({filteredActivities.length})</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                className="flex items-center gap-2"
+              >
+                <ArrowUpDown className="h-4 w-4" />
+                {sortOrder === 'desc' ? 'Mais recentes' : 'Mais antigas'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {filteredActivities.length > 0 ? (
+              <div className="space-y-4">
+                {filteredActivities.map((activity) => (
+                  <div key={activity.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-full bg-gray-100">
+                          {getActionIcon(activity.action)}
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">
+                              {formatActionName(activity.action)}
+                            </h4>
+                            {getResultBadge(activity.result, activity.risk_level)}
+                          </div>
+                          {activity.details && (
+                            <p className="text-sm text-muted-foreground">
+                              {activity.details}
+                            </p>
+                          )}
+                          {activity.target && (
+                            <div className="text-xs text-muted-foreground">
+                              {activity.target.tipo && (
+                                <span className="font-medium">Tipo: </span>
+                              )}
+                              {activity.target.tipo}
+                              {activity.target.arquivo && (
+                                <span className="ml-2">
+                                  <span className="font-medium">Arquivo: </span>
+                                  {activity.target.arquivo}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatDistanceToNow(new Date(activity.timestamp), {
+                            addSuffix: true,
+                            locale: ptBR,
+                          })}
+                        </div>
+                        <div className="text-xs">
+                          {new Date(activity.timestamp).toLocaleString('pt-BR')}
+                        </div>
+                        {activity.duration && (
+                          <div className="text-xs">Duração: {activity.duration}ms</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tags e informações adicionais */}
+                    {(activity.tags?.length > 0 ||
+                      activity.compliance_flags?.length > 0) && (
+                      <div className="flex flex-wrap gap-2">
+                        {activity.tags?.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {activity.compliance_flags?.map((flag, index) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs bg-blue-100 text-blue-800"
+                          >
+                            {flag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Informações de segurança */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-4">
+                        <span>CRM: {activity.crm}</span>
+                        {activity.ip && <span>IP: {activity.ip}</span>}
+                        {activity.impact_score !== null && (
+                          <span>Impact: {activity.impact_score}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">
+                  {activities.length === 0
+                    ? 'Pronto para registrar suas atividades!'
+                    : 'Nenhuma atividade encontrada'}
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  {activities.length === 0
+                    ? 'Suas ações no sistema (como upload, exclusão de guias, etc.) aparecerão aqui automaticamente.'
+                    : 'Tente ajustar os filtros para ver mais resultados.'}
+                </p>
+                {activities.length === 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    <p>
+                      💡 <strong>Dica:</strong> Experimente fazer upload de uma guia ou
+                      demonstrativo para ver como funciona!
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </AuthenticatedLayout>
   );
 };
 
-export default ActivityLogPage;
+export default NotificationsPage;

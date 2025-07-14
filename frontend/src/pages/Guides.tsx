@@ -26,8 +26,12 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
+import PaymentStatusIndicator from '../components/payment/PaymentStatusIndicator';
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
@@ -67,6 +71,7 @@ import { FiltersToolbar } from '../components/guides/FiltersToolbar';
 import { InfoCard } from '../components/ui/InfoCard';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useRealTimeSync, REAL_TIME_EVENTS } from '../hooks/useRealTimeSync';
 import { Helmet } from 'react-helmet-async';
 
 // Mapeamento de cores para cada tipo de papel (igual Demonstratives)
@@ -119,7 +124,8 @@ function logActivity(action: string, details: string, extra: any = {}) {
   localStorage.setItem(key, JSON.stringify(logs.slice(0, 20)));
 
   // Envia para o backend (não quebra se falhar)
-  fetch('/api/v1/activity-log', {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  fetch(`${apiUrl}/api/v1/activity-log`, {
     method: 'POST',
     headers: {
       Authorization: 'Bearer ' + (localStorage.getItem('token') || ''),
@@ -238,6 +244,16 @@ const GuidesPage = () => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [activities, setActivities] = useState(getRecentActivities());
+  const [paymentAnalytics, setPaymentAnalytics] = useState<any>(null);
+
+  // Tempo real profissional - sem polling manual
+  const { triggerUpdate } = useRealTimeSync({
+    onActivityUpdate: () => {
+      console.log('🔄 Tempo real: atualizando guias...');
+      fetchSavedGuias();
+      setActivities(getRecentActivities());
+    },
+  });
 
   // Configuração das colunas para o DataGrid
   const guidesColumns = [
@@ -274,23 +290,103 @@ const GuidesPage = () => {
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: 'Status do Sistema',
       width: 150,
       renderCell: (params: any) => {
         const statusLabel: Record<string, string> = {
           Fechada: 'Fechada',
-          'Gerado pela execução': 'Gerado pela execução',
+          'Gerado pela execução': 'Processada',
           Pendente: 'Pendente',
           Processada: 'Processada',
         };
+
+        const getVariant = (status: string) => {
+          switch (status) {
+            case 'Fechada':
+              return 'success';
+            case 'Pendente':
+              return 'warning';
+            case 'Processada':
+            case 'Gerado pela execução':
+              return 'default';
+            default:
+              return 'secondary';
+          }
+        };
+
         return (
           <Badge
-            variant="success"
+            variant={getVariant(params.value)}
             className="whitespace-nowrap px-3 py-1"
             title={statusLabel[params.value] || params.value}
           >
             {statusLabel[params.value] || params.value}
           </Badge>
+        );
+      },
+    },
+    {
+      field: 'payment_status',
+      headerName: 'Status de Pagamento',
+      width: 180,
+      renderCell: ({ row }: { row: any }) => {
+        // Usar o status agregado da guia (hierárquico)
+        const firstProc = row.detalhes?.[0];
+        const aggregatedStatus = firstProc?.guide_aggregated_status;
+
+        if (aggregatedStatus) {
+          return (
+            <PaymentStatusIndicator
+              smartPaymentStatus={{
+                status: aggregatedStatus.status,
+                reason: aggregatedStatus.reason,
+                demonstrativo_info: null,
+                has_demonstrativo: true,
+              }}
+              size="sm"
+            />
+          );
+        }
+
+        // Fallback para status individual do primeiro procedimento
+        const smartStatus = firstProc?.smart_payment_status;
+        if (smartStatus) {
+          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
+        }
+
+        // Fallback para o sistema antigo
+        const paymentData = row.payment_summary;
+        if (!paymentData) {
+          return (
+            <PaymentStatusIndicator
+              smartPaymentStatus={{
+                status: 'sem_demonstrativo',
+                reason: 'Nenhum demonstrativo carregado',
+                demonstrativo_info: null,
+                has_demonstrativo: false,
+              }}
+              size="sm"
+            />
+          );
+        }
+
+        const status =
+          paymentData.paid_count > 0
+            ? paymentData.paid_count === paymentData.total_count
+              ? 'pago'
+              : 'parcialmente_pago'
+            : 'nao_pago';
+
+        return (
+          <PaymentStatusIndicator
+            smartPaymentStatus={{
+              status,
+              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
+              demonstrativo_info: null,
+              has_demonstrativo: true,
+            }}
+            size="sm"
+          />
         );
       },
     },
@@ -317,6 +413,7 @@ const GuidesPage = () => {
         const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
         setAllGuides(allProcedures);
         setTotal(allRes.total || 0);
+        setPaymentAnalytics(allRes.payment_analytics || null);
 
         // Agrupa por número de guia para calcular total de guias
         const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
@@ -524,6 +621,57 @@ const GuidesPage = () => {
     );
     const statusComum =
       Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+
+    // NOVA FUNCIONALIDADE: Resumo inteligente de pagamento
+    const paymentSummary = procs.reduce(
+      (acc, proc) => {
+        // Usar o status agregado se disponível, senão o individual
+        const aggregatedStatus = proc.guide_aggregated_status;
+        const smartStatus = aggregatedStatus
+          ? aggregatedStatus.status
+          : proc.smart_payment_status?.status;
+
+        if (smartStatus) {
+          switch (smartStatus) {
+            case 'pago':
+              acc.paid_count += 1;
+              acc.total_paid_value +=
+                proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
+              break;
+            case 'parcialmente_pago':
+              acc.partial_count += 1;
+              acc.total_paid_value +=
+                proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
+              break;
+            case 'glosado':
+              acc.glosa_count += 1;
+              break;
+            case 'nao_pago':
+            case 'nao_encontrado':
+              acc.unpaid_count += 1;
+              break;
+          }
+        } else {
+          // Fallback para sistema antigo
+          const paymentStatus = proc.payment_status;
+          if (paymentStatus?.is_paid) {
+            acc.paid_count += 1;
+            acc.total_paid_value += paymentStatus.payment_info?.paid_value || 0;
+          }
+        }
+        acc.total_count += 1;
+        return acc;
+      },
+      {
+        paid_count: 0,
+        partial_count: 0,
+        glosa_count: 0,
+        unpaid_count: 0,
+        total_count: 0,
+        total_paid_value: 0,
+      }
+    );
+
     return {
       numero_guia: numeroGuiaStr,
       data: dataMaisRecente,
@@ -531,6 +679,7 @@ const GuidesPage = () => {
       prestador,
       qtdProcedimentos,
       status: statusComum,
+      payment_summary: paymentSummary,
       detalhes: procs,
     };
   });
@@ -649,11 +798,29 @@ const GuidesPage = () => {
       setExtractedGuides(currentPageProcedures);
 
       setSelectedRows([]);
-      toast.success('Guias removidas!');
+
+      // Log da atividade
       logActivity('Remoção de Guias', `Removidas ${selectedRows.length} guias`, {
         target: { numero_guia: selectedRows },
       });
       setActivities(getRecentActivities());
+
+      // Feedback visual amigável para o usuário
+      toast.success(
+        `✅ ${selectedRows.length} guia${selectedRows.length > 1 ? 's' : ''} removida${
+          selectedRows.length > 1 ? 's' : ''
+        } com sucesso!`,
+        {
+          description: 'A atividade foi registrada no log do sistema.',
+          duration: 4000,
+        }
+      );
+
+      // Tempo real: sincronização automática
+      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
+        count: selectedRows.length,
+        guias: selectedRows,
+      });
     } catch (err: any) {
       toast.error('Erro ao remover guias', {
         description: err?.response?.data?.detail || err?.message,
@@ -705,24 +872,67 @@ const GuidesPage = () => {
       ),
     },
     {
-      field: 'status',
-      headerName: 'Status',
-      width: 150,
-      renderCell: ({ value }: { value: string }) => {
-        const variant =
-          value === 'Fechada'
-            ? 'success'
-            : value === 'Pendente'
-              ? 'warning'
-              : 'default';
+      field: 'payment_status',
+      headerName: 'Status de Pagamento',
+      width: 180,
+      renderCell: ({ row }: { row: any }) => {
+        // Usar o status agregado da guia (hierárquico)
+        const firstProc = row.detalhes?.[0];
+        const aggregatedStatus = firstProc?.guide_aggregated_status;
+
+        if (aggregatedStatus) {
+          return (
+            <PaymentStatusIndicator
+              smartPaymentStatus={{
+                status: aggregatedStatus.status,
+                reason: aggregatedStatus.reason,
+                demonstrativo_info: null,
+                has_demonstrativo: true,
+              }}
+              size="sm"
+            />
+          );
+        }
+
+        // Fallback para status individual do primeiro procedimento
+        const smartStatus = firstProc?.smart_payment_status;
+        if (smartStatus) {
+          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
+        }
+
+        // Fallback para o sistema antigo
+        const paymentData = row.payment_summary;
+        if (!paymentData) {
+          return (
+            <PaymentStatusIndicator
+              smartPaymentStatus={{
+                status: 'sem_demonstrativo',
+                reason: 'Nenhum demonstrativo carregado',
+                demonstrativo_info: null,
+                has_demonstrativo: false,
+              }}
+              size="sm"
+            />
+          );
+        }
+
+        const status =
+          paymentData.paid_count > 0
+            ? paymentData.paid_count === paymentData.total_count
+              ? 'pago'
+              : 'parcialmente_pago'
+            : 'nao_pago';
+
         return (
-          <Badge
-            variant={variant}
-            className="whitespace-nowrap px-3 py-1"
-            title={value || '-'}
-          >
-            {value || '-'}
-          </Badge>
+          <PaymentStatusIndicator
+            smartPaymentStatus={{
+              status,
+              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
+              demonstrativo_info: null,
+              has_demonstrativo: true,
+            }}
+            size="sm"
+          />
         );
       },
     },
@@ -810,11 +1020,22 @@ const GuidesPage = () => {
       const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
       setExtractedGuides(currentPageProcedures);
 
-      toast.success('Guia removida com sucesso');
+      // Log da atividade
       logActivity('Remoção de Guia', `Guia ${numeroGuia} removida`, {
         target: { numero_guia: numeroGuia },
       });
       setActivities(getRecentActivities());
+
+      // Feedback visual amigável para o usuário
+      toast.success(`✅ Guia ${numeroGuia} removida com sucesso!`, {
+        description: 'A atividade foi registrada no log do sistema.',
+        duration: 4000,
+      });
+
+      // Tempo real: sincronização automática
+      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
+        numero_guia: numeroGuia,
+      });
     } catch (err: any) {
       toast.error('Erro ao remover guia', {
         description: err?.response?.data?.detail || err?.message,
@@ -1224,6 +1445,107 @@ const GuidesPage = () => {
               </section>
             )}
 
+            {/* Análise Inteligente de Pagamentos */}
+            {paymentAnalytics && (
+              <section aria-label="Análise de Pagamentos" className="space-y-6">
+                <div className="space-y-3">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                    <DollarSign className="h-6 w-6 text-green-600" />
+                    Análise Inteligente de Pagamentos
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-lg">
+                    Status automático baseado no cruzamento com demonstrativos
+                  </p>
+                </div>
+
+                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                  <InfoCard
+                    icon={<BarChart3 className="h-6 w-6" />}
+                    title={
+                      <span className="text-sm font-semibold">Taxa de Cobertura</span>
+                    }
+                    value={
+                      <span className="text-3xl xl:text-4xl font-bold">
+                        {paymentAnalytics.crosscheck_coverage?.toFixed(1) || 0}%
+                      </span>
+                    }
+                    description={
+                      <span className="text-sm">
+                        Procedimentos com análise de pagamento
+                      </span>
+                    }
+                    variant="info"
+                    trend={
+                      paymentAnalytics.crosscheck_coverage > 80
+                        ? { direction: 'up', percentage: 'Excelente' }
+                        : undefined
+                    }
+                  />
+                  <InfoCard
+                    icon={<CheckCircle className="h-6 w-6" />}
+                    title={
+                      <span className="text-sm font-semibold">Procedimentos Pagos</span>
+                    }
+                    value={
+                      <span className="text-3xl xl:text-4xl font-bold">
+                        {paymentAnalytics.total_paid_procedures || 0}
+                      </span>
+                    }
+                    description={
+                      <span className="text-sm">
+                        Valor:{' '}
+                        {new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        }).format(paymentAnalytics.total_paid_value || 0)}
+                      </span>
+                    }
+                    variant="success"
+                  />
+                  <InfoCard
+                    icon={<AlertTriangle className="h-6 w-6" />}
+                    title={
+                      <span className="text-sm font-semibold">
+                        Glosas Identificadas
+                      </span>
+                    }
+                    value={
+                      <span className="text-3xl xl:text-4xl font-bold">
+                        {paymentAnalytics.total_glosa_procedures || 0}
+                      </span>
+                    }
+                    description={
+                      <span className="text-sm">
+                        Valor:{' '}
+                        {new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        }).format(paymentAnalytics.total_glosa_value || 0)}
+                      </span>
+                    }
+                    variant="danger"
+                  />
+                  <InfoCard
+                    icon={<DollarSign className="h-6 w-6" />}
+                    title={
+                      <span className="text-sm font-semibold">Pagamentos Parciais</span>
+                    }
+                    value={
+                      <span className="text-3xl xl:text-4xl font-bold">
+                        {paymentAnalytics.total_partial_payments || 0}
+                      </span>
+                    }
+                    description={
+                      <span className="text-sm">
+                        Procedimentos com pagamento parcial
+                      </span>
+                    }
+                    variant="warning"
+                  />
+                </div>
+              </section>
+            )}
+
             {/* Ferramentas de Filtro */}
             <section aria-label="Ferramentas de Filtro e Ações" className="space-y-6">
               <div className="space-y-3">
@@ -1254,7 +1576,7 @@ const GuidesPage = () => {
                     setPage(0);
                   }}
                   pendingCount={(() => {
-                    // Calcula pendentes usando todos os dados globais
+                    // Calcula guias sem análise (sem demonstrativo ou não encontradas)
                     const allGrouped = allGuides.reduce<
                       Record<string, GuideProcedure[]>
                     >((grp, p) => {
@@ -1263,18 +1585,12 @@ const GuidesPage = () => {
                       return grp;
                     }, {});
                     return Object.entries(allGrouped).filter(([_, procs]) => {
-                      const statusCount = procs.reduce(
-                        (statusAcc, p) => {
-                          statusAcc[p.status] = (statusAcc[p.status] || 0) + 1;
-                          return statusAcc;
-                        },
-                        {} as Record<string, number>
+                      const firstProc = procs[0];
+                      const smartStatus = firstProc?.smart_payment_status?.status;
+                      return (
+                        smartStatus === 'sem_demonstrativo' ||
+                        smartStatus === 'nao_encontrado'
                       );
-                      const statusComum =
-                        Object.entries(statusCount).sort(
-                          (a, b) => b[1] - a[1]
-                        )[0]?.[0] || '-';
-                      return statusComum === 'Pendente';
                     }).length;
                   })()}
                   onClear={() => {
@@ -1364,6 +1680,7 @@ const GuidesPage = () => {
                                             'Participação',
                                             'Qtd',
                                             'Prestador',
+                                            'Status de Pagamento',
                                           ].map((h) => (
                                             <th
                                               key={h}
@@ -1400,6 +1717,20 @@ const GuidesPage = () => {
                                               </td>
                                               <td className="py-2 px-3 whitespace-nowrap">
                                                 {proc.prestador}
+                                              </td>
+                                              <td className="py-2 px-3 whitespace-nowrap">
+                                                {proc.smart_payment_status ? (
+                                                  <PaymentStatusIndicator
+                                                    smartPaymentStatus={
+                                                      proc.smart_payment_status
+                                                    }
+                                                    size="xs"
+                                                  />
+                                                ) : (
+                                                  <span className="text-xs text-gray-400">
+                                                    --
+                                                  </span>
+                                                )}
                                               </td>
                                             </tr>
                                           ))}

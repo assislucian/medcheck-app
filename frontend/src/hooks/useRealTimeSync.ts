@@ -1,247 +1,218 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+/**
+ * Hook profissional para sincronização em tempo real
+ * Usa Server-Sent Events + BroadcastChannel como SaaS globais
+ */
+
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
-interface RealTimeSyncConfig {
-  enabled?: boolean;
-  pollInterval?: number;
-  maxRetries?: number;
-  onConnect?: () => void;
-  onDisconnect?: () => void;
-  onError?: (error: Error) => void;
+interface RealTimeEvent {
+  type: string;
+  data?: any;
+  timestamp: string;
 }
 
-interface ProcessingUpdate {
-  type: 'upload_complete' | 'processing_complete' | 'error' | 'progress';
-  data: {
-    job_id?: string;
-    user_id?: string;
-    success?: boolean;
-    progress?: number;
-    message?: string;
-    affectedQueries?: string[];
-  };
+interface UseRealTimeSyncOptions {
+  onActivityUpdate?: () => void;
+  onDataChange?: (event: RealTimeEvent) => void;
+  enabled?: boolean;
 }
 
 /**
- * Hook para sincronização de dados em tempo real após uploads e processamentos
- * Implementa WebSockets com fallback para polling seguindo as melhores práticas
+ * Hook profissional para sincronização em tempo real
+ * Usa Server-Sent Events + BroadcastChannel como SaaS globais
  */
-export function useRealTimeSync(config: RealTimeSyncConfig = {}) {
-  const {
-    enabled = true,
-    pollInterval = 5000,
-    maxRetries = 3,
-    onConnect,
-    onDisconnect,
-    onError,
-  } = config;
+export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
+  const { onActivityUpdate, onDataChange, enabled = true } = options;
 
-  const queryClient = useQueryClient();
-  const wsRef = useRef<WebSocket | null>(null);
-  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const retryCountRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  /**
-   * Invalida queries relacionadas baseadas no tipo de atualização
-   */
-  const invalidateRelatedQueries = useCallback(
-    (affectedQueries?: string[]) => {
-      const defaultQueries = [
-        'dashboardStats',
-        'demonstrativos',
-        'guias',
-        'activity-logs',
-      ];
+  // Broadcast para outras abas
+  const broadcastUpdate = useCallback((eventType: string, data: any = {}) => {
+    if (broadcastChannelRef.current) {
+      const event: RealTimeEvent = {
+        type: eventType,
+        data,
+        timestamp: new Date().toISOString(),
+      };
 
-      const queriesToInvalidate = affectedQueries || defaultQueries;
+      broadcastChannelRef.current.postMessage(event);
+      console.log('📡 Evento enviado para outras abas:', eventType, data);
+    }
+  }, []);
 
-      queriesToInvalidate.forEach((queryKey) => {
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
+  // Notificar servidor sobre mudanças
+  const notifyServer = useCallback(async (eventType: string, data: any = {}) => {
+    try {
+      const token = localStorage.getItem('token');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+      await fetch(`${apiUrl}/api/v1/events/notify`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_type: eventType,
+          data,
+        }),
       });
+    } catch (error) {
+      console.warn('Falha ao notificar servidor:', error);
+    }
+  }, []);
 
-      // Força refetch imediato para dados críticos
-      queryClient.refetchQueries({
-        queryKey: ['dashboardStats'],
-        type: 'active',
-      });
-
-      console.log('🔄 Dados sincronizados:', queriesToInvalidate);
-    },
-    [queryClient]
-  );
-
-  /**
-   * Processa atualizações recebidas via WebSocket ou polling
-   */
-  const handleUpdate = useCallback(
-    (update: ProcessingUpdate) => {
-      console.log('📡 Atualização recebida:', update);
-
-      switch (update.type) {
-        case 'upload_complete':
-          invalidateRelatedQueries(update.data.affectedQueries);
-          toast.success('Upload processado!', {
-            description: update.data.message || 'Dados atualizados automaticamente',
-          });
-          break;
-
-        case 'processing_complete':
-          invalidateRelatedQueries(update.data.affectedQueries);
-          toast.success('Processamento concluído!', {
-            description: update.data.message || 'Novos dados disponíveis',
-          });
-          break;
-
-        case 'progress':
-          // Atualiza progresso sem invalidar cache
-          console.log(`⏳ Progresso: ${update.data.progress}%`);
-          break;
-
-        case 'error':
-          toast.error('Erro no processamento', {
-            description: update.data.message || 'Verifique os logs para mais detalhes',
-          });
-          break;
+  // Função principal para disparar updates
+  const triggerUpdate = useCallback(
+    (eventType: string, data: any = {}) => {
+      // 1. Executar callback local imediatamente
+      if (onActivityUpdate) {
+        onActivityUpdate();
       }
+
+      // 2. Broadcast para outras abas
+      broadcastUpdate(eventType, data);
+
+      // 3. Notificar servidor (não blocking)
+      notifyServer(eventType, data);
+
+      // 4. Atualizar timestamp
+      setLastUpdate(new Date());
+
+      console.log('🔄 Update disparado:', eventType, data);
     },
-    [invalidateRelatedQueries]
+    [onActivityUpdate, broadcastUpdate, notifyServer]
   );
 
-  /**
-   * Conecta via WebSocket (atualmente desabilitado - usa polling)
-   */
-  const connectWebSocket = useCallback(() => {
+  // Inicializar conexões
+  useEffect(() => {
     if (!enabled) return;
 
-    // Por enquanto, inicia diretamente com polling
-    // WebSocket será implementado quando o backend suportar
-    console.log('📡 Iniciando sincronização via polling');
-    startPolling();
-    onConnect?.();
-  }, [enabled, onConnect]);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('Token não encontrado - não é possível conectar ao tempo real');
+      return;
+    }
 
-  /**
-   * Inicia polling inteligente
-   */
-  const startPolling = useCallback(() => {
-    if (!enabled || pollIntervalRef.current) return;
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-    console.log('🔄 Iniciando sincronização automática');
+    // 1. Inicializar BroadcastChannel (sync entre abas)
+    try {
+      broadcastChannelRef.current = new BroadcastChannel('medcheck-updates');
 
-    pollIntervalRef.current = setInterval(async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+      broadcastChannelRef.current.onmessage = (event) => {
+        const realTimeEvent = event.data as RealTimeEvent;
+        console.log('📨 Evento recebido de outra aba:', realTimeEvent);
 
-        // Simula verificação de atualizações através de timestamp
-        const lastSync = localStorage.getItem('lastDataSync');
-        const currentTime = Date.now();
-
-        // Se passou mais de 30 segundos desde a última sincronização manual
-        // ou se nunca houve sincronização, força uma atualização
-        if (!lastSync || currentTime - parseInt(lastSync) > 30000) {
-          invalidateRelatedQueries();
-          localStorage.setItem('lastDataSync', currentTime.toString());
+        // Executar callback
+        if (onDataChange) {
+          onDataChange(realTimeEvent);
         }
-      } catch (error) {
-        console.error('❌ Erro no polling:', error);
-      }
-    }, pollInterval);
-  }, [enabled, pollInterval, invalidateRelatedQueries]);
 
-  /**
-   * Para polling
-   */
-  const stopPolling = useCallback(() => {
-    if (pollIntervalRef.current) {
-      clearInterval(pollIntervalRef.current);
-      pollIntervalRef.current = null;
-    }
-  }, []);
+        // Auto-refresh específico para atividades
+        if (
+          realTimeEvent.type.includes('activity') ||
+          realTimeEvent.type.includes('delete') ||
+          realTimeEvent.type.includes('upload')
+        ) {
+          if (onActivityUpdate) {
+            onActivityUpdate();
+          }
+        }
 
-  /**
-   * Desconecta WebSocket
-   */
-  const disconnectWebSocket = useCallback(() => {
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+        setLastUpdate(new Date());
+      };
+
+      console.log('✅ BroadcastChannel inicializado');
+    } catch (error) {
+      console.warn('BroadcastChannel não suportado:', error);
     }
 
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-  }, []);
-
-  /**
-   * Força sincronização manual
-   */
-  const forceSync = useCallback(() => {
-    invalidateRelatedQueries();
-    localStorage.setItem('lastDataSync', Date.now().toString());
-    toast.success('Dados atualizados!');
-  }, [invalidateRelatedQueries]);
-
-  /**
-   * Escuta eventos customizados de upload
-   */
-  useEffect(() => {
-    const handleUploadComplete = () => {
-      console.log('🎯 Upload detectado, sincronizando dados...');
-      invalidateRelatedQueries();
-      localStorage.setItem('lastDataSync', Date.now().toString());
-
-      // Dispara evento para mostrar notificação
-      window.dispatchEvent(
-        new CustomEvent('dataAutoUpdate', {
-          detail: { message: 'Dados atualizados após upload', type: 'success' },
-        })
+    // 2. Inicializar Server-Sent Events (updates do servidor)
+    try {
+      eventSourceRef.current = new EventSource(
+        `${apiUrl}/api/v1/events/stream?token=${token}`
       );
-    };
 
-    const handleForceRefresh = () => {
-      console.log('🔄 Refresh forçado detectado');
-      invalidateRelatedQueries();
-      localStorage.setItem('lastDataSync', Date.now().toString());
-    };
+      eventSourceRef.current.onopen = () => {
+        setIsConnected(true);
+        console.log('✅ Conectado ao servidor em tempo real');
+      };
 
-    window.addEventListener('uploadComplete', handleUploadComplete);
-    window.addEventListener('forceDataRefresh', handleForceRefresh);
+      eventSourceRef.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
 
-    return () => {
-      window.removeEventListener('uploadComplete', handleUploadComplete);
-      window.removeEventListener('forceDataRefresh', handleForceRefresh);
-    };
-  }, [invalidateRelatedQueries]);
+          if (data.type === 'connected') {
+            console.log('🎯 Tempo real ativo:', data.message);
+          } else if (data.type === 'heartbeat') {
+            // Heartbeat silencioso para manter conexão
+          } else {
+            // Eventos reais de dados
+            if (onDataChange) {
+              onDataChange({
+                type: data.type,
+                data: data.data,
+                timestamp: data.timestamp,
+              });
+            }
+          }
+        } catch (error) {
+          console.warn('Erro ao processar SSE:', error);
+        }
+      };
 
-  // Setup inicial
-  useEffect(() => {
-    if (!enabled) return;
+      eventSourceRef.current.onerror = (error) => {
+        setIsConnected(false);
+        console.warn('Erro na conexão SSE:', error);
 
-    // Tenta WebSocket primeiro
-    connectWebSocket();
+        // Reconectar automaticamente após 5s
+        setTimeout(() => {
+          if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
+            console.log('🔄 Tentando reconectar...');
+            // A reconexão será feita quando o useEffect rodar novamente
+          }
+        }, 5000);
+      };
+    } catch (error) {
+      console.warn('Erro ao inicializar SSE:', error);
+    }
 
     // Cleanup
     return () => {
-      disconnectWebSocket();
-      stopPolling();
-    };
-  }, [enabled, connectWebSocket, disconnectWebSocket, stopPolling]);
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
 
-  // Cleanup geral
-  useEffect(() => {
-    return () => {
-      disconnectWebSocket();
-      stopPolling();
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.close();
+        broadcastChannelRef.current = null;
+      }
+
+      setIsConnected(false);
     };
-  }, [disconnectWebSocket, stopPolling]);
+  }, [enabled, onActivityUpdate, onDataChange]);
 
   return {
-    forceSync,
-    isConnected: pollIntervalRef.current !== null,
-    connectionType: pollIntervalRef.current !== null ? 'polling' : 'offline',
+    isConnected,
+    lastUpdate,
+    triggerUpdate,
+    broadcastUpdate,
+    notifyServer,
   };
-}
+};
+
+// Eventos padrão do sistema
+export const REAL_TIME_EVENTS = {
+  GUIA_DELETED: 'guia_deleted',
+  GUIA_UPLOADED: 'guia_uploaded',
+  DEMONSTRATIVE_DELETED: 'demonstrative_deleted',
+  DEMONSTRATIVE_UPLOADED: 'demonstrative_uploaded',
+  ACTIVITY_LOGGED: 'activity_logged',
+  DATA_UPDATED: 'data_updated',
+} as const;
