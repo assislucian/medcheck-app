@@ -31,7 +31,7 @@ export const ProfileForm = ({ loading: externalLoading }: ProfileFormProps) => {
               {...form.register('name')}
               className="border-neutral-200 focus:border-neutral-300 focus:ring-neutral-200"
             />
-            {form.errors.name && (
+            {form.errors?.name && (
               <p className="text-sm text-error-600">{form.errors.name.message}</p>
             )}
           </div>
@@ -46,7 +46,7 @@ export const ProfileForm = ({ loading: externalLoading }: ProfileFormProps) => {
               {...form.register('email')}
               className="border-neutral-200 focus:border-neutral-300 focus:ring-neutral-200"
             />
-            {form.errors.email && (
+            {form.errors?.email && (
               <p className="text-sm text-error-600">{form.errors.email.message}</p>
             )}
           </div>
@@ -60,7 +60,7 @@ export const ProfileForm = ({ loading: externalLoading }: ProfileFormProps) => {
               {...form.register('phone')}
               className="border-neutral-200 focus:border-neutral-300 focus:ring-neutral-200"
             />
-            {form.errors.phone && (
+            {form.errors?.phone && (
               <p className="text-sm text-error-600">{form.errors.phone.message}</p>
             )}
           </div>
@@ -74,7 +74,7 @@ export const ProfileForm = ({ loading: externalLoading }: ProfileFormProps) => {
               {...form.register('hospital')}
               className="border-neutral-200 focus:border-neutral-300 focus:ring-neutral-200"
             />
-            {form.errors.hospital && (
+            {form.errors?.hospital && (
               <p className="text-sm text-error-600">{form.errors.hospital.message}</p>
             )}
           </div>
@@ -89,7 +89,7 @@ export const ProfileForm = ({ loading: externalLoading }: ProfileFormProps) => {
             {...form.register('bio')}
             className="min-h-[100px] border-neutral-200 focus:border-neutral-300 focus:ring-neutral-200"
           />
-          {form.errors.bio && (
+          {form.errors?.bio && (
             <p className="text-sm text-error-600">{form.errors.bio.message}</p>
           )}
         </div>

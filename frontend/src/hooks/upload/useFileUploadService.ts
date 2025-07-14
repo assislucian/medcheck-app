@@ -115,32 +115,42 @@ export function useFileUploadService() {
         setProgress(100);
         setProcessingStage('complete');
         setProcessingMsg('Processamento concluído!');
-        // Feedback por arquivo
+        // Feedback consolidado para demonstrativos
         if (res.data && Array.isArray(res.data.results)) {
           let successCount = 0;
           let errorCount = 0;
+          const errorFiles: string[] = [];
 
           res.data.results.forEach((result: any) => {
             if (result.success) {
               successCount++;
-              toast.success(`✅ ${result.filename}: Processado com sucesso`);
             } else {
               errorCount++;
-              toast.error(
-                `❌ ${result.filename}: ${result.error || 'Erro desconhecido'}`
+              errorFiles.push(
+                `${result.filename}: ${result.error || 'Erro desconhecido'}`
               );
             }
           });
 
-          // Resumo final
+          // Apenas um toast de resumo
           if (successCount > 0 && errorCount === 0) {
             toast.success(
-              `${successCount} demonstrativo(s) processado(s) com sucesso!`
+              `✅ ${successCount} demonstrativo(s) processado(s) com sucesso!`
             );
           } else if (successCount > 0 && errorCount > 0) {
-            toast.warning(`${successCount} processado(s), ${errorCount} com erro`);
+            toast.warning(`${successCount} processado(s), ${errorCount} com erro`, {
+              description:
+                errorFiles.length <= 3
+                  ? errorFiles.join('; ')
+                  : `${errorFiles.slice(0, 2).join('; ')}... e mais ${errorCount - 2}`,
+            });
           } else if (errorCount > 0) {
-            toast.error(`${errorCount} demonstrativo(s) com erro`);
+            toast.error(`❌ ${errorCount} demonstrativo(s) com erro`, {
+              description:
+                errorFiles.length <= 3
+                  ? errorFiles.join('; ')
+                  : `${errorFiles.slice(0, 2).join('; ')}... e mais ${errorCount - 2}`,
+            });
           }
         } else {
           toast.error('Resposta inesperada do servidor.');

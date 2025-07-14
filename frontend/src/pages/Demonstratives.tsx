@@ -1164,7 +1164,7 @@ const DemonstrativesPage = () => {
 
     try {
       await processUploadedFiles();
-      toast.success('Demonstrativos processados com sucesso');
+      // Toast já é gerado pelo processUploadedFiles()
       await fetchDemonstratives();
       resetFiles();
     } catch (error) {

@@ -483,23 +483,56 @@ const GuidesPage = () => {
       // Faz o upload das guias em lote
       const uploadResult = await uploadGuides(guiaFiles, token);
       if (uploadResult && Array.isArray(uploadResult.results)) {
+        let successCount = 0;
+        let duplicateCount = 0;
+        let errorCount = 0;
+        const errorFiles: string[] = [];
+        const duplicateFiles: string[] = [];
+
         uploadResult.results.forEach((result: any) => {
           if (result.success) {
-            toast.success(`Guia ${result.filename}: OK`);
+            successCount++;
+          } else if (result.duplicate) {
+            duplicateCount++;
+            duplicateFiles.push(result.filename);
           } else {
-            // Tratamento específico para duplicatas
-            if (result.duplicate) {
-              toast.warning(`Guia ${result.filename}: Duplicata detectada`, {
-                description: `Esta guia já foi processada anteriormente (arquivo: ${
-                  result.existing_filename || 'N/A'
-                }). O conteúdo é idêntico, mesmo com nome diferente.`,
-                duration: 6000,
-              });
-            } else {
-              toast.error(`Guia ${result.filename}: ${result.error || 'Erro'}`);
-            }
+            errorCount++;
+            errorFiles.push(`${result.filename}: ${result.error || 'Erro'}`);
           }
         });
+
+        // Apenas um toast consolidado
+        if (successCount > 0 && errorCount === 0 && duplicateCount === 0) {
+          toast.success(`✅ ${successCount} guia(s) processada(s) com sucesso!`);
+        } else if (successCount > 0 || duplicateCount > 0) {
+          let message = '';
+          let description = '';
+
+          if (successCount > 0) message += `${successCount} processada(s)`;
+          if (duplicateCount > 0) {
+            if (message) message += ', ';
+            message += `${duplicateCount} duplicata(s) ignorada(s)`;
+            description = `Duplicatas: ${duplicateFiles.slice(0, 3).join(', ')}${
+              duplicateFiles.length > 3 ? '...' : ''
+            }`;
+          }
+          if (errorCount > 0) {
+            if (message) message += ', ';
+            message += `${errorCount} com erro`;
+            if (description) description += '; ';
+            description +=
+              errorFiles.slice(0, 2).join('; ') + (errorFiles.length > 2 ? '...' : '');
+          }
+
+          toast.success(`✅ ${message}`, {
+            description: description || undefined,
+          });
+        } else if (errorCount > 0) {
+          toast.error(`❌ ${errorCount} guia(s) com erro`, {
+            description:
+              errorFiles.slice(0, 3).join('; ') + (errorFiles.length > 3 ? '...' : ''),
+          });
+        }
       } else {
         toast.error('Resposta inesperada do servidor.');
       }

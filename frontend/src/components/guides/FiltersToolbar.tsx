@@ -148,16 +148,51 @@ export function FiltersToolbar({
             </SelectTrigger>
             <SelectContent className="backdrop-blur-sm bg-white/95 dark:bg-gray-800/95">
               <SelectItem value="ALL">Todos os Status</SelectItem>
-              <SelectItem value="PENDING_UPLOAD">
+
+              {/* Status Inteligentes de Pagamento - Principais */}
+              <SelectItem value="pago">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full" />
-                  Pendentes de Upload
+                  <div className="w-2 h-2 bg-emerald-600 rounded-full" />
+                  <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                    💰 Pago
+                  </span>
                 </div>
               </SelectItem>
-              <SelectItem value="PROCESSED">
+              <SelectItem value="parcialmente_pago">
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                  Processadas
+                  <div className="w-2 h-2 bg-amber-600 rounded-full" />
+                  <span className="font-medium text-amber-700 dark:text-amber-400">
+                    ⚠️ Parcialmente Pago
+                  </span>
+                </div>
+              </SelectItem>
+              <SelectItem value="glosado">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-600 rounded-full" />
+                  <span className="font-medium text-red-700 dark:text-red-400">
+                    ❌ Glosado
+                  </span>
+                </div>
+              </SelectItem>
+              <SelectItem value="nao_pago">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-gray-600 rounded-full" />
+                  <span className="font-medium text-gray-700 dark:text-gray-400">
+                    ⏳ Não Pago
+                  </span>
+                </div>
+              </SelectItem>
+
+              {/* Separador */}
+              <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
+
+              {/* Status Unificado para Análise Pendente */}
+              <SelectItem value="sem_analise">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-orange-600 rounded-full" />
+                  <span className="font-medium text-orange-700 dark:text-orange-400">
+                    📋 Sem Análise
+                  </span>
                 </div>
               </SelectItem>
             </SelectContent>

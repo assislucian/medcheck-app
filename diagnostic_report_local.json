@@ -1,0 +1,1697 @@
+{
+  "environment": "http://localhost:8000",
+  "demonstrativos": [
+    {
+      "id": 6,
+      "periodo": "outubro de 2024",
+      "lote": "dbf32cb3-f862-4810-8d32-f1a828b7d797_Demo2.pdf",
+      "filename": "dbf32cb3-f862-4810-8d32-f1a828b7d797_Demo2.pdf",
+      "total_procedimentos": 11,
+      "apresentado": "R$ 5,539,90",
+      "liberado": "R$ 5,372,22",
+      "glosa": "R$ 167,68",
+      "upload_time": "2025-07-08T18:11:32.865235"
+    },
+    {
+      "id": 5,
+      "periodo": "abril de 2024",
+      "lote": "ebcefa2d-7c93-416c-bd68-bd9f596d2ca3_Demo1.pdf",
+      "filename": "ebcefa2d-7c93-416c-bd68-bd9f596d2ca3_Demo1.pdf",
+      "total_procedimentos": 10,
+      "apresentado": "R$ 2,764,39",
+      "liberado": "R$ 2,764,39",
+      "glosa": "R$ 0,00",
+      "upload_time": "2025-07-08T18:11:32.525570"
+    }
+  ],
+  "guias": [
+    {
+      "numero_guia": "9241918",
+      "data": "13/05/2024",
+      "beneficiario": "ADACA DA COSTA OLIVEIRA",
+      "codigo": "30602203",
+      "descricao": "Quadrantectomia - Ressecção Segmentar",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "13/05/2024 17:01",
+      "dt_fim": "13/05/2024 18:14",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "9241918",
+      "data": "13/05/2024",
+      "beneficiario": "ADACA DA COSTA OLIVEIRA",
+      "codigo": "30602076",
+      "descricao": "Exérese De Lesão Da Mama Por Marcação Estereotáxica Ou Roll",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 3,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "13/05/2024 17:01",
+      "dt_fim": "13/05/2024 18:14",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "9241918",
+      "data": "13/05/2024",
+      "beneficiario": "ADACA DA COSTA OLIVEIRA",
+      "codigo": "30602254",
+      "descricao": "Reconstrução Parcial Da Mama Pós-Quadrantectomia",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "13/05/2024 17:01",
+      "dt_fim": "13/05/2024 18:14",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "9930370",
+      "data": "08/07/2024",
+      "beneficiario": "ADRIANA PESSOA DE SOUSA GADELHA",
+      "codigo": "30602173",
+      "descricao": "Mastoplastia Em Mama Oposta Após Reconstrução Da Contralateral",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "08/07/2024 18:39",
+      "dt_fim": "08/07/2024 21:32",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "9930370",
+      "data": "08/07/2024",
+      "beneficiario": "ADRIANA PESSOA DE SOUSA GADELHA",
+      "codigo": "30101310",
+      "descricao": "Enxerto Composto",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "08/07/2024 18:39",
+      "dt_fim": "08/07/2024 21:32",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602076",
+      "descricao": "Exérese De Lesão Da Mama Por Marcação Estereotáxica Ou Roll",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602157",
+      "descricao": "Mastectomia Simples",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602238",
+      "descricao": "Reconstrução Mamária Com Retalho Muscular Ou Miocutâneo - Unilateral",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602246",
+      "descricao": "Reconstrução Mamária Com Retalhos Cutâneos Regionais",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602262",
+      "descricao": "Reconstrução Da Mama Com Prótese E/Ou Expansor",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10108460",
+      "data": "22/07/2024",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602289",
+      "descricao": "Ressecção Do Linfonodo Sentinela / Torácica Lateral",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "22/07/2024 18:10",
+      "dt_fim": "22/07/2024 23:02",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602262",
+      "descricao": "Reconstrução Da Mama Com Prótese E/Ou Expansor",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 2,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602238",
+      "descricao": "Reconstrução Mamária Com Retalho Muscular Ou Miocutâneo - Unilateral",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30601142",
+      "descricao": "Retirada De Corpo Estranho Da Parede Torácica",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602203",
+      "descricao": "Quadrantectomia - Ressecção Segmentar",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602289",
+      "descricao": "Ressecção Do Linfonodo Sentinela / Torácica Lateral",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "13137141",
+      "data": "02/04/2025",
+      "beneficiario": "DOLORES CRISTINA CASTILHO DA SILVEIRA",
+      "codigo": "30602157",
+      "descricao": "Mastectomia Simples",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "02/04/2025 17:00",
+      "dt_fim": "02/04/2025 20:47",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10696456",
+      "data": "04/09/2024",
+      "beneficiario": "NOIVANA CAVALCANTI DE QUEIROZ DANTAS",
+      "codigo": "30602076",
+      "descricao": "Exérese De Lesão Da Mama Por Marcação Estereotáxica Ou Roll",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "04/09/2024 17:06",
+      "dt_fim": "04/09/2024 17:53",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10696456",
+      "data": "04/09/2024",
+      "beneficiario": "NOIVANA CAVALCANTI DE QUEIROZ DANTAS",
+      "codigo": "30602203",
+      "descricao": "Quadrantectomia - Ressecção Segmentar",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "04/09/2024 17:06",
+      "dt_fim": "04/09/2024 17:53",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10714706",
+      "data": "05/09/2024",
+      "beneficiario": "NUBIA KATIA PEREIRA MARQUES",
+      "codigo": "30602076",
+      "descricao": "Exérese De Lesão Da Mama Por Marcação Estereotáxica Ou Roll",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "05/09/2024 18:11",
+      "dt_fim": "05/09/2024 22:25",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10714706",
+      "data": "05/09/2024",
+      "beneficiario": "NUBIA KATIA PEREIRA MARQUES",
+      "codigo": "30602173",
+      "descricao": "Mastoplastia Em Mama Oposta Após Reconstrução Da Contralateral",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "05/09/2024 18:11",
+      "dt_fim": "05/09/2024 22:25",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10714706",
+      "data": "05/09/2024",
+      "beneficiario": "NUBIA KATIA PEREIRA MARQUES",
+      "codigo": "30602246",
+      "descricao": "Reconstrução Mamária Com Retalhos Cutâneos Regionais",
+      "papel": "Cirurgiao",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "05/09/2024 18:11",
+      "dt_fim": "05/09/2024 22:25",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10714706",
+      "data": "05/09/2024",
+      "beneficiario": "NUBIA KATIA PEREIRA MARQUES",
+      "codigo": "30602289",
+      "descricao": "Ressecção Do Linfonodo Sentinela / Torácica Lateral",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "05/09/2024 18:11",
+      "dt_fim": "05/09/2024 22:25",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10507705",
+      "data": "21/08/2024",
+      "beneficiario": "RODRIGO BERNARDO CIRINO DE FRANCA",
+      "codigo": "30602203",
+      "descricao": "Quadrantectomia - Ressecção Segmentar",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 2,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "21/08/2024 16:06",
+      "dt_fim": "21/08/2024 16:49",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10467538",
+      "data": "19/08/2024",
+      "beneficiario": "THAYSE BORGES",
+      "codigo": "30602246",
+      "descricao": "Reconstrução Mamária Com Retalhos Cutâneos Regionais",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 2,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "19/08/2024 14:15",
+      "dt_fim": "19/08/2024 15:17",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10467538",
+      "data": "19/08/2024",
+      "beneficiario": "THAYSE BORGES",
+      "codigo": "30602076",
+      "descricao": "Exérese De Lesão Da Mama Por Marcação Estereotáxica Ou Roll",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "19/08/2024 14:15",
+      "dt_fim": "19/08/2024 15:17",
+      "status_part": "Fechada"
+    },
+    {
+      "numero_guia": "10467538",
+      "data": "19/08/2024",
+      "beneficiario": "THAYSE BORGES",
+      "codigo": "30602203",
+      "descricao": "Quadrantectomia - Ressecção Segmentar",
+      "papel": "Primeiro Auxiliar",
+      "crm": "6091",
+      "qtd": 1,
+      "status": "Gerado pela execução",
+      "prestador": "LIGA NORTERIOG CANCER POLICLINIC",
+      "nome_medico": "MOISES DE OLIVEIRA SCHOTS",
+      "dt_inicio": "19/08/2024 14:15",
+      "dt_fim": "19/08/2024 15:17",
+      "status_part": "Fechada"
+    }
+  ],
+  "detalhes_test": {
+    "success": true,
+    "total_procedures": 12,
+    "with_participation": 12,
+    "with_cbhpm": 12,
+    "participation_rate": 100.0,
+    "data": [
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14268332",
+        "guia": "10467538",
+        "date": "19/08/2024",
+        "carteira": "00620040000604690",
+        "patient": "THAYSE BORGES",
+        "acom": "ENF",
+        "code": "30602203",
+        "description": "Quadrantectomia Ressecção Se",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 156.57,
+          "approved_value": 156.57,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 200.691,
+        "diferenca": -44.12100000000001,
+        "delta_percent": -21.984543402544215
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14268332",
+        "guia": "10467538",
+        "date": "19/08/2024",
+        "carteira": "00620040000604690",
+        "patient": "THAYSE BORGES",
+        "acom": "ENF",
+        "code": "30602246",
+        "description": "Reconstrução Mamária Com Retal",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 228.82,
+          "approved_value": 228.82,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 308.59200000000004,
+        "diferenca": -79.77200000000005,
+        "delta_percent": -25.85031368279153
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14268332",
+        "guia": "10467538",
+        "date": "19/08/2024",
+        "carteira": "00620040000604690",
+        "patient": "THAYSE BORGES",
+        "acom": "ENF",
+        "code": "30602076",
+        "description": "Exérese De Lesão Da Mama Por M",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 167.68,
+          "approved_value": 167.68,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 216.648,
+        "diferenca": -48.96799999999999,
+        "delta_percent": -22.602562682323395
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14268332",
+        "guia": "10467538",
+        "date": "19/08/2024",
+        "carteira": "00620040000604690",
+        "patient": "THAYSE BORGES",
+        "acom": "ENF",
+        "code": "30602246",
+        "description": "Reconstrução Mamária Com Retal",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 457.64,
+          "approved_value": 457.64,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "4127",
+            "nome": "LILIANE ANNUZA DA SILVA",
+            "inicio": "19/08/2024 15:17",
+            "fim": "19/08/2024 15:43",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "8425",
+            "nome": "FERNANDA MABEL BATISTA DE AQUINO",
+            "inicio": "19/08/2024 14:09",
+            "fim": "19/08/2024 15:24",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "19/08/2024 14:15",
+            "fim": "19/08/2024 15:17",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 308.59200000000004,
+        "diferenca": 149.04799999999994,
+        "delta_percent": 48.29937263441694
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14354511",
+        "guia": "10507705",
+        "date": "21/08/2024",
+        "carteira": "00620030010759231",
+        "patient": "RODRIGO BERNARDO CIR",
+        "acom": "ENF",
+        "code": "30602203",
+        "description": "Quadrantectomia Ressecção Se",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 313.14,
+          "approved_value": 313.14,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "21/08/2024 16:52",
+            "fim": "21/08/2024 16:52",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "4999",
+            "nome": "FLAVIO ROCHA DE MEDEIROS",
+            "inicio": "21/08/2024 16:06",
+            "fim": "21/08/2024 16:49",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "21/08/2024 16:06",
+            "fim": "21/08/2024 16:49",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 200.691,
+        "diferenca": 112.44899999999998,
+        "delta_percent": 56.03091319491157
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14354511",
+        "guia": "10507705",
+        "date": "21/08/2024",
+        "carteira": "00620030010759231",
+        "patient": "RODRIGO BERNARDO CIR",
+        "acom": "ENF",
+        "code": "30602203",
+        "description": "Quadrantectomia Ressecção Se",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 156.57,
+          "approved_value": 156.57,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "21/08/2024 16:52",
+            "fim": "21/08/2024 16:52",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "4999",
+            "nome": "FLAVIO ROCHA DE MEDEIROS",
+            "inicio": "21/08/2024 16:06",
+            "fim": "21/08/2024 16:49",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "21/08/2024 16:06",
+            "fim": "21/08/2024 16:49",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 200.691,
+        "diferenca": -44.12100000000001,
+        "delta_percent": -21.984543402544215
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14633601",
+        "guia": "10696456",
+        "date": "04/09/2024",
+        "carteira": "00620030013400102",
+        "patient": "NOIVANA CAVALCANTI D",
+        "acom": "ENF",
+        "code": "30602076",
+        "description": "Exérese De Lesão Da Mama Por M",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 1117.84,
+          "approved_value": 1117.84,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "04/09/2024 17:50",
+            "fim": "04/09/2024 17:50",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:53",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "5775",
+            "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:41",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "04/09/2024 17:50",
+            "fim": "04/09/2024 17:50",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:53",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "5775",
+            "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:41",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Cirurgiao",
+        "valor_cbhpm": 722.16,
+        "diferenca": 395.67999999999995,
+        "delta_percent": 54.79118200952697
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14633601",
+        "guia": "10696456",
+        "date": "04/09/2024",
+        "carteira": "00620030013400102",
+        "patient": "NOIVANA CAVALCANTI D",
+        "acom": "ENF",
+        "code": "30602203",
+        "description": "Quadrantectomia Ressecção Se",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 521.91,
+          "approved_value": 521.91,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "04/09/2024 17:50",
+            "fim": "04/09/2024 17:50",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:53",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "5775",
+            "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:41",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "5576",
+            "nome": "FRANCISCO DAS CHAGAS BASTOS NETO",
+            "inicio": "04/09/2024 17:50",
+            "fim": "04/09/2024 17:50",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:53",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "5775",
+            "nome": "CARLOS RAFAEL SANT ANNA DA CRUZ",
+            "inicio": "04/09/2024 17:06",
+            "fim": "04/09/2024 17:41",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Cirurgiao",
+        "valor_cbhpm": 668.97,
+        "diferenca": -147.06000000000006,
+        "delta_percent": -21.98304856720033
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14601781",
+        "guia": "10714706",
+        "date": "05/09/2024",
+        "carteira": "00620030013924381",
+        "patient": "NUBIA KATIA PEREIRA",
+        "acom": "ENF",
+        "code": "30602076",
+        "description": "Exérese De Lesão Da Mama Por M",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 167.68,
+          "approved_value": 167.68,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 216.648,
+        "diferenca": -48.96799999999999,
+        "delta_percent": -22.602562682323395
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14601781",
+        "guia": "10714706",
+        "date": "05/09/2024",
+        "carteira": "00620030013924381",
+        "patient": "NUBIA KATIA PEREIRA",
+        "acom": "ENF",
+        "code": "30602289",
+        "description": "Ressecção Do Linfonodo Sentine",
+        "quantity": 0,
+        "financial": {
+          "presented_value": 167.68,
+          "approved_value": 0.0,
+          "pro_rata": 0.0,
+          "glosa": 167.68
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Primeiro Auxiliar",
+        "valor_cbhpm": 216.648,
+        "diferenca": -216.648,
+        "delta_percent": -100.0
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14601785",
+        "guia": "10714706",
+        "date": "05/09/2024",
+        "carteira": "00620030013924381",
+        "patient": "NUBIA KATIA PEREIRA",
+        "acom": "ENF",
+        "code": "30602173",
+        "description": "Mastoplastia Em Mama Oposta Ap",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 558.92,
+          "approved_value": 558.92,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Cirurgiao",
+        "valor_cbhpm": 722.16,
+        "diferenca": -163.24,
+        "delta_percent": -22.604408995236515
+      },
+      {
+        "period": "outubro de 2024",
+        "doctor": {
+          "name": "MOISES DE OLIVEIRA SCHOTS",
+          "crm": "6091",
+          "cpf": "05497255477"
+        },
+        "lote": "1608",
+        "conta": "14601785",
+        "guia": "10714706",
+        "date": "05/09/2024",
+        "carteira": "00620030013924381",
+        "patient": "NUBIA KATIA PEREIRA",
+        "acom": "ENF",
+        "code": "30602246",
+        "description": "Reconstrução Mamária Com Retal",
+        "quantity": 1,
+        "financial": {
+          "presented_value": 1525.45,
+          "approved_value": 1525.45,
+          "pro_rata": 0.0,
+          "glosa": 0.0
+        },
+        "codigo_glosa": null,
+        "motivo_glosa": null,
+        "participacoes": [
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Anestesista",
+            "crm": "7897",
+            "nome": "DIEGO HERBERT DUARTE DA SILVA",
+            "inicio": "05/09/2024 18:38",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Cirurgiao",
+            "crm": "6091",
+            "nome": "MOISES DE OLIVEIRA SCHOTS",
+            "inicio": "05/09/2024 18:11",
+            "fim": "05/09/2024 22:25",
+            "status": "Fechada"
+          },
+          {
+            "papel": "Primeiro Auxiliar",
+            "crm": "7546",
+            "nome": "ANA BEATRIZ OLIVEIRA GERMANO",
+            "inicio": "05/09/2024 18:10",
+            "fim": "05/09/2024 22:15",
+            "status": "Fechada"
+          }
+        ],
+        "papel_exercido": "Cirurgiao",
+        "valor_cbhpm": 1028.64,
+        "diferenca": 496.80999999999995,
+        "delta_percent": 48.297752372064075
+      }
+    ],
+    "crosscheck_analysis": {
+      "expected_guides": ["10467538", "10507705", "10696456", "10714706"],
+      "found_guides": ["10696456", "10467538", "10714706", "10507705"],
+      "missing_guides": [],
+      "expected_codes": [
+        "30602203",
+        "30602246",
+        "30602076",
+        "30602173",
+        "30602289"
+      ],
+      "found_codes": [],
+      "missing_codes": [
+        "30602246",
+        "30602173",
+        "30602289",
+        "30602076",
+        "30602203"
+      ],
+      "procedures_with_participation": 12,
+      "total_procedures": 12
+    }
+  },
+  "summary": {
+    "total_demonstrativos": 2,
+    "total_guias": 27,
+    "crosscheck_working": true
+  }
+}

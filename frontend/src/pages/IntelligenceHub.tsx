@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MainLayout } from '../components/layout/MainLayout';
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
@@ -135,7 +135,7 @@ export default function IntelligenceHub() {
 
   if (loading) {
     return (
-      <MainLayout
+      <AuthenticatedLayout
         title="Central de Inteligência CBHPM"
         description="Carregando insights inteligentes..."
         isLoading={true}
@@ -146,7 +146,7 @@ export default function IntelligenceHub() {
 
   if (error) {
     return (
-      <MainLayout
+      <AuthenticatedLayout
         title="Central de Inteligência CBHPM"
         description="Erro ao carregar dados"
       >
@@ -161,12 +161,12 @@ export default function IntelligenceHub() {
             Tentar Novamente
           </Button>
         </div>
-      </MainLayout>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <MainLayout
+    <AuthenticatedLayout
       title="Central de Inteligência CBHPM"
       description="Análise inteligente para maximizar sua receita médica"
     >
@@ -922,6 +922,6 @@ export default function IntelligenceHub() {
           </section>
         </div>
       </div>
-    </MainLayout>
+    </AuthenticatedLayout>
   );
 }
