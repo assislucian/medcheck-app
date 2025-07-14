@@ -1839,8 +1839,8 @@ def upload_guias(
                     db.close()
 
                 # Processar o PDF com fallback inteligente
+                from src.parsers import parse_scanned_guia_pdf
                 from src.parsers.guia_parser import parse_guia_pdf
-                from src.parsers.scanned_guia_parser import parse_scanned_guia_pdf
 
                 # Tentar parser principal primeiro
                 procedures = parse_guia_pdf(tmp_path, crm)
