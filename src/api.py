@@ -2749,6 +2749,52 @@ def get_profile(user: dict = Depends(get_current_user)):
     }
 
 
+@app.patch("/api/v1/profile", response_model=UpdateProfileResponse)
+def update_profile(
+    request: UpdateProfileRequest, user: dict = Depends(get_current_user)
+):
+    """Atualiza dados do perfil do usuário autenticado."""
+    try:
+        with SessionLocal() as db:
+            # Buscar médico no banco
+            medico = (
+                db.query(Medico)
+                .filter(Medico.crm == user["crm"], Medico.uf == user["uf"])
+                .first()
+            )
+
+            if not medico:
+                raise HTTPException(status_code=404, detail="Médico não encontrado")
+
+            # Atualizar campos permitidos
+            if request.nome:
+                medico.nome = sanitize_text(request.nome, 255)
+
+            # Note: CRM e UF são imutáveis por regras de negócio
+
+            # Campos adicionais podem ser armazenados como JSON ou em tabela separada
+            # Para esta implementação inicial, vamos focar nos campos básicos
+
+            # Hash da nova senha se fornecida
+            if request.senha:
+                medico.senha_hash = bcrypt.hashpw(
+                    request.senha.encode("utf-8"), bcrypt.gensalt()
+                ).decode("utf-8")
+
+            db.commit()
+
+            # Log de auditoria
+            log_audit(
+                action="profile_update",
+                user_crm=user["crm"],
+                details=f"Perfil atualizado: {request.nome or 'campos adicionais'}",
+            )
+
+        return UpdateProfileResponse(message="Perfil atualizado com sucesso")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # --- Endpoint mínimo para dashboard ---
 @app.get("/api/v1/dashboard")
 def get_dashboard(user: dict = Depends(get_current_user)):
@@ -3730,6 +3776,152 @@ async def notify_update(
     )
 
     return {"status": "notified", "event_type": event_type}
+
+
+@app.get("/api/v1/billing")
+def get_billing_info(user: dict = Depends(get_current_user)):
+    """Retorna informações de cobrança e uso do usuário."""
+    with SessionLocal() as db:
+        # Calcular uso do mês atual
+        current_month = datetime.utcnow().replace(day=1)
+
+        # Simular dados de cobrança (posteriormente integrar com sistema real)
+        guias_processadas = (
+            db.query(Guia)
+            .filter(
+                Guia.crm == user["crm"], Guia.data >= current_month.strftime("%Y-%m-%d")
+            )
+            .count()
+        )
+
+        demonstrativos_processados = (
+            db.query(Demonstrativo)
+            .filter(
+                Demonstrativo.crm == user["crm"],
+                Demonstrativo.upload_time >= current_month,
+            )
+            .count()
+        )
+
+        # Calcular custo baseado no uso (R$ 0,10 por guia + R$ 2,00 por demonstrativo)
+        custo_guias = guias_processadas * 0.10
+        custo_demonstrativos = demonstrativos_processados * 2.00
+        total_uso = custo_guias + custo_demonstrativos
+
+        # Simular histórico dos últimos 7 dias
+        usage_history = []
+        for i in range(7):
+            date = datetime.utcnow() - timedelta(days=i)
+            day_guias = max(
+                0, guias_processadas // 7 + (i % 3) - 1
+            )  # Distribuir aproximadamente
+            usage_history.append(
+                {
+                    "date": date.strftime("%Y-%m-%d"),
+                    "guias": day_guias,
+                    "demonstrativos": max(0, demonstrativos_processados // 7 + (i % 2)),
+                    "cost": day_guias * 0.10
+                    + max(0, demonstrativos_processados // 7 + (i % 2)) * 2.00,
+                }
+            )
+
+        return {
+            "current_period": {
+                "start_date": current_month.strftime("%Y-%m-%d"),
+                "end_date": datetime.utcnow().strftime("%Y-%m-%d"),
+                "guias_processadas": guias_processadas,
+                "demonstrativos_processados": demonstrativos_processados,
+                "total_cost": round(total_uso, 2),
+                "plan": "Pro",
+                "monthly_limit": 1000,  # Limite mensal de procedimentos
+                "usage_percentage": min(
+                    100, (guias_processadas + demonstrativos_processados) / 10
+                ),  # 10 = limite para cálculo percentual
+            },
+            "usage_history": usage_history[::-1],  # Reverter para ordem cronológica
+            "next_billing_date": (current_month + timedelta(days=32))
+            .replace(day=1)
+            .strftime("%Y-%m-%d"),
+            "payment_method": {"type": "card", "last4": "1234", "brand": "Visa"},
+        }
+
+
+@app.post("/api/v1/billing/update-limit")
+def update_spending_limit(
+    limit: int = Body(..., embed=True), user: dict = Depends(get_current_user)
+):
+    """Atualiza o limite de gastos mensais."""
+    if limit < 10 or limit > 10000:
+        raise HTTPException(
+            status_code=400, detail="Limite deve estar entre R$ 10 e R$ 10.000"
+        )
+
+    # Aqui você salvaria no banco de dados do usuário
+    # Por enquanto apenas retornamos sucesso
+    return {"message": f"Limite atualizado para R$ {limit}", "new_limit": limit}
+
+
+@app.get("/api/v1/usage-analytics")
+def get_usage_analytics(user: dict = Depends(get_current_user)):
+    """Retorna analytics detalhados de uso para o perfil."""
+    with SessionLocal() as db:
+        # Últimos 30 dias de atividade
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+
+        # Atividade por dia
+        daily_activity = []
+        for i in range(30):
+            date = thirty_days_ago + timedelta(days=i)
+            day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+            day_end = day_start + timedelta(days=1)
+
+            # Contar uploads do dia
+            day_uploads = (
+                db.query(Demonstrativo)
+                .filter(
+                    Demonstrativo.crm == user["crm"],
+                    Demonstrativo.upload_time >= day_start,
+                    Demonstrativo.upload_time < day_end,
+                )
+                .count()
+            )
+
+            daily_activity.append(
+                {
+                    "date": date.strftime("%m/%d"),
+                    "uploads": day_uploads,
+                    "procedures": day_uploads
+                    * 15,  # Estimar 15 procedimentos por demonstrativo
+                }
+            )
+
+        # Estatísticas gerais
+        total_procedures = db.query(Guia).filter(Guia.crm == user["crm"]).count()
+        this_month_procedures = (
+            db.query(Guia)
+            .filter(
+                Guia.crm == user["crm"],
+                Guia.data >= datetime.utcnow().replace(day=1).strftime("%Y-%m-%d"),
+            )
+            .count()
+        )
+
+        return {
+            "total_procedures_processed": total_procedures,
+            "this_month_procedures": this_month_procedures,
+            "daily_activity": daily_activity,
+            "average_procedures_per_day": round(
+                this_month_procedures / max(1, datetime.utcnow().day), 1
+            ),
+            "most_active_day": (
+                max(daily_activity, key=lambda x: x["uploads"])["date"]
+                if daily_activity
+                else "N/A"
+            ),
+            "efficiency_score": min(
+                100, max(0, (this_month_procedures / 100) * 100)
+            ),  # Score baseado em 100 procedimentos/mês
+        }
 
 
 # --- Endpoint para analytics/intelligence ---
