@@ -55,6 +55,11 @@ import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
 
 import { InfoCard } from '../components/ui/InfoCard';
+import {
+  SkeletonInfoCard,
+  SkeletonDashboard,
+  SkeletonUploadPage,
+} from '../components/ui/skeleton';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Helmet } from 'react-helmet-async';
 
@@ -1496,124 +1501,132 @@ const DemonstrativesPage = () => {
               </div>
 
               {/* Grid de Cards com Gradientes Âmbar Perfeitos */}
-              <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                {/* Card Valores Liberados - Verde */}
-                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-                  <CardContent className="relative p-8">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
-                          <CheckCircle className="h-7 w-7 text-emerald-700" />
+              {loading ? (
+                <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonInfoCard key={i} />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                  {/* Card Valores Liberados - Verde */}
+                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+                    <CardContent className="relative p-8">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
+                            <CheckCircle className="h-7 w-7 text-emerald-700" />
+                          </div>
+                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
+                            Liberado
+                          </Badge>
                         </div>
-                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                          Liberado
-                        </Badge>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
+                            Total Liberado
+                          </p>
+                          <p className="text-3xl font-bold text-emerald-800 leading-none">
+                            {formatCurrency(summaryStats.totalProcessado)}
+                          </p>
+                          <p className="text-sm text-emerald-600">
+                            Valor efetivamente liberado pelos convênios
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
-                          Total Liberado
-                        </p>
-                        <p className="text-3xl font-bold text-emerald-800 leading-none">
-                          {formatCurrency(summaryStats.totalProcessado)}
-                        </p>
-                        <p className="text-sm text-emerald-600">
-                          Valor efetivamente liberado pelos convênios
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Card Glosas - Vermelho */}
-                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
-                  <CardContent className="relative p-8">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
-                          <AlertCircle className="h-7 w-7 text-red-700" />
+                  {/* Card Glosas - Vermelho */}
+                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
+                    <CardContent className="relative p-8">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
+                            <AlertCircle className="h-7 w-7 text-red-700" />
+                          </div>
+                          <Badge className="bg-red-100 text-red-700 border-red-200">
+                            Glosas
+                          </Badge>
                         </div>
-                        <Badge className="bg-red-100 text-red-700 border-red-200">
-                          Glosas
-                        </Badge>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold uppercase tracking-wide text-red-600">
+                            Total Glosado
+                          </p>
+                          <p className="text-3xl font-bold text-red-800 leading-none">
+                            {formatCurrency(summaryStats.totalGlosa)}
+                          </p>
+                          <p className="text-sm text-red-600">
+                            Valor total glosado pelos convênios
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold uppercase tracking-wide text-red-600">
-                          Total Glosado
-                        </p>
-                        <p className="text-3xl font-bold text-red-800 leading-none">
-                          {formatCurrency(summaryStats.totalGlosa)}
-                        </p>
-                        <p className="text-sm text-red-600">
-                          Valor total glosado pelos convênios
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Card Procedimentos - Azul */}
-                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
-                  <CardContent className="relative p-8">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100">
-                          <FileText className="h-7 w-7 text-blue-700" />
+                  {/* Card Procedimentos - Azul */}
+                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
+                    <CardContent className="relative p-8">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100">
+                            <FileText className="h-7 w-7 text-blue-700" />
+                          </div>
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                            Processados
+                          </Badge>
                         </div>
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                          Processados
-                        </Badge>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+                            Procedimentos
+                          </p>
+                          <p className="text-3xl font-bold text-blue-800 leading-none">
+                            {summaryStats.totalProcedimentos}
+                          </p>
+                          <p className="text-sm text-blue-600">
+                            Total de procedimentos processados
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-                          Procedimentos
-                        </p>
-                        <p className="text-3xl font-bold text-blue-800 leading-none">
-                          {summaryStats.totalProcedimentos}
-                        </p>
-                        <p className="text-sm text-blue-600">
-                          Total de procedimentos processados
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Card Demonstrativos - Âmbar */}
-                <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
-                  <CardContent className="relative p-8">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
-                          <ClipboardList className="h-7 w-7 text-amber-700" />
+                  {/* Card Demonstrativos - Âmbar */}
+                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
+                    <CardContent className="relative p-8">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
+                            <ClipboardList className="h-7 w-7 text-amber-700" />
+                          </div>
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+                            Analisados
+                          </Badge>
                         </div>
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-                          Analisados
-                        </Badge>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold uppercase tracking-wide text-amber-600">
+                            Demonstrativos
+                          </p>
+                          <p className="text-3xl font-bold text-amber-800 leading-none">
+                            {demonstratives.length}
+                          </p>
+                          <p className="text-sm text-amber-600">
+                            {summaryStats.demonstrativosComGlosa} com glosas,{' '}
+                            {summaryStats.demonstrativosSemGlosa} sem glosas
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold uppercase tracking-wide text-amber-600">
-                          Demonstrativos
-                        </p>
-                        <p className="text-3xl font-bold text-amber-800 leading-none">
-                          {demonstratives.length}
-                        </p>
-                        <p className="text-sm text-amber-600">
-                          {summaryStats.demonstrativosComGlosa} com glosas,{' '}
-                          {summaryStats.demonstrativosSemGlosa} sem glosas
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </section>
 
             {/* Seção Principal com Tabs Premium */}

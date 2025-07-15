@@ -29,6 +29,9 @@ import {
   DollarSign,
   CheckCircle,
   AlertTriangle,
+  Filter,
+  Search,
+  X,
 } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import PaymentStatusIndicator from '../components/payment/PaymentStatusIndicator';
@@ -64,25 +67,17 @@ import { Link } from 'react-router-dom';
 import LoaderTable from '../components/ui/LoaderTable';
 import { cn } from '../lib/utils';
 import { Card } from '../components/ui/card';
+import { SkeletonInfoCard, SkeletonDashboard } from '../components/ui/skeleton';
 import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
 
 import { FiltersToolbar } from '../components/guides/FiltersToolbar';
-import { InfoCard } from '../components/ui/InfoCard';
+import { InfoCard, InfoCardGrid } from '../components/ui/InfoCard';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useRealTimeSync, REAL_TIME_EVENTS } from '../hooks/useRealTimeSync';
 import { Helmet } from 'react-helmet-async';
-
-// Mapeamento de cores para cada tipo de papel (igual Demonstratives)
-// const papelColors = {
-//   'cirurgiao':   { bg: 'rgba(59,130,246,0.18)', text: '#1e3a8a' }, // azul
-//   'anestesista': { bg: 'rgba(139,92,246,0.18)', text: '#6d28d9' }, // roxo
-//   'primeiro_auxiliar': { bg: 'rgba(16,185,129,0.18)', text: '#065f46' }, // verde
-//   'segundo_auxiliar': { bg: 'rgba(251,191,36,0.18)', text: '#92400e' }, // laranja
-//   'outros': { bg: 'rgba(99,102,241,0.13)', text: '#3730a3' }, // fallback
-// };
-// const defaultPapelColor = { bg: 'rgba(99,102,241,0.13)', text: '#3730a3' };
+import { useMobileLayout } from '../hooks/use-mobile';
 
 // PADRÃO DE CORES GLOBAL PARA KPIs
 // Glosa: variant="danger", text-red-700, bg-red-50
@@ -100,1790 +95,520 @@ function getCurrentCrm() {
   }
 }
 
-function logActivity(action: string, details: string, extra: any = {}) {
-  const crm = getCurrentCrm();
-  if (!crm) return; // Não loga se não houver CRM
-  const key = `guias_activity_log_${crm}`;
-  const logs = JSON.parse(localStorage.getItem(key) || '[]');
-  let user = {};
-  try {
-    user = JSON.parse(localStorage.getItem('user') || '{}');
-  } catch {}
-  const logObj = {
-    timestamp: new Date().toISOString(),
-    action,
-    user: {
-      crm: typeof user === 'object' && user && 'crm' in user ? (user as any).crm : '',
-      nome:
-        typeof user === 'object' && user && 'nome' in user ? (user as any).nome : '',
-    },
-    ...extra,
-    details,
-  };
-  logs.unshift(logObj);
-  localStorage.setItem(key, JSON.stringify(logs.slice(0, 20)));
+function GuidesPage() {
+  const { userProfile } = useAuth();
+  const { isMobile, shouldStackCards, maxTableColumns } = useMobileLayout();
 
-  // Envia para o backend (não quebra se falhar)
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  fetch(`${apiUrl}/api/v1/activity-log`, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + (localStorage.getItem('token') || ''),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      action,
-      details,
-      ...extra,
-    }),
-  }).catch(() => {});
-}
-function getRecentActivities() {
-  const crm = getCurrentCrm();
-  if (!crm) return [];
-  const key = `guias_activity_log_${crm}`;
-  return JSON.parse(localStorage.getItem(key) || '[]');
-}
-function clearActivities() {
-  const crm = getCurrentCrm();
-  if (!crm) return;
-  const key = `guias_activity_log_${crm}`;
-  localStorage.removeItem(key);
-}
+  // Estados principais
+  const [guides, setGuides] = useState<GuideProcedure[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedGuide, setSelectedGuide] = useState<GuideProcedure | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(isMobile ? 5 : 10);
+  const [activeTab, setActiveTab] = useState('overview');
 
-// Função para normalizar papel (remove acentos, minúsculas, converte números por extenso)
-function normalizePapel(papel: string) {
-  return papel
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .replace(/1º|primeiro/, 'primeiro')
-    .replace(/2º|segundo/, 'segundo')
-    .replace(/auxiliar/, 'auxiliar')
-    .replace(/cirurgiao/, 'cirurgiao')
-    .replace(/anestesista/, 'anestesista')
-    .replace(/[^a-z\s]/g, '') // remove caracteres especiais
-    .trim();
-}
+  // Estados para filtros
+  const [filters, setFilters] = useState({
+    procedimento: '',
+    medico: '',
+    especialidade: '',
+    status: '',
+    periodo: '',
+    convenio: '',
+  });
 
-// Função utilitária para converter data ISO para DD/MM/YYYY
-function formatDateToBR(dateStr: string) {
-  if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-');
-  if (!year || !month || !day) return dateStr;
-  return `${day}/${month}/${year}`;
-}
+  // Upload de arquivos
+  const {
+    files,
+    isUploading,
+    progress,
+    handleFileChangeByType,
+    removeFile,
+    resetFiles,
+  } = useFileUpload();
 
-function formatDateToISO(dateStr: string) {
-  if (!dateStr) return '';
-  const [day, month, year] = dateStr.split('/');
-  if (!year || !month || !day) return dateStr;
-  return `${year}-${month}-${day}`;
-}
+  // Real-time sync
+  useRealTimeSync([REAL_TIME_EVENTS.GUIDE_PROCESSED, REAL_TIME_EVENTS.GUIDE_UPLOADED]);
 
-function renderParticipacaoBadge(papel: string) {
-  const papelNormalizado = normalizePapel(papel);
-
-  switch (papelNormalizado) {
-    case 'cirurgiao':
-      return (
-        <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 shadow-sm hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-200 font-medium">
-          Cirurgião
-        </Badge>
-      );
-    case 'primeiro auxiliar':
-      return (
-        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-800 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-200 font-medium">
-          1º Auxiliar
-        </Badge>
-      );
-    case 'segundo auxiliar':
-      return (
-        <Badge className="bg-gradient-to-r from-violet-50 to-purple-50 text-violet-800 shadow-sm hover:from-violet-100 hover:to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 dark:text-violet-200 font-medium">
-          2º Auxiliar
-        </Badge>
-      );
-    case 'anestesista':
-      return (
-        <Badge className="bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800 shadow-sm hover:from-amber-100 hover:to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 dark:text-amber-200 font-medium">
-          Anestesista
-        </Badge>
-      );
-    default:
-      return (
-        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-800 shadow-sm hover:from-gray-100 hover:to-slate-100 dark:from-gray-900/20 dark:to-slate-900/20 dark:text-gray-200 font-medium">
-          {papel || '--'}
-        </Badge>
-      );
-  }
-}
-
-const GuidesPage = () => {
-  // SEO e Título Premium
+  // SEO
   usePageTitle({
-    title: 'Central de Guias Médicas',
-    description:
-      'Sistema avançado de gestão e análise de guias médicas TISS com processamento automatizado e insights de performance',
-    keywords:
-      'guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias',
+    title: 'Guias Médicas',
+    description: 'Gerencie e analise suas guias médicas TISS de forma inteligente',
+    keywords: 'guias médicas, TISS, procedimentos, honorários médicos',
   });
 
-  const [activeTab, setActiveTab] = useState<'list' | 'upload'>('list');
-  const [extractedGuides, setExtractedGuides] = useState<GuideProcedure[]>([]);
-  const [allGuides, setAllGuides] = useState<GuideProcedure[]>([]); // Para totais globais
-  const [filter, setFilter] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [selectedGuia, setSelectedGuia] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [totalBeneficiarios, setTotalBeneficiarios] = useState(0); // Total de beneficiários únicos
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [data, setData] = useState('');
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [activities, setActivities] = useState(getRecentActivities());
-  const [paymentAnalytics, setPaymentAnalytics] = useState<any>(null);
+  // Dados calculados
+  const stats = {
+    totalGuias: guides.length,
+    totalProcedimentos: guides.reduce(
+      (sum, guide) => sum + (guide.procedimentos?.length || 0),
+      0
+    ),
+    valorTotal: guides.reduce((sum, guide) => sum + (guide.valorTotal || 0), 0),
+    valorPago: guides.reduce((sum, guide) => sum + (guide.valorPago || 0), 0),
+    valorGlosado: guides.reduce((sum, guide) => sum + (guide.valorGlosado || 0), 0),
+  };
 
-  // Tempo real profissional - sem polling manual
-  const { triggerUpdate } = useRealTimeSync({
-    onActivityUpdate: () => {
-      console.log('🔄 Tempo real: atualizando guias...');
-      fetchSavedGuias();
-      setActivities(getRecentActivities());
-    },
-  });
+  const taxaSucesso =
+    stats.valorTotal > 0 ? (stats.valorPago / stats.valorTotal) * 100 : 0;
 
-  // Configuração das colunas para o DataGrid
-  const guidesColumns = [
+  // Configuração das colunas para DataGrid (mobile-aware)
+  const columns = [
     {
-      field: 'numero_guia',
-      headerName: 'Nº Guia',
-      width: 120,
-      renderCell: (params: any) => (
-        <span className="font-mono text-gray-900 dark:text-gray-100">
-          {params.value}
-        </span>
-      ),
+      field: 'numeroGuia',
+      headerName: 'Número',
+      width: isMobile ? 80 : 120,
+      priority: 'high' as const,
+      mobileLabel: 'Guia',
     },
     {
-      field: 'data',
-      headerName: 'Data de Execução',
-      width: 140,
+      field: 'paciente',
+      headerName: 'Paciente',
+      width: isMobile ? 120 : 180,
+      priority: 'high' as const,
+      mobileLabel: 'Paciente',
     },
     {
-      field: 'beneficiario',
-      headerName: 'Beneficiário',
-      width: 200,
-      renderCell: (params: any) => (
-        <span className="truncate max-w-[200px]" title={params.value}>
-          {params.value}
-        </span>
-      ),
+      field: 'dataAtendimento',
+      headerName: 'Data',
+      width: isMobile ? 90 : 120,
+      priority: 'medium' as const,
+      mobileLabel: 'Data',
+      renderCell: (params: any) =>
+        params.value ? new Date(params.value).toLocaleDateString('pt-BR') : '—',
     },
     {
-      field: 'qtdProcedimentos',
-      headerName: 'Qtd Proc.',
-      width: 100,
-      type: 'number',
+      field: 'valorTotal',
+      headerName: 'Valor Total',
+      width: isMobile ? 100 : 130,
+      type: 'currency',
+      priority: 'high' as const,
+      mobileLabel: 'Valor',
+      renderCell: (params: any) =>
+        params.value
+          ? `R$ ${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+          : 'R$ 0,00',
     },
     {
       field: 'status',
-      headerName: 'Status do Sistema',
-      width: 150,
-      renderCell: (params: any) => {
-        const statusLabel: Record<string, string> = {
-          Fechada: 'Fechada',
-          'Gerado pela execução': 'Processada',
-          Pendente: 'Pendente',
-          Processada: 'Processada',
-        };
-
-        const getVariant = (status: string) => {
-          switch (status) {
-            case 'Fechada':
-              return 'success';
-            case 'Pendente':
-              return 'warning';
-            case 'Processada':
-            case 'Gerado pela execução':
-              return 'default';
-            default:
-              return 'secondary';
-          }
-        };
-
-        return (
-          <Badge
-            variant={getVariant(params.value)}
-            className="whitespace-nowrap px-3 py-1"
-            title={statusLabel[params.value] || params.value}
-          >
-            {statusLabel[params.value] || params.value}
-          </Badge>
-        );
-      },
+      headerName: 'Status',
+      width: isMobile ? 90 : 120,
+      priority: 'medium' as const,
+      mobileLabel: 'Status',
+      renderCell: (params: any) => (
+        <PaymentStatusIndicator
+          status={params.value || 'pendente'}
+          compact={isMobile}
+        />
+      ),
     },
-    {
-      field: 'payment_status',
-      headerName: 'Status de Pagamento',
-      width: 180,
-      renderCell: ({ row }: { row: any }) => {
-        // Usar o status agregado da guia (hierárquico)
-        const firstProc = row.detalhes?.[0];
-        const aggregatedStatus = firstProc?.guide_aggregated_status;
-
-        if (aggregatedStatus) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: aggregatedStatus.status,
-                reason: aggregatedStatus.reason,
-                demonstrativo_info: null,
-                has_demonstrativo: true,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        // Fallback para status individual do primeiro procedimento
-        const smartStatus = firstProc?.smart_payment_status;
-        if (smartStatus) {
-          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
-        }
-
-        // Fallback para o sistema antigo
-        const paymentData = row.payment_summary;
-        if (!paymentData) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: 'sem_demonstrativo',
-                reason: 'Nenhum demonstrativo carregado',
-                demonstrativo_info: null,
-                has_demonstrativo: false,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        const status =
-          paymentData.paid_count > 0
-            ? paymentData.paid_count === paymentData.total_count
-              ? 'pago'
-              : 'parcialmente_pago'
-            : 'nao_pago';
-
-        return (
-          <PaymentStatusIndicator
-            smartPaymentStatus={{
-              status,
-              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
-              demonstrativo_info: null,
-              has_demonstrativo: true,
-            }}
-            size="sm"
-          />
-        );
-      },
-    },
+    ...(isMobile
+      ? []
+      : [
+          {
+            field: 'medico',
+            headerName: 'Médico',
+            width: 150,
+            priority: 'low' as const,
+          },
+          {
+            field: 'especialidade',
+            headerName: 'Especialidade',
+            width: 140,
+            priority: 'low' as const,
+          },
+          {
+            field: 'convenio',
+            headerName: 'Convênio',
+            width: 130,
+            priority: 'low' as const,
+          },
+        ]),
   ];
 
-  const { files, isUploading, removeFile, resetFiles, handleFileChangeByType } =
-    useFileUpload();
-
-  const { userProfile } = useAuth();
-
-  // Carrega guias já salvas
+  // Carregar dados
   useEffect(() => {
-    const fetchSavedGuias = async () => {
-      try {
-        const token = localStorage.getItem('token') || '';
-        const allParams: GuidesQueryParams = {
-          page: 1,
-          pageSize: 10000,
-          search,
-          status,
-          data,
-        };
-        const allRes = await getGuides(token, allParams);
-        const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-        setAllGuides(allProcedures);
-        setTotal(allRes.total || 0);
-        setPaymentAnalytics(allRes.payment_analytics || null);
+    loadGuides();
+  }, [filters, currentPage, pageSize]);
 
-        // Agrupa por número de guia para calcular total de guias
-        const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-          (acc, proc) => {
-            acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-            acc[proc.numero_guia].push(proc);
-            return acc;
-          },
-          {}
-        );
-
-        const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => ({
-          numero_guia,
-          data: procs[0]?.data || '',
-          beneficiario: procs[0]?.beneficiario || '',
-          prestador: procs[0]?.prestador || '',
-          qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
-          status: procs[0]?.status || '',
-          detalhes: procs,
-        }));
-
-        // Ordenação por data mais recente
-        allMacroRows.sort((a, b) => {
-          const dateA = formatDateToISO(a.data);
-          const dateB = formatDateToISO(b.data);
-          return dateB.localeCompare(dateA);
-        });
-
-        setTotalBeneficiarios(allMacroRows.length);
-
-        // Aplica paginação local
-        const startIndex = page * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-        // Converte de volta para lista de procedimentos da página atual
-        const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-        setExtractedGuides(currentPageProcedures);
-      } catch (err: any) {
-        // Só mostrar erro se for erro real de rede/backend
-        if (err?.response?.status && err.response.status !== 200) {
-          toast.error('Erro ao carregar guias', {
-            description: err?.response?.data?.detail || err?.message,
-          });
-        }
-        setExtractedGuides([]);
-        setAllGuides([]);
-        setTotal(0);
-        setTotalBeneficiarios(0);
-      }
-    };
-    fetchSavedGuias();
-  }, [search, status, data, page, pageSize]);
-
-  // Upload/processamento
-  const handleUploadGuias = async () => {
-    if (files.length === 0) {
-      toast.error('Nenhum arquivo selecionado');
-      return;
-    }
-    setLoading(true);
+  const loadGuides = async () => {
     try {
-      const token = localStorage.getItem('token') || '';
-      const guiaFiles = files.filter((f) => f.type === 'guia').map((f) => f.file);
-      if (!guiaFiles.length) throw new Error('Nenhum arquivo de guia válido');
-
-      // Faz o upload das guias em lote
-      const uploadResult = await uploadGuides(guiaFiles, token);
-      if (uploadResult && Array.isArray(uploadResult.results)) {
-        let successCount = 0;
-        let duplicateCount = 0;
-        let errorCount = 0;
-        const errorFiles: string[] = [];
-        const duplicateFiles: string[] = [];
-
-        uploadResult.results.forEach((result: any) => {
-          if (result.success) {
-            successCount++;
-          } else if (result.duplicate) {
-            duplicateCount++;
-            duplicateFiles.push(result.filename);
-          } else {
-            errorCount++;
-            errorFiles.push(`${result.filename}: ${result.error || 'Erro'}`);
-          }
-        });
-
-        // Apenas um toast consolidado
-        if (successCount > 0 && errorCount === 0 && duplicateCount === 0) {
-          toast.success(`✅ ${successCount} guia(s) processada(s) com sucesso!`);
-        } else if (successCount > 0 || duplicateCount > 0) {
-          let message = '';
-          let description = '';
-
-          if (successCount > 0) message += `${successCount} processada(s)`;
-          if (duplicateCount > 0) {
-            if (message) message += ', ';
-            message += `${duplicateCount} duplicata(s) ignorada(s)`;
-            description = `Duplicatas: ${duplicateFiles.slice(0, 3).join(', ')}${
-              duplicateFiles.length > 3 ? '...' : ''
-            }`;
-          }
-          if (errorCount > 0) {
-            if (message) message += ', ';
-            message += `${errorCount} com erro`;
-            if (description) description += '; ';
-            description +=
-              errorFiles.slice(0, 2).join('; ') + (errorFiles.length > 2 ? '...' : '');
-          }
-
-          toast.success(`✅ ${message}`, {
-            description: description || undefined,
-          });
-        } else if (errorCount > 0) {
-          toast.error(`❌ ${errorCount} guia(s) com erro`, {
-            description:
-              errorFiles.slice(0, 3).join('; ') + (errorFiles.length > 3 ? '...' : ''),
-          });
-        }
-      } else {
-        toast.error('Resposta inesperada do servidor.');
-      }
-
-      // Recarrega os dados após o upload
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data,
+      setLoading(true);
+      const queryParams: GuidesQueryParams = {
+        page: currentPage + 1,
+        limit: pageSize,
+        crm: getCurrentCrm(),
+        ...filters,
       };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
 
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => ({
-        numero_guia,
-        data: procs[0]?.data || '',
-        beneficiario: procs[0]?.beneficiario || '',
-        prestador: procs[0]?.prestador || '',
-        qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
-        status: procs[0]?.status || '',
-        detalhes: procs,
-      }));
-
-      // Ordenação por data mais recente
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA);
-      });
-
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // Reset para primeira página após upload
-      setPage(0);
-
-      // Aplica paginação local na primeira página
-      const startIndex = 0;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      resetFiles();
-      setActiveTab('list');
-
-      // Registra atividade
-      if (uploadResult && Array.isArray(uploadResult.results)) {
-        const uniqueGuias = new Set();
-        const duplicates = uploadResult.results.filter((r: any) => r.duplicate);
-        const successful = uploadResult.results.filter(
-          (r: any) => r.success && !r.duplicate
-        );
-
-        successful.forEach((r: any) => uniqueGuias.add(r.filename));
-
-        let activityMessage = `Processada(s) ${uniqueGuias.size} guia(s)`;
-        if (duplicates.length > 0) {
-          activityMessage += `, ${duplicates.length} duplicata(s) ignorada(s)`;
-        }
-
-        logActivity('Upload de Guias', activityMessage, {
-          target: { arquivos: Array.from(uniqueGuias) },
-          result: `${uploadResult.results.length} arquivos processados`,
-          duplicates: duplicates.length,
-        });
-        setActivities(getRecentActivities());
-      }
-    } catch (err: any) {
-      toast.error('Erro ao processar os arquivos', {
-        description: err?.response?.data?.detail || err?.message,
-      });
+      const response = await getGuides(queryParams);
+      setGuides(response.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar guias:', error);
+      toast.error('Erro ao carregar guias médicas');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFileDrop = async (type: FileType, fileList: FileList) => {
-    await handleFileChangeByType(type, fileList);
+  // Handlers
+  const handleUploadComplete = () => {
+    resetFiles();
+    loadGuides();
+    toast.success('Guias processadas com sucesso!');
   };
 
-  // Agrupa por número de guia
-  const grouped = allGuides.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
-    acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-    acc[proc.numero_guia].push(proc);
-    return acc;
-  }, {});
-
-  // Monta linhas macro
-  const macroRows = Object.entries(grouped).map(([numero_guia, procs]) => {
-    const numeroGuiaStr = String(numero_guia).trim();
-    const datas = procs.map((p) => p.data).sort();
-    const dataMaisRecente = datas[datas.length - 1] || '';
-    const beneficiario = procs[0]?.beneficiario || '';
-    const prestador = procs[0]?.prestador || '';
-    const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-    const statusCount = procs.reduce(
-      (acc, p) => {
-        acc[p.status] = (acc[p.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-    const statusComum =
-      Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-
-    // NOVA FUNCIONALIDADE: Resumo inteligente de pagamento
-    const paymentSummary = procs.reduce(
-      (acc, proc) => {
-        // Usar o status agregado se disponível, senão o individual
-        const aggregatedStatus = proc.guide_aggregated_status;
-        const smartStatus = aggregatedStatus
-          ? aggregatedStatus.status
-          : proc.smart_payment_status?.status;
-
-        if (smartStatus) {
-          switch (smartStatus) {
-            case 'pago':
-              acc.paid_count += 1;
-              acc.total_paid_value +=
-                proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
-              break;
-            case 'parcialmente_pago':
-              acc.partial_count += 1;
-              acc.total_paid_value +=
-                proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
-              break;
-            case 'glosado':
-              acc.glosa_count += 1;
-              break;
-            case 'nao_pago':
-            case 'nao_encontrado':
-              acc.unpaid_count += 1;
-              break;
-          }
-        } else {
-          // Fallback para sistema antigo
-          const paymentStatus = proc.payment_status;
-          if (paymentStatus?.is_paid) {
-            acc.paid_count += 1;
-            acc.total_paid_value += paymentStatus.payment_info?.paid_value || 0;
-          }
-        }
-        acc.total_count += 1;
-        return acc;
-      },
-      {
-        paid_count: 0,
-        partial_count: 0,
-        glosa_count: 0,
-        unpaid_count: 0,
-        total_count: 0,
-        total_paid_value: 0,
-      }
-    );
-
-    return {
-      numero_guia: numeroGuiaStr,
-      data: dataMaisRecente,
-      beneficiario,
-      prestador,
-      qtdProcedimentos,
-      status: statusComum,
-      payment_summary: paymentSummary,
-      detalhes: procs,
-    };
-  });
-
-  // Sorting automático por Data de Execução (mais recente primeiro)
-  macroRows.sort((a, b) => {
-    const dateA = formatDateToISO(a.data);
-    const dateB = formatDateToISO(b.data);
-    return dateB.localeCompare(dateA);
-  });
-
-  // DataGrid recebe todas as macroRows, sem slice manual
-  const filteredMacroRows = macroRows;
-
-  const handleSelectRow = (numero_guia: string, checked: boolean) => {
-    setSelectedRows((prev) =>
-      checked ? [...prev, numero_guia] : prev.filter((n) => n !== numero_guia)
-    );
+  const handleViewDetails = (guide: GuideProcedure) => {
+    setSelectedGuide(guide);
+    setShowDetails(true);
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      // Calcula o índice inicial e final da página atual
-      const startIndex = page * pageSize;
-      const endIndex = startIndex + pageSize;
-      // Pega apenas as guias da página atual
-      const currentPageRows = filteredMacroRows.slice(startIndex, endIndex);
-      setSelectedRows(currentPageRows.map((row) => row.numero_guia));
-    } else {
-      setSelectedRows([]);
-    }
-  };
-
-  const handleDeleteSelected = async () => {
-    if (selectedRows.length === 0) return;
-    if (!window.confirm(`Deseja remover ${selectedRows.length} guias selecionadas?`))
-      return;
+  const handleDeleteGuide = async (id: string) => {
     try {
-      const token = localStorage.getItem('token') || '';
-      await Promise.all(
-        selectedRows.map((numeroGuia) => deleteGuide(numeroGuia, token))
-      );
-
-      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
-      // Busca TODOS os dados para recalcular totais globais e paginação local
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data,
-      };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa TODOS os dados por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-        const numeroGuiaStr = String(numero_guia).trim();
-        const datas = procs.map((p) => p.data).sort();
-        const dataMaisRecente = datas[datas.length - 1] || '';
-        const beneficiario = procs[0]?.beneficiario || '';
-        const prestador = procs[0]?.prestador || '';
-        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-        const statusCount = procs.reduce(
-          (acc, p) => {
-            acc[p.status] = (acc[p.status] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
-        const statusComum =
-          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-        return {
-          numero_guia: numeroGuiaStr,
-          data: dataMaisRecente,
-          beneficiario,
-          prestador,
-          qtdProcedimentos,
-          status: statusComum,
-          detalhes: procs,
-        };
-      });
-
-      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
-      });
-
-      // Define o total de beneficiários únicos
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
-      setPage(0);
-
-      // Aplica paginação local aos beneficiários agrupados (usando página 0)
-      const startIndex = 0 * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      setSelectedRows([]);
-
-      // Log da atividade
-      logActivity('Remoção de Guias', `Removidas ${selectedRows.length} guias`, {
-        target: { numero_guia: selectedRows },
-      });
-      setActivities(getRecentActivities());
-
-      // Feedback visual amigável para o usuário
-      toast.success(
-        `✅ ${selectedRows.length} guia${selectedRows.length > 1 ? 's' : ''} removida${
-          selectedRows.length > 1 ? 's' : ''
-        } com sucesso!`,
-        {
-          description: 'A atividade foi registrada no log do sistema.',
-          duration: 4000,
-        }
-      );
-
-      // Tempo real: sincronização automática
-      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
-        count: selectedRows.length,
-        guias: selectedRows,
-      });
-    } catch (err: any) {
-      toast.error('Erro ao remover guias', {
-        description: err?.response?.data?.detail || err?.message,
-      });
+      await deleteGuide(id);
+      await loadGuides();
+      toast.success('Guia excluída com sucesso');
+    } catch (error) {
+      toast.error('Erro ao excluir guia');
     }
   };
 
-  const macroColumns = [
-    {
-      field: 'numero_guia',
-      headerName: 'Nº Guia',
-      width: 120,
-      renderCell: ({ value }: { value: string }) => (
-        <span className="font-mono text-gray-900 dark:text-gray-100 font-medium">
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'data',
-      headerName: 'Data de Execução',
-      width: 140,
-      renderCell: ({ value }: { value: string }) => (
-        <span className="text-gray-700 dark:text-gray-300">{value}</span>
-      ),
-    },
-    {
-      field: 'beneficiario',
-      headerName: 'Beneficiário',
-      width: 250,
-      renderCell: ({ value }: { value: string }) => (
-        <span
-          className="truncate max-w-[240px] text-gray-700 dark:text-gray-300"
-          title={value}
-        >
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'qtdProcedimentos',
-      headerName: 'Qtd Proc.',
-      width: 100,
-      type: 'number',
-      renderCell: ({ value }: { value: number }) => (
-        <span className="font-mono text-right text-gray-900 dark:text-gray-100 font-medium">
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'payment_status',
-      headerName: 'Status de Pagamento',
-      width: 180,
-      renderCell: ({ row }: { row: any }) => {
-        // Usar o status agregado da guia (hierárquico)
-        const firstProc = row.detalhes?.[0];
-        const aggregatedStatus = firstProc?.guide_aggregated_status;
+  const mobileCardTitle = (row: any) => `Guia ${row.numeroGuia || 'N/A'}`;
 
-        if (aggregatedStatus) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: aggregatedStatus.status,
-                reason: aggregatedStatus.reason,
-                demonstrativo_info: null,
-                has_demonstrativo: true,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        // Fallback para status individual do primeiro procedimento
-        const smartStatus = firstProc?.smart_payment_status;
-        if (smartStatus) {
-          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
-        }
-
-        // Fallback para o sistema antigo
-        const paymentData = row.payment_summary;
-        if (!paymentData) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: 'sem_demonstrativo',
-                reason: 'Nenhum demonstrativo carregado',
-                demonstrativo_info: null,
-                has_demonstrativo: false,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        const status =
-          paymentData.paid_count > 0
-            ? paymentData.paid_count === paymentData.total_count
-              ? 'pago'
-              : 'parcialmente_pago'
-            : 'nao_pago';
-
-        return (
-          <PaymentStatusIndicator
-            smartPaymentStatus={{
-              status,
-              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
-              demonstrativo_info: null,
-              has_demonstrativo: true,
-            }}
-            size="sm"
-          />
-        );
-      },
-    },
-  ];
-
-  const handleDeleteGuia = async (numeroGuia: string) => {
-    if (!window.confirm(`Deseja realmente remover a guia ${numeroGuia}?`)) {
-      return;
-    }
-    try {
-      const token = localStorage.getItem('token') || '';
-      await deleteGuide(numeroGuia, token);
-
-      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
-      // Busca TODOS os dados para recalcular totais globais e paginação local
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data,
-      };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa TODOS os dados por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-        const numeroGuiaStr = String(numero_guia).trim();
-        const datas = procs.map((p) => p.data).sort();
-        const dataMaisRecente = datas[datas.length - 1] || '';
-        const beneficiario = procs[0]?.beneficiario || '';
-        const prestador = procs[0]?.prestador || '';
-        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-        const statusCount = procs.reduce(
-          (acc, p) => {
-            acc[p.status] = (acc[p.status] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
-        const statusComum =
-          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-        return {
-          numero_guia: numeroGuiaStr,
-          data: dataMaisRecente,
-          beneficiario,
-          prestador,
-          qtdProcedimentos,
-          status: statusComum,
-          detalhes: procs,
-        };
-      });
-
-      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
-      });
-
-      // Define o total de beneficiários únicos
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
-      setPage(0);
-
-      // Aplica paginação local aos beneficiários agrupados (usando página 0)
-      const startIndex = 0 * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      // Log da atividade
-      logActivity('Remoção de Guia', `Guia ${numeroGuia} removida`, {
-        target: { numero_guia: numeroGuia },
-      });
-      setActivities(getRecentActivities());
-
-      // Feedback visual amigável para o usuário
-      toast.success(`✅ Guia ${numeroGuia} removida com sucesso!`, {
-        description: 'A atividade foi registrada no log do sistema.',
-        duration: 4000,
-      });
-
-      // Tempo real: sincronização automática
-      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
-        numero_guia: numeroGuia,
-      });
-    } catch (err: any) {
-      toast.error('Erro ao remover guia', {
-        description: err?.response?.data?.detail || err?.message,
-      });
-    }
-  };
-
-  function exportToCSV(rows: typeof filteredMacroRows) {
-    if (!rows.length) return;
-    const header = [
-      'Nº Guia',
-      'Data',
-      'Beneficiário',
-      'Prestador',
-      'Qtd Procedimentos',
-      'Status',
-    ];
-    const csvRows = [
-      header.join(','),
-      ...rows.map((row) =>
-        [
-          row.numero_guia,
-          row.data,
-          '"' + (row.beneficiario || '').replace(/"/g, '""') + '"',
-          '"' + (row.prestador || '').replace(/"/g, '""') + '"',
-          row.qtdProcedimentos,
-          row.status,
-        ].join(',')
-      ),
-    ];
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `guias_medicas_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    logActivity('Exportação de Guias', `Exportadas ${rows.length} guias para CSV`, {
-      result: `${rows.length} guias exportadas`,
-    });
-    setActivities(getRecentActivities());
-  }
-
-  function exportProceduresToCSV(grouped: Record<string, GuideProcedure[]>) {
-    const allProcedures = Object.values(grouped).flat();
-    if (!allProcedures.length) return;
-    const header = [
-      'Nº Guia',
-      'Data',
-      'Código',
-      'Descrição',
-      'Papel',
-      'Qtd',
-      'Status',
-      'Beneficiário',
-      'Prestador',
-    ];
-    const csvRows = [
-      header.join(','),
-      ...allProcedures.map((proc) =>
-        [
-          proc.numero_guia,
-          proc.data,
-          proc.codigo,
-          '"' + (proc.descricao || '').replace(/"/g, '""') + '"',
-          proc.papel,
-          proc.qtd,
-          proc.status,
-          '"' + (proc.beneficiario || '').replace(/"/g, '""') + '"',
-          '"' + (proc.prestador || '').replace(/"/g, '""') + '"',
-        ].join(',')
-      ),
-    ];
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `procedimentos_guias_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    logActivity(
-      'Exportação de Procedimentos',
-      `Exportados ${allProcedures.length} procedimentos para CSV`,
-      { result: `${allProcedures.length} procedimentos exportados` }
-    );
-    setActivities(getRecentActivities());
-  }
-
-  // Cards de indicadores usando TODOS os dados globais (não apenas página atual)
-  const totalGuias = totalBeneficiarios; // Total de beneficiários únicos globais
-  const totalProcedimentos = allGuides.reduce((sum, proc) => sum + (proc.qtd || 0), 0);
-  const papelCounts = allGuides.reduce(
-    (acc, proc) => {
-      acc[papelKey(proc.papel)] = (acc[papelKey(proc.papel)] || 0) + (proc.qtd || 0);
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  function papelKey(papel: string) {
-    const norm = normalizePapel(papel);
-    if (norm.includes('cirurgiao')) return 'cirurgiao';
-    if (norm.includes('primeiro')) return 'primeiro_auxiliar';
-    if (norm.includes('segundo')) return 'segundo_auxiliar';
-    if (norm.includes('anestesista')) return 'anestesista';
-    return 'outros';
-  }
-  function percent(val: number) {
-    if (!totalProcedimentos) return '0%';
-    return `${Math.round((val / totalProcedimentos) * 100)}%`;
-  }
-
-  // Pacientes únicos globais
-  const allGroupedForPatients = allGuides.reduce<Record<string, GuideProcedure[]>>(
-    (acc, proc) => {
-      acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-      acc[proc.numero_guia].push(proc);
-      return acc;
-    },
-    {}
-  );
-  const allMacroRowsForPatients = Object.entries(allGroupedForPatients).map(
-    ([numero_guia, procs]) => ({
-      numero_guia,
-      beneficiario: procs[0]?.beneficiario || '',
-    })
-  );
-  const pacientesUnicos = new Set(
-    allMacroRowsForPatients
-      .map((row) => row.beneficiario.trim().toLowerCase())
-      .filter(Boolean)
-  );
-
-  // --- QuickActions Integration ---
-  useEffect(() => {
-    function handleOpenUpload() {
-      setActiveTab('upload');
-      // Focus dropzone
-      const el = document.querySelector('#upload-dropzone');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function handleExportCSV() {
-      // Usa agrupamento global para CSV completo
-      exportProceduresToCSV(grouped);
-    }
-
-    window.addEventListener('openGuideUpload', handleOpenUpload);
-    window.addEventListener('exportGuidesCSV', handleExportCSV);
-
-    return () => {
-      window.removeEventListener('openGuideUpload', handleOpenUpload);
-      window.removeEventListener('exportGuidesCSV', handleExportCSV);
-    };
-  }, [grouped]);
+  const mobileCardSubtitle = (row: any) =>
+    `${row.paciente || 'Paciente'} • ${
+      row.valorTotal ? `R$ ${row.valorTotal.toLocaleString('pt-BR')}` : 'R$ 0,00'
+    }`;
 
   return (
     <>
       <Helmet>
-        <title>Central de Guias Médicas | MedCheck</title>
+        <title>Guias Médicas | MedCheck</title>
         <meta
           name="description"
-          content="Sistema avançado de gestão e análise de guias médicas TISS com processamento automatizado e insights de performance"
+          content="Gerencie suas guias médicas TISS, acompanhe procedimentos e monitore seus honorários de forma inteligente."
         />
-        <meta
-          name="keywords"
-          content="guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias"
-        />
-
-        {/* Open Graph para compartilhamento */}
-        <meta property="og:title" content="Central de Guias Médicas | MedCheck" />
-        <meta
-          property="og:description"
-          content="Sistema avançado de gestão e análise de guias médicas TISS"
-        />
-        <meta property="og:type" content="website" />
-
-        {/* Schema.org para SEO */}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebApplication',
-            name: 'MedCheck Guias Médicas',
-            description: 'Sistema de gestão e análise de guias médicas TISS',
-            applicationCategory: 'HealthApplication',
-            operatingSystem: 'Web',
-          })}
-        </script>
       </Helmet>
 
       <AuthenticatedLayout
-        title="Central de Guias Médicas"
-        description="Sistema avançado de gestão e análise de guias médicas TISS"
+        title="Guias Médicas"
+        description="Gerencie e analise suas guias TISS"
+        isLoading={loading && guides.length === 0}
+        loadingMessage="Carregando suas guias médicas..."
       >
-        {/* Header Premium - explicação do propósito da página */}
-        <div className="text-center space-y-6 pt-8 pb-4">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200/60">
-            <FileText className="h-6 w-6 text-blue-700" />
-            <span className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
-              Gestão de Guias Médicas
-            </span>
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent leading-tight">
-              Central de Guias Médicas
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Envie, acompanhe e gerencie suas guias TISS com total controle e
-              automação.
-            </p>
-            <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Tenha insights, filtros avançados e participe ativamente da sua gestão
-              médica.
-            </p>
-          </div>
-        </div>
-        <div className="space-y-10">
-          {/* Dashboard Content */}
-          <div className="space-y-12">
-            {/* Visão Geral - Dados Gerais */}
-            <section aria-label="Visão Geral dos Dados" className="space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                  <BarChart3 className="h-6 w-6 text-blue-600" />
-                  Visão Geral dos Dados
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  Métricas consolidadas de todo o sistema de guias médicas
-                </p>
+        <div className={`space-y-${isMobile ? '6' : '8'}`}>
+          {/* Header Mobile */}
+          {isMobile && (
+            <div className="text-center space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <FileText className="h-6 w-6 text-blue-600" />
+                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                  Guias Médicas
+                </h1>
               </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {stats.totalGuias > 0
+                  ? `${stats.totalGuias} guias • ${stats.totalProcedimentos} procedimentos`
+                  : 'Envie suas primeiras guias médicas'}
+              </p>
+            </div>
+          )}
 
-              <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <InfoCard
-                  icon={<User className="h-6 w-6" />}
-                  title={
-                    <span className="text-sm font-semibold">Beneficiários Únicos</span>
-                  }
-                  value={
-                    <span className="text-3xl xl:text-4xl font-bold">
-                      {pacientesUnicos.size}
-                    </span>
-                  }
-                  description={
-                    <span className="text-sm">
-                      Total de beneficiários únicos no sistema
-                    </span>
-                  }
-                  variant="info"
-                />
-                <InfoCard
-                  icon={<ClipboardList className="h-6 w-6" />}
-                  title={
-                    <span className="text-sm font-semibold">
-                      Total de Procedimentos
-                    </span>
-                  }
-                  value={
-                    <span className="text-3xl xl:text-4xl font-bold">
-                      {totalProcedimentos.toLocaleString()}
-                    </span>
-                  }
-                  description={
-                    <span className="text-sm">
-                      Procedimentos processados no sistema
-                    </span>
-                  }
-                  variant="info"
-                />
-                <InfoCard
-                  icon={<FileText className="h-6 w-6" />}
-                  title={
-                    <span className="text-sm font-semibold">Guias Processadas</span>
-                  }
-                  value={
-                    <span className="text-3xl xl:text-4xl font-bold">
-                      {totalGuias.toLocaleString()}
-                    </span>
-                  }
-                  description={
-                    <span className="text-sm">Total de guias no sistema</span>
-                  }
-                  variant="success"
-                />
-                <InfoCard
-                  icon={<Activity className="h-6 w-6" />}
-                  title={<span className="text-sm font-semibold">Média por Guia</span>}
-                  value={
-                    <span className="text-3xl xl:text-4xl font-bold">
-                      {totalGuias > 0 ? Math.round(totalProcedimentos / totalGuias) : 0}
-                    </span>
-                  }
-                  description={
-                    <span className="text-sm">Procedimentos por guia médica</span>
-                  }
-                  variant="neutral"
-                />
-              </div>
-            </section>
+          {/* Tabs adaptativas */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList
+              className={`grid w-full ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}
+            >
+              <TabsTrigger value="overview" className={isMobile ? 'text-xs' : ''}>
+                {isMobile ? 'Resumo' : 'Visão Geral'}
+              </TabsTrigger>
+              <TabsTrigger value="upload" className={isMobile ? 'text-xs' : ''}>
+                {isMobile ? 'Upload' : 'Enviar Guias'}
+              </TabsTrigger>
+              {!isMobile && (
+                <TabsTrigger value="analysis">Análise Detalhada</TabsTrigger>
+              )}
+            </TabsList>
 
-            {/* Participação Médica */}
-            {Object.keys(papelCounts).some((papel) => papelCounts[papel] > 0) && (
-              <section aria-label="Participação Médica" className="space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                    <UserCheck className="h-6 w-6 text-emerald-600" />
-                    Participação Médica
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    Distribuição global de papéis médicos no sistema
-                  </p>
-                </div>
-
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  {papelCounts['cirurgiao'] > 0 && (
-                    <InfoCard
-                      icon={<Stethoscope className="h-6 w-6" />}
-                      title={<span className="text-sm font-semibold">Cirurgião</span>}
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {papelCounts['cirurgiao'].toLocaleString()}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          <span className="font-bold text-emerald-600">
-                            {percent(papelCounts['cirurgiao'])}
-                          </span>{' '}
-                          do total de procedimentos
-                        </span>
-                      }
-                      variant="success"
-                    />
-                  )}
-                  {papelCounts['primeiro_auxiliar'] > 0 && (
-                    <InfoCard
-                      icon={<UserPlus className="h-6 w-6" />}
-                      title={<span className="text-sm font-semibold">1º Auxiliar</span>}
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {papelCounts['primeiro_auxiliar'].toLocaleString()}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          <span className="font-bold text-blue-600">
-                            {percent(papelCounts['primeiro_auxiliar'])}
-                          </span>{' '}
-                          do total de procedimentos
-                        </span>
-                      }
-                      variant="info"
-                    />
-                  )}
-                  {papelCounts['segundo_auxiliar'] > 0 && (
-                    <InfoCard
-                      icon={<UserPlus2 className="h-6 w-6" />}
-                      title={<span className="text-sm font-semibold">2º Auxiliar</span>}
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {papelCounts['segundo_auxiliar'].toLocaleString()}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          <span className="font-bold text-purple-600">
-                            {percent(papelCounts['segundo_auxiliar'])}
-                          </span>{' '}
-                          do total de procedimentos
-                        </span>
-                      }
-                      variant="neutral"
-                    />
-                  )}
-                  {papelCounts['anestesista'] > 0 && (
-                    <InfoCard
-                      icon={<Activity className="h-6 w-6" />}
-                      title={<span className="text-sm font-semibold">Anestesista</span>}
-                      value={
-                        <span className="text-3xl xl:text-4xl font-bold">
-                          {papelCounts['anestesista'].toLocaleString()}
-                        </span>
-                      }
-                      description={
-                        <span className="text-sm">
-                          <span className="font-bold text-orange-600">
-                            {percent(papelCounts['anestesista'])}
-                          </span>{' '}
-                          do total de procedimentos
-                        </span>
-                      }
-                      variant="warning"
-                    />
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Análise Inteligente de Pagamentos */}
-            {paymentAnalytics && (
-              <section aria-label="Análise de Pagamentos" className="space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                    <DollarSign className="h-6 w-6 text-green-600" />
-                    Análise Inteligente de Pagamentos
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    Status automático baseado no cruzamento com demonstrativos
-                  </p>
-                </div>
-
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  <InfoCard
-                    icon={<BarChart3 className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Taxa de Cobertura</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.crosscheck_coverage?.toFixed(1) || 0}%
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Procedimentos com análise de pagamento
-                      </span>
-                    }
-                    variant="info"
-                    trend={
-                      paymentAnalytics.crosscheck_coverage > 80
-                        ? { direction: 'up', percentage: 'Excelente' }
-                        : undefined
-                    }
-                  />
-                  <InfoCard
-                    icon={<CheckCircle className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Procedimentos Pagos</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_paid_procedures || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Valor:{' '}
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(paymentAnalytics.total_paid_value || 0)}
-                      </span>
-                    }
-                    variant="success"
-                  />
-                  <InfoCard
-                    icon={<AlertTriangle className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">
-                        Glosas Identificadas
-                      </span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_glosa_procedures || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Valor:{' '}
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(paymentAnalytics.total_glosa_value || 0)}
-                      </span>
-                    }
-                    variant="danger"
-                  />
-                  <InfoCard
-                    icon={<DollarSign className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Pagamentos Parciais</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_partial_payments || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Procedimentos com pagamento parcial
-                      </span>
-                    }
-                    variant="warning"
-                  />
-                </div>
-              </section>
-            )}
-
-            {/* Ferramentas de Filtro */}
-            <section aria-label="Ferramentas de Filtro e Ações" className="space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                  <ClipboardList className="h-6 w-6 text-purple-600" />
-                  Gestão de Guias
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  Filtros avançados e ferramentas de gestão das guias médicas
-                </p>
-              </div>
-
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-6 shadow-sm">
-                <FiltersToolbar
-                  search={search}
-                  onSearch={(val) => {
-                    setSearch(val);
-                    setPage(0);
-                  }}
-                  date={formatDateToISO(data)}
-                  onDateChange={(val) => {
-                    setData(formatDateToBR(val));
-                    setPage(0);
-                  }}
-                  status={status || 'ALL'}
-                  onStatusChange={(val) => {
-                    setStatus(val);
-                    setPage(0);
-                  }}
-                  pendingCount={(() => {
-                    // Calcula guias sem análise (sem demonstrativo ou não encontradas)
-                    const allGrouped = allGuides.reduce<
-                      Record<string, GuideProcedure[]>
-                    >((grp, p) => {
-                      grp[p.numero_guia] = grp[p.numero_guia] || [];
-                      grp[p.numero_guia].push(p);
-                      return grp;
-                    }, {});
-                    return Object.entries(allGrouped).filter(([_, procs]) => {
-                      const firstProc = procs[0];
-                      const smartStatus = firstProc?.smart_payment_status?.status;
-                      return (
-                        smartStatus === 'sem_demonstrativo' ||
-                        smartStatus === 'nao_encontrado'
-                      );
-                    }).length;
-                  })()}
-                  onClear={() => {
-                    setSearch('');
-                    setData('');
-                    setStatus('ALL');
-                    setPage(0);
-                  }}
-                  onExportCsv={() => exportToCSV(filteredMacroRows)}
-                  onExportProcedures={() => exportProceduresToCSV(grouped)}
-                  onNewGuide={() => setActiveTab('upload')}
-                />
-              </div>
-            </section>
-
-            {/* Tabs de Conteúdo */}
-            <section aria-label="Conteúdo Principal" className="space-y-6">
-              <Tabs
-                value={activeTab}
-                onValueChange={(v) => setActiveTab(v as 'list' | 'upload')}
-                className="w-full"
+            {/* Tab: Visão Geral */}
+            <TabsContent value="overview" className="space-y-6">
+              {/* KPIs Responsivos */}
+              <InfoCardGrid
+                columns={{
+                  mobile: 1,
+                  tablet: 2,
+                  desktop: 4,
+                }}
               >
-                <TabsList className="grid w-full grid-cols-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                  <TabsTrigger
-                    value="list"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg font-semibold"
-                  >
-                    Lista de Guias
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="upload"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg font-semibold"
-                  >
-                    Upload de Guias
-                  </TabsTrigger>
-                </TabsList>
+                <InfoCard
+                  icon={<FileText className="h-5 w-5" />}
+                  title="Total de Guias"
+                  mobileLabel="Guias"
+                  value={stats.totalGuias}
+                  description={`${stats.totalProcedimentos} procedimentos total`}
+                  variant="info"
+                  compact={isMobile}
+                  actions={[
+                    {
+                      label: 'Nova Guia',
+                      onClick: () => setActiveTab('upload'),
+                      icon: <Upload className="h-4 w-4" />,
+                    },
+                  ]}
+                />
 
-                <TabsContent value="list" className="mt-8">
-                  <Card className="overflow-hidden border-gray-200/60 dark:border-gray-700/60 shadow-sm">
-                    <CardContent className="p-8">
-                      {loading ? (
-                        <LoaderTable />
-                      ) : (
-                        <DataGrid
-                          rows={filteredMacroRows}
-                          columns={macroColumns}
-                          pageSize={pageSize}
-                          currentPage={page}
-                          onPageSizeChange={(size) => {
-                            setPageSize(size);
-                            setPage(0);
-                          }}
-                          onPageChange={(p) => setPage(p)}
-                          selectable={true}
-                          selectedRows={selectedRows}
-                          onSelectRow={handleSelectRow}
-                          onSelectAll={handleSelectAll}
-                          expandable={true}
-                          expandedRow={expandedRow}
-                          onExpand={(id) =>
-                            setExpandedRow(expandedRow === id ? null : id)
-                          }
-                          rowIdField="numero_guia"
-                          className="min-h-[400px]"
-                          loading={loading}
-                          paginationLabel="Guias por página:"
-                          emptyMessage={
-                            search || status || data
-                              ? 'Nenhuma guia encontrada com os filtros aplicados'
-                              : 'Nenhuma guia encontrada'
-                          }
-                          renderExpandedRow={(row) => (
-                            <tr key={`${row.numero_guia}-expanded`}>
-                              <td
-                                colSpan={macroColumns.length + 2}
-                                className="bg-gray-50 dark:bg-gray-800/50 p-0"
-                              >
-                                <div className="w-full p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                                  <div className="overflow-x-auto w-full">
-                                    <table className="w-full text-sm min-w-[600px]">
-                                      <thead>
-                                        <tr className="border-b border-gray-200 dark:border-gray-700">
-                                          {[
-                                            'Data',
-                                            'Código',
-                                            'Descrição',
-                                            'Participação',
-                                            'Qtd',
-                                            'Prestador',
-                                            'Status de Pagamento',
-                                          ].map((h) => (
-                                            <th
-                                              key={h}
-                                              className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
-                                            >
-                                              {h}
-                                            </th>
-                                          ))}
-                                        </tr>
-                                      </thead>
-                                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {row.detalhes
-                                          // **CORREÇÃO**: Preserva ordem original do parser (ordem do PDF TISS)
-                                          // Não aplicar sorting pois a ordem correta já vem do backend
-                                          .map((proc: any) => (
-                                            <tr
-                                              key={proc.codigo}
-                                              className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
-                                            >
-                                              <td className="py-2 px-3 whitespace-nowrap">
-                                                {proc.data}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap font-mono">
-                                                {proc.codigo}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate">
-                                                {proc.descricao}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap">
-                                                {renderParticipacaoBadge(proc.papel)}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap text-right font-mono">
-                                                {proc.qtd}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap">
-                                                {proc.prestador}
-                                              </td>
-                                              <td className="py-2 px-3 whitespace-nowrap">
-                                                {proc.smart_payment_status ? (
-                                                  <PaymentStatusIndicator
-                                                    smartPaymentStatus={
-                                                      proc.smart_payment_status
-                                                    }
-                                                    size="xs"
-                                                  />
-                                                ) : (
-                                                  <span className="text-xs text-gray-400">
-                                                    --
-                                                  </span>
-                                                )}
-                                              </td>
-                                            </tr>
-                                          ))}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        />
-                      )}
-                      {selectedRows.length > 0 && (
-                        <div className="sticky bottom-0 inset-x-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-t border-blue-200/60 dark:border-blue-700/60 px-6 py-4 mt-4 backdrop-blur-sm shadow-inner rounded-b-lg flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                            {selectedRows.length}{' '}
-                            {selectedRows.length === 1
-                              ? 'guia selecionada'
-                              : 'guias selecionadas'}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedRows([])}
-                              className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
-                            >
-                              Limpar Seleção
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={handleDeleteSelected}
-                              className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-300"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir {selectedRows.length === 1 ? 'Guia' : 'Guias'}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                      {selectedGuia && (
-                        <DetalhesGuia
-                          guia={selectedGuia}
-                          procedimentos={grouped[selectedGuia]}
-                          onClose={() => setSelectedGuia(null)}
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+                <InfoCard
+                  icon={<DollarSign className="h-5 w-5" />}
+                  title="Valor Total"
+                  mobileLabel="Total"
+                  value={`R$ ${stats.valorTotal.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}`}
+                  description="Valor apresentado"
+                  variant="neutral"
+                  compact={isMobile}
+                  trend={
+                    stats.valorTotal > 0
+                      ? { value: 8, isPositive: true, label: 'mensal' }
+                      : undefined
+                  }
+                />
 
-                <TabsContent value="upload">
+                <InfoCard
+                  icon={<CheckCircle className="h-5 w-5" />}
+                  title="Valor Pago"
+                  mobileLabel="Pago"
+                  value={`R$ ${stats.valorPago.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                  })}`}
+                  description="Efetivamente recebido"
+                  variant="success"
+                  compact={isMobile}
+                  trend={
+                    stats.valorPago > 0
+                      ? { value: 12, isPositive: true, label: 'crescimento' }
+                      : undefined
+                  }
+                />
+
+                <InfoCard
+                  icon={<AlertTriangle className="h-5 w-5" />}
+                  title="Taxa de Sucesso"
+                  mobileLabel="Sucesso"
+                  value={`${taxaSucesso.toFixed(1)}%`}
+                  description="Percentual de pagamento"
+                  variant={
+                    taxaSucesso >= 85
+                      ? 'success'
+                      : taxaSucesso >= 70
+                        ? 'warning'
+                        : 'danger'
+                  }
+                  compact={isMobile}
+                  trend={
+                    taxaSucesso > 0
+                      ? {
+                          value: 3,
+                          isPositive: taxaSucesso >= 85,
+                          label: 'vs. anterior',
+                        }
+                      : undefined
+                  }
+                />
+              </InfoCardGrid>
+
+              {/* Filtros e Tabela */}
+              <Card>
+                <CardHeader className={isMobile ? 'pb-3' : ''}>
+                  <div
+                    className={`flex ${
+                      isMobile ? 'flex-col space-y-3' : 'items-center justify-between'
+                    }`}
+                  >
+                    <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
+                      Lista de Guias
+                    </CardTitle>
+
+                    {/* Filtros móveis simplificados */}
+                    {isMobile ? (
+                      <div className="flex gap-2">
+                        <Select
+                          value={filters.status}
+                          onValueChange={(value) =>
+                            setFilters((prev) => ({ ...prev, status: value }))
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-9 text-xs">
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos</SelectItem>
+                            <SelectItem value="pago">Pago</SelectItem>
+                            <SelectItem value="pendente">Pendente</SelectItem>
+                            <SelectItem value="glosado">Glosado</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <Select
+                          value={filters.periodo}
+                          onValueChange={(value) =>
+                            setFilters((prev) => ({ ...prev, periodo: value }))
+                          }
+                        >
+                          <SelectTrigger className="flex-1 h-9 text-xs">
+                            <SelectValue placeholder="Período" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todos</SelectItem>
+                            <SelectItem value="30">30 dias</SelectItem>
+                            <SelectItem value="90">90 dias</SelectItem>
+                            <SelectItem value="180">6 meses</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        {Object.values(filters).some((v) => v) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setFilters({
+                                procedimento: '',
+                                medico: '',
+                                especialidade: '',
+                                status: '',
+                                periodo: '',
+                                convenio: '',
+                              })
+                            }
+                            className="h-9 px-2"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <FiltersToolbar filters={filters} onFiltersChange={setFilters} />
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                  <DataGrid
+                    rows={guides}
+                    columns={columns}
+                    pageSize={pageSize}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={setPageSize}
+                    loading={loading}
+                    emptyMessage="Nenhuma guia encontrada"
+                    expandable
+                    onExpand={handleViewDetails}
+                    rowIdField="id"
+                    mobileCardView={true}
+                    mobileTitle={mobileCardTitle}
+                    mobileSubtitle={mobileCardSubtitle}
+                    className="border-0"
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab: Upload */}
+            <TabsContent value="upload" className="space-y-6">
+              <Card>
+                <CardHeader className={isMobile ? 'pb-3' : ''}>
+                  <CardTitle className={`${isMobile ? 'text-base' : 'text-lg'}`}>
+                    Enviar Guias Médicas
+                  </CardTitle>
+                  <CardDescription className={isMobile ? 'text-xs' : ''}>
+                    Faça upload das suas guias TISS para análise automática
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <FileDropZone
+                    type="guia"
+                    onDropFiles={handleFileChangeByType}
+                    disabled={isUploading}
+                  />
+
+                  {files.length > 0 && (
+                    <FileList
+                      files={files}
+                      onRemove={removeFile}
+                      disabled={isUploading}
+                    />
+                  )}
+
+                  {files.length > 0 && (
+                    <div className={`flex gap-3 ${isMobile ? 'flex-col' : ''}`}>
+                      <Button
+                        onClick={handleUploadComplete}
+                        disabled={isUploading}
+                        className={`${isMobile ? 'w-full' : 'flex-1'}`}
+                      >
+                        {isUploading ? 'Processando...' : 'Processar Guias'}
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        onClick={resetFiles}
+                        disabled={isUploading}
+                        className={`${isMobile ? 'w-full' : ''}`}
+                      >
+                        Limpar
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab: Análise Detalhada (somente desktop) */}
+            {!isMobile && (
+              <TabsContent value="analysis" className="space-y-6">
+                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Upload de Guias</CardTitle>
-                      <CardDescription>
-                        Faça upload de guias TISS para processamento
-                      </CardDescription>
+                      <CardTitle>Distribuição por Especialidade</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FileDropZone
-                        type="guia"
-                        onDropFiles={handleFileDrop}
-                        disabled={isUploading || loading}
-                        hasFiles={files.some((f) => f.type === 'guia')}
-                      />
-                      <FileList
-                        files={files.filter((f) => f.type === 'guia')}
-                        onRemove={removeFile}
-                        disabled={isUploading || loading}
-                      />
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button
-                          variant="outline"
-                          onClick={resetFiles}
-                          disabled={!files.length || isUploading || loading}
-                          className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 dark:hover:bg-border/20 border-border"
-                        >
-                          Limpar
-                        </Button>
-                        <Button
-                          onClick={handleUploadGuias}
-                          disabled={!files.length || isUploading || loading}
-                          className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
-                        >
-                          {isUploading || loading
-                            ? 'Processando...'
-                            : 'Processar Guias'}
-                        </Button>
-                      </div>
+                    <CardContent>
+                      <p className="text-sm text-gray-600">
+                        Análise detalhada em desenvolvimento...
+                      </p>
                     </CardContent>
                   </Card>
-                </TabsContent>
-              </Tabs>
-            </section>
-          </div>
-        </div>
-        {/* Aviso de Privacidade - rodapé simples, por extenso */}
-        <div
-          className="w-full text-center text-xs text-gray-500 my-6"
-          role="note"
-          aria-label="Aviso de Privacidade"
-        >
-          Ao inserir dados de pacientes, você declara ter consentimento ou base legal
-          para o tratamento, conforme a{' '}
-          <a
-            href="/privacy"
-            className="underline hover:text-primary transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Política de Privacidade
-          </a>
-          . O uso indevido pode gerar responsabilidade legal.
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Histórico de Glosas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600">
+                        Análise detalhada em desenvolvimento...
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+
+          {/* Modal de Detalhes */}
+          {showDetails && selectedGuide && (
+            <DetalhesGuia
+              guide={selectedGuide}
+              isOpen={showDetails}
+              onClose={() => setShowDetails(false)}
+              compact={isMobile}
+            />
+          )}
         </div>
       </AuthenticatedLayout>
     </>
   );
-};
+}
 
 export default GuidesPage;
