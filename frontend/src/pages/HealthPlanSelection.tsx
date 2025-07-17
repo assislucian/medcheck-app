@@ -92,25 +92,25 @@ const HealthPlanSelection = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30 p-6">
-      {/* Background Premium com Efeitos Dourados */}
+    <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30 p-6">
+      {/* Medical Professional Background with Clean Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-amber-300/15 via-yellow-300/10 to-orange-300/8 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-emerald-300/20 via-teal-300/15 to-green-300/12 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 via-transparent to-emerald-400/5"></div>
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-medical-300/15 via-brand-300/10 to-trust-300/8 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-mint-300/20 via-medical-300/15 to-brand-300/12 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-medical-400/5 via-transparent to-mint-400/5"></div>
       </div>
 
       <div className="relative max-w-6xl mx-auto space-y-8">
         {/* Header Premium */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
-            <Shield className="h-4 w-4 text-amber-600" />
-            <span className="text-sm font-medium text-amber-700">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-medical-50 to-brand-50 border border-medical-200">
+            <Shield className="h-4 w-4 text-medical-600" />
+            <span className="text-sm font-medium text-medical-700">
               Seleção de Plano de Saúde
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
             Escolha seu Plano de Saúde
           </h1>
 
@@ -242,9 +242,9 @@ const HealthPlanSelection = () => {
 
         {/* Footer Premium */}
         <div className="text-center pt-8">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200">
-            <Shield className="h-4 w-4 text-amber-600" />
-            <span className="text-sm text-amber-700">
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-medical-50 to-brand-50 border border-medical-200">
+            <Shield className="h-4 w-4 text-medical-600" />
+            <span className="text-sm text-medical-700">
               Análise segura e precisa para seu plano de saúde
             </span>
           </div>

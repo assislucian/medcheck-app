@@ -53,7 +53,7 @@ const Input = React.forwardRef<
             // Custom styles for select elements
             as === 'select' && [
               'cursor-pointer appearance-none bg-no-repeat bg-right',
-              "bg-[url('data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E')]",
+              "bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http://www.w3.org/2000/svg%27%20fill%3D%27none%27%20viewBox%3D%270%200%2024%2024%27%20stroke%3D%27%236b7280%27%3E%3Cpath%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20stroke-width%3D%272%27%20d%3D%27M19%209l-7%207-7-7%27%3E%3C/path%3E%3C/svg%3E')]",
               'pr-10',
             ],
 

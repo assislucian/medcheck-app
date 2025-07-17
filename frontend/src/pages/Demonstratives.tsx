@@ -1458,20 +1458,20 @@ const DemonstrativesPage = () => {
         title="Gestão de Demonstrativos"
         description="Central de análise e gerenciamento de demonstrativos de pagamento"
       >
-        {/* Background com Gradiente Âmbar Suave */}
-        <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30">
+        {/* Background with Clean Medical Gradient */}
+        <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
           <div className="px-4 sm:px-6 lg:px-8 py-12 space-y-16">
             {/* Header Premium Humanizado */}
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-full border border-amber-200/60">
-                <FileBarChart className="h-6 w-6 text-amber-700" />
-                <span className="text-sm font-semibold text-amber-700 uppercase tracking-wide">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-medical-50 to-brand-50 rounded-full border border-medical-200/60">
+                <FileBarChart className="h-6 w-6 text-medical-700" />
+                <span className="text-sm font-semibold text-medical-700 uppercase tracking-wide">
                   Gestão Financeira Médica
                 </span>
               </div>
 
               <div className="space-y-4">
-                <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-amber-800 bg-clip-text text-transparent leading-tight">
+                <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent leading-tight">
                   Demonstrativos & Honorários
                 </h1>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">

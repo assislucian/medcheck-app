@@ -473,15 +473,15 @@
 
 /* Gradientes médicos profissionais */
 .gradient-medical-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+  background: linear-gradient(135deg, #3b9df8 0%, #14b8a6 100%);
 }
 
 .gradient-medical-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
 }
 
 .gradient-medical-warning {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #3b9df8 0%, #0ea5e9 100%);
 }
 
 .gradient-medical-danger {
@@ -928,3 +928,192 @@ input[type='date']:hover::-webkit-calendar-picker-indicator {
   }
 }
 /* Force Vercel redeploy - Mon Jun 30 21:11:16 CEST 2025 */
+
+/* Gradientes médicos premium - suaves e harmoniosos */
+.gradient-medical-primary {
+  background: linear-gradient(135deg, #0074d9 0%, #079e5b 100%);
+}
+
+.gradient-medical-surface {
+  background: linear-gradient(135deg, #e6f4ff 0%, #d5f5eb 50%, #e6f4ff 100%);
+}
+
+.gradient-medical-depth {
+  background: linear-gradient(
+    180deg,
+    #e6f4ff 0%,
+    rgba(230, 244, 255, 0.4) 50%,
+    rgba(213, 245, 235, 0.3) 100%
+  );
+}
+
+/* Gradientes de fundo premium para seções */
+.medical-section-bg {
+  background: linear-gradient(
+    180deg,
+    rgba(230, 244, 255, 0.1) 0%,
+    rgba(213, 245, 235, 0.05) 25%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(213, 245, 235, 0.05) 75%,
+    rgba(230, 244, 255, 0.1) 100%
+  );
+}
+
+/* Efeitos de elevação médica premium */
+.medical-elevation-1 {
+  box-shadow:
+    0 1px 3px rgba(0, 116, 217, 0.06),
+    0 1px 2px rgba(0, 43, 91, 0.04);
+}
+
+.medical-elevation-2 {
+  box-shadow:
+    0 4px 12px rgba(0, 116, 217, 0.08),
+    0 2px 4px rgba(0, 43, 91, 0.06),
+    0 1px 2px rgba(7, 158, 91, 0.04);
+}
+
+.medical-elevation-3 {
+  box-shadow:
+    0 8px 24px rgba(0, 116, 217, 0.12),
+    0 4px 8px rgba(0, 43, 91, 0.08),
+    0 2px 4px rgba(7, 158, 91, 0.06);
+}
+
+/* Transições premium médicas */
+.medical-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.medical-transition-slow {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estados de hover premium */
+.medical-hover-lift {
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
+}
+
+.medical-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 32px rgba(0, 116, 217, 0.15),
+    0 6px 16px rgba(0, 43, 91, 0.1),
+    0 3px 8px rgba(7, 158, 91, 0.08);
+}
+
+/* Typography médica premium */
+.medical-text-gradient {
+  background: linear-gradient(135deg, #002b5b 0%, #0074d9 50%, #079e5b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.medical-text-secondary {
+  background: linear-gradient(135deg, #0074d9 0%, #079e5b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cards médicos premium */
+.medical-card-premium {
+  background: linear-gradient(
+    145deg,
+    rgba(230, 244, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.9) 25%,
+    rgba(213, 245, 235, 0.6) 100%
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 116, 217, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 116, 217, 0.08),
+    0 4px 16px rgba(0, 43, 91, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.dark .medical-card-premium {
+  background: linear-gradient(
+    145deg,
+    rgba(0, 43, 91, 0.6) 0%,
+    rgba(20, 23, 26, 0.8) 25%,
+    rgba(7, 158, 91, 0.2) 100%
+  );
+  border: 1px solid rgba(230, 244, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 43, 91, 0.3),
+    0 4px 16px rgba(0, 116, 217, 0.2),
+    inset 0 1px 0 rgba(230, 244, 255, 0.1);
+}
+
+/* Seções com breathing space premium */
+.medical-section-spacing {
+  padding: clamp(4rem, 8vw, 8rem) 0;
+}
+
+.medical-container-spacing {
+  padding: 0 clamp(1rem, 4vw, 2rem);
+}
+
+/* Micro-interações médicas */
+@keyframes medical-pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes medical-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes medical-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.medical-pulse-soft {
+  animation: medical-pulse-soft 3s ease-in-out infinite;
+}
+
+.medical-fade-in-up {
+  animation: medical-fade-in-up 0.6s ease-out forwards;
+}
+
+/* Focus states médicos acessíveis */
+.medical-focus:focus {
+  outline: 2px solid #0074d9;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 116, 217, 0.1);
+}
+
+/* Estados de loading premium */
+.medical-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(230, 244, 255, 0.2) 25%,
+    rgba(0, 116, 217, 0.1) 50%,
+    rgba(230, 244, 255, 0.2) 75%
+  );
+  background-size: 200% 100%;
+  animation: medical-shimmer 2s infinite;
+}

@@ -23,9 +23,9 @@ const buttonVariants = cva(
         success:
           'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm hover:from-emerald-600 hover:to-emerald-700 hover:shadow-md active:from-emerald-700 active:to-emerald-800 focus:ring-emerald-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
         warning:
-          'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm hover:from-amber-600 hover:to-amber-700 hover:shadow-md active:from-amber-700 active:to-amber-800 focus:ring-amber-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
+          'bg-gradient-to-r from-health-primary to-health-accent text-white shadow-sm hover:from-health-dark hover:to-health-accent hover:shadow-md active:from-health-dark active:to-health-primary focus:ring-health-primary/30 transform hover:scale-[1.01] active:scale-[0.99]',
         medical:
-          'bg-gradient-to-r from-blue-500 to-emerald-500 text-white shadow-sm hover:from-blue-600 hover:to-emerald-600 hover:shadow-md active:from-blue-700 active:to-emerald-700 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
+          'bg-gradient-to-r from-health-primary to-health-accent text-white shadow-sm hover:from-health-dark hover:to-health-accent hover:shadow-md active:from-health-dark active:to-health-accent focus:ring-health-primary/30 transform hover:scale-[1.01] active:scale-[0.99]',
         primary:
           'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm hover:from-blue-700 hover:to-blue-800 hover:shadow-md active:from-blue-800 active:to-blue-900 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
       },

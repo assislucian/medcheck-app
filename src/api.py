@@ -45,6 +45,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     UniqueConstraint,
@@ -155,17 +156,25 @@ class Guia(Base):
     __tablename__ = "guias"
     id = Column(Integer, primary_key=True, index=True)
     numero_guia = Column(String, nullable=False, index=True)
-    data = Column(String, nullable=False)
-    paciente = Column(String, nullable=True)
-    codigo = Column(String, nullable=False)
+    data = Column(
+        String, nullable=False, index=True
+    )  # ÍNDICE ADICIONADO para filtros de data
+    paciente = Column(
+        String, nullable=True, index=True
+    )  # ÍNDICE ADICIONADO para buscas
+    codigo = Column(
+        String, nullable=False, index=True
+    )  # ÍNDICE ADICIONADO para filtros
     descricao = Column(String, nullable=False)
     papel = Column(String, nullable=False)
-    crm = Column(String, nullable=False)
+    crm = Column(String, nullable=False, index=True)  # ÍNDICE ADICIONADO
     uf = Column(
         String, nullable=False, index=True
     )  # CRÍTICO: adicionar UF para isolamento
     qtd = Column(Integer, nullable=False)
-    status = Column(String, nullable=True)
+    status = Column(
+        String, nullable=True, index=True
+    )  # ÍNDICE ADICIONADO para filtros de status
     prestador = Column(String, nullable=True)
     user_id = Column(String, nullable=False, index=True)  # CRM do médico
     nome_medico = Column(String, nullable=True)  # Nome do médico participante
@@ -177,6 +186,13 @@ class Guia(Base):
     # Hash SHA-256 do conteúdo do arquivo para detectar duplicações mesmo com nomes diferentes
     file_hash = Column(String(64), nullable=True, index=True)
     filename = Column(String, nullable=True)  # Nome original do arquivo
+
+    # ÍNDICES COMPOSTOS para queries complexas frequentes
+    __table_args__ = (
+        Index("idx_guia_user_data", "user_id", "data"),  # Filtros por usuário e data
+        Index("idx_guia_crm_uf", "crm", "uf"),  # Isolamento por médico
+        Index("idx_guia_status_data", "status", "data"),  # Filtros por status e data
+    )
 
 
 class Consentimento(Base):
@@ -451,10 +467,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 app = FastAPI(
     title="MedCheck - Validador de Demonstrativos e Guias Médicas",
     version="1.0.0",
-    docs_url="/docs" if os.environ.get("ENV", "development") == "development" else None,
-    redoc_url=(
-        "/redoc" if os.environ.get("ENV", "development") == "development" else None
-    ),
+    docs_url="/docs",  # Sempre disponível para health checks
+    redoc_url="/redoc",  # Sempre disponível para health checks
 )
 
 
@@ -532,6 +546,17 @@ else:
         "https://medcheck-frontend.onrender.com",  # NOVO: Render frontend
     ]
 
+# Adicionar origens do arquivo de configuração CORS_ALLOWED_ORIGINS
+cors_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if cors_env:
+    # Separar por vírgula e adicionar às origens permitidas
+    env_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
+    allowed_origins.extend(env_origins)
+    logging.info(f"CORS: Adicionadas origens do ambiente: {env_origins}")
+
+# Remover duplicatas mantendo ordem
+allowed_origins = list(dict.fromkeys(allowed_origins))
+
 # Garantir que endereços locais comuns estejam sempre presentes
 for local_origin in [
     "http://localhost:8080",
@@ -561,6 +586,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# --- Endpoint de Health Check ---
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """
+    Endpoint de verificação de saúde da aplicação.
+    Usado para monitoramento e verificação de deploy.
+    """
+    try:
+        # Testa conexão com banco
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+
+        return {
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "database": "connected",
+            "environment": os.environ.get("ENV", "development"),
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "status": "unhealthy",
+                "timestamp": datetime.utcnow().isoformat(),
+                "error": str(e),
+            },
+        )
+
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---
 # Comentado temporariamente para debug do Railway
@@ -2137,344 +2195,6 @@ def save_guias(procedimentos: list = Body(...), user: dict = Depends(get_current
             db.add(guia)
         db.commit()
         return {"message": f"{len(procedimentos)} guias salvas com sucesso"}
-    finally:
-        db.close()
-
-
-# --- Endpoint para listar guias ---
-@app.get("/api/v1/guias")
-def list_guias(
-    page: int = 1,
-    pageSize: int = 10,
-    search: str = None,
-    status: str = None,
-    data: str = None,
-    user: dict = Depends(get_current_user),
-):
-    """
-    Retorna todas as guias do usuário autenticado, com paginação e filtros.
-    Permite busca por texto, filtro por status e data.
-    Inclui análise inteligente de status de pagamento baseado no crosscheck com demonstrativos.
-    """
-    db = SessionLocal()
-    crm = user.get("crm")
-    uf = user.get("uf")
-    if not crm or not uf:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
-
-    try:
-        # Consulta base (CRÍTICO: filtrar por crm E uf)
-        query = db.query(Guia).filter_by(crm=crm, uf=uf)
-
-        # Aplicar filtros se fornecidos
-        if search:
-            search_term = f"%{search.lower()}%"
-            query = query.filter(
-                (Guia.numero_guia.like(search_term))
-                | (Guia.paciente.ilike(search_term))
-                | (Guia.codigo.like(search_term))
-                | (Guia.descricao.ilike(search_term))
-                | (Guia.papel.ilike(search_term))
-                | (Guia.nome_medico.ilike(search_term))
-                | (Guia.prestador.ilike(search_term))
-            )
-
-        # Filtro especial para status inteligente de pagamento
-        if status and status not in [
-            "ALL",
-            "Fechada",
-            "Pendente",
-            "Processada",
-            "Gerado pela execução",
-        ]:
-            # Aplicaremos o filtro após calcular o status de pagamento
-            pass
-        elif status and status != "ALL":
-            query = query.filter(Guia.status == status)
-
-        if data:
-            query = query.filter(Guia.data == data)
-
-        # Contagem total para paginação
-        total = query.count()
-
-        # **CORREÇÃO**: Preserva ordem original de inserção (ID crescente)
-        # Não ordenar por data para manter a sequência cronológica correta do PDF
-        query = query.order_by(Guia.id)
-        if page and pageSize:
-            offset = (page - 1) * pageSize
-            query = query.offset(offset).limit(pageSize)
-
-        guias = query.all()
-
-        # --- NOVA FUNCIONALIDADE: Análise inteligente de status de pagamento ---
-        # Buscar todos os demonstrativos do usuário para crosscheck
-        demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
-
-        # Criar mapa detalhado de procedimentos dos demonstrativos
-        demonstrativo_procedures = {}  # (guia, codigo) -> detailed_payment_info
-        all_demonstrativo_procedures = []
-
-        for demo in demonstrativos:
-            try:
-                file_path = os.path.join(UPLOAD_DIR, demo.filename)
-                if os.path.exists(file_path):
-                    from src.parsers.demonstrativo_parser import DemonstrativoParser
-
-                    parser = DemonstrativoParser(file_path)
-                    payments = parser.get_payments()
-
-                    for payment in payments:
-                        guia_num = payment.get("guia")
-                        codigo = payment.get("code") or payment.get("codigo")
-                        if guia_num and codigo:
-                            key = (str(guia_num), str(codigo))
-
-                            # Extrair informações financeiras detalhadas
-                            financial = payment.get("financial", {})
-                            approved_value = financial.get("approved_value", 0)
-                            presented_value = financial.get("presented_value", 0)
-                            glosa = financial.get("glosa", 0)
-
-                            demonstrativo_procedures[key] = {
-                                "is_paid": approved_value > 0,
-                                "approved_value": approved_value,
-                                "presented_value": presented_value,
-                                "glosa": glosa,
-                                "payment_date": demo.periodo,
-                                "demonstrativo_id": demo.id,
-                                "demonstrativo_filename": demo.filename,
-                                # Análise inteligente
-                                "is_partial_payment": approved_value > 0
-                                and approved_value < presented_value,
-                                "is_full_glosa": approved_value == 0
-                                and presented_value > 0,
-                                "glosa_percentage": (
-                                    (glosa / presented_value * 100)
-                                    if presented_value > 0
-                                    else 0
-                                ),
-                            }
-
-                            all_demonstrativo_procedures.append(
-                                {
-                                    **demonstrativo_procedures[key],
-                                    "guia": guia_num,
-                                    "codigo": codigo,
-                                }
-                            )
-            except Exception as e:
-                logger.warning(
-                    f"Erro ao processar demonstrativo {demo.id} para análise de pagamento: {e}"
-                )
-                continue
-
-        # Calcular status inteligente para cada procedimento
-        procedures_with_smart_status = []
-
-        # Primeiro: Calcular status individual para cada procedimento
-        individual_procedure_status = {}  # (guia, codigo) -> status_info
-
-        for g in guias:
-            key = (str(g.numero_guia), str(g.codigo))
-            demo_info = demonstrativo_procedures.get(key)
-
-            # Status inteligente baseado na análise individual
-            if demo_info:
-                if demo_info["is_paid"]:
-                    if demo_info["is_partial_payment"]:
-                        smart_status = "parcialmente_pago"
-                        smart_reason = f"Pago R$ {demo_info['approved_value']:.2f} de R$ {demo_info['presented_value']:.2f} apresentado"
-                    else:
-                        smart_status = "pago"
-                        smart_reason = (
-                            f"Pago integralmente R$ {demo_info['approved_value']:.2f}"
-                        )
-                else:
-                    if demo_info["is_full_glosa"]:
-                        smart_status = "glosado"
-                        smart_reason = f"Glosa total - R$ {demo_info['presented_value']:.2f} negado"
-                    else:
-                        smart_status = "nao_pago"
-                        smart_reason = "Não consta pagamento no demonstrativo"
-            else:
-                # Verificar se há demonstrativo carregado
-                if demonstrativos:
-                    smart_status = "nao_encontrado"
-                    smart_reason = (
-                        "Procedimento não encontrado nos demonstrativos carregados"
-                    )
-                else:
-                    smart_status = "sem_demonstrativo"
-                    smart_reason = "Nenhum demonstrativo carregado para análise"
-
-            # Armazenar status individual do procedimento
-            individual_procedure_status[key] = {
-                "status": smart_status,
-                "reason": smart_reason,
-                "demonstrativo_info": demo_info,
-                "has_demonstrativo": len(demonstrativos) > 0,
-            }
-
-            procedure_data = {
-                "numero_guia": g.numero_guia,
-                "data": g.data,
-                "beneficiario": g.paciente,
-                "codigo": g.codigo,
-                "descricao": g.descricao,
-                "papel": g.papel,
-                "crm": g.crm,
-                "qtd": g.qtd,
-                "status": g.status,
-                "prestador": g.prestador,
-                "nome_medico": g.nome_medico,
-                "dt_inicio": g.dt_inicio,
-                "dt_fim": g.dt_fim,
-                "status_part": g.status_part,
-                # Status inteligente individual do procedimento
-                "smart_payment_status": individual_procedure_status[key],
-            }
-
-            # Aplicar filtro de status inteligente se especificado
-            if status and status in [
-                "pago",
-                "parcialmente_pago",
-                "glosado",
-                "nao_pago",
-                "nao_encontrado",
-                "sem_demonstrativo",
-                "sem_analise",
-            ]:
-                # Filtro unificado para análise pendente
-                if status == "sem_analise":
-                    if smart_status in ["nao_encontrado", "sem_demonstrativo"]:
-                        procedures_with_smart_status.append(procedure_data)
-                elif smart_status == status:
-                    procedures_with_smart_status.append(procedure_data)
-            else:
-                procedures_with_smart_status.append(procedure_data)
-
-        # Recalcular total se filtro inteligente foi aplicado
-        if status and status in [
-            "pago",
-            "parcialmente_pago",
-            "glosado",
-            "nao_pago",
-            "nao_encontrado",
-            "sem_demonstrativo",
-            "sem_analise",
-        ]:
-            total = len(procedures_with_smart_status)
-
-        # Segundo: Calcular status agregado por guia baseado nos procedimentos
-        # Agrupar procedimentos por guia para calcular status agregado
-        guide_aggregated_status = {}
-        guide_procedures = {}
-
-        for proc in procedures_with_smart_status:
-            guia_num = proc["numero_guia"]
-            if guia_num not in guide_procedures:
-                guide_procedures[guia_num] = []
-            guide_procedures[guia_num].append(proc)
-
-        # Calcular status agregado para cada guia
-        for guia_num, procs in guide_procedures.items():
-            status_counts = {
-                "pago": 0,
-                "parcialmente_pago": 0,
-                "glosado": 0,
-                "nao_pago": 0,
-                "nao_encontrado": 0,
-                "sem_demonstrativo": 0,
-            }
-
-            total_procs = len(procs)
-            for proc in procs:
-                proc_status = proc["smart_payment_status"]["status"]
-                if proc_status in status_counts:
-                    status_counts[proc_status] += 1
-
-            # Determinar status agregado da guia baseado na hierarquia de prioridade
-            if status_counts["pago"] == total_procs:
-                # Todos os procedimentos foram pagos
-                aggregated_status = "pago"
-                aggregated_reason = f"Todos os {total_procs} procedimentos foram pagos"
-            elif status_counts["glosado"] > 0:
-                # Há pelo menos uma glosa
-                if status_counts["pago"] > 0 or status_counts["parcialmente_pago"] > 0:
-                    aggregated_status = "parcialmente_pago"
-                    aggregated_reason = f"{status_counts['glosado']} glosado(s), {status_counts['pago'] + status_counts['parcialmente_pago']} pago(s)"
-                else:
-                    aggregated_status = "glosado"
-                    aggregated_reason = f"{status_counts['glosado']} de {total_procs} procedimentos glosados"
-            elif status_counts["parcialmente_pago"] > 0:
-                # Há pagamentos parciais
-                aggregated_status = "parcialmente_pago"
-                aggregated_reason = f"{status_counts['parcialmente_pago']} procedimentos com pagamento parcial"
-            elif status_counts["pago"] > 0:
-                # Alguns pagos, outros pendentes
-                aggregated_status = "parcialmente_pago"
-                aggregated_reason = (
-                    f"{status_counts['pago']} pagos de {total_procs} procedimentos"
-                )
-            elif (
-                status_counts["nao_encontrado"] > 0
-                or status_counts["sem_demonstrativo"] > 0
-            ):
-                # Procedimentos sem análise
-                aggregated_status = (
-                    "sem_demonstrativo"
-                    if status_counts["sem_demonstrativo"] > 0
-                    else "nao_encontrado"
-                )
-                aggregated_reason = "Guia sem análise de pagamento"
-            else:
-                # Não pagos
-                aggregated_status = "nao_pago"
-                aggregated_reason = f"{total_procs} procedimentos não pagos"
-
-            guide_aggregated_status[guia_num] = {
-                "status": aggregated_status,
-                "reason": aggregated_reason,
-                "breakdown": status_counts,
-                "total_procedures": total_procs,
-            }
-
-        # Terceiro: Adicionar status agregado aos procedimentos
-        for proc in procedures_with_smart_status:
-            guia_num = proc["numero_guia"]
-            proc["guide_aggregated_status"] = guide_aggregated_status.get(guia_num)
-
-        # Retornar no formato esperado pelo frontend
-        result = {
-            "procedures": procedures_with_smart_status,
-            "total": total,
-            "page": page,
-            "pageSize": pageSize,
-            # Estatísticas adicionais para o dashboard
-            "payment_analytics": {
-                "total_demonstrativos": len(demonstrativos),
-                "total_paid_procedures": len(
-                    [p for p in all_demonstrativo_procedures if p["is_paid"]]
-                ),
-                "total_glosa_procedures": len(
-                    [p for p in all_demonstrativo_procedures if p["is_full_glosa"]]
-                ),
-                "total_partial_payments": len(
-                    [p for p in all_demonstrativo_procedures if p["is_partial_payment"]]
-                ),
-                "total_glosa_value": sum(
-                    p["glosa"] for p in all_demonstrativo_procedures
-                ),
-                "total_paid_value": sum(
-                    p["approved_value"] for p in all_demonstrativo_procedures
-                ),
-                "crosscheck_coverage": (
-                    len(demonstrativo_procedures) / len(guias) * 100 if guias else 0
-                ),
-            },
-        }
-        return result
     finally:
         db.close()
 
@@ -4143,5 +3863,589 @@ def get_analytics(user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Erro ao gerar analytics: {e}")
         raise HTTPException(status_code=500, detail="Erro interno ao gerar analytics")
+    finally:
+        db.close()
+
+
+# =============================================================================
+# FUNÇÕES AUXILIARES PARA FILTROS DE DATA - PREPARADO PARA ESCALABILIDADE
+# =============================================================================
+
+
+def parse_date_string(date_str: str) -> str:
+    """
+    Converte string de data (YYYY-MM-DD ou DD/MM/YYYY) para formato DD/MM/YYYY.
+
+    Args:
+        date_str: String de data no formato ISO (YYYY-MM-DD) ou brasileiro (DD/MM/YYYY)
+
+    Returns:
+        String no formato DD/MM/YYYY ou None se inválida
+
+    Note:
+        Esta função é crítica para filtros de período e deve ser mantida
+        compatível com ambos os formatos para suportar diferentes frontends.
+    """
+    if not date_str:
+        return None
+    try:
+        # Tenta formato ISO (YYYY-MM-DD) - padrão de input[type=date]
+        if "-" in date_str:
+            from datetime import datetime
+
+            return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
+        # Já está no formato DD/MM/YYYY (formato interno do banco)
+        elif "/" in date_str:
+            # Valida o formato
+            from datetime import datetime
+
+            datetime.strptime(date_str, "%d/%m/%Y")
+            return date_str
+    except ValueError:
+        logger.warning(f"Formato de data inválido: {date_str}")
+        pass
+    return None
+
+
+def date_to_comparable_string(date_str: str) -> str:
+    """
+    Converte data DD/MM/YYYY para formato comparable YYYYMMDD.
+
+    Args:
+        date_str: Data no formato DD/MM/YYYY
+
+    Returns:
+        String no formato YYYYMMDD para comparação SQL ou None se inválida
+
+    Note:
+        Usado para filtros de período no SQLite. Para PostgreSQL/MySQL seria
+        melhor usar CAST e DATE(), mas SQLite requer esta abordagem.
+    """
+    if not date_str or "/" not in date_str:
+        return None
+    try:
+        day, month, year = date_str.split("/")
+        return f"{year}{month.zfill(2)}{day.zfill(2)}"
+    except Exception as e:
+        logger.warning(f"Erro ao converter data {date_str}: {e}")
+        return None
+
+
+def apply_date_range_filters(query, data_inicio: str = None, data_fim: str = None):
+    """
+    Aplica filtros de período de datas à query SQLAlchemy.
+
+    Args:
+        query: Query SQLAlchemy para Guia
+        data_inicio: Data de início no formato YYYY-MM-DD ou DD/MM/YYYY
+        data_fim: Data de fim no formato YYYY-MM-DD ou DD/MM/YYYY
+
+    Returns:
+        Query modificada com filtros de data aplicados
+
+    Note:
+        CRÍTICO: Esta função usa SQLite-specific substr() para comparação de datas.
+        Para migração futura para PostgreSQL/MySQL, substituir por:
+        - PostgreSQL: TO_DATE(Guia.data, 'DD/MM/YYYY')
+        - MySQL: STR_TO_DATE(Guia.data, '%d/%m/%Y')
+    """
+    if not data_inicio and not data_fim:
+        return query
+
+    from sqlalchemy import func
+
+    # Aplicar filtro de data início (maior ou igual)
+    if data_inicio:
+        inicio_formatted = parse_date_string(data_inicio)
+        if inicio_formatted:
+            inicio_comparable = date_to_comparable_string(inicio_formatted)
+            if inicio_comparable:
+                # SQLite: SUBSTR(data, 7, 4) || SUBSTR(data, 4, 2) || SUBSTR(data, 1, 2) = YYYYMMDD
+                # CORREÇÃO CRÍTICA: Usar || (concatenação) ao invés de + (adição)
+                query = query.filter(
+                    func.substr(Guia.data, 7, 4).op("||")(
+                        func.substr(Guia.data, 4, 2).op("||")(
+                            func.substr(Guia.data, 1, 2)
+                        )
+                    )
+                    >= inicio_comparable
+                )
+
+    # Aplicar filtro de data fim (menor ou igual)
+    if data_fim:
+        fim_formatted = parse_date_string(data_fim)
+        if fim_formatted:
+            fim_comparable = date_to_comparable_string(fim_formatted)
+            if fim_comparable:
+                # SQLite: SUBSTR(data, 7, 4) || SUBSTR(data, 4, 2) || SUBSTR(data, 1, 2) = YYYYMMDD
+                # CORREÇÃO CRÍTICA: Usar || (concatenação) ao invés de + (adição)
+                query = query.filter(
+                    func.substr(Guia.data, 7, 4).op("||")(
+                        func.substr(Guia.data, 4, 2).op("||")(
+                            func.substr(Guia.data, 1, 2)
+                        )
+                    )
+                    <= fim_comparable
+                )
+
+    return query
+
+
+def calculate_smart_payment_status(guias, demonstrativos, crm: str, uf: str, logger):
+    """
+    Calcula status inteligente de pagamento baseado no crosscheck com demonstrativos.
+
+    Args:
+        guias: Lista de guias do usuário
+        demonstrativos: Lista de demonstrativos do usuário
+        crm: CRM do médico para filtros
+        uf: UF do médico para filtros
+        logger: Logger para auditoria
+
+    Returns:
+        Tuple (procedures_with_smart_status, guide_aggregated_status, all_demonstrativo_procedures)
+
+    Note:
+        PERFORMANCE CRÍTICA: Esta função processa N*M operações onde N=guias e M=demonstrativos.
+        Para >10k guias, considerar implementar cache Redis ou pré-processamento assíncrono.
+
+        ESCALABILIDADE: Para milhares de usuários simultâneos, mover este processamento
+        para uma fila assíncrona (Celery/RQ) e cache os resultados.
+    """
+    import os
+
+    # Mapa de procedimentos pagos dos demonstrativos
+    # Estrutura: {(numero_guia, codigo): payment_info}
+    demonstrativo_procedures = {}
+    all_demonstrativo_procedures = []
+
+    # OTIMIZAÇÃO: Processar demonstrativos apenas uma vez por requisição
+    for demo in demonstrativos:
+        try:
+            file_path = os.path.join(UPLOAD_DIR, demo.filename)
+            if os.path.exists(file_path):
+                from src.parsers.demonstrativo_parser import DemonstrativoParser
+
+                parser = DemonstrativoParser(file_path)
+                payments = parser.get_payments()
+
+                for payment in payments:
+                    guia_num = payment.get("guia")
+                    codigo = payment.get("code") or payment.get("codigo")
+                    if guia_num and codigo:
+                        key = (str(guia_num), str(codigo))
+
+                        # Extrair informações financeiras detalhadas
+                        financial = payment.get("financial", {})
+                        approved_value = financial.get("approved_value", 0)
+                        presented_value = financial.get("presented_value", 0)
+                        glosa = financial.get("glosa", 0)
+
+                        demonstrativo_procedures[key] = {
+                            "is_paid": approved_value > 0,
+                            "approved_value": approved_value,
+                            "presented_value": presented_value,
+                            "glosa": glosa,
+                            "payment_date": demo.periodo,
+                            "demonstrativo_id": demo.id,
+                            "demonstrativo_filename": demo.filename,
+                            "is_partial_payment": approved_value > 0
+                            and approved_value < presented_value,
+                            "is_full_glosa": approved_value == 0
+                            and presented_value > 0,
+                            "glosa_percentage": (
+                                (glosa / presented_value * 100)
+                                if presented_value > 0
+                                else 0
+                            ),
+                        }
+
+                        all_demonstrativo_procedures.append(
+                            {
+                                **demonstrativo_procedures[key],
+                                "guia": guia_num,
+                                "codigo": codigo,
+                            }
+                        )
+        except Exception as e:
+            logger.warning(f"Erro ao processar demonstrativo {demo.id}: {e}")
+            continue
+
+    # Calcular status individual para cada procedimento
+    procedures_with_smart_status = []
+    individual_procedure_status = {}
+
+    for g in guias:
+        key = (str(g.numero_guia), str(g.codigo))
+        demo_info = demonstrativo_procedures.get(key)
+
+        # Determinar status inteligente baseado na análise
+        if demo_info:
+            if demo_info["is_paid"]:
+                if demo_info["is_partial_payment"]:
+                    smart_status = "parcialmente_pago"
+                    smart_reason = f"Pago R$ {demo_info['approved_value']:.2f} de R$ {demo_info['presented_value']:.2f}"
+                else:
+                    smart_status = "pago"
+                    smart_reason = (
+                        f"Pago integralmente R$ {demo_info['approved_value']:.2f}"
+                    )
+            else:
+                if demo_info["is_full_glosa"]:
+                    smart_status = "glosado"
+                    smart_reason = (
+                        f"Glosa total - R$ {demo_info['presented_value']:.2f} negado"
+                    )
+                else:
+                    smart_status = "nao_pago"
+                    smart_reason = "Não consta pagamento no demonstrativo"
+        else:
+            # Sem demonstrativo ou procedimento não encontrado
+            if demonstrativos:
+                smart_status = "nao_encontrado"
+                smart_reason = "Procedimento não encontrado nos demonstrativos"
+            else:
+                smart_status = "sem_demonstrativo"
+                smart_reason = "Nenhum demonstrativo carregado para análise"
+
+        # Armazenar status individual
+        individual_procedure_status[key] = {
+            "status": smart_status,
+            "reason": smart_reason,
+            "demonstrativo_info": demo_info,
+            "has_demonstrativo": len(demonstrativos) > 0,
+        }
+
+        # Montar dados do procedimento
+        procedure_data = {
+            "numero_guia": g.numero_guia,
+            "data": g.data,
+            "beneficiario": g.paciente,
+            "codigo": g.codigo,
+            "descricao": g.descricao,
+            "papel": g.papel,
+            "crm": g.crm,
+            "qtd": g.qtd,
+            "status": g.status,
+            "prestador": g.prestador,
+            "nome_medico": g.nome_medico,
+            "dt_inicio": g.dt_inicio,
+            "dt_fim": g.dt_fim,
+            "status_part": g.status_part,
+            "smart_payment_status": individual_procedure_status[key],
+        }
+
+        procedures_with_smart_status.append(procedure_data)
+
+    # Calcular status agregado por guia
+    guide_aggregated_status = {}
+    guide_procedures = {}
+
+    # Agrupar procedimentos por guia
+    for proc in procedures_with_smart_status:
+        guia_num = proc["numero_guia"]
+        if guia_num not in guide_procedures:
+            guide_procedures[guia_num] = []
+        guide_procedures[guia_num].append(proc)
+
+    # Calcular status agregado para cada guia
+    for guia_num, procs in guide_procedures.items():
+        status_counts = {
+            "pago": 0,
+            "parcialmente_pago": 0,
+            "glosado": 0,
+            "nao_pago": 0,
+            "nao_encontrado": 0,
+            "sem_demonstrativo": 0,
+        }
+
+        total_procs = len(procs)
+        for proc in procs:
+            proc_status = proc["smart_payment_status"]["status"]
+            if proc_status in status_counts:
+                status_counts[proc_status] += 1
+
+        # Determinar status agregado baseado na hierarquia
+        if status_counts["pago"] == total_procs:
+            aggregated_status = "pago"
+            aggregated_reason = f"Todos os {total_procs} procedimentos pagos"
+        elif status_counts["glosado"] > 0:
+            if status_counts["pago"] > 0 or status_counts["parcialmente_pago"] > 0:
+                aggregated_status = "parcialmente_pago"
+                aggregated_reason = f"{status_counts['glosado']} glosado(s), {status_counts['pago'] + status_counts['parcialmente_pago']} pago(s)"
+            else:
+                aggregated_status = "glosado"
+                aggregated_reason = (
+                    f"{status_counts['glosado']} de {total_procs} glosados"
+                )
+        elif status_counts["parcialmente_pago"] > 0:
+            aggregated_status = "parcialmente_pago"
+            aggregated_reason = (
+                f"{status_counts['parcialmente_pago']} com pagamento parcial"
+            )
+        elif status_counts["pago"] > 0:
+            aggregated_status = "parcialmente_pago"
+            aggregated_reason = f"{status_counts['pago']} pagos de {total_procs}"
+        elif (
+            status_counts["nao_encontrado"] > 0
+            or status_counts["sem_demonstrativo"] > 0
+        ):
+            aggregated_status = (
+                "sem_demonstrativo"
+                if status_counts["sem_demonstrativo"] > 0
+                else "nao_encontrado"
+            )
+            aggregated_reason = "Guia sem análise de pagamento"
+        else:
+            aggregated_status = "nao_pago"
+            aggregated_reason = f"{total_procs} procedimentos não pagos"
+
+        guide_aggregated_status[guia_num] = {
+            "status": aggregated_status,
+            "reason": aggregated_reason,
+            "breakdown": status_counts,
+            "total_procedures": total_procs,
+        }
+
+    # Adicionar status agregado aos procedimentos
+    for proc in procedures_with_smart_status:
+        guia_num = proc["numero_guia"]
+        proc["guide_aggregated_status"] = guide_aggregated_status.get(guia_num)
+
+    return (
+        procedures_with_smart_status,
+        guide_aggregated_status,
+        all_demonstrativo_procedures,
+    )
+
+
+def apply_smart_status_filter(procedures_with_smart_status, status_filter: str):
+    """
+    Aplica filtro de status inteligente aos procedimentos.
+
+    Args:
+        procedures_with_smart_status: Lista de procedimentos com status calculado
+        status_filter: Filtro de status a aplicar
+
+    Returns:
+        Lista filtrada de procedimentos
+
+    Note:
+        Filtros suportados: pago, parcialmente_pago, glosado, nao_pago,
+        nao_encontrado, sem_demonstrativo, sem_analise
+    """
+    if not status_filter or status_filter not in [
+        "pago",
+        "parcialmente_pago",
+        "glosado",
+        "nao_pago",
+        "nao_encontrado",
+        "sem_demonstrativo",
+        "sem_analise",
+    ]:
+        return procedures_with_smart_status
+
+    filtered_procedures = []
+
+    for proc in procedures_with_smart_status:
+        smart_status = proc["smart_payment_status"]["status"]
+
+        # Filtro especial para análise pendente (agrupa sem_demonstrativo + nao_encontrado)
+        if status_filter == "sem_analise":
+            if smart_status in ["nao_encontrado", "sem_demonstrativo"]:
+                filtered_procedures.append(proc)
+        elif smart_status == status_filter:
+            filtered_procedures.append(proc)
+
+    return filtered_procedures
+
+
+# =============================================================================
+# ENDPOINT PRINCIPAL REFATORADO - /api/v1/guias
+# =============================================================================
+
+
+@app.get("/api/v1/guias")
+def list_guias(
+    page: int = 1,
+    pageSize: int = 10,
+    search: str = None,
+    status: str = None,
+    data: str = None,
+    data_inicio: str = None,
+    data_fim: str = None,
+    user: dict = Depends(get_current_user),
+):
+    """
+    ENDPOINT CRÍTICO: Retorna guias médicas com análise inteligente de pagamento.
+
+    Este endpoint é o core da aplicação e deve suportar milhares de usuários simultâneos.
+
+    Features:
+    - Paginação eficiente para grandes volumes de dados
+    - Filtros avançados: busca textual, status, período de datas
+    - Análise inteligente de pagamento via crosscheck com demonstrativos
+    - Status agregado por guia para visão consolidada
+    - Analytics de performance para insights financeiros
+
+    Args:
+        page: Página atual (1-indexed) para paginação
+        pageSize: Número de registros por página (max 100 para performance)
+        search: Busca textual em múltiplos campos
+        status: Filtro por status (tradicional ou inteligente)
+        data: Filtro por data específica (compatibilidade)
+        data_inicio: Data inicial do período (YYYY-MM-DD ou DD/MM/YYYY)
+        data_fim: Data final do período (YYYY-MM-DD ou DD/MM/YYYY)
+        user: Usuário autenticado via JWT
+
+    Returns:
+        JSON com procedures, totais, analytics e metadados de paginação
+
+    Performance Notes:
+        - Query otimizada com índices em numero_guia, crm, uf
+        - Análise de pagamento cacheável para melhor performance
+        - Filtros aplicados antes do crosscheck para reduzir processamento
+
+    Escalabilidade:
+        - Para >10k guias, implementar cache Redis
+        - Para >100k guias, considerar paginação cursor-based
+        - Para análise em tempo real, mover para processamento assíncrono
+    """
+    # Validação de entrada e segurança
+    crm = user.get("crm")
+    uf = user.get("uf")
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    # Validação de pageSize para prevenir sobrecarga
+    if pageSize > 100:
+        pageSize = 100
+        logger.warning(f"PageSize limitado a 100 para usuário {crm}")
+
+    db = SessionLocal()
+    try:
+        # PASSO 1: Construir query base com isolamento por usuário (CRÍTICO para multi-tenancy)
+        query = db.query(Guia).filter_by(crm=crm, uf=uf)
+
+        # PASSO 2: Aplicar filtros textuais (otimizado com LIKE e índices)
+        if search:
+            search_term = f"%{search.lower()}%"
+            query = query.filter(
+                (Guia.numero_guia.like(search_term))
+                | (Guia.paciente.ilike(search_term))
+                | (Guia.codigo.like(search_term))
+                | (Guia.descricao.ilike(search_term))
+                | (Guia.papel.ilike(search_term))
+                | (Guia.nome_medico.ilike(search_term))
+                | (Guia.prestador.ilike(search_term))
+            )
+
+        # PASSO 3: Aplicar filtros de status tradicionais
+        if status and status not in [
+            "ALL",
+            "pago",
+            "parcialmente_pago",
+            "glosado",
+            "nao_pago",
+            "nao_encontrado",
+            "sem_demonstrativo",
+            "sem_analise",
+        ]:
+            query = query.filter(Guia.status == status)
+
+        # PASSO 4: Aplicar filtros de data (compatibilidade + período)
+        if data:
+            query = query.filter(Guia.data == data)
+
+        # NOVO: Filtros de período de datas (otimizado)
+        query = apply_date_range_filters(query, data_inicio, data_fim)
+
+        # PASSO 5: Contagem total para paginação (antes da análise inteligente para performance)
+        total_before_smart_filter = query.count()
+
+        # PASSO 6: Aplicar ordenação e paginação
+        query = query.order_by(Guia.id)  # Mantém ordem cronológica de inserção
+        if page and pageSize:
+            offset = (page - 1) * pageSize
+            query = query.offset(offset).limit(pageSize)
+
+        guias = query.all()
+
+        # PASSO 7: Análise inteligente de pagamento (processamento pesado)
+        demonstrativos = db.query(Demonstrativo).filter_by(crm=crm, uf=uf).all()
+
+        (
+            procedures_with_smart_status,
+            guide_aggregated_status,
+            all_demonstrativo_procedures,
+        ) = calculate_smart_payment_status(guias, demonstrativos, crm, uf, logger)
+
+        # PASSO 8: Aplicar filtros de status inteligente (pós-processamento)
+        if status and status in [
+            "pago",
+            "parcialmente_pago",
+            "glosado",
+            "nao_pago",
+            "nao_encontrado",
+            "sem_demonstrativo",
+            "sem_analise",
+        ]:
+            procedures_with_smart_status = apply_smart_status_filter(
+                procedures_with_smart_status, status
+            )
+            total_after_smart_filter = len(procedures_with_smart_status)
+        else:
+            total_after_smart_filter = total_before_smart_filter
+
+        # PASSO 9: Calcular analytics para insights financeiros
+        payment_analytics = {
+            "total_demonstrativos": len(demonstrativos),
+            "total_paid_procedures": len(
+                [p for p in all_demonstrativo_procedures if p["is_paid"]]
+            ),
+            "total_glosa_procedures": len(
+                [p for p in all_demonstrativo_procedures if p["is_full_glosa"]]
+            ),
+            "total_partial_payments": len(
+                [p for p in all_demonstrativo_procedures if p["is_partial_payment"]]
+            ),
+            "total_glosa_value": sum(p["glosa"] for p in all_demonstrativo_procedures),
+            "total_paid_value": sum(
+                p["approved_value"] for p in all_demonstrativo_procedures
+            ),
+            "crosscheck_coverage": (
+                (len(all_demonstrativo_procedures) / len(guias) * 100) if guias else 0
+            ),
+        }
+
+        # PASSO 10: Retorno estruturado para o frontend
+        return {
+            "procedures": procedures_with_smart_status,
+            "total": total_after_smart_filter,
+            "page": page,
+            "pageSize": pageSize,
+            "payment_analytics": payment_analytics,
+            # Metadados para debugging e monitoramento
+            "_metadata": {
+                "filtered_by_status": status
+                in [
+                    "pago",
+                    "parcialmente_pago",
+                    "glosado",
+                    "nao_pago",
+                    "nao_encontrado",
+                    "sem_demonstrativo",
+                    "sem_analise",
+                ],
+                "total_before_smart_filter": total_before_smart_filter,
+                "has_date_filter": bool(data_inicio or data_fim or data),
+                "demonstrativos_loaded": len(demonstrativos),
+                "user_context": {"crm": crm, "uf": uf},
+            },
+        }
+
+    except Exception as e:
+        logger.error(f"Erro crítico em list_guias para usuário {crm}: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
     finally:
         db.close()

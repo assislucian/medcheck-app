@@ -50,9 +50,9 @@ export function StatusCard({
       trend: 'text-red-600',
     },
     warning: {
-      card: 'border-0 bg-gradient-to-br from-amber-50/60 to-orange-50/60 shadow-lg hover:shadow-xl',
-      icon: 'bg-amber-500/10 text-amber-600',
-      trend: 'text-amber-600',
+      card: 'border-0 bg-gradient-to-br from-medical-50/60 to-brand-50/60 shadow-lg hover:shadow-xl',
+      icon: 'bg-medical-500/10 text-medical-600',
+      trend: 'text-medical-600',
     },
   };
 

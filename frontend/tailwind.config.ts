@@ -26,6 +26,82 @@ export default {
     },
     extend: {
       colors: {
+        // Health-plan page palette - cool medical colors
+        brand: {
+          blue: '#0074D9',
+          sky: '#E6F4FF',
+          mint: '#D5F5EB',
+          navy: '#002B5B',
+          green: '#079E5B',
+          50: '#E6F4FF', // Light blue wash
+          100: '#D5F5EB', // Light mint wash
+          200: '#BAE6FD', // Soft blue
+          300: '#7DD3FC', // Light cyan-blue
+          400: '#38BDF8', // Bright cyan
+          500: '#0074D9', // Primary medical blue
+          600: '#0284C7', // Deep blue
+          700: '#002B5B', // Dark navy
+          800: '#075985', // Very dark blue
+          900: '#0C4A6E', // Navy blue
+        },
+        medical: {
+          50: '#E6F4FF', // Crisp white with hint of blue
+          100: '#D5F5EB', // Very light mint
+          200: '#BAE6FD', // Light wash
+          300: '#7DD3FC', // Soft blue for accents
+          400: '#38BDF8', // Medium blue for highlights
+          500: '#0074D9', // Primary medical blue
+          600: '#0074D9', // Trust blue
+          700: '#002B5B', // Deep trust blue
+          800: '#002B5B', // Dark professional blue
+          900: '#002B5B', // Deep navy
+        },
+        mint: {
+          50: '#D5F5EB', // Very light mint
+          100: '#D5F5EB', // Light mint wash
+          200: '#99F6E4', // Soft mint
+          300: '#5EEAD4', // Fresh mint
+          400: '#2DD4BF', // Bright teal
+          500: '#079E5B', // Primary green
+          600: '#079E5B', // Deep teal
+          700: '#079E5B', // Dark teal
+          800: '#115E59', // Very dark teal
+          900: '#134E4A', // Deep teal-green
+        },
+        clinical: {
+          50: '#FAFAFA', // Clinical white
+          100: '#F4F4F5', // Light gray
+          200: '#E4E4E7', // Soft gray
+          300: '#D4D4D8', // Medium gray
+          400: '#A1A1AA', // Gray for text
+          500: '#71717A', // Dark gray
+          600: '#52525B', // Darker gray
+          700: '#3F3F46', // Very dark gray
+          800: '#27272A', // Near black
+          900: '#18181B', // Deep black
+        },
+        trust: {
+          50: '#E6F4FF', // Trust blue wash
+          100: '#D5F5EB', // Light trust blue
+          200: '#BAE6FD', // Soft trust blue
+          300: '#7DD3FC', // Medium trust blue
+          400: '#38BDF8', // Bright trust blue
+          500: '#0074D9', // Primary trust blue
+          600: '#0074D9', // Deep trust blue
+          700: '#002B5B', // Dark trust blue
+          800: '#002B5B', // Very dark trust blue
+          900: '#002B5B', // Navy trust blue
+        },
+        ink: {
+          DEFAULT: '#14171A',
+          light: '#3C4043',
+        },
+        // Semantic color groups
+        'health-primary': '#0074D9',
+        'health-accent': '#079E5B',
+        'health-surface': '#E6F4FF',
+        'health-soft': '#D5F5EB',
+        'health-dark': '#002B5B',
         /* --- Semantic tokens already mapped above --- */
         /* Surface scale (0–3) – used for subtle background elevations.
            Allows utility classes like bg-surface-1 or border-surface-3 to

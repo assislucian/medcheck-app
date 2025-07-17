@@ -1,14 +1,6 @@
 import { ReactNode } from 'react';
 import { cn } from '../../lib/utils';
-import { TrendingUp, TrendingDown, MoreHorizontal } from 'lucide-react';
-import { useMobileLayout } from '../../hooks/use-mobile';
-import { Button } from './button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface InfoCardProps {
   icon?: ReactNode;
@@ -30,90 +22,86 @@ interface InfoCardProps {
   trend?: {
     value: number;
     isPositive: boolean;
-    label?: string;
   };
   loading?: boolean;
   hover?: boolean;
-  // Novas props para mobile
-  compact?: boolean; // Versão compacta para mobile
-  priority?: 'high' | 'medium' | 'low'; // Prioridade para ordenação mobile
-  actions?: Array<{
-    label: string;
-    onClick: () => void;
-    icon?: ReactNode;
-  }>; // Ações do dropdown mobile
-  mobileLabel?: string; // Label customizada para mobile
 }
 
 const variantStyles = {
-  info: 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/20',
-  success: 'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-900/20',
-  warning: 'border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-900/20',
-  danger: 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/20',
-  neutral: 'border-gray-200 bg-gray-50/50 dark:border-gray-700 dark:bg-gray-800/20',
-  default: 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50',
+  default:
+    'bg-gradient-to-br from-white via-gray-50/80 to-gray-100/50 border-gray-200 text-gray-900 hover:from-gray-50 hover:via-gray-100/80 hover:to-gray-200/50 dark:from-gray-800/95 dark:via-gray-700/90 dark:to-gray-800/95 dark:border-gray-600/60 dark:text-gray-100',
+  success:
+    'bg-gradient-to-br from-emerald-50/90 via-emerald-100/60 to-emerald-200/40 border-emerald-200/60 text-emerald-900 hover:from-emerald-100/90 hover:via-emerald-200/60 hover:to-emerald-300/40 dark:from-emerald-900/40 dark:via-emerald-800/50 dark:to-emerald-900/40 dark:border-emerald-600/60 dark:text-emerald-100',
+  warning:
+    'bg-gradient-to-br from-amber-50/90 via-amber-100/60 to-amber-200/40 border-amber-200/60 text-amber-900 hover:from-amber-100/90 hover:via-amber-200/60 hover:to-amber-300/40 dark:from-amber-900/40 dark:via-amber-800/50 dark:to-amber-900/40 dark:border-amber-600/60 dark:text-amber-100',
+  danger:
+    'bg-gradient-to-br from-red-50/90 via-red-100/60 to-red-200/40 border-red-200/60 text-red-900 hover:from-red-100/90 hover:via-red-200/60 hover:to-red-300/40 dark:from-red-900/40 dark:via-red-800/50 dark:to-red-900/40 dark:border-red-600/60 dark:text-red-100',
+  info: 'bg-gradient-to-br from-blue-50/90 via-blue-100/60 to-blue-200/40 border-blue-200/60 text-blue-900 hover:from-blue-100/90 hover:via-blue-200/60 hover:to-blue-300/40 dark:from-blue-900/40 dark:via-blue-800/50 dark:to-blue-900/40 dark:border-blue-600/60 dark:text-blue-100',
+  primary:
+    'bg-gradient-to-br from-blue-50/90 via-blue-100/60 to-blue-200/40 border-blue-200/60 text-blue-900 hover:from-blue-100/90 hover:via-blue-200/60 hover:to-blue-300/40 dark:from-blue-900/40 dark:via-blue-800/50 dark:to-blue-900/40 dark:border-blue-600/60 dark:text-blue-100',
+  neutral:
+    'bg-gradient-to-br from-gray-50/90 via-gray-100/60 to-gray-200/40 border-gray-200/60 text-gray-900 hover:from-gray-100/90 hover:via-gray-200/60 hover:to-gray-300/40 dark:from-gray-900/40 dark:via-gray-800/50 dark:to-gray-900/40 dark:border-gray-600/60 dark:text-gray-100',
   medical:
-    'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-900/20',
-  primary: 'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/20',
+    'bg-gradient-to-br from-blue-50/80 via-white/90 to-emerald-50/60 border-blue-200/50 text-gray-900 hover:from-blue-100/80 hover:via-blue-50/90 hover:to-emerald-100/60 dark:from-blue-900/30 dark:via-gray-800/95 dark:to-emerald-900/30 dark:border-blue-600/50 dark:text-gray-100',
   professional:
-    'border-slate-200 bg-slate-50/50 dark:border-slate-700 dark:bg-slate-800/20',
-};
+    'bg-gradient-to-br from-slate-50 via-white to-slate-100/50 border-slate-200 text-slate-900 hover:from-slate-100 hover:via-slate-50 hover:to-slate-200/50 shadow-sm dark:from-slate-800/95 dark:via-slate-700/90 dark:to-slate-800/95 dark:border-slate-600/60 dark:text-slate-100',
+} as const;
 
 const iconVariantStyles = {
-  info: 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/40',
-  success: 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/40',
-  warning: 'text-amber-600 bg-amber-100 dark:text-amber-400 dark:bg-amber-900/40',
-  danger: 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/40',
-  neutral: 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/40',
-  default: 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800/40',
+  default:
+    'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 shadow-sm dark:from-gray-600/80 dark:to-gray-700/80 dark:text-gray-200',
+  success:
+    'bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 shadow-sm dark:from-emerald-800/60 dark:to-emerald-700/80 dark:text-emerald-300',
+  warning:
+    'bg-gradient-to-br from-amber-100 to-amber-200 text-amber-600 shadow-sm dark:from-amber-800/60 dark:to-amber-700/80 dark:text-amber-300',
+  danger:
+    'bg-gradient-to-br from-red-100 to-red-200 text-red-600 shadow-sm dark:from-red-800/60 dark:to-red-700/80 dark:text-red-300',
+  info: 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 shadow-sm dark:from-blue-800/60 dark:to-blue-700/80 dark:text-blue-300',
+  primary:
+    'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 shadow-sm dark:from-blue-800/60 dark:to-blue-700/80 dark:text-blue-300',
+  neutral:
+    'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 shadow-sm dark:from-gray-600/80 dark:to-gray-700/80 dark:text-gray-200',
   medical:
-    'text-emerald-600 bg-emerald-100 dark:text-emerald-400 dark:bg-emerald-900/40',
-  primary: 'text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/40',
-  professional: 'text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800/40',
-};
+    'bg-gradient-to-br from-blue-100 via-blue-50 to-emerald-100 text-blue-600 shadow-sm dark:from-blue-800/60 dark:via-blue-700/80 dark:to-emerald-800/60 dark:text-blue-300',
+  professional:
+    'bg-gradient-to-br from-slate-600 to-slate-700 text-white shadow-md dark:from-slate-500/80 dark:to-slate-600/80 dark:text-slate-100',
+} as const;
 
-export function InfoCard({
+/**
+ * InfoCard - Card profissional com gradientes e identidade visual médica
+ */
+const InfoCard = ({
   icon,
   title,
   value,
   description,
   variant = 'default',
-  className,
+  className = '',
   children,
   trend,
   loading = false,
   hover = true,
-  compact = false,
-  priority = 'medium',
-  actions,
-  mobileLabel,
-}: InfoCardProps) {
-  const { isMobile, shouldStackCards } = useMobileLayout();
-
-  // Determinar se usar layout compacto baseado em mobile ou prop
-  const isCompact = compact || isMobile;
-
+}: InfoCardProps) => {
   if (loading) {
     return (
       <div
         className={cn(
-          'rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800/50 shadow-sm',
-          isCompact ? 'p-4' : 'p-6',
+          'w-full rounded-xl border p-8 shadow-sm animate-pulse backdrop-blur-sm',
+          'bg-gradient-to-br from-gray-100/80 via-gray-200/60 to-gray-300/40 border-gray-200/60',
+          'dark:from-gray-800/95 dark:via-gray-700/90 dark:to-gray-800/95 dark:border-gray-600/60',
           className
         )}
       >
-        <div className="animate-pulse">
-          <div className="flex items-center gap-3 mb-3">
-            <div
-              className={cn(
-                'rounded-lg bg-gray-200 dark:bg-gray-700',
-                isCompact ? 'h-8 w-8' : 'h-10 w-10'
-              )}
-            />
-            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
-          </div>
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16 mb-2" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="flex items-start justify-between mb-6">
+          <div className="h-12 w-12 bg-gray-200/80 rounded-xl shadow-sm dark:bg-gray-600/60 animate-pulse" />
+          {trend && (
+            <div className="h-4 w-12 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
+          )}
+        </div>
+        <div className="space-y-4">
+          <div className="h-4 w-24 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
+          <div className="h-8 w-32 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
+          <div className="h-3 w-20 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
         </div>
       </div>
     );
@@ -122,201 +110,81 @@ export function InfoCard({
   return (
     <div
       className={cn(
-        'rounded-xl border shadow-sm transition-all duration-200 backdrop-blur-sm',
+        'w-full rounded-xl border p-8 shadow-sm transition-all duration-300 backdrop-blur-sm',
+        hover &&
+          'hover:shadow-lg hover:scale-[1.02] cursor-pointer hover:-translate-y-1',
+        'group relative overflow-hidden',
         variantStyles[variant],
-        hover && 'hover:shadow-md hover:scale-[1.02] hover:border-opacity-60',
-        isCompact ? 'p-4' : 'p-6',
         className
       )}
     >
-      {/* Header com ícone, título e ações */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+      {/* Subtle overlay for premium glass effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
+
+      {/* Animated background shimmer on hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+      </div>
+
+      <div className="relative z-10">
+        {/* Header com ícone e trend */}
+        <div className="flex items-start justify-between mb-6">
           {icon && (
             <div
               className={cn(
-                'rounded-lg flex items-center justify-center flex-shrink-0',
-                iconVariantStyles[variant],
-                isCompact ? 'h-8 w-8' : 'h-10 w-10'
+                'flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-300',
+                'group-hover:scale-110 group-hover:rotate-3',
+                iconVariantStyles[variant]
               )}
             >
               {icon}
             </div>
           )}
 
-          <div className="min-w-0 flex-1">
-            <h3
+          {trend && (
+            <div
               className={cn(
-                'font-semibold text-gray-900 dark:text-gray-100 leading-tight',
-                isCompact ? 'text-sm' : 'text-base'
+                'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 backdrop-blur-sm',
+                'group-hover:scale-105',
+                trend.isPositive
+                  ? 'bg-emerald-100/80 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-700/60'
+                  : 'bg-red-100/80 text-red-700 border border-red-200/60 dark:bg-red-900/40 dark:text-red-400 dark:border-red-700/60'
               )}
             >
-              {mobileLabel && isMobile ? mobileLabel : title}
-            </h3>
-
-            {/* Trend inline para mobile compacto */}
-            {isCompact && trend && (
-              <div className="flex items-center gap-1 mt-1">
-                {trend.isPositive ? (
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-red-500" />
-                )}
-                <span
-                  className={cn(
-                    'text-xs font-medium',
-                    trend.isPositive
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  )}
-                >
-                  {Math.abs(trend.value)}% {trend.label || ''}
-                </span>
-              </div>
-            )}
-          </div>
+              {trend.isPositive ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : (
+                <TrendingDown className="h-3 w-3" />
+              )}
+              {Math.abs(trend.value)}%
+            </div>
+          )}
         </div>
 
-        {/* Dropdown de ações para mobile */}
-        {actions && actions.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 opacity-60 hover:opacity-100 touch-manipulation"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              {actions.map((action, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={action.onClick}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
-                  {action.icon}
-                  {action.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
-
-      {/* Valor principal */}
-      {value && (
-        <div className="mb-2">
-          <div
-            className={cn(
-              'font-bold text-gray-900 dark:text-gray-100 tabular-nums',
-              isCompact ? 'text-xl' : 'text-2xl lg:text-3xl'
-            )}
-          >
+        {/* Conteúdo principal com espaçamento melhorado */}
+        <div className="space-y-3">
+          <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 transition-colors duration-300 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+            {title}
+          </div>
+          <div className="text-3xl xl:text-4xl font-bold tracking-tight leading-none transition-all duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
             {value}
           </div>
+          {description && (
+            <div className="text-sm text-gray-500 dark:text-gray-500 transition-colors duration-300 group-hover:text-gray-600 dark:group-hover:text-gray-400 leading-relaxed">
+              {description}
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Descrição e trend (não compacto) */}
-      <div className="flex items-center justify-between">
-        {description && (
-          <p
-            className={cn(
-              'text-gray-600 dark:text-gray-400 leading-relaxed',
-              isCompact ? 'text-xs' : 'text-sm'
-            )}
-          >
-            {description}
-          </p>
-        )}
-
-        {/* Trend para versão não compacta */}
-        {!isCompact && trend && (
-          <div className="flex items-center gap-1 ml-3">
-            {trend.isPositive ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            )}
-            <span
-              className={cn(
-                'text-sm font-medium',
-                trend.isPositive
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              )}
-            >
-              {Math.abs(trend.value)}%
-            </span>
-            {trend.label && (
-              <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                {trend.label}
-              </span>
-            )}
+        {/* Children content */}
+        {children && (
+          <div className="mt-6 transition-all duration-300 group-hover:translate-x-1">
+            {children}
           </div>
         )}
       </div>
-
-      {/* Children content */}
-      {children && (
-        <div
-          className={cn(
-            'border-t border-gray-200 dark:border-gray-700',
-            isCompact ? 'mt-3 pt-3' : 'mt-4 pt-4'
-          )}
-        >
-          {children}
-        </div>
-      )}
     </div>
   );
-}
+};
 
-// Componente de grid responsivo para InfoCards
-export function InfoCardGrid({
-  children,
-  className,
-  columns,
-}: {
-  children: ReactNode;
-  className?: string;
-  columns?: {
-    mobile?: number;
-    tablet?: number;
-    desktop?: number;
-  };
-}) {
-  const { isMobile, isTablet, shouldStackCards } = useMobileLayout();
-
-  // Determinar número de colunas baseado no dispositivo
-  const getCols = () => {
-    if (isMobile) return columns?.mobile || 1;
-    if (isTablet) return columns?.tablet || 2;
-    return columns?.desktop || 4;
-  };
-
-  const cols = getCols();
-
-  // Classes de grid responsivo
-  const gridClasses = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-  } as const;
-
-  return (
-    <div
-      className={cn(
-        'grid gap-4 sm:gap-6',
-        gridClasses[cols as keyof typeof gridClasses] ||
-          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
+export { InfoCard };

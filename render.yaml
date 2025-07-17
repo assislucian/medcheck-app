@@ -1,27 +1,31 @@
 services:
+  # Backend API
   - type: web
-    name: medcheck-backend
+    name: medcheck-api
     env: python
-    buildCommand: chmod +x build.sh && ./build.sh
+    plan: starter
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn src.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: ENV
         value: production
-      - key: ADMIN_SECRET
-        value: bQ7nP4yZrS1wV8kC5mT2xA9dL3fH6gJ0
-      - key: JWT_SECRET
-        value: bQ7nP4yZrS1wV8kC5mT2xA9dL3fH6gJ0
-      - key: FRONTEND_ORIGINS
-        value: "https://medcheck-app.vercel.app,https://medcheck-app-assislucians-projects.vercel.app"
-      - key: FRONTEND_ORIGIN_REGEX
-        value: "https://medcheck-[a-z0-9-]+-assislucians-projects\\.vercel\\.app"
-    disk:
-      name: medcheck-disk
-      mountPath: /app/data
-      sizeGB: 1
+      - key: DEBUG
+        value: false
+      - key: JWT_EXPIRE_MINUTES
+        value: 60
+      - key: RATE_LIMIT
+        value: "10 per minute"
+      - key: LOG_LEVEL
+        value: INFO
+      # Estas devem ser configuradas manualmente no painel do Render:
+      # - JWT_SECRET (gerar uma chave de 32+ caracteres)
+      # - CORS_ALLOWED_ORIGINS (URLs do frontend separadas por vírgula)
+      # - DATABASE_URL (será fornecido automaticamente pelo PostgreSQL service)
 
-  - type: pserv
-    name: medcheck-postgres
-    env: postgresql
+  # PostgreSQL Database
+  - type: pgsql
+    name: medcheck-db
     plan: starter
+    databaseName: medcheck
+    user: medcheck_user

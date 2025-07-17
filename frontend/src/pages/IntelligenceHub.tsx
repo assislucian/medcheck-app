@@ -170,8 +170,8 @@ export default function IntelligenceHub() {
       title="Central de Inteligência CBHPM"
       description="Análise inteligente para maximizar sua receita médica"
     >
-      {/* Background com Gradiente Âmbar Suave */}
-      <div className="min-h-screen bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30">
+      {/* Background with Clean Medical Gradient */}
+      <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
         <div className="px-4 sm:px-6 lg:px-8 py-12 space-y-16">
           {/* Header Premium Humanizado */}
           <div className="text-center space-y-6">

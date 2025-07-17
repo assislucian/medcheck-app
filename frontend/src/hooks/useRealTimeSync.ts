@@ -132,54 +132,58 @@ export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
       console.warn('BroadcastChannel não suportado:', error);
     }
 
-    // 2. Inicializar Server-Sent Events (updates do servidor)
-    try {
-      eventSourceRef.current = new EventSource(
-        `${apiUrl}/api/v1/events/stream?token=${token}`
-      );
+    // 2. Inicializar Server-Sent Events (updates do servidor) - apenas se tiver token
+    if (token && token.trim()) {
+      try {
+        eventSourceRef.current = new EventSource(
+          `${apiUrl}/api/v1/events/stream?token=${token}`
+        );
 
-      eventSourceRef.current.onopen = () => {
-        setIsConnected(true);
-        console.log('✅ Conectado ao servidor em tempo real');
-      };
+        eventSourceRef.current.onopen = () => {
+          setIsConnected(true);
+          console.log('✅ Conectado ao servidor em tempo real');
+        };
 
-      eventSourceRef.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
+        eventSourceRef.current.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
 
-          if (data.type === 'connected') {
-            console.log('🎯 Tempo real ativo:', data.message);
-          } else if (data.type === 'heartbeat') {
-            // Heartbeat silencioso para manter conexão
-          } else {
-            // Eventos reais de dados
-            if (onDataChange) {
-              onDataChange({
-                type: data.type,
-                data: data.data,
-                timestamp: data.timestamp,
-              });
+            if (data.type === 'connected') {
+              console.log('🎯 Tempo real ativo:', data.message);
+            } else if (data.type === 'heartbeat') {
+              // Heartbeat silencioso para manter conexão
+            } else {
+              // Eventos reais de dados
+              if (onDataChange) {
+                onDataChange({
+                  type: data.type,
+                  data: data.data,
+                  timestamp: data.timestamp,
+                });
+              }
             }
+          } catch (error) {
+            console.warn('Erro ao processar SSE:', error);
           }
-        } catch (error) {
-          console.warn('Erro ao processar SSE:', error);
-        }
-      };
+        };
 
-      eventSourceRef.current.onerror = (error) => {
-        setIsConnected(false);
-        console.warn('Erro na conexão SSE:', error);
+        eventSourceRef.current.onerror = (error) => {
+          setIsConnected(false);
+          console.warn('Erro na conexão SSE:', error);
 
-        // Reconectar automaticamente após 5s
-        setTimeout(() => {
-          if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
-            console.log('🔄 Tentando reconectar...');
-            // A reconexão será feita quando o useEffect rodar novamente
-          }
-        }, 5000);
-      };
-    } catch (error) {
-      console.warn('Erro ao inicializar SSE:', error);
+          // Reconectar automaticamente após 5s
+          setTimeout(() => {
+            if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
+              console.log('🔄 Tentando reconectar...');
+              // A reconexão será feita quando o useEffect rodar novamente
+            }
+          }, 5000);
+        };
+      } catch (error) {
+        console.warn('Erro ao inicializar SSE:', error);
+      }
+    } else {
+      console.log('⚠️ SSE não inicializado: token não disponível');
     }
 
     // Cleanup

@@ -20,22 +20,22 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-rose-50/30 dark:from-slate-900 dark:via-amber-900/10 dark:to-rose-900/10 overflow-hidden">
-      {/* Background Premium com Efeitos Dourados */}
+    <div className="relative min-h-screen bg-gradient-to-br from-medical-50/40 via-brand-50/20 to-mint-50/30 dark:from-slate-900 dark:via-trust-900/10 dark:to-medical-900/10 overflow-hidden">
+      {/* Medical Professional Background with Clean Effects */}
       <div className="absolute inset-0">
-        {/* Gradientes dourados premium que transmitem prosperidade */}
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-amber-300/20 via-yellow-300/15 to-orange-300/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-emerald-300/25 via-teal-300/20 to-green-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-rose-300/10 via-pink-300/8 to-purple-300/12 rounded-full blur-3xl"></div>
+        {/* Clean medical gradients that transmit trust and professionalism */}
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-medical-300/20 via-brand-300/15 to-trust-300/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-mint-300/25 via-medical-300/20 to-brand-300/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-trust-300/10 via-mint-300/8 to-medical-300/12 rounded-full blur-3xl"></div>
 
-        {/* Overlays dourados que transmitem luxo e confiança */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/8 via-transparent to-emerald-400/8"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-orange-400/6 via-transparent to-teal-400/6"></div>
-        <div className="absolute inset-0 bg-gradient-to-bl from-yellow-400/5 via-transparent to-green-400/7"></div>
+        {/* Medical overlays that transmit cleanliness and trust */}
+        <div className="absolute inset-0 bg-gradient-to-br from-medical-400/8 via-transparent to-mint-400/8"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-brand-400/6 via-transparent to-trust-400/6"></div>
+        <div className="absolute inset-0 bg-gradient-to-bl from-medical-400/5 via-transparent to-mint-400/7"></div>
       </div>
 
-      {/* Grid pattern mais sutil e elegante */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(251,191,36,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(251,191,36,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(251,191,36,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(251,191,36,0.03)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
+      {/* Grid pattern more subtle and medical */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.06)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-screen">
         {loading ? (
