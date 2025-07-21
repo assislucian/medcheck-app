@@ -1,41 +1,49 @@
 // Configuração centralizada da API
 export const API_CONFIG = {
-  // URL base da API - prioriza variável de ambiente, fallback para localhost
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  // URL base da API - usa proxy do Vite em desenvolvimento, variável de ambiente em produção
+  BASE_URL: import.meta.env.VITE_API_URL || '',
 
   // Endpoints específicos
   ENDPOINTS: {
     AUTH: {
-      LOGIN: '/token',
-      REGISTER: '/api/v1/register',
-      PROFILE: '/api/v1/profile',
+      LOGIN: '/api/auth/login',
+      REGISTER: '/api/auth/register',
+      PROFILE: '/api/user/profile',
     },
-    DASHBOARD: '/api/v1/dashboard',
+    DASHBOARD: '/api/dashboard/stats',
     DEMONSTRATIVES: {
-      LIST: '/api/v1/demonstrativos',
-      UPLOAD: '/api/v1/demonstrativos/upload',
-      DETAILS: (id: number) => `/api/v1/demonstrativos/${id}/detalhes`,
-      DOWNLOAD: (id: number) => `/api/v1/demonstrativos/${id}/download`,
-      DELETE: (id: number) => `/api/v1/demonstrativos/${id}`,
+      LIST: '/api/demonstratives',
+      UPLOAD: '/api/demonstratives/upload',
+      DETAILS: (id: number) => `/api/demonstratives/${id}`,
+      DOWNLOAD: (id: number) => `/api/demonstratives/${id}/download`,
+      DELETE: (id: number) => `/api/demonstratives/${id}`,
     },
     GUIDES: {
-      LIST: '/api/v1/guias',
+      LIST: '/api/v1/guias',  // ✅ Corrigido para o endpoint real
       UPLOAD: '/api/v1/guias/upload',
       SAVE: '/api/v1/guias/save',
-      DELETE: (numero: string) => `/api/v1/guias/${numero}`,
+      CREATE_SAMPLE: '/api/v1/guias/create-sample-data',  // ✅ Adicionado
+      DELETE: (numero: string) => `/api/guides/${numero}`,
     },
-    ACTIVITY_LOGS: '/api/v1/activity-logs',
+    ACTIVITY_LOGS: '/api/activity-logs',
     VALIDATION: {
-      CROSS: '/api/v1/validate-cross',
-      SINGLE: '/api/v1/validate',
-      STATUS: (jobId: string) => `/api/v1/status/${jobId}`,
-      RESULT: (jobId: string) => `/api/v1/result/${jobId}`,
+      CROSS: '/api/validate-cross',
+      SINGLE: '/api/validate',
+      STATUS: (jobId: string) => `/api/status/${jobId}`,
+      RESULT: (jobId: string) => `/api/result/${jobId}`,
     },
   },
 };
 
 // Função helper para construir URLs completas
+// ✅ Modificada para funcionar com proxy
 export const buildApiUrl = (endpoint: string): string => {
+  // Se BASE_URL estiver vazio (desenvolvimento), usar apenas o endpoint
+  // O proxy do Vite vai redirecionar automaticamente
+  if (!API_CONFIG.BASE_URL) {
+    return endpoint;
+  }
+  // Em produção, usar a URL completa
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 

@@ -202,16 +202,22 @@ export function SmartPaymentStatusIndicator({
           <Badge
             variant={config.variant}
             className={cn(
-              'flex items-center gap-1 whitespace-nowrap cursor-help',
-              sizeClasses[size],
+              'flex items-center gap-0.5 sm:gap-1 whitespace-nowrap cursor-help max-w-full',
+              'text-xs px-1.5 py-0.5 sm:text-sm sm:px-2 sm:py-1',
+              size === 'xs' && 'text-xs px-1 py-0.5',
+              size === 'lg' && 'text-sm sm:text-base px-2 py-1 sm:px-3 sm:py-1.5',
               className
             )}
           >
-            <Icon className={iconSizes[size]} />
-            {config.label}
+            <Icon className={cn(
+              'h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0',
+              size === 'xs' && 'h-2 w-2',
+              size === 'lg' && 'h-4 w-4'
+            )} />
+            <span className="truncate">{config.label}</span>
             {smartPaymentStatus.demonstrativo_info?.approved_value > 0 &&
-              size !== 'sm' && (
-                <span className="ml-1 font-mono">
+              size !== 'xs' && size !== 'sm' && (
+                <span className="ml-0.5 sm:ml-1 font-mono text-xs hidden sm:inline">
                   {formatCurrency(smartPaymentStatus.demonstrativo_info.approved_value)}
                 </span>
               )}

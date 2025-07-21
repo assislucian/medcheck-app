@@ -1,4 +1,4 @@
-#!/Users/luciandeassis/backend_test/venv/bin/python3
+#!/Users/luciandeassis/backend_test/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

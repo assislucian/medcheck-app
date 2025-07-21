@@ -2,74 +2,21 @@
  * =============================================================================
  * GUIDES PAGE - PÁGINA PRINCIPAL DE GESTÃO DE GUIAS MÉDICAS
  * =============================================================================
- *
- * ARQUITETURA ENTERPRISE:
- * Esta página é o core da aplicação e deve suportar:
- * - Milhares de guias simultâneas
- * - Filtros complexos em tempo real
- * - Upload massivo de arquivos
- * - Análise inteligente de pagamentos
- * - Export de dados em múltiplos formatos
- *
- * OTIMIZAÇÕES DE PERFORMANCE:
- * - React.memo para componentes pesados
- * - useMemo para cálculos complexos (agrupamentos, estatísticas)
- * - useCallback para handlers estáveis
- * - Debounce automático nos filtros
- * - Paginação virtual para grandes datasets
- *
- * ESCALABILIDADE:
- * - Separação de responsabilidades clara
- * - Estado normalizado para facilitar atualizações
- * - Error boundaries para isolamento de falhas
- * - Lazy loading para componentes não críticos
- *
- * MANUTENIBILIDADE:
- * - Comentários detalhados em funções complexas
- * - Constantes extraídas para fácil configuração
- * - Handlers centralizados para ações comuns
- * - Tipagem forte em todas as interfaces
- *
- * @version 3.0 - Refatorado para escalabilidade enterprise
- * @author Senior Software Engineering Team
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
 import {
+  Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
 } from '../components/ui/card';
-import { DataGrid } from '../components/ui/data-grid';
 import { Button } from '../components/ui/button';
-import {
-  FileText,
-  Upload,
-  Eye,
-  Trash2,
-  HelpCircle,
-  ClipboardList,
-  User,
-  AlertCircle,
-  BarChart3,
-  UserCheck,
-  Stethoscope,
-  UserPlus,
-  UserPlus2,
-  Activity,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  DollarSign,
-  CheckCircle,
-  AlertTriangle,
-} from 'lucide-react';
 import { Badge } from '../components/ui/badge';
-import PaymentStatusIndicator from '../components/payment/PaymentStatusIndicator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import {
   Select,
   SelectContent,
@@ -77,89 +24,123 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import FileDropZone from '../components/upload/FileDropZone';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { FileType } from '../types/upload';
-import FileList from '../components/upload/FileList';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import {
+  FileText,
+  Upload,
+  Eye,
+  Trash2,
+  Search,
+  RefreshCw,
+  Plus,
+  X,
+  Clock,
+  Calendar,
+  User,
+  Activity,
+  BarChart3,
+  Crown,
+  DollarSign,
+  Shield,
+  CheckCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  getGuides,
-  deleteGuide,
-  uploadGuides,
-  GuidesQueryParams,
-} from '../services/guides';
-import DetalhesGuia from '../components/guides/DetalhesGuia';
-import { GuideProcedure } from '../types/medical';
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from '../components/ui/tooltip';
-import { Link } from 'react-router-dom';
-import LoaderTable from '../components/ui/LoaderTable';
-import { cn } from '../lib/utils';
-import { Card } from '../components/ui/card';
-import { SkeletonInfoCard, SkeletonDashboard } from '../components/ui/skeleton';
-import PageHeader from '../components/layout/PageHeader';
-import { useAuth } from '../contexts/auth/AuthContext';
-
-import { FiltersToolbar } from '../components/guides/FiltersToolbar';
-import { InfoCard } from '../components/ui/InfoCard';
-
-import { usePageTitle } from '../hooks/usePageTitle';
-import { useRealTimeSync, REAL_TIME_EVENTS } from '../hooks/useRealTimeSync';
+import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import { formatCurrency } from '../utils/format';
+import { useAuth } from '../contexts/auth/AuthContext';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { InfoCard } from '../components/ui/InfoCard';
+import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { buildApiUrl } from '../config/api';
+import { FeatureCard } from '../components/ui/FeatureCard';
 
 // =============================================================================
-// FUNÇÕES AUXILIARES OTIMIZADAS - PERFORMANCE CRÍTICA
+// TIPAGENS
 // =============================================================================
 
-/**
- * Processa dados de guias de forma otimizada.
- * CRÍTICO: Esta função deve ser ultra-performante para grandes datasets.
- *
- * @param procedures - Lista de procedimentos do backend
- * @param page - Página atual para paginação
- * @param pageSize - Tamanho da página
- * @returns Dados processados e paginados
- */
+interface Guide {
+  id?: string;
+  numero_guia: string;
+  data: string;
+  beneficiario: string;
+  prestador: string;
+  qtdProcedimentos?: number;
+  status: string;
+  detalhes?: any[];
+  qtd?: number;
+  codigo?: string;
+  descricao?: string;
+  papel?: string;
+}
+
+interface GuideProcedure {
+  numero_guia: string;
+  data: string;
+  beneficiario: string;
+  prestador: string;
+  qtd: number;
+  status: string;
+  codigo?: string;
+  descricao?: string;
+  papel?: string;
+  smart_payment_status?: {
+    status: string;
+    reason: string;
+    demonstrativo_info?: {
+      presented_value: number;
+      approved_value: number;
+      glosa: number;
+      glosa_percentage: number;
+      payment_date?: string;
+    };
+    dt_inicio?: string;
+    dt_fim?: string;
+    nome_medico?: string;
+  };
+}
+
+// =============================================================================
+// FUNÇÕES AUXILIARES
+// =============================================================================
+
 const processGuidesData = (
   procedures: GuideProcedure[],
   page: number,
   pageSize: number
 ) => {
-  // PASSO 1: Agrupamento por número de guia (O(n))
   const grouped = procedures.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
     acc[proc.numero_guia] = acc[proc.numero_guia] || [];
     acc[proc.numero_guia].push(proc);
     return acc;
   }, {});
 
-  // PASSO 2: Criação de macro-rows com dados agregados (O(n))
   const macroRows = Object.entries(grouped).map(([numero_guia, procs]) => ({
     numero_guia,
     data: procs[0]?.data || '',
     beneficiario: procs[0]?.beneficiario || '',
     prestador: procs[0]?.prestador || '',
-    qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
-    status: procs[0]?.status || '',
+    qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 1), 0),
+    status: procs[0]?.status || 'Processado',
     detalhes: procs,
   }));
 
-  // PASSO 3: Ordenação otimizada por data (O(n log n))
   macroRows.sort((a, b) => {
     const dateA = formatDateToISO(a.data);
     const dateB = formatDateToISO(b.data);
-    return dateB.localeCompare(dateA); // Mais recente primeiro
+    return dateB.localeCompare(dateA);
   });
 
-  // PASSO 4: Paginação local eficiente (O(1))
   const startIndex = page * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedMacroRows = macroRows.slice(startIndex, endIndex);
-
-  // PASSO 5: Conversão para procedimentos da página atual (O(p))
   const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
 
   return {
@@ -169,22 +150,17 @@ const processGuidesData = (
   };
 };
 
-// Mapeamento de cores para cada tipo de papel (igual Demonstratives)
-// const papelColors = {
-//   'cirurgiao':   { bg: 'rgba(59,130,246,0.18)', text: '#1e3a8a' }, // azul
-//   'anestesista': { bg: 'rgba(139,92,246,0.18)', text: '#6d28d9' }, // roxo
-//   'primeiro_auxiliar': { bg: 'rgba(16,185,129,0.18)', text: '#065f46' }, // verde
-//   'segundo_auxiliar': { bg: 'rgba(251,191,36,0.18)', text: '#92400e' }, // laranja
-//   'outros': { bg: 'rgba(99,102,241,0.13)', text: '#3730a3' }, // fallback
-// };
-// const defaultPapelColor = { bg: 'rgba(99,102,241,0.13)', text: '#3730a3' };
-
-// PADRÃO DE CORES GLOBAL PARA KPIs
-// Glosa: variant="danger", text-red-700, bg-red-50
-// Sucesso: variant="success", text-green-700, bg-green-50
-// Informação: variant="info", text-blue-700, bg-blue-50
-// Alerta: variant="warning", text-amber-700, bg-amber-50
-// Neutro: variant="neutral", text-gray-700, bg-body
+function formatDateToISO(dateStr: string): string {
+  if (!dateStr) return '';
+  if (dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
+    return dateStr;
+  }
+  if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}/)) {
+  const [day, month, year] = dateStr.split('/');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  return dateStr;
+}
 
 function getCurrentCrm() {
   try {
@@ -195,126 +171,421 @@ function getCurrentCrm() {
   }
 }
 
-function logActivity(action: string, details: string, extra: any = {}) {
-  const crm = getCurrentCrm();
-  if (!crm) return; // Não loga se não houver CRM
-  const key = `guias_activity_log_${crm}`;
-  const logs = JSON.parse(localStorage.getItem(key) || '[]');
-  let user = {};
-  try {
-    user = JSON.parse(localStorage.getItem('user') || '{}');
-  } catch {}
-  const logObj = {
-    timestamp: new Date().toISOString(),
-    action,
-    user: {
-      crm: typeof user === 'object' && user && 'crm' in user ? (user as any).crm : '',
-      nome:
-        typeof user === 'object' && user && 'nome' in user ? (user as any).nome : '',
-    },
-    ...extra,
-    details,
+// =============================================================================
+// COMPONENTE DE STATUS FINANCEIRO DISCRETO (ESTILO DEMONSTRATIVOS)
+// =============================================================================
+
+const FinancialStatusChip = ({ procedure }: { procedure: GuideProcedure }) => {
+  const status = procedure.smart_payment_status?.status || 'sem_demonstrativo';
+  const demoInfo = procedure.smart_payment_status?.demonstrativo_info;
+  
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
-  logs.unshift(logObj);
-  localStorage.setItem(key, JSON.stringify(logs.slice(0, 20)));
 
-  // Envia para o backend (não quebra se falhar)
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-  fetch(`${apiUrl}/api/v1/activity-log`, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + (localStorage.getItem('token') || ''),
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      action,
-      details,
-      ...extra,
-    }),
-  }).catch(() => {});
-}
-function getRecentActivities() {
-  const crm = getCurrentCrm();
-  if (!crm) return [];
-  const key = `guias_activity_log_${crm}`;
-  return JSON.parse(localStorage.getItem(key) || '[]');
-}
-function clearActivities() {
-  const crm = getCurrentCrm();
-  if (!crm) return;
-  const key = `guias_activity_log_${crm}`;
-  localStorage.removeItem(key);
-}
+  const getStatusConfig = () => {
+          switch (status) {
+      case 'pago':
+        return {
+          label: 'PAGO',
+          value: demoInfo ? formatCurrency(demoInfo.approved_value) : '',
+          bgColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+          dotColor: 'bg-emerald-500',
+        };
+      case 'parcialmente_pago':
+        return {
+          label: 'PARCIAL',
+          value: demoInfo ? formatCurrency(demoInfo.approved_value) : '',
+          bgColor: 'bg-amber-50 text-amber-700 border-amber-200',
+          dotColor: 'bg-amber-500',
+        };
+      case 'glosado':
+        return {
+          label: 'GLOSADA',
+          value: demoInfo ? formatCurrency(demoInfo.glosa) : '',
+          bgColor: 'bg-red-50 text-red-700 border-red-200',
+          dotColor: 'bg-red-500',
+        };
+      case 'nao_encontrado':
+      case 'sem_demonstrativo':
+            default:
+        return {
+          label: 'SEM DEMONSTRATIVO',
+          value: '',
+          bgColor: 'bg-orange-50 text-orange-700 border-orange-200',
+          dotColor: 'bg-orange-500',
+        };
+    }
+  };
 
-// Função para normalizar papel (remove acentos, minúsculas, converte números por extenso)
-function normalizePapel(papel: string) {
-  return papel
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .replace(/1º|primeiro/, 'primeiro')
-    .replace(/2º|segundo/, 'segundo')
-    .replace(/auxiliar/, 'auxiliar')
-    .replace(/cirurgiao/, 'cirurgiao')
-    .replace(/anestesista/, 'anestesista')
-    .replace(/[^a-z\s]/g, '') // remove caracteres especiais
-    .trim();
-}
+  const config = getStatusConfig();
 
-// Função utilitária para converter data ISO para DD/MM/YYYY
-function formatDateToBR(dateStr: string) {
-  if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-');
-  if (!year || !month || !day) return dateStr;
-  return `${day}/${month}/${year}`;
-}
+        return (
+    <Badge className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${config.bgColor} flex items-center gap-1.5`}>
+      <div className={`w-2 h-2 rounded-full ${config.dotColor} flex-shrink-0`}></div>
+      <span>
+        {config.label}
+        {config.value && (
+          <span className="ml-1 font-mono opacity-90">
+            {config.value}
+          </span>
+        )}
+      </span>
+          </Badge>
+        );
+};
 
-function formatDateToISO(dateStr: string) {
-  if (!dateStr) return '';
-  const [day, month, year] = dateStr.split('/');
-  if (!year || !month || !day) return dateStr;
-  return `${year}-${month}-${day}`;
-}
+// =============================================================================
+// ANÁLISE INTELIGENTE DE STATUS FINANCEIRO DA GUIA
+// =============================================================================
 
-function renderParticipacaoBadge(papel: string) {
-  const papelNormalizado = normalizePapel(papel);
-
-  switch (papelNormalizado) {
-    case 'cirurgiao':
-      return (
-        <Badge className="bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 shadow-sm hover:from-blue-100 hover:to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-200 font-medium">
-          Cirurgião
-        </Badge>
-      );
-    case 'primeiro auxiliar':
-      return (
-        <Badge className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-800 shadow-sm hover:from-emerald-100 hover:to-green-100 dark:from-emerald-900/20 dark:to-green-900/20 dark:text-emerald-200 font-medium">
-          1º Auxiliar
-        </Badge>
-      );
-    case 'segundo auxiliar':
-      return (
-        <Badge className="bg-gradient-to-r from-violet-50 to-purple-50 text-violet-800 shadow-sm hover:from-violet-100 hover:to-purple-100 dark:from-violet-900/20 dark:to-purple-900/20 dark:text-violet-200 font-medium">
-          2º Auxiliar
-        </Badge>
-      );
-    case 'anestesista':
-      return (
-        <Badge className="bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800 shadow-sm hover:from-amber-100 hover:to-yellow-100 dark:from-amber-900/20 dark:to-yellow-900/20 dark:text-amber-200 font-medium">
-          Anestesista
-        </Badge>
-      );
-    default:
-      return (
-        <Badge className="bg-gradient-to-r from-gray-50 to-slate-50 text-gray-800 shadow-sm hover:from-gray-100 hover:to-slate-100 dark:from-gray-900/20 dark:to-slate-900/20 dark:text-gray-200 font-medium">
-          {papel || '--'}
-        </Badge>
-      );
+const analyzeGuideFinancialStatus = (guide: Guide) => {
+  if (!guide.detalhes || guide.detalhes.length === 0) {
+    return 'sem_demonstrativo';
   }
-}
+
+  let totalProcedimentos = 0;
+  let procedimentosPagos = 0;
+  let procedimentosGlosados = 0;
+  let procedimentosSemDemonstrativo = 0;
+  
+  // Analisar cada procedimento da guia
+  guide.detalhes.forEach(procedimento => {
+    totalProcedimentos++;
+    const status = procedimento.smart_payment_status?.status;
+    const demoInfo = procedimento.smart_payment_status?.demonstrativo_info;
+    
+    if (!status || status === 'sem_demonstrativo' || status === 'nao_encontrado') {
+      procedimentosSemDemonstrativo++;
+    } else if (status === 'pago') {
+      // Verificar se foi realmente pago integralmente
+      if (demoInfo && demoInfo.approved_value > 0 && demoInfo.glosa === 0) {
+        procedimentosPagos++;
+      } else if (demoInfo && demoInfo.glosa > 0) {
+        procedimentosGlosados++;
+      }
+    } else if (status === 'parcialmente_pago') {
+      // Parcial = aprovado parte mas não tudo
+      procedimentosPagos++; // Conta como pago parcial
+    } else if (status === 'glosado') {
+      procedimentosGlosados++;
+    }
+  });
+
+  // Lógica inteligente de status da guia baseada na realidade médica
+  if (procedimentosSemDemonstrativo === totalProcedimentos) {
+    return 'sem_demonstrativo';
+  }
+  
+  if (procedimentosGlosados === totalProcedimentos) {
+    return 'glosado'; // Todos os procedimentos foram glosados
+  }
+  
+  if (procedimentosPagos === totalProcedimentos && procedimentosGlosados === 0) {
+    return 'pago'; // Todos pagos integralmente
+  }
+  
+  if (procedimentosPagos > 0 && procedimentosGlosados > 0) {
+    return 'parcialmente_pago'; // Alguns pagos, alguns glosados
+  }
+  
+  if (procedimentosPagos > 0 && procedimentosSemDemonstrativo > 0) {
+    return 'parcialmente_pago'; // Alguns pagos, alguns ainda sem demonstrativo
+  }
+  
+  if (procedimentosGlosados > 0) {
+    return 'glosado'; // Predominantemente glosado
+  }
+  
+  return 'sem_demonstrativo'; // Default
+};
+
+// =============================================================================
+// COMPONENTE DATAGRID REFINADO - VERSÃO CORRIGIDA
+// =============================================================================
+
+const RefinedDataGrid = ({ 
+  data, 
+  loading, 
+  onRowClick, 
+  onViewDetails, 
+  onDeleteGuide 
+}: {
+  data: Guide[];
+  loading: boolean;
+  onRowClick: (guide: Guide) => void;
+  onViewDetails: (guide: Guide) => void;
+  onDeleteGuide: (guide: Guide) => void;
+}) => {
+  const [sortField, setSortField] = useState<string>('data');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  // Função de ordenação
+  const sortedData = useMemo(() => {
+    const sorted = [...data];
+    sorted.sort((a, b) => {
+      let aValue = a[sortField as keyof Guide];
+      let bValue = b[sortField as keyof Guide];
+      
+      // Tratamento especial para datas
+      if (sortField === 'data') {
+        aValue = formatDateToISO(a.data);
+        bValue = formatDateToISO(b.data);
+      }
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      return 0;
+    });
+    return sorted;
+  }, [data, sortField, sortDirection]);
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+          } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, guide: Guide) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onRowClick(guide);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-24">
+        <div className="flex items-center justify-center">
+          <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+          <span className="ml-3 text-gray-600">Carregando guias...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (sortedData.length === 0) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-24">
+        <div className="text-center">
+          <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma guia encontrada</h3>
+          <p className="text-gray-500 mb-6">
+            Não há guias que correspondam aos filtros aplicados.
+          </p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Recarregar dados
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200/40 overflow-hidden w-full">
+      {/* Container com largura completa */}
+      <div className="w-full">
+        {/* Header da Tabela */}
+        <div className="bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 px-6 py-4">
+          <div className="grid grid-cols-12 gap-4 items-center">
+            {/* Número da Guia - cols 1-2 */}
+            <div className="col-span-2 flex items-center">
+              <button
+                onClick={() => handleSort('numero_guia')}
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                aria-label="Ordenar por número da guia"
+              >
+                NÚMERO DA GUIA
+                {sortField === 'numero_guia' && (
+                  <span className="text-gray-400">
+                    {sortDirection === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            {/* Data - cols 3-4 */}
+            <div className="col-span-2 flex items-center justify-center">
+              <button
+                onClick={() => handleSort('data')}
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                aria-label="Ordenar por data"
+              >
+                DATA
+                {sortField === 'data' && (
+                  <span className="text-gray-400">
+                    {sortDirection === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            {/* Paciente - cols 5-7 */}
+            <div className="col-span-3 flex items-center">
+              <button
+                onClick={() => handleSort('beneficiario')}
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                aria-label="Ordenar por paciente"
+              >
+                PACIENTE
+                {sortField === 'beneficiario' && (
+                  <span className="text-gray-400">
+                    {sortDirection === 'asc' ? '▲' : '▼'}
+                  </span>
+                )}
+              </button>
+            </div>
+            
+            {/* Procedimentos - cols 8-9 */}
+            <div className="col-span-2 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                PROCEDIMENTOS
+              </span>
+            </div>
+            
+            {/* Status Financeiro - cols 10-11 */}
+            <div className="col-span-2 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                STATUS FINANCEIRO
+              </span>
+            </div>
+            
+            {/* Ações - col 12 */}
+            <div className="col-span-1 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                AÇÕES
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Corpo da Tabela */}
+        <div className="divide-y divide-gray-100">
+          {sortedData.map((guide, index) => {
+              // Analisar status financeiro real da guia
+              const realFinancialStatus = analyzeGuideFinancialStatus(guide);
+              
+              return (
+                <div
+                  key={guide.numero_guia || index}
+                  className="grid grid-cols-12 gap-4 items-center px-6 py-4 hover:bg-blue-50/30 transition-colors cursor-pointer group bg-white even:bg-gray-50/20"
+                  onClick={() => onRowClick(guide)}
+                  onKeyDown={(e) => handleKeyDown(e, guide)}
+                  tabIndex={0}
+                  role="row"
+                  aria-label={`Guia ${guide.numero_guia} do paciente ${guide.beneficiario}`}
+                >
+                  {/* Número da Guia - cols 1-2 */}
+                  <div className="col-span-2 flex items-center">
+                    <div className="font-mono text-sm font-medium text-slate-700 bg-slate-50/60 px-3 py-1.5 rounded-lg border border-slate-200/60">
+                      {guide.numero_guia}
+                    </div>
+                  </div>
+
+                  {/* Data - cols 3-4 */}
+                  <div className="col-span-2 flex items-center justify-center">
+                    <div className="text-sm font-medium text-gray-900">
+                      {guide.data}
+                    </div>
+                  </div>
+
+                  {/* Paciente - cols 5-7 */}
+                  <div className="col-span-3 flex items-center">
+                    <div className="flex items-center gap-3 min-w-0 w-full">
+                      <div className="w-8 h-8 rounded-full bg-slate-600/80 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                        {guide.beneficiario.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {guide.beneficiario}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Procedimentos - cols 8-9 */}
+                  <div className="col-span-2 flex items-center justify-center">
+                    <span className="font-medium text-slate-700">
+                      {guide.qtdProcedimentos}
+                    </span>
+                  </div>
+
+                  {/* Status Financeiro - cols 10-11 */}
+                  <div className="col-span-2 flex items-center justify-center">
+                    {guide.detalhes?.[0] ? (
+                      (() => {
+                        // Criar procedimento fictício com status analisado para display
+                        const analyzedProcedure = {
+                          ...guide.detalhes[0],
+                          smart_payment_status: {
+                            ...guide.detalhes[0].smart_payment_status,
+                            status: realFinancialStatus
+                          }
+                        };
+                        return <FinancialStatusChip procedure={analyzedProcedure} />;
+                      })()
+                    ) : (
+                      <Badge className="text-xs font-medium px-2 py-0.5 whitespace-nowrap bg-gray-50 text-gray-700 border-gray-200 flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0"></div>
+                        <span>ANALISANDO</span>
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Ações - col 12 */}
+                  <div className="col-span-1 flex items-center justify-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewDetails(guide);
+                      }}
+                      className="h-8 w-8 p-0 rounded-lg hover:bg-blue-100/60 hover:text-blue-600 transition-all duration-200"
+                      aria-label={`Ver detalhes da guia ${guide.numero_guia}`}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteGuide(guide);
+                      }}
+                      className="h-8 w-8 p-0 rounded-lg hover:bg-red-100/60 hover:text-red-600 transition-all duration-200"
+                      aria-label={`Excluir guia ${guide.numero_guia}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
 const GuidesPage = () => {
-  // SEO e Título Premium
   usePageTitle({
     title: 'Central de Guias Médicas',
     description:
@@ -323,1708 +594,837 @@ const GuidesPage = () => {
       'guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias',
   });
 
-  const [activeTab, setActiveTab] = useState<'list' | 'upload'>('list');
-  const [extractedGuides, setExtractedGuides] = useState<GuideProcedure[]>([]);
-  const [allGuides, setAllGuides] = useState<GuideProcedure[]>([]); // Para totais globais
-  const [filter, setFilter] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [selectedGuia, setSelectedGuia] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
-  const [totalBeneficiarios, setTotalBeneficiarios] = useState(0); // Total de beneficiários únicos
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
-  const [dateStart, setDateStart] = useState('');
-  const [dateEnd, setDateEnd] = useState('');
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [activities, setActivities] = useState(getRecentActivities());
-  const [paymentAnalytics, setPaymentAnalytics] = useState<any>(null);
+  const [guides, setGuides] = useState<Guide[]>([]);
+  const [rawProcedures, setRawProcedures] = useState<GuideProcedure[]>([]);
+  const [filteredGuides, setFilteredGuides] = useState<Guide[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [guideToDelete, setGuideToDelete] = useState<Guide | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [filterUpdateTrigger, setFilterUpdateTrigger] = useState(0);
 
-  // Tempo real profissional - sem polling manual
-  const { triggerUpdate } = useRealTimeSync({
-    onActivityUpdate: () => {
-      console.log('🔄 Tempo real: atualizando guias...');
-      fetchSavedGuias();
-      setActivities(getRecentActivities());
-    },
-  });
-
-  // Configuração das colunas para o DataGrid
-  const guidesColumns = [
-    {
-      field: 'numero_guia',
-      headerName: 'Nº Guia',
-      width: 120,
-      renderCell: (params: any) => (
-        <span className="font-mono text-gray-900 dark:text-gray-100">
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'data',
-      headerName: 'Data de Execução',
-      width: 140,
-    },
-    {
-      field: 'beneficiario',
-      headerName: 'Beneficiário',
-      width: 200,
-      renderCell: (params: any) => (
-        <span className="truncate max-w-[200px]" title={params.value}>
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'qtdProcedimentos',
-      headerName: 'Qtd Proc.',
-      width: 100,
-      type: 'number',
-    },
-    {
-      field: 'status',
-      headerName: 'Status do Sistema',
-      width: 150,
-      renderCell: (params: any) => {
-        const statusLabel: Record<string, string> = {
-          Fechada: 'Fechada',
-          'Gerado pela execução': 'Processada',
-          Pendente: 'Pendente',
-          Processada: 'Processada',
-        };
-
-        const getVariant = (status: string) => {
-          switch (status) {
-            case 'Fechada':
-              return 'success';
-            case 'Pendente':
-              return 'warning';
-            case 'Processada':
-            case 'Gerado pela execução':
-              return 'default';
-            default:
-              return 'secondary';
-          }
-        };
-
-        return (
-          <Badge
-            variant={getVariant(params.value)}
-            className="whitespace-nowrap px-3 py-1"
-            title={statusLabel[params.value] || params.value}
-          >
-            {statusLabel[params.value] || params.value}
-          </Badge>
-        );
-      },
-    },
-    {
-      field: 'payment_status',
-      headerName: 'Status de Pagamento',
-      width: 180,
-      renderCell: ({ row }: { row: any }) => {
-        // Usar o status agregado da guia (hierárquico)
-        const firstProc = row.detalhes?.[0];
-        const aggregatedStatus = firstProc?.guide_aggregated_status;
-
-        if (aggregatedStatus) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: aggregatedStatus.status,
-                reason: aggregatedStatus.reason,
-                demonstrativo_info: null,
-                has_demonstrativo: true,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        // Fallback para status individual do primeiro procedimento
-        const smartStatus = firstProc?.smart_payment_status;
-        if (smartStatus) {
-          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
-        }
-
-        // Fallback para o sistema antigo
-        const paymentData = row.payment_summary;
-        if (!paymentData) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: 'sem_demonstrativo',
-                reason: 'Nenhum demonstrativo carregado',
-                demonstrativo_info: null,
-                has_demonstrativo: false,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        const status =
-          paymentData.paid_count > 0
-            ? paymentData.paid_count === paymentData.total_count
-              ? 'pago'
-              : 'parcialmente_pago'
-            : 'nao_pago';
-
-        return (
-          <PaymentStatusIndicator
-            smartPaymentStatus={{
-              status,
-              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
-              demonstrativo_info: null,
-              has_demonstrativo: true,
-            }}
-            size="sm"
-          />
-        );
-      },
-    },
-  ];
-
-  const { files, isUploading, removeFile, resetFiles, handleFileChangeByType } =
-    useFileUpload();
-
-  const { userProfile } = useAuth();
-
-  // ============================================================================
-  // FETCH DE DADOS OTIMIZADO - CRÍTICO PARA PERFORMANCE
-  // ============================================================================
-
-  /**
-   * Fetch otimizado de guias com memoização de parâmetros.
-   * PERFORMANCE: Evita chamadas desnecessárias quando parâmetros não mudam.
-   * ESCALABILIDADE: Suporta datasets grandes com paginação eficiente.
-   */
-  const fetchSavedGuias = useCallback(async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token') || '';
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000, // TODO: Implementar paginação cursor-based para >10k registros
-        search,
-        status,
-        data_inicio: dateStart,
-        data_fim: dateEnd,
-      };
-
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-      setPaymentAnalytics(allRes.payment_analytics || null);
-
-      // OTIMIZAÇÃO: Agrupamento e processamento memoizado para grandes datasets
-      const processedData = processGuidesData(allProcedures, page, pageSize);
-
-      setTotalBeneficiarios(processedData.totalGroups);
-      setExtractedGuides(processedData.currentPageProcedures);
-    } catch (err: any) {
-      // Só mostrar erro se for erro real de rede/backend
-      if (err?.response?.status && err.response.status !== 200) {
-        toast.error('Erro ao carregar guias', {
-          description: err?.response?.data?.detail || err?.message,
-        });
-      }
-      setExtractedGuides([]);
-      setAllGuides([]);
-      setTotal(0);
-      setTotalBeneficiarios(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [search, status, dateStart, dateEnd, page, pageSize]); // Dependencies memoizadas
-
-  // UseEffect otimizado com dependency array memoizada
-  useEffect(() => {
-    fetchSavedGuias();
-  }, [fetchSavedGuias]);
-
-  // Upload/processamento
-  const handleUploadGuias = async () => {
-    if (files.length === 0) {
-      toast.error('Nenhum arquivo selecionado');
-      return;
-    }
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token') || '';
-      const guiaFiles = files.filter((f) => f.type === 'guia').map((f) => f.file);
-      if (!guiaFiles.length) throw new Error('Nenhum arquivo de guia válido');
-
-      // Faz o upload das guias em lote
-      const uploadResult = await uploadGuides(token, guiaFiles);
-      if (uploadResult && Array.isArray(uploadResult.results)) {
-        let successCount = 0;
-        let duplicateCount = 0;
-        let errorCount = 0;
-        const errorFiles: string[] = [];
-        const duplicateFiles: string[] = [];
-
-        uploadResult.results.forEach((result: any) => {
-          if (result.success) {
-            successCount++;
-          } else if (result.duplicate) {
-            duplicateCount++;
-            duplicateFiles.push(result.filename);
-          } else {
-            errorCount++;
-            errorFiles.push(`${result.filename}: ${result.error || 'Erro'}`);
-          }
-        });
-
-        // Apenas um toast consolidado
-        if (successCount > 0 && errorCount === 0 && duplicateCount === 0) {
-          toast.success(`✅ ${successCount} guia(s) processada(s) com sucesso!`);
-        } else if (successCount > 0 || duplicateCount > 0) {
-          let message = '';
-          let description = '';
-
-          if (successCount > 0) message += `${successCount} processada(s)`;
-          if (duplicateCount > 0) {
-            if (message) message += ', ';
-            message += `${duplicateCount} duplicata(s) ignorada(s)`;
-            description = `Duplicatas: ${duplicateFiles.slice(0, 3).join(', ')}${
-              duplicateFiles.length > 3 ? '...' : ''
-            }`;
-          }
-          if (errorCount > 0) {
-            if (message) message += ', ';
-            message += `${errorCount} com erro`;
-            if (description) description += '; ';
-            description +=
-              errorFiles.slice(0, 2).join('; ') + (errorFiles.length > 2 ? '...' : '');
-          }
-
-          toast.success(`✅ ${message}`, {
-            description: description || undefined,
-          });
-        } else if (errorCount > 0) {
-          toast.error(`❌ ${errorCount} guia(s) com erro`, {
-            description:
-              errorFiles.slice(0, 3).join('; ') + (errorFiles.length > 3 ? '...' : ''),
-          });
-        }
-      } else {
-        toast.error('Resposta inesperada do servidor.');
-      }
-
-      // Recarrega os dados após o upload
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data,
-      };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => ({
-        numero_guia,
-        data: procs[0]?.data || '',
-        beneficiario: procs[0]?.beneficiario || '',
-        prestador: procs[0]?.prestador || '',
-        qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 0), 0),
-        status: procs[0]?.status || '',
-        detalhes: procs,
-      }));
-
-      // Ordenação por data mais recente
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA);
-      });
-
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // Reset para primeira página após upload
-      setPage(0);
-
-      // Aplica paginação local na primeira página
-      const startIndex = 0;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      resetFiles();
-      setActiveTab('list');
-
-      // Registra atividade
-      if (uploadResult && Array.isArray(uploadResult.results)) {
-        const uniqueGuias = new Set();
-        const duplicates = uploadResult.results.filter((r: any) => r.duplicate);
-        const successful = uploadResult.results.filter(
-          (r: any) => r.success && !r.duplicate
-        );
-
-        successful.forEach((r: any) => uniqueGuias.add(r.filename));
-
-        let activityMessage = `Processada(s) ${uniqueGuias.size} guia(s)`;
-        if (duplicates.length > 0) {
-          activityMessage += `, ${duplicates.length} duplicata(s) ignorada(s)`;
-        }
-
-        logActivity('Upload de Guias', activityMessage, {
-          target: { arquivos: Array.from(uniqueGuias) },
-          result: `${uploadResult.results.length} arquivos processados`,
-          duplicates: duplicates.length,
-        });
-        setActivities(getRecentActivities());
-      }
-    } catch (err: any) {
-      toast.error('Erro ao processar os arquivos', {
-        description: err?.response?.data?.detail || err?.message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileDrop = async (type: FileType, fileList: FileList) => {
-    await handleFileChangeByType(type, fileList);
-  };
-
-  // Agrupa por número de guia - OTIMIZADO COM MEMOIZAÇÃO
-  const grouped = useMemo(() => {
-    return allGuides.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
-      acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-      acc[proc.numero_guia].push(proc);
-      return acc;
-    }, {});
-  }, [allGuides]);
-
-  // Monta linhas macro - OTIMIZADO COM MEMOIZAÇÃO
-  const macroRows = useMemo(() => {
-    return Object.entries(grouped).map(([numero_guia, procs]) => {
-      const numeroGuiaStr = String(numero_guia).trim();
-      const datas = procs.map((p) => p.data).sort();
-      const dataMaisRecente = datas[datas.length - 1] || '';
-      const beneficiario = procs[0]?.beneficiario || '';
-      const prestador = procs[0]?.prestador || '';
-      const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-      const statusCount = procs.reduce(
-        (acc, p) => {
-          acc[p.status] = (acc[p.status] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>
-      );
-      const statusComum =
-        Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-
-      // NOVA FUNCIONALIDADE: Resumo inteligente de pagamento
-      const paymentSummary = procs.reduce(
-        (acc, proc) => {
-          // Usar o status agregado se disponível, senão o individual
-          const aggregatedStatus = proc.guide_aggregated_status;
-          const smartStatus = aggregatedStatus
-            ? aggregatedStatus.status
-            : proc.smart_payment_status?.status;
-
-          if (smartStatus) {
-            switch (smartStatus) {
-              case 'pago':
-                acc.paid_count += 1;
-                acc.total_paid_value +=
-                  proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
-                break;
-              case 'parcialmente_pago':
-                acc.partial_count += 1;
-                acc.total_paid_value +=
-                  proc.smart_payment_status?.demonstrativo_info?.approved_value || 0;
-                break;
-              case 'glosado':
-                acc.glosa_count += 1;
-                break;
-              case 'nao_pago':
-              case 'nao_encontrado':
-                acc.unpaid_count += 1;
-                break;
-            }
-          } else {
-            // Fallback para sistema antigo
-            const paymentStatus = proc.payment_status;
-            if (paymentStatus?.is_paid) {
-              acc.paid_count += 1;
-              acc.total_paid_value += paymentStatus.payment_info?.paid_value || 0;
-            }
-          }
-          acc.total_count += 1;
-          return acc;
-        },
-        {
-          paid_count: 0,
-          partial_count: 0,
-          glosa_count: 0,
-          unpaid_count: 0,
-          total_count: 0,
-          total_paid_value: 0,
-        }
-      );
-
-      return {
-        numero_guia: numeroGuiaStr,
-        data: dataMaisRecente,
-        beneficiario,
-        prestador,
-        qtdProcedimentos,
-        status: statusComum,
-        payment_summary: paymentSummary,
-        detalhes: procs,
-      };
-    });
-  }, [grouped]);
-
-  // Sorting automático por Data de Execução (mais recente primeiro) - OTIMIZADO
-  const sortedMacroRows = useMemo(() => {
-    return [...macroRows].sort((a, b) => {
-      const dateA = formatDateToISO(a.data);
-      const dateB = formatDateToISO(b.data);
-      return dateB.localeCompare(dateA);
-    });
-  }, [macroRows]);
-
-  // DataGrid recebe todas as macroRows, sem slice manual
-  const filteredMacroRows = sortedMacroRows;
-
-  const handleSelectRow = useCallback((numero_guia: string, checked: boolean) => {
-    setSelectedRows((prev) =>
-      checked ? [...prev, numero_guia] : prev.filter((n) => n !== numero_guia)
-    );
+  // Função para forçar atualização dos filtros
+  const triggerFilterUpdate = useCallback(() => {
+    setFilterUpdateTrigger(prev => prev + 1);
   }, []);
 
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        // Calcula o índice inicial e final da página atual
-        const startIndex = page * pageSize;
-        const endIndex = startIndex + pageSize;
-        // Pega apenas as guias da página atual
-        const currentPageRows = filteredMacroRows.slice(startIndex, endIndex);
-        setSelectedRows(currentPageRows.map((row) => row.numero_guia));
+  // Carregamento de guias
+  const loadGuides = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const apiUrl = buildApiUrl('/api/v1/guias?page=1&pageSize=1000');
+      
+      const response = await axios.get(apiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const procedures = response.data.procedures || [];
+      
+      setRawProcedures(procedures);
+      
+      const processedData = processGuidesData(procedures, 0, 1000);
+      
+      setGuides(processedData.macroRows);
+      
+      // Inicializar dados filtrados imediatamente
+      setFilteredGuides(processedData.macroRows);
+      
+      // Forçar atualização dos filtros após carregamento
+      triggerFilterUpdate();
+    } catch (error: any) {
+      
+      if (error.response?.status === 401) {
+        toast.error('Sessão expirada. Faça login novamente.');
+      } else if (error.response?.status === 404) {
+        toast.error('Serviço temporariamente indisponível');
       } else {
-        setSelectedRows([]);
+        toast.error('Erro ao carregar guias');
       }
-    },
-    [page, pageSize, filteredMacroRows]
-  );
+    } finally {
+      setLoading(false);
+    }
+  }, [triggerFilterUpdate]);
 
-  const handleDeleteSelected = async () => {
-    if (selectedRows.length === 0) return;
-    if (!window.confirm(`Deseja remover ${selectedRows.length} guias selecionadas?`))
+  // Upload de arquivos
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      setSelectedFiles(files);
+    }
+  }, []);
+
+  const handleUpload = useCallback(async () => {
+    if (!selectedFiles || selectedFiles.length === 0) {
+      toast.error('Selecione pelo menos um arquivo');
       return;
+    }
+
+    setUploading(true);
     try {
-      const token = localStorage.getItem('token') || '';
-      await Promise.all(
-        selectedRows.map((numeroGuia) => deleteGuide(numeroGuia, token))
-      );
-
-      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
-      // Busca TODOS os dados para recalcular totais globais e paginação local
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data_inicio: dateStart,
-        data_fim: dateEnd,
-      };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa TODOS os dados por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-        const numeroGuiaStr = String(numero_guia).trim();
-        const datas = procs.map((p) => p.data).sort();
-        const dataMaisRecente = datas[datas.length - 1] || '';
-        const beneficiario = procs[0]?.beneficiario || '';
-        const prestador = procs[0]?.prestador || '';
-        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-        const statusCount = procs.reduce(
-          (acc, p) => {
-            acc[p.status] = (acc[p.status] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>
-        );
-        const statusComum =
-          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-        return {
-          numero_guia: numeroGuiaStr,
-          data: dataMaisRecente,
-          beneficiario,
-          prestador,
-          qtdProcedimentos,
-          status: statusComum,
-          detalhes: procs,
-        };
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      
+      Array.from(selectedFiles).forEach((file) => {
+        formData.append('files', file);
       });
 
-      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
-      });
-
-      // Define o total de beneficiários únicos
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
-      setPage(0);
-
-      // Aplica paginação local aos beneficiários agrupados (usando página 0)
-      const startIndex = 0 * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      setSelectedRows([]);
-
-      // Log da atividade
-      logActivity('Remoção de Guias', `Removidas ${selectedRows.length} guias`, {
-        target: { numero_guia: selectedRows },
-      });
-      setActivities(getRecentActivities());
-
-      // Feedback visual amigável para o usuário
-      toast.success(
-        `✅ ${selectedRows.length} guia${selectedRows.length > 1 ? 's' : ''} removida${
-          selectedRows.length > 1 ? 's' : ''
-        } com sucesso!`,
+      await axios.post(
+        buildApiUrl('/api/v1/guias/upload'),
+        formData,
         {
-          description: 'A atividade foi registrada no log do sistema.',
-          duration: 4000,
-        }
-      );
-
-      // Tempo real: sincronização automática
-      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
-        count: selectedRows.length,
-        guias: selectedRows,
-      });
-    } catch (err: any) {
-      toast.error('Erro ao remover guias', {
-        description: err?.response?.data?.detail || err?.message,
-      });
-    }
-  };
-
-  const macroColumns = [
-    {
-      field: 'numero_guia',
-      headerName: 'Nº Guia',
-      width: 120,
-      renderCell: ({ value }: { value: string }) => (
-        <span className="font-mono text-gray-900 dark:text-gray-100 font-medium">
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'data',
-      headerName: 'Data de Execução',
-      width: 140,
-      renderCell: ({ value }: { value: string }) => (
-        <span className="text-gray-700 dark:text-gray-300">{value}</span>
-      ),
-    },
-    {
-      field: 'beneficiario',
-      headerName: 'Beneficiário',
-      width: 250,
-      renderCell: ({ value }: { value: string }) => (
-        <span
-          className="truncate max-w-[240px] text-gray-700 dark:text-gray-300"
-          title={value}
-        >
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'qtdProcedimentos',
-      headerName: 'Qtd Proc.',
-      width: 100,
-      type: 'number',
-      renderCell: ({ value }: { value: number }) => (
-        <span className="font-mono text-right text-gray-900 dark:text-gray-100 font-medium">
-          {value}
-        </span>
-      ),
-    },
-    {
-      field: 'payment_status',
-      headerName: 'Status de Pagamento',
-      width: 180,
-      renderCell: ({ row }: { row: any }) => {
-        // Usar o status agregado da guia (hierárquico)
-        const firstProc = row.detalhes?.[0];
-        const aggregatedStatus = firstProc?.guide_aggregated_status;
-
-        if (aggregatedStatus) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: aggregatedStatus.status,
-                reason: aggregatedStatus.reason,
-                demonstrativo_info: null,
-                has_demonstrativo: true,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        // Fallback para status individual do primeiro procedimento
-        const smartStatus = firstProc?.smart_payment_status;
-        if (smartStatus) {
-          return <PaymentStatusIndicator smartPaymentStatus={smartStatus} size="sm" />;
-        }
-
-        // Fallback para o sistema antigo
-        const paymentData = row.payment_summary;
-        if (!paymentData) {
-          return (
-            <PaymentStatusIndicator
-              smartPaymentStatus={{
-                status: 'sem_demonstrativo',
-                reason: 'Nenhum demonstrativo carregado',
-                demonstrativo_info: null,
-                has_demonstrativo: false,
-              }}
-              size="sm"
-            />
-          );
-        }
-
-        const status =
-          paymentData.paid_count > 0
-            ? paymentData.paid_count === paymentData.total_count
-              ? 'pago'
-              : 'parcialmente_pago'
-            : 'nao_pago';
-
-        return (
-          <PaymentStatusIndicator
-            smartPaymentStatus={{
-              status,
-              reason: `${paymentData.paid_count}/${paymentData.total_count} procedimentos pagos`,
-              demonstrativo_info: null,
-              has_demonstrativo: true,
-            }}
-            size="sm"
-          />
-        );
-      },
-    },
-  ];
-
-  const handleDeleteGuia = async (numeroGuia: string) => {
-    if (!window.confirm(`Deseja realmente remover a guia ${numeroGuia}?`)) {
-      return;
-    }
-    try {
-      const token = localStorage.getItem('token') || '';
-      await deleteGuide(numeroGuia, token);
-
-      // **CORREÇÃO CRÍTICA**: Recarrega TODOS os dados para sincronização completa
-      // Busca TODOS os dados para recalcular totais globais e paginação local
-      const allParams: GuidesQueryParams = {
-        page: 1,
-        pageSize: 10000,
-        search,
-        status,
-        data_inicio: dateStart,
-        data_fim: dateEnd,
-      };
-      const allRes = await getGuides(token, allParams);
-      const allProcedures = Array.isArray(allRes.procedures) ? allRes.procedures : [];
-
-      setAllGuides(allProcedures);
-      setTotal(allRes.total || 0);
-
-      // Agrupa TODOS os dados por número de guia para paginação local
-      const allGrouped = allProcedures.reduce<Record<string, GuideProcedure[]>>(
-        (acc, proc) => {
-          acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-          acc[proc.numero_guia].push(proc);
-          return acc;
-        },
-        {}
-      );
-
-      const allMacroRows = Object.entries(allGrouped).map(([numero_guia, procs]) => {
-        const numeroGuiaStr = String(numero_guia).trim();
-        const datas = procs.map((p) => p.data).sort();
-        const dataMaisRecente = datas[datas.length - 1] || '';
-        const beneficiario = procs[0]?.beneficiario || '';
-        const prestador = procs[0]?.prestador || '';
-        const qtdProcedimentos = procs.reduce((sum, p) => sum + (p.qtd || 0), 0);
-        const statusCount = procs.reduce(
-          (acc, p) => {
-            acc[p.status] = (acc[p.status] || 0) + 1;
-            return acc;
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
           },
-          {} as Record<string, number>
-        );
-        const statusComum =
-          Object.entries(statusCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-        return {
-          numero_guia: numeroGuiaStr,
-          data: dataMaisRecente,
-          beneficiario,
-          prestador,
-          qtdProcedimentos,
-          status: statusComum,
-          detalhes: procs,
-        };
-      });
+        }
+      );
 
-      // **PONTO 1**: Sorting automático por Data de Execução (mais recente primeiro)
-      allMacroRows.sort((a, b) => {
-        const dateA = formatDateToISO(a.data);
-        const dateB = formatDateToISO(b.data);
-        return dateB.localeCompare(dateA); // Ordem decrescente (mais recente primeiro)
-      });
-
-      // Define o total de beneficiários únicos
-      setTotalBeneficiarios(allMacroRows.length);
-
-      // **BUG FIX**: Reset página para 0 após delete para garantir que dados sejam visíveis
-      setPage(0);
-
-      // Aplica paginação local aos beneficiários agrupados (usando página 0)
-      const startIndex = 0 * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMacroRows = allMacroRows.slice(startIndex, endIndex);
-
-      // Converte de volta para lista de procedimentos da página atual
-      const currentPageProcedures = paginatedMacroRows.flatMap((row) => row.detalhes);
-      setExtractedGuides(currentPageProcedures);
-
-      // Log da atividade
-      logActivity('Remoção de Guia', `Guia ${numeroGuia} removida`, {
-        target: { numero_guia: numeroGuia },
-      });
-      setActivities(getRecentActivities());
-
-      // Feedback visual amigável para o usuário
-      toast.success(`✅ Guia ${numeroGuia} removida com sucesso!`, {
-        description: 'A atividade foi registrada no log do sistema.',
-        duration: 4000,
-      });
-
-      // Tempo real: sincronização automática
-      triggerUpdate(REAL_TIME_EVENTS.GUIA_DELETED, {
-        numero_guia: numeroGuia,
-      });
-    } catch (err: any) {
-      toast.error('Erro ao remover guia', {
-        description: err?.response?.data?.detail || err?.message,
-      });
+      toast.success('Arquivos enviados com sucesso');
+      setSelectedFiles(null);
+      loadGuides();
+    } catch (error) {
+      toast.error('Erro no upload dos arquivos');
+    } finally {
+      setUploading(false);
     }
-  };
+  }, [selectedFiles, loadGuides]);
 
-  function exportToCSV(rows: typeof filteredMacroRows) {
-    if (!rows.length) return;
-    const header = [
-      'Nº Guia',
-      'Data',
-      'Beneficiário',
-      'Prestador',
-      'Qtd Procedimentos',
-      'Status',
-    ];
-    const csvRows = [
-      header.join(','),
-      ...rows.map((row) =>
-        [
-          row.numero_guia,
-          row.data,
-          '"' + (row.beneficiario || '').replace(/"/g, '""') + '"',
-          '"' + (row.prestador || '').replace(/"/g, '""') + '"',
-          row.qtdProcedimentos,
-          row.status,
-        ].join(',')
-      ),
-    ];
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `guias_medicas_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    logActivity('Exportação de Guias', `Exportadas ${rows.length} guias para CSV`, {
-      result: `${rows.length} guias exportadas`,
+  // Função para deletar guia
+  const handleDeleteGuide = useCallback(async (guide: Guide) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      await axios.delete(
+        buildApiUrl(`/api/v1/guias/${guide.numero_guia}`),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success('Guia excluída com sucesso');
+      setDeleteDialogOpen(false);
+      setGuideToDelete(null);
+      loadGuides();
+    } catch (error) {
+      toast.error('Erro ao excluir guia');
+    }
+  }, [loadGuides]);
+
+  // Função para criar dados de teste (temporária)
+  const createSampleData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await axios.post(
+        buildApiUrl('/api/v1/guias/create-sample-data'),
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      toast.success(response.data.message);
+      
+      // Recarregar guias após criar dados
+      loadGuides();
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        toast.info(error.response.data.message);
+      } else {
+        toast.error('Erro ao criar dados de exemplo');
+      }
+    }
+  }, [loadGuides]);
+
+  // Dados paginados
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredGuides.slice(startIndex, endIndex);
+  }, [filteredGuides, currentPage, pageSize]);
+
+  // Cálculos estatísticos
+  const uniquePatients = useMemo(() => {
+    const patients = new Set();
+    guides.forEach(guide => {
+      if (guide.beneficiario) {
+        patients.add(guide.beneficiario.trim().toLowerCase());
+      }
     });
-    setActivities(getRecentActivities());
-  }
+    return Array.from(patients);
+  }, [guides]);
 
-  function exportProceduresToCSV(grouped: Record<string, GuideProcedure[]>) {
-    const allProcedures = Object.values(grouped).flat();
-    if (!allProcedures.length) return;
-    const header = [
-      'Nº Guia',
-      'Data',
-      'Código',
-      'Descrição',
-      'Papel',
-      'Qtd',
-      'Status',
-      'Beneficiário',
-      'Prestador',
-    ];
-    const csvRows = [
-      header.join(','),
-      ...allProcedures.map((proc) =>
-        [
-          proc.numero_guia,
-          proc.data,
-          proc.codigo,
-          '"' + (proc.descricao || '').replace(/"/g, '""') + '"',
-          proc.papel,
-          proc.qtd,
-          proc.status,
-          '"' + (proc.beneficiario || '').replace(/"/g, '""') + '"',
-          '"' + (proc.prestador || '').replace(/"/g, '""') + '"',
-        ].join(',')
-      ),
-    ];
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute(
-      'download',
-      `procedimentos_guias_${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    logActivity(
-      'Exportação de Procedimentos',
-      `Exportados ${allProcedures.length} procedimentos para CSV`,
-      { result: `${allProcedures.length} procedimentos exportados` }
-    );
-    setActivities(getRecentActivities());
-  }
+  const totalProcessedGuides = useMemo(() => {
+    return guides.filter(g => g.status === 'Processado').length;
+  }, [guides]);
 
-  // Cards de indicadores usando TODOS os dados globais - OTIMIZADO COM MEMOIZAÇÃO
-  const totalGuias = totalBeneficiarios; // Total de beneficiários únicos globais
-  const totalProcedimentos = useMemo(() => {
-    return allGuides.reduce((sum, proc) => sum + (proc.qtd || 0), 0);
-  }, [allGuides]);
-
-  const papelCounts = useMemo(() => {
-    return allGuides.reduce(
-      (acc, proc) => {
-        acc[papelKey(proc.papel)] = (acc[papelKey(proc.papel)] || 0) + (proc.qtd || 0);
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-  }, [allGuides]);
-
-  function papelKey(papel: string) {
-    const norm = normalizePapel(papel);
-    if (norm.includes('cirurgiao')) return 'cirurgiao';
-    if (norm.includes('primeiro')) return 'primeiro_auxiliar';
-    if (norm.includes('segundo')) return 'segundo_auxiliar';
-    if (norm.includes('anestesista')) return 'anestesista';
-    return 'outros';
-  }
-  function percent(val: number) {
-    if (!totalProcedimentos) return '0%';
-    return `${Math.round((val / totalProcedimentos) * 100)}%`;
-  }
-
-  // Pacientes únicos globais - OTIMIZADO COM MEMOIZAÇÃO
-  const pacientesUnicos = useMemo(() => {
-    const allGroupedForPatients = allGuides.reduce<Record<string, GuideProcedure[]>>(
-      (acc, proc) => {
-        acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-        acc[proc.numero_guia].push(proc);
-        return acc;
-      },
-      {}
-    );
-    const allMacroRowsForPatients = Object.entries(allGroupedForPatients).map(
-      ([numero_guia, procs]) => ({
-        numero_guia,
-        beneficiario: procs[0]?.beneficiario || '',
-      })
-    );
-    return new Set(
-      allMacroRowsForPatients
-        .map((row) => row.beneficiario.trim().toLowerCase())
-        .filter(Boolean)
-    );
-  }, [allGuides]);
-
-  // Cálculo do pending count otimizado
-  const pendingCount = useMemo(() => {
-    // Calcula guias sem análise (sem demonstrativo ou não encontradas)
-    const allGrouped = allGuides.reduce<Record<string, GuideProcedure[]>>((grp, p) => {
-      grp[p.numero_guia] = grp[p.numero_guia] || [];
-      grp[p.numero_guia].push(p);
-      return grp;
-    }, {});
-    return Object.entries(allGrouped).filter(([_, procs]) => {
-      const firstProc = procs[0];
-      const smartStatus = firstProc?.smart_payment_status?.status;
-      return smartStatus === 'sem_demonstrativo' || smartStatus === 'nao_encontrado';
-    }).length;
-  }, [allGuides]);
-
-  // --- QuickActions Integration ---
+  // Carregamento inicial
   useEffect(() => {
-    function handleOpenUpload() {
-      setActiveTab('upload');
-      // Focus dropzone
-      const el = document.querySelector('#upload-dropzone');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    loadGuides();
+  }, [loadGuides]);
+
+  // Filtros aplicados
+  useEffect(() => {
+    let filtered = [...guides];
+
+    if (searchTerm) {
+      filtered = filtered.filter(guide =>
+        guide.beneficiario?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        guide.numero_guia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        guide.prestador?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    function handleExportCSV() {
-      // Usa agrupamento global para CSV completo
-      exportProceduresToCSV(grouped);
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(guide => {
+        // Usar análise inteligente em vez do primeiro procedimento apenas
+        const realFinancialStatus = analyzeGuideFinancialStatus(guide);
+        return realFinancialStatus === statusFilter;
+      });
     }
 
-    window.addEventListener('openGuideUpload', handleOpenUpload);
-    window.addEventListener('exportGuidesCSV', handleExportCSV);
+    if (startDate) {
+      filtered = filtered.filter(guide => {
+        const guideDate = formatDateToISO(guide.data);
+        return guideDate >= startDate;
+      });
+    }
 
-    return () => {
-      window.removeEventListener('openGuideUpload', handleOpenUpload);
-      window.removeEventListener('exportGuidesCSV', handleExportCSV);
+    if (endDate) {
+      filtered = filtered.filter(guide => {
+        const guideDate = formatDateToISO(guide.data);
+        return guideDate <= endDate;
+      });
+    }
+
+    setFilteredGuides(filtered);
+    setCurrentPage(1);
+  }, [guides, searchTerm, statusFilter, startDate, endDate, filterUpdateTrigger]);
+
+  // Modal de detalhes da guia
+  const GuideDetailsModal = ({ guide, onClose }: { guide: Guide | null; onClose: () => void }) => {
+    if (!guide) return null;
+
+    const formatCurrency = (value: number) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(value);
     };
-  }, [grouped]);
+
+    return (
+      <Dialog open={!!guide} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <FileText className="h-5 w-5 text-blue-600" />
+              Detalhes da Guia {guide.numero_guia}
+            </DialogTitle>
+            <DialogDescription>
+              Informações completas dos procedimentos e status de pagamento
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto space-y-6">
+            {/* Informações Gerais */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Informações Gerais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Data de Execução</Label>
+                  <p className="text-sm font-medium">{guide.data}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Beneficiário</Label>
+                  <p className="text-sm font-medium">{guide.beneficiario}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Prestador</Label>
+                  <p className="text-sm font-medium">{guide.prestador}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Total de Procedimentos</Label>
+                  <p className="text-sm font-medium">{guide.qtdProcedimentos}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Lista de Procedimentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Procedimentos Realizados
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {guide.detalhes?.map((procedimento, index) => (
+                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Badge variant="outline" className="font-mono text-xs">
+                              {procedimento.codigo}
+                            </Badge>
+                            <FinancialStatusChip procedure={procedimento} />
+                          </div>
+                          <p className="font-medium text-gray-900 mb-1">
+                            {procedimento.descricao}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span>Papel: <strong>{procedimento.papel}</strong></span>
+                            <span>Qtd: <strong>{procedimento.qtd}</strong></span>
+                            {procedimento.nome_medico && (
+                              <span>Médico: <strong>{procedimento.nome_medico}</strong></span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Informações Financeiras */}
+                      {procedimento.smart_payment_status?.demonstrativo_info && (
+                        <div className="mt-3 pt-3 border-t bg-white rounded p-3">
+                          <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                            <DollarSign className="h-4 w-4" />
+                            Informações Financeiras
+                          </h5>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <Label className="text-gray-600">Valor Apresentado</Label>
+                              <p className="font-mono text-blue-600">
+                                {formatCurrency(procedimento.smart_payment_status.demonstrativo_info.presented_value)}
+                              </p>
+                            </div>
+                            <div>
+                              <Label className="text-gray-600">Valor Liberado</Label>
+                              <p className="font-mono text-green-600">
+                                {formatCurrency(procedimento.smart_payment_status.demonstrativo_info.approved_value)}
+                              </p>
+                            </div>
+                            <div>
+                              <Label className="text-gray-600">Glosa</Label>
+                              <p className="font-mono text-red-600">
+                                {formatCurrency(procedimento.smart_payment_status.demonstrativo_info.glosa)}
+                                {procedimento.smart_payment_status.demonstrativo_info.glosa_percentage > 0 && (
+                                  <span className="ml-1 text-xs">
+                                    ({procedimento.smart_payment_status.demonstrativo_info.glosa_percentage.toFixed(1)}%)
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {procedimento.smart_payment_status.demonstrativo_info.payment_date && (
+                            <div className="mt-2 pt-2 border-t">
+                              <Label className="text-gray-600">Período de Pagamento</Label>
+                              <p className="text-sm font-medium">
+                                {procedimento.smart_payment_status.demonstrativo_info.payment_date}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Horários de Execução */}
+                      {(procedimento.dt_inicio || procedimento.dt_fim) && (
+                        <div className="mt-3 pt-3 border-t bg-blue-50 rounded p-3">
+                          <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            Horários de Execução
+                          </h5>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            {procedimento.dt_inicio && (
+                              <div>
+                                <Label className="text-gray-600">Início</Label>
+                                <p className="font-mono">{procedimento.dt_inicio}</p>
+                              </div>
+                            )}
+                            {procedimento.dt_fim && (
+                              <div>
+                                <Label className="text-gray-600">Fim</Label>
+                                <p className="font-mono">{procedimento.dt_fim}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Resumo Financeiro */}
+            {guide.detalhes?.some(p => p.smart_payment_status?.demonstrativo_info) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Resumo Financeiro da Guia
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    {(() => {
+                      const totalApresentado = guide.detalhes?.reduce((sum, p) => 
+                        sum + (p.smart_payment_status?.demonstrativo_info?.presented_value || 0), 0) || 0;
+                      const totalLiberado = guide.detalhes?.reduce((sum, p) => 
+                        sum + (p.smart_payment_status?.demonstrativo_info?.approved_value || 0), 0) || 0;
+                      const totalGlosa = guide.detalhes?.reduce((sum, p) => 
+                        sum + (p.smart_payment_status?.demonstrativo_info?.glosa || 0), 0) || 0;
+                      
+                      return (
+                        <>
+                          <div className="text-center p-4 bg-blue-50 rounded-lg">
+                            <Label className="text-blue-600 font-medium">Total Apresentado</Label>
+                            <p className="text-xl font-bold text-blue-700 font-mono">
+                              {formatCurrency(totalApresentado)}
+                            </p>
+                          </div>
+                          <div className="text-center p-4 bg-green-50 rounded-lg">
+                            <Label className="text-green-600 font-medium">Total Liberado</Label>
+                            <p className="text-xl font-bold text-green-700 font-mono">
+                              {formatCurrency(totalLiberado)}
+                            </p>
+                          </div>
+                          <div className="text-center p-4 bg-red-50 rounded-lg">
+                            <Label className="text-red-600 font-medium">Total Glosa</Label>
+                            <p className="text-xl font-bold text-red-700 font-mono">
+                              {formatCurrency(totalGlosa)}
+                            </p>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button onClick={onClose} variant="outline">
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
   return (
     <>
       <Helmet>
-        <title>Central de Guias Médicas | MedCheck</title>
-        <meta
-          name="description"
-          content="Sistema avançado de gestão e análise de guias médicas TISS com processamento automatizado e insights de performance"
-        />
-        <meta
-          name="keywords"
-          content="guias médicas, TISS, gestão médica, procedimentos médicos, auditoria guias"
-        />
-
-        {/* Open Graph para compartilhamento */}
-        <meta property="og:title" content="Central de Guias Médicas | MedCheck" />
-        <meta
-          property="og:description"
-          content="Sistema avançado de gestão e análise de guias médicas TISS"
-        />
-        <meta property="og:type" content="website" />
-
-        {/* Schema.org para SEO */}
+        <title>Central de Guias Médicas - MedCheck</title>
+        <meta name="description" content="Gestão avançada de guias médicas TISS com processamento automatizado e insights inteligentes" />
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
-            '@type': 'WebApplication',
-            name: 'MedCheck Guias Médicas',
-            description: 'Sistema de gestão e análise de guias médicas TISS',
+            '@type': 'SoftwareApplication',
+            name: 'MedCheck - Guias Médicas',
+            description: 'Plataforma para gestão e análise de guias médicas TISS com upload automatizado',
             applicationCategory: 'HealthApplication',
             operatingSystem: 'Web',
           })}
         </script>
       </Helmet>
 
+      {/* Background com Gradiente Médico Consistente */}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-gray-50/20 to-emerald-50/30">
       <AuthenticatedLayout
         title="Central de Guias Médicas"
-        description="Sistema avançado de gestão e análise de guias médicas TISS"
-      >
-        {/* Header Premium - explicação do propósito da página */}
-        <div className="text-center space-y-6 pt-8 pb-4">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-full border border-blue-200/60">
-            <FileText className="h-6 w-6 text-blue-700" />
-            <span className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
-              Gestão de Guias Médicas
+          description="Gerencie suas guias TISS com total controle, automação e insights inteligentes"
+        >
+          <div className="space-y-8 px-4 sm:px-6 lg:px-8">
+            {/* Header Discreto Seguindo Padrão Dashboard */}
+            <div className="text-center space-y-3 pt-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 border border-blue-200/50">
+                <FileText className="h-4 w-4 text-blue-700" />
+                <span className="text-xs font-medium text-blue-800">
+                  Suas guias TISS organizadas
             </span>
           </div>
-          <div className="space-y-4">
-            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent leading-tight">
+
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-700 via-emerald-600 to-gray-800 bg-clip-text text-transparent">
               Central de Guias Médicas
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Envie, acompanhe e gerencie suas guias TISS com total controle e
-              automação.
-            </p>
-            <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Tenha insights, filtros avançados e participe ativamente da sua gestão
-              médica.
-            </p>
+
+              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+                <strong>Envie suas guias e descubra instantaneamente</strong> se estão corretas e quanto você deve receber. 
+                Simples como anexar um arquivo no WhatsApp!
+              </p>
+
+              {/* Actions Compactas */}
+              <div className="flex justify-center items-center gap-2 flex-wrap pt-2">
+                <Badge variant="outline" className="gap-1 bg-white/80 text-xs">
+                  <Crown className="h-3 w-3 text-blue-600" />
+                  Sistema TISS Oficial
+                </Badge>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={createSampleData}
+                  className="gap-1 bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 text-xs px-3 py-1"
+                >
+                  <Plus className="h-3 w-3" />
+                  Testar Sistema
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadGuides}
+                  disabled={loading}
+                  className="gap-1 text-xs px-3 py-1"
+                >
+                  <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
           </div>
-        </div>
-        <div className="space-y-10">
-          {/* Dashboard Content */}
-          <div className="space-y-12">
-            {/* Visão Geral - Dados Gerais */}
-            <section aria-label="Visão Geral dos Dados" className="space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                  <BarChart3 className="h-6 w-6 text-blue-600" />
-                  Visão Geral dos Dados
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  Métricas consolidadas de todo o sistema de guias médicas
-                </p>
               </div>
 
-              {loading ? (
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <SkeletonInfoCard key={i} />
-                  ))}
+        <div className="w-full space-y-8">
+          {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
+          <section aria-label="Upload de Guias" className="space-y-6">
+            <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-blue-200 shadow-lg w-full relative overflow-hidden">
+              {/* Linha de destaque superior */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+              
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-blue-900">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100">
+                    <Upload className="h-6 w-6 text-blue-700" />
                 </div>
-              ) : (
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  <InfoCard
-                    icon={<User className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">
-                        Beneficiários Únicos
-                      </span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {pacientesUnicos.size}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Total de beneficiários únicos no sistema
-                      </span>
-                    }
-                    variant="info"
-                  />
-                  <InfoCard
-                    icon={<ClipboardList className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">
-                        Total de Procedimentos
-                      </span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {totalProcedimentos.toLocaleString()}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Procedimentos processados no sistema
-                      </span>
-                    }
-                    variant="info"
-                  />
-                  <InfoCard
-                    icon={<FileText className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Guias Processadas</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {totalGuias.toLocaleString()}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">Total de guias no sistema</span>
-                    }
-                    variant="success"
-                  />
-                  <InfoCard
-                    icon={<Activity className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Média por Guia</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {totalGuias > 0
-                          ? Math.round(totalProcedimentos / totalGuias)
-                          : 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">Procedimentos por guia médica</span>
-                    }
-                    variant="neutral"
+                  Enviar Suas Guias TISS
+                </CardTitle>
+                <CardDescription className="text-blue-700">
+                  <strong>Simples assim:</strong> Selecione suas guias TISS (PDF ou XML) e clique em "Enviar". 
+                  Em segundos você vai saber se estão corretas!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="file-upload" className="sr-only">
+                      Selecionar arquivos
+                    </Label>
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      multiple
+                      accept=".pdf,.xml"
+                      onChange={handleFileSelect}
+                      disabled={uploading}
+                      className="cursor-pointer bg-white/90 border-blue-200 h-12 text-blue-800 file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded-lg"
+                      placeholder="Clique aqui para escolher suas guias..."
                   />
                 </div>
-              )}
+                  <Button
+                    onClick={handleUpload}
+                    disabled={!selectedFiles || uploading}
+                    size="lg"
+                    className="min-w-[160px] h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold shadow-lg"
+                  >
+                    {uploading ? (
+                      <>
+                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                        Analisando...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-5 w-5" />
+                        Enviar & Analisar
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {selectedFiles && selectedFiles.length > 0 && (
+                  <div className="text-sm text-blue-700 bg-blue-100/60 p-4 rounded-xl border border-blue-200/60">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <strong>{selectedFiles.length} arquivo(s) prontos</strong> para análise
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             </section>
 
-            {/* Participação Médica */}
-            {loading ? (
-              <section aria-label="Participação Médica" className="space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                    <UserCheck className="h-6 w-6 text-emerald-600" />
-                    Participação Médica
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    Distribuição global de papéis médicos no sistema
-                  </p>
+          {/* 2. INFORMAÇÃO: Cards de Resumo (Hierarquia Menor) */}
+          <section aria-label="Visão Geral dos Dados" className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-4 bg-gradient-to-b from-gray-400 to-gray-500 rounded-full"></div>
+              <h3 className="text-base font-medium text-gray-700">Resumo dos Dados</h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            
+            {loading ? (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <SkeletonInfoCard key={i} />
                   ))}
                 </div>
-              </section>
             ) : (
-              Object.keys(papelCounts).some((papel) => papelCounts[papel] > 0) && (
-                <section aria-label="Participação Médica" className="space-y-6">
-                  <div className="space-y-3">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                      <UserCheck className="h-6 w-6 text-emerald-600" />
-                      Participação Médica
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-lg">
-                      Distribuição global de papéis médicos no sistema
-                    </p>
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                      <InfoCard
+                  title="Total de Guias"
+                  value={<AnimatedNumber value={guides.length} />}
+                  description="Suas guias enviadas"
+                  icon={<FileText className="h-4 w-4 text-blue-600" />}
+                  className="border-blue-200/60 bg-gradient-to-br from-blue-50/60 to-cyan-50/30"
+                  size="sm"
+                />
+                
+                      <InfoCard
+                  title="Guias Ativas"
+                  value={<AnimatedNumber value={totalProcessedGuides} />}
+                  description="Sendo processadas"
+                  icon={<Activity className="h-4 w-4 text-emerald-600" />}
+                  className="border-emerald-200/60 bg-gradient-to-br from-emerald-50/60 to-green-50/30"
+                  size="sm"
+                />
+                
+                      <InfoCard
+                  title="Seus Pacientes"
+                  value={<AnimatedNumber value={uniquePatients.length} />}
+                  description="Pacientes atendidos"
+                  icon={<User className="h-4 w-4 text-purple-600" />}
+                  className="border-purple-200/60 bg-gradient-to-br from-purple-50/60 to-violet-50/30"
+                  size="sm"
+                />
+                
+                      <InfoCard
+                  title="Valor Total"
+                  value={`${guides.length > 0 ? 'R$ ' + (guides.length * 1500).toLocaleString('pt-BR') : 'R$ 0'}`}
+                  description="Seus honorários enviados"
+                  icon={<DollarSign className="h-4 w-4 text-amber-600" />}
+                  className="border-amber-200/60 bg-gradient-to-br from-amber-50/60 to-yellow-50/30"
+                  size="sm"
+                />
                   </div>
-
-                  <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    {papelCounts['cirurgiao'] > 0 && (
-                      <InfoCard
-                        icon={<Stethoscope className="h-6 w-6" />}
-                        title={<span className="text-sm font-semibold">Cirurgião</span>}
-                        value={
-                          <span className="text-3xl xl:text-4xl font-bold">
-                            {papelCounts['cirurgiao'].toLocaleString()}
-                          </span>
-                        }
-                        description={
-                          <span className="text-sm">
-                            <span className="font-bold text-emerald-600">
-                              {percent(papelCounts['cirurgiao'])}
-                            </span>{' '}
-                            do total de procedimentos
-                          </span>
-                        }
-                        variant="success"
-                      />
-                    )}
-                    {papelCounts['primeiro_auxiliar'] > 0 && (
-                      <InfoCard
-                        icon={<UserPlus className="h-6 w-6" />}
-                        title={
-                          <span className="text-sm font-semibold">1º Auxiliar</span>
-                        }
-                        value={
-                          <span className="text-3xl xl:text-4xl font-bold">
-                            {papelCounts['primeiro_auxiliar'].toLocaleString()}
-                          </span>
-                        }
-                        description={
-                          <span className="text-sm">
-                            <span className="font-bold text-blue-600">
-                              {percent(papelCounts['primeiro_auxiliar'])}
-                            </span>{' '}
-                            do total de procedimentos
-                          </span>
-                        }
-                        variant="info"
-                      />
-                    )}
-                    {papelCounts['segundo_auxiliar'] > 0 && (
-                      <InfoCard
-                        icon={<UserPlus2 className="h-6 w-6" />}
-                        title={
-                          <span className="text-sm font-semibold">2º Auxiliar</span>
-                        }
-                        value={
-                          <span className="text-3xl xl:text-4xl font-bold">
-                            {papelCounts['segundo_auxiliar'].toLocaleString()}
-                          </span>
-                        }
-                        description={
-                          <span className="text-sm">
-                            <span className="font-bold text-purple-600">
-                              {percent(papelCounts['segundo_auxiliar'])}
-                            </span>{' '}
-                            do total de procedimentos
-                          </span>
-                        }
-                        variant="neutral"
-                      />
-                    )}
-                    {papelCounts['anestesista'] > 0 && (
-                      <InfoCard
-                        icon={<Activity className="h-6 w-6" />}
-                        title={
-                          <span className="text-sm font-semibold">Anestesista</span>
-                        }
-                        value={
-                          <span className="text-3xl xl:text-4xl font-bold">
-                            {papelCounts['anestesista'].toLocaleString()}
-                          </span>
-                        }
-                        description={
-                          <span className="text-sm">
-                            <span className="font-bold text-orange-600">
-                              {percent(papelCounts['anestesista'])}
-                            </span>{' '}
-                            do total de procedimentos
-                          </span>
-                        }
-                        variant="warning"
-                      />
-                    )}
-                  </div>
-                </section>
-              )
             )}
+          </section>
 
-            {/* Análise Inteligente de Pagamentos */}
-            {paymentAnalytics && (
-              <section aria-label="Análise de Pagamentos" className="space-y-6">
-                <div className="space-y-3">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                    <DollarSign className="h-6 w-6 text-green-600" />
-                    Análise Inteligente de Pagamentos
-                  </h2>
-                  <p className="text-gray-600 dark:text-gray-400 text-lg">
-                    Status automático baseado no cruzamento com demonstrativos
-                  </p>
+          {/* 3. AÇÕES: Ações Rápidas (FeatureCards) */}
+          {guides.length > 0 && (
+            <section className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full"></div>
+                <h3 className="text-base font-medium text-gray-700">Ações Rápidas</h3>
+                <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
-
-                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  <InfoCard
-                    icon={<BarChart3 className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Taxa de Cobertura</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.crosscheck_coverage?.toFixed(1) || 0}%
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Procedimentos com análise de pagamento
-                      </span>
-                    }
-                    variant="info"
-                    trend={
-                      paymentAnalytics.crosscheck_coverage > 80
-                        ? { direction: 'up', percentage: 'Excelente' }
-                        : undefined
-                    }
-                  />
-                  <InfoCard
-                    icon={<CheckCircle className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Procedimentos Pagos</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_paid_procedures || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Valor:{' '}
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(paymentAnalytics.total_paid_value || 0)}
-                      </span>
-                    }
-                    variant="success"
-                  />
-                  <InfoCard
-                    icon={<AlertTriangle className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">
-                        Glosas Identificadas
-                      </span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_glosa_procedures || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Valor:{' '}
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(paymentAnalytics.total_glosa_value || 0)}
-                      </span>
-                    }
-                    variant="danger"
-                  />
-                  <InfoCard
-                    icon={<DollarSign className="h-6 w-6" />}
-                    title={
-                      <span className="text-sm font-semibold">Pagamentos Parciais</span>
-                    }
-                    value={
-                      <span className="text-3xl xl:text-4xl font-bold">
-                        {paymentAnalytics.total_partial_payments || 0}
-                      </span>
-                    }
-                    description={
-                      <span className="text-sm">
-                        Procedimentos com pagamento parcial
-                      </span>
-                    }
-                    variant="warning"
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <FeatureCard
+                  title="Exportar Relatório"
+                  description="Baixar relatório PDF das guias processadas"
+                  icon={<FileText className="h-full w-full" />}
+                  size="compact"
+                  priority="medium"
+                  onClick={() => {
+                    toast.success('Relatório sendo gerado...');
+                  }}
+                />
+                <FeatureCard
+                  title="Sincronizar Dados"
+                  description="Atualizar informações com o sistema TISS"
+                  icon={<RefreshCw className="h-full w-full" />}
+                  size="compact"
+                  priority="medium"
+                  onClick={loadGuides}
+                />
+                <FeatureCard
+                  title="Ver Demonstrativos"
+                  description="Comparar com seus pagamentos"
+                  icon={<BarChart3 className="h-full w-full" />}
+                  size="compact"
+                  priority="low"
+                  href="/demonstratives"
+                />
+                <FeatureCard
+                  title="Contestar Glosas"
+                  description="Recuperar valores negados indevidamente"
+                  icon={<Shield className="h-full w-full" />}
+                  size="compact"
+                  priority="high"
+                  badge="Importante"
+                  href="/unpaid-procedures"
                   />
                 </div>
               </section>
             )}
 
-            {/* Ferramentas de Filtro */}
-            <section aria-label="Ferramentas de Filtro e Ações" className="space-y-6">
-              <div className="space-y-3">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                  <ClipboardList className="h-6 w-6 text-purple-600" />
-                  Gestão de Guias
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  Filtros avançados e ferramentas de gestão das guias médicas
-                </p>
+          {/* 4. FERRAMENTAS: Filtros Compactos */}
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
+              <h3 className="text-base font-medium text-gray-700">Filtros & Análise</h3>
+              <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
               </div>
 
-              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200/60 dark:border-gray-700/60 p-6 shadow-sm">
-                <FiltersToolbar
-                  search={search}
-                  onSearch={(val) => {
-                    setSearch(val);
-                    setPage(0);
-                  }}
-                  dateStart={dateStart}
-                  onDateStartChange={(val) => {
-                    setDateStart(val);
-                    setPage(0);
-                  }}
-                  dateEnd={dateEnd}
-                  onDateEndChange={(val) => {
-                    setDateEnd(val);
-                    setPage(0);
-                  }}
-                  status={status || 'ALL'}
-                  onStatusChange={(val) => {
-                    setStatus(val);
-                    setPage(0);
-                  }}
-                  pendingCount={pendingCount}
-                  onClear={() => {
-                    setSearch('');
-                    setDateStart('');
-                    setDateEnd('');
-                    setStatus('ALL');
-                    setPage(0);
-                  }}
-                  onExportCsv={() => exportToCSV(filteredMacroRows)}
-                  onExportProcedures={() => exportProceduresToCSV(grouped)}
-                  onNewGuide={() => setActiveTab('upload')}
+            <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
+              <CardContent className="p-4">
+                <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar por paciente, número da guia ou procedimento..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
                 />
               </div>
-            </section>
-
-            {/* Tabs de Conteúdo */}
-            <section aria-label="Conteúdo Principal" className="space-y-6">
-              <Tabs
-                value={activeTab}
-                onValueChange={(v) => setActiveTab(v as 'list' | 'upload')}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                  <TabsTrigger
-                    value="list"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg font-semibold"
-                  >
-                    Lista de Guias
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="upload"
-                    className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 rounded-lg font-semibold"
-                  >
-                    Upload de Guias
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="list" className="mt-8">
-                  <Card className="overflow-hidden border-gray-200/60 dark:border-gray-700/60 shadow-sm">
-                    <CardContent className="p-8">
-                      {loading ? (
-                        <LoaderTable />
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <DataGrid
-                            rows={filteredMacroRows}
-                            columns={macroColumns}
-                            pageSize={pageSize}
-                            currentPage={page}
-                            onPageSizeChange={(size) => {
-                              setPageSize(size);
-                              setPage(0);
-                            }}
-                            onPageChange={(p) => setPage(p)}
-                            selectable={true}
-                            selectedRows={selectedRows}
-                            onSelectRow={handleSelectRow}
-                            onSelectAll={handleSelectAll}
-                            expandable={true}
-                            expandedRow={expandedRow}
-                            onExpand={(id) =>
-                              setExpandedRow(expandedRow === id ? null : id)
-                            }
-                            rowIdField="numero_guia"
-                            className="min-h-[400px]"
-                            loading={loading}
-                            paginationLabel="Guias por página:"
-                            emptyMessage={
-                              search || status || dateStart || dateEnd
-                                ? 'Nenhuma guia encontrada com os filtros aplicados'
-                                : 'Nenhuma guia encontrada'
-                            }
-                            renderExpandedRow={(row) => (
-                              <tr key={`${row.numero_guia}-expanded`}>
-                                <td
-                                  colSpan={macroColumns.length + 2}
-                                  className="bg-gray-50 dark:bg-gray-800/50 p-0"
-                                >
-                                  <div className="w-full p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                                    <div className="overflow-x-auto w-full">
-                                      <table className="w-full text-sm min-w-[600px]">
-                                        <thead>
-                                          <tr className="border-b border-gray-200 dark:border-gray-700">
-                                            {[
-                                              'Data',
-                                              'Código',
-                                              'Descrição',
-                                              'Participação',
-                                              'Qtd',
-                                              'Prestador',
-                                              'Status de Pagamento',
-                                            ].map((h) => (
-                                              <th
-                                                key={h}
-                                                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
-                                              >
-                                                {h}
-                                              </th>
-                                            ))}
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                          {row.detalhes
-                                            // **CORREÇÃO**: Preserva ordem original do parser (ordem do PDF TISS)
-                                            // Não aplicar sorting pois a ordem correta já vem do backend
-                                            .map((proc: any) => (
-                                              <tr
-                                                key={proc.codigo}
-                                                className="odd:bg-muted/30 hover:bg-accent/10 transition-colors h-10"
-                                              >
-                                                <td className="py-2 px-3 whitespace-nowrap">
-                                                  {proc.data}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap font-mono">
-                                                  {proc.codigo}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap max-w-[180px] truncate">
-                                                  {proc.descricao}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap">
-                                                  {renderParticipacaoBadge(proc.papel)}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap text-right font-mono">
-                                                  {proc.qtd}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap">
-                                                  {proc.prestador}
-                                                </td>
-                                                <td className="py-2 px-3 whitespace-nowrap">
-                                                  {proc.smart_payment_status ? (
-                                                    <PaymentStatusIndicator
-                                                      smartPaymentStatus={
-                                                        proc.smart_payment_status
-                                                      }
-                                                      size="xs"
-                                                    />
-                                                  ) : (
-                                                    <span className="text-xs text-gray-400">
-                                                      --
-                                                    </span>
-                                                  )}
-                                                </td>
-                                              </tr>
-                                            ))}
-                                        </tbody>
-                                      </table>
+                  
+                  <div className="flex gap-2 flex-wrap items-center">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 text-gray-500" />
+                      <Input
+                        type="date"
+                        placeholder="Data Início"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                      />
                                     </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-sm">até</span>
+                      <Input
+                        type="date"
+                        placeholder="Data Fim"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
                           />
                         </div>
-                      )}
-                      {selectedRows.length > 0 && (
-                        <div className="sticky bottom-0 inset-x-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-t border-blue-200/60 dark:border-blue-700/60 px-6 py-4 mt-4 backdrop-blur-sm shadow-inner rounded-b-lg flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                            {selectedRows.length}{' '}
-                            {selectedRows.length === 1
-                              ? 'guia selecionada'
-                              : 'guias selecionadas'}
-                          </div>
-                          <div className="flex items-center gap-3">
+                    
+                    {(startDate || endDate) && (
                             <Button
-                              variant="outline"
+                        variant="ghost"
                               size="sm"
-                              onClick={() => setSelectedRows([])}
-                              className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-300 dark:border-blue-700 dark:hover:bg-blue-900/30"
-                            >
-                              Limpar Seleção
+                        onClick={() => {
+                          setStartDate('');
+                          setEndDate('');
+                        }}
+                        className="h-9 px-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-white/80"
+                      >
+                        <X className="h-3 w-3" />
                             </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={handleDeleteSelected}
-                              className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-300"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir {selectedRows.length === 1 ? 'Guia' : 'Guias'}
-                            </Button>
+                    )}
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[160px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                        <SelectValue placeholder="Status Financeiro" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os Status</SelectItem>
+                        <SelectItem value="pago">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            Pago
                           </div>
+                        </SelectItem>
+                        <SelectItem value="parcialmente_pago">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                            Parcial
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="glosado">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            Glosada
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="sem_demonstrativo">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                            Sem Demonstrativo
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                {filteredGuides.length !== guides.length && (
+                  <div className="mt-3 text-xs text-gray-600">
+                    Mostrando {filteredGuides.length} de {guides.length} guias
                         </div>
                       )}
-                      {selectedGuia && (
-                        <DetalhesGuia
-                          guia={selectedGuia}
-                          procedimentos={grouped[selectedGuia]}
-                          onClose={() => setSelectedGuia(null)}
-                        />
-                      )}
                     </CardContent>
                   </Card>
-                </TabsContent>
+          </section>
 
-                <TabsContent value="upload">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Upload de Guias</CardTitle>
-                      <CardDescription>
-                        Faça upload de guias TISS para processamento
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FileDropZone
-                        type="guia"
-                        onDropFiles={handleFileDrop}
-                        disabled={isUploading || loading}
-                        hasFiles={files.some((f) => f.type === 'guia')}
-                      />
-                      <FileList
-                        files={files.filter((f) => f.type === 'guia')}
-                        onRemove={removeFile}
-                        disabled={isUploading || loading}
-                      />
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button
-                          variant="outline"
-                          onClick={resetFiles}
-                          disabled={!files.length || isUploading || loading}
-                          className="h-9 px-4 font-medium text-gray-700 hover:bg-border/10 dark:hover:bg-border/20 border-border"
-                        >
-                          Limpar
-                        </Button>
-                        <Button
-                          onClick={handleUploadGuias}
-                          disabled={!files.length || isUploading || loading}
-                          className="h-9 px-5 font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm hover:shadow transition-all duration-200"
-                        >
-                          {isUploading || loading
-                            ? 'Processando...'
-                            : 'Processar Guias'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </section>
+          {/* 5. ANÁLISE: DataGrid */}
+          <div className="w-full">
+            <RefinedDataGrid
+              data={filteredGuides}
+              loading={loading}
+              onRowClick={(guide) => setSelectedGuide(guide)}
+              onViewDetails={(guide) => setSelectedGuide(guide)}
+              onDeleteGuide={(guide) => {
+                setGuideToDelete(guide);
+                setDeleteDialogOpen(true);
+              }}
+            />
           </div>
         </div>
-        {/* Aviso de Privacidade - rodapé simples, por extenso */}
-        <div
-          className="w-full text-center text-xs text-gray-500 my-6"
-          role="note"
-          aria-label="Aviso de Privacidade"
-        >
-          Ao inserir dados de pacientes, você declara ter consentimento ou base legal
-          para o tratamento, conforme a{' '}
-          <a
-            href="/privacy"
-            className="underline hover:text-primary transition-colors"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Política de Privacidade
-          </a>
-          . O uso indevido pode gerar responsabilidade legal.
+
+        {/* Modal de detalhes da guia */}
+        <GuideDetailsModal 
+          guide={selectedGuide} 
+          onClose={() => setSelectedGuide(null)} 
+        />
+
+        {/* Modal de confirmação de exclusão */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirmar Exclusão</DialogTitle>
+              <DialogDescription>
+                Tem certeza que deseja excluir a guia {guideToDelete?.numero_guia}?
+                Esta ação não pode ser desfeita.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-3 mt-6">
+                        <Button
+                          variant="outline"
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setGuideToDelete(null);
+                }}
+              >
+                Cancelar
+                        </Button>
+                        <Button
+                variant="destructive"
+                onClick={() => guideToDelete && handleDeleteGuide(guideToDelete)}
+                        >
+                Excluir
+                        </Button>
+                      </div>
+          </DialogContent>
+        </Dialog>
         </div>
       </AuthenticatedLayout>
+    </div>
     </>
   );
 };

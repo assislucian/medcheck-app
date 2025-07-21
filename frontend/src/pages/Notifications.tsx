@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
+import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -333,46 +333,53 @@ const NotificationsPage = () => {
 
   const uniqueActions = Array.from(new Set(activities.map((a) => a.action)));
 
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => loadActivities(true)}
+        disabled={refreshing}
+        className="bg-white/80 backdrop-blur-sm border-gray-200/60"
+      >
+        <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+        Atualizar
+      </Button>
+    </div>
+  );
+
   if (loading) {
     return (
-      <AuthenticatedLayout>
+      <StandardPageLayout
+        title="Log de Atividades"
+        description="Carregando histórico de atividades..."
+        category="Sistema & Suporte"
+        categoryIcon={<Activity className="h-5 w-5" />}
+        categoryColor="blue"
+        actions={headerActions}
+        className="from-blue-50/30 via-white to-green-50/20"
+      >
         <div className="space-y-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Carregando log de atividades...</p>
-            </div>
+          <div className="text-center py-12">
+            <Loader2 className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-spin" />
+            <p className="text-lg text-gray-600">Carregando log de atividades...</p>
           </div>
         </div>
-      </AuthenticatedLayout>
+      </StandardPageLayout>
     );
   }
 
   return (
-    <AuthenticatedLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Log de Atividades</h1>
-            <p className="text-muted-foreground">
-              Monitoramento e auditoria de todas as ações realizadas no sistema
-            </p>
-          </div>
-          <Button
-            onClick={() => loadActivities(true)}
-            variant="outline"
-            size="sm"
-            disabled={refreshing}
-          >
-            {refreshing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            Atualizar
-          </Button>
-        </div>
+    <StandardPageLayout
+      title="Log de Atividades"
+      description="Monitoramento em tempo real das atividades do sistema e auditoria de ações realizadas"
+      category="Sistema & Suporte"
+      categoryIcon={<Activity className="h-5 w-5" />}
+      categoryColor="blue"
+      actions={headerActions}
+      className="from-blue-50/30 via-white to-green-50/20"
+    >
+      <div className="space-y-8">
 
         {/* Estatísticas */}
         {stats && (
@@ -623,7 +630,7 @@ const NotificationsPage = () => {
           </CardContent>
         </Card>
       </div>
-    </AuthenticatedLayout>
+    </StandardPageLayout>
   );
 };
 

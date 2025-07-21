@@ -90,65 +90,65 @@ const GlosasPage = () => {
       title="Glosas"
       description="Analise e conteste as glosas dos planos de saúde"
     >
-      <div className="space-y-6">
-        <div className="text-center space-y-6 pt-8 pb-4">
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-50 to-amber-50 rounded-full border border-red-200/60">
-            <AlertCircle className="h-6 w-6 text-red-700" />
-            <span className="text-sm font-semibold text-red-700 uppercase tracking-wide">
-              Glosas & Contestações
-            </span>
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-3xl lg:text-5xl font-bold bg-gradient-to-r from-red-700 via-amber-600 to-red-800 bg-clip-text text-transparent leading-tight">
+      <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
+        <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+          {/* Header Humanizado seguindo padrão Dashboard */}
+          <div className="text-center space-y-4 pt-8">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
+              <AlertCircle className="h-5 w-5 text-medical-700" />
+              <span className="text-sm font-medium text-medical-800">
+                Glosas & Contestações
+              </span>
+            </div>
+
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
               Glosas & Contestações
             </h1>
+
             <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Defenda seus direitos! Conteste glosas indevidas e recupere valores de
-              forma proativa.
-            </p>
-            <p className="text-base text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Acompanhe prazos críticos, recupere valores e maximize sua receita médica
-              com inteligência.
+              Defenda seus direitos! Conteste glosas indevidas e recupere valores de forma proativa.
             </p>
           </div>
+
+          <div className="space-y-6">
+            <Card className="border-amber-500/20 bg-amber-500/5">
+              <CardContent className="p-4 flex items-center">
+                <div className="bg-amber-500/10 p-2 rounded-full mr-4">
+                  <AlertCircle className="h-6 w-6 text-amber-500" />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    Existem 2 glosas não contestadas que podem ser recuperadas!
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Conteste em até 30 dias para garantir a análise pelo convênio.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <AlertCircle className="w-5 h-5 text-primary mb-2" />
+                    <h3 className="font-medium">Procedimentos Glosados</h3>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <DataGrid
+                  rows={glosas}
+                  columns={glosaColumns}
+                  pageSize={10}
+                  rowsPerPageOptions={[10, 25, 50]}
+                  disableSelectionOnClick
+                  className="min-h-[500px]"
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        <Card className="border-amber-500/20 bg-amber-500/5">
-          <CardContent className="p-4 flex items-center">
-            <div className="bg-amber-500/10 p-2 rounded-full mr-4">
-              <AlertCircle className="h-6 w-6 text-amber-500" />
-            </div>
-            <div>
-              <p className="font-medium">
-                Existem 2 glosas não contestadas que podem ser recuperadas!
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Conteste em até 30 dias para garantir a análise pelo convênio.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <AlertCircle className="w-5 h-5 text-primary mb-2" />
-                <h3 className="font-medium">Procedimentos Glosados</h3>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <DataGrid
-              rows={glosas}
-              columns={glosaColumns}
-              pageSize={10}
-              rowsPerPageOptions={[10, 25, 50]}
-              disableSelectionOnClick
-              className="min-h-[500px]"
-            />
-          </CardContent>
-        </Card>
       </div>
     </AuthenticatedLayout>
   );

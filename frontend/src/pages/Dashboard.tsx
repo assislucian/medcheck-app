@@ -139,18 +139,18 @@ const DashboardPage = () => {
               <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
                 <Stethoscope className="h-5 w-5 text-medical-700" />
                 <span className="text-sm font-medium text-medical-800">
-                  Sua prática médica em suas mãos
+                  Seus honorários sob controle
                 </span>
               </div>
 
               <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
-                Olá, {userProfile?.nome?.split(' ')[0] || 'Doutor(a)'}!
+                Olá, Dr(a). {userProfile?.nome?.split(' ')[0] || 'Doutor(a)'}!
               </h1>
 
               <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
                 {needsAttention
-                  ? 'Identificamos algumas oportunidades para otimizar seus recebimentos. Vamos analisar juntos?'
-                  : 'Seus honorários estão organizados e tudo está funcionando bem. Continue assim!'}
+                  ? '💰 Encontramos R$ em valores que você pode estar perdendo. Que tal recuperarmos juntos?'
+                  : '✅ Parabéns! Seus honorários estão bem organizados. Continue cuidando do que é seu!'}
               </p>
             </div>
 
@@ -169,11 +169,10 @@ const DashboardPage = () => {
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-2xl font-bold text-red-700">
-                      Ops! Algo não funcionou como esperado
+                      Ops! Conexão instável
                     </h3>
                     <p className="text-gray-600 max-w-md">
-                      Não conseguimos carregar seus dados médicos no momento. Verifique
-                      sua conexão e tente novamente.
+                      Não conseguimos carregar seus dados no momento. Pode ser a internet ou nossos servidores. Vamos tentar de novo?
                     </p>
                   </div>
                   <Button
@@ -194,11 +193,11 @@ const DashboardPage = () => {
                         <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
                           <DollarSign className="h-6 w-6 text-amber-700" />
                         </div>
-                        Comece sua Jornada no MedCheck
+                        🚀 Vamos recuperar seus honorários!
                       </h2>
                       <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-                        Envie suas guias e demonstrativos para desbloquear todos os
-                        recursos do sistema. Tudo começa com o primeiro upload!
+                        <strong>Em 3 passos simples</strong>, você vai descobrir quanto dinheiro está perdendo e como recuperar. 
+                        Milhares de médicos já recuperaram <strong>até 35% a mais</strong> em honorários!
                       </p>
                     </div>
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -304,10 +303,10 @@ const DashboardPage = () => {
                   <section className="space-y-8 mt-8">
                     <div className="text-center space-y-3">
                       <h2 className="text-2xl font-bold text-gray-900">
-                        Ferramentas Complementares
+                        🛠️ Ferramentas Extras (Opcionais)
                       </h2>
                       <p className="text-gray-600 max-w-2xl mx-auto">
-                        Recursos adicionais para uma gestão médica ainda mais eficiente
+                        Depois que recuperar seus honorários, use essas ferramentas para <strong>nunca mais perder dinheiro</strong>
                       </p>
                     </div>
                     <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
@@ -342,10 +341,10 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-purple-800">
-                                  Central de Inteligência
+                                  🧠 Robô Inteligente
                                 </h3>
                                 <p className="text-sm text-purple-600">
-                                  Insights avançados
+                                  Dicas para ganhar mais
                                 </p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-purple-400 ml-auto group-hover:text-purple-600 transition-colors" />
@@ -363,9 +362,9 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-teal-800">
-                                  Análise Comparativa
+                                  🔍 Comparar Tabelas
                                 </h3>
-                                <p className="text-sm text-teal-600">Compare tabelas</p>
+                                <p className="text-sm text-teal-600">CBHPM vs. Planos</p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-teal-400 ml-auto group-hover:text-teal-600 transition-colors" />
                             </div>
@@ -384,12 +383,11 @@ const DashboardPage = () => {
                         <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
                           <DollarSign className="h-6 w-6 text-amber-700" />
                         </div>
-                        Resumo Financeiro da Sua Prática
+                        💰 Seus Honorários em Números
                       </h2>
                       <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-                        Seus honorários organizados de forma clara: quanto você já
-                        recebeu, o que ainda está pendente e onde estão as oportunidades
-                        de melhoria.
+                        <strong>Aqui está a verdade sobre seu dinheiro:</strong> quanto você recebeu, quanto perdeu, 
+                        e onde estão as oportunidades de ganhar mais. Dados reais, sem enrolação.
                       </p>
                     </div>
 
@@ -533,15 +531,15 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-3">
                                 <h3 className="text-xl font-bold text-blue-800">
-                                  Enviar Guias Médicas
+                                  📋 Passo 1: Suas Guias
                                 </h3>
                                 <p className="text-blue-600 leading-relaxed">
-                                  O primeiro passo para receber seus honorários.
-                                  Organize e envie suas guias de forma prática e segura.
+                                  <strong>Envie suas guias TISS aqui.</strong> É igual anexar um arquivo no WhatsApp! 
+                                  Em segundos você vai saber se estão corretas e quanto deve receber.
                                 </p>
                               </div>
                               <div className="flex items-center gap-2 text-blue-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>Começar agora</span>
+                                <span>💪 Começar agora (2 min)</span>
                                 <ChevronRight className="h-4 w-4" />
                               </div>
                             </div>
@@ -566,15 +564,15 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-3">
                                 <h3 className="text-xl font-bold text-emerald-800">
-                                  Conferir Demonstrativos
+                                  💰 Passo 2: Seus Pagamentos
                                 </h3>
                                 <p className="text-emerald-600 leading-relaxed">
-                                  Analise os pagamentos dos planos de saúde e
-                                  identifique discrepâncias nos seus honorários.
+                                  <strong>Envie o que o plano te pagou.</strong> Nosso robô vai comparar com sua tabela e mostrar 
+                                  na tela se você foi <span className="text-red-600 font-semibold">lesado</span> ou não.
                                 </p>
                               </div>
                               <div className="flex items-center gap-2 text-emerald-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>Analisar pagamentos</span>
+                                <span>🔍 Descobrir se me lesaram</span>
                                 <ChevronRight className="h-4 w-4" />
                               </div>
                             </div>
@@ -599,15 +597,15 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-3">
                                 <h3 className="text-xl font-bold text-medical-800">
-                                  Contestar Glosas
+                                  ⚖️ Passo 3: Seus Direitos
                                 </h3>
                                 <p className="text-medical-600 leading-relaxed">
-                                  Defenda seus direitos! Conteste glosas indevidas e
-                                  recupere valores que são seus por direito.
+                                  <strong>Vai brigar pelo que é seu?</strong> Te ajudamos a contestar glosas indevidas. 
+                                  É seu dinheiro! <span className="text-green-600 font-semibold">Recupere até 70%</span> do que negaram.
                                 </p>
                               </div>
                               <div className="flex items-center gap-2 text-medical-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>Contestar agora</span>
+                                <span>⚡ Recuperar meu dinheiro</span>
                                 <ChevronRight className="h-4 w-4" />
                               </div>
                             </div>
@@ -639,10 +637,10 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-gray-800">
-                                  Relatórios
+                                  📊 Seus Relatórios
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  Análises detalhadas
+                                  Quanto ganhou esse mês?
                                 </p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors" />

@@ -1,0 +1,412 @@
+/* ========================================================================
+   MEDCHECK MICRO-INTERACTIONS - ULTRA PREMIUM MEDICAL DESIGN
+   ======================================================================== */
+
+:root {
+  /* === ANIMATION TIMING === */
+  --transition-instant: 0.1s;
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
+  --transition-deliberate: 0.8s;
+
+  /* === EASING CURVES === */
+  --ease-medical: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0.0, 1, 1);
+
+  /* === SHADOW LAYERS === */
+  --shadow-medical-subtle: 0 1px 3px rgba(0, 43, 91, 0.08), 0 1px 2px rgba(0, 43, 91, 0.06);
+  --shadow-medical-soft: 0 4px 6px rgba(0, 43, 91, 0.1), 0 2px 4px rgba(0, 43, 91, 0.08);
+  --shadow-medical-medium: 0 10px 15px rgba(0, 43, 91, 0.1), 0 4px 6px rgba(0, 43, 91, 0.08);
+  --shadow-medical-strong: 0 20px 25px rgba(0, 43, 91, 0.15), 0 10px 10px rgba(0, 43, 91, 0.08);
+  --shadow-medical-glow: 0 0 20px rgba(0, 116, 217, 0.3), 0 0 40px rgba(0, 116, 217, 0.2);
+}
+
+/* ========================================================================
+   PREMIUM BUTTON INTERACTIONS
+   ======================================================================== */
+
+.medical-btn-enhanced {
+  position: relative;
+  transform: translateZ(0);
+  transition: all var(--transition-normal) var(--ease-medical);
+  box-shadow: var(--shadow-medical-subtle);
+  backdrop-filter: blur(1px);
+}
+
+.medical-btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-fast) var(--ease-medical);
+  pointer-events: none;
+}
+
+.medical-btn-enhanced:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: var(--shadow-medical-medium);
+}
+
+.medical-btn-enhanced:hover::before {
+  opacity: 1;
+}
+
+.medical-btn-enhanced:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: var(--shadow-medical-subtle);
+  transition: all var(--transition-instant) var(--ease-medical);
+}
+
+.medical-btn-enhanced:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-medical-medium), 0 0 0 3px rgba(0, 116, 217, 0.3);
+}
+
+/* === PREMIUM BUTTON VARIANTS === */
+.medical-btn-primary {
+  background: linear-gradient(135deg, #0074D9 0%, #002B5B 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.medical-btn-primary:hover {
+  background: linear-gradient(135deg, #0084E9 0%, #003B6B 100%);
+  box-shadow: var(--shadow-medical-glow);
+}
+
+.medical-btn-success {
+  background: linear-gradient(135deg, #079E5B 0%, #065A35 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.medical-btn-ghost {
+  background: rgba(0, 116, 217, 0.05);
+  color: #0074D9;
+  border: 1px solid rgba(0, 116, 217, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.medical-btn-ghost:hover {
+  background: rgba(0, 116, 217, 0.1);
+  border-color: rgba(0, 116, 217, 0.3);
+}
+
+/* ========================================================================
+   PREMIUM CARD INTERACTIONS
+   ======================================================================== */
+
+.medical-card-enhanced {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 116, 217, 0.1);
+  border-radius: 16px;
+  box-shadow: var(--shadow-medical-soft);
+  transition: all var(--transition-normal) var(--ease-medical);
+  transform: translateZ(0);
+  overflow: hidden;
+}
+
+.medical-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(0, 116, 217, 0.03) 50%, transparent 70%);
+  opacity: 0;
+  transition: all var(--transition-slow) var(--ease-medical);
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+.medical-card-enhanced:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-medical-strong);
+  border-color: rgba(0, 116, 217, 0.2);
+}
+
+.medical-card-enhanced:hover::before {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+/* === CARD GLOW EFFECT === */
+.medical-card-glow {
+  position: relative;
+}
+
+.medical-card-glow::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, rgba(0, 116, 217, 0.3), rgba(7, 158, 91, 0.3));
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-medical);
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.medical-card-glow:hover::after {
+  opacity: 1;
+}
+
+/* ========================================================================
+   PREMIUM INPUT INTERACTIONS
+   ======================================================================== */
+
+.medical-input-enhanced {
+  position: relative;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 116, 217, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  transition: all var(--transition-normal) var(--ease-medical);
+  box-shadow: var(--shadow-medical-subtle);
+}
+
+.medical-input-enhanced::placeholder {
+  color: rgba(113, 113, 122, 0.6);
+  transition: color var(--transition-fast) var(--ease-medical);
+}
+
+.medical-input-enhanced:focus {
+  outline: none;
+  border-color: #0074D9;
+  box-shadow: var(--shadow-medical-soft), 0 0 0 3px rgba(0, 116, 217, 0.1);
+  background: rgba(255, 255, 255, 0.98);
+  transform: scale(1.01);
+}
+
+.medical-input-enhanced:focus::placeholder {
+  color: rgba(113, 113, 122, 0.4);
+}
+
+/* === FLOATING LABEL EFFECT === */
+.medical-input-floating {
+  position: relative;
+}
+
+.medical-input-floating .medical-input-label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(113, 113, 122, 0.6);
+  font-size: 16px;
+  font-weight: 500;
+  transition: all var(--transition-normal) var(--ease-medical);
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent 0%, transparent 40%, rgba(255, 255, 255, 0.9) 40%, rgba(255, 255, 255, 0.9) 60%, transparent 60%);
+  padding: 0 4px;
+  z-index: 1;
+}
+
+.medical-input-floating .medical-input-enhanced:focus + .medical-input-label,
+.medical-input-floating .medical-input-enhanced:not(:placeholder-shown) + .medical-input-label {
+  top: 0;
+  transform: translateY(-50%) scale(0.85);
+  color: #0074D9;
+  font-weight: 600;
+}
+
+/* ========================================================================
+   PREMIUM NAVIGATION INTERACTIONS
+   ======================================================================== */
+
+.medical-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: #52525B;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all var(--transition-normal) var(--ease-medical);
+  overflow: hidden;
+}
+
+.medical-nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 116, 217, 0.1) 0%, rgba(7, 158, 91, 0.1) 100%);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-medical);
+  border-radius: inherit;
+}
+
+.medical-nav-item:hover {
+  color: #002B5B;
+  transform: translateX(4px);
+  background: rgba(0, 116, 217, 0.05);
+}
+
+.medical-nav-item:hover::before {
+  opacity: 1;
+}
+
+.medical-nav-item.active {
+  color: #0074D9;
+  background: linear-gradient(135deg, rgba(0, 116, 217, 0.1) 0%, rgba(7, 158, 91, 0.1) 100%);
+  font-weight: 600;
+  border: 1px solid rgba(0, 116, 217, 0.2);
+}
+
+/* ========================================================================
+   PREMIUM DATA VISUALIZATIONS
+   ======================================================================== */
+
+.medical-metric-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(230, 244, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 116, 217, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  transition: all var(--transition-normal) var(--ease-medical);
+  overflow: hidden;
+}
+
+.medical-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #0074D9 0%, #079E5B 50%, #002B5B 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-deliberate) var(--ease-medical);
+}
+
+.medical-metric-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-medical-strong);
+  border-color: rgba(0, 116, 217, 0.2);
+}
+
+.medical-metric-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* === PROGRESS ANIMATIONS === */
+.medical-progress-bar {
+  position: relative;
+  height: 8px;
+  background: rgba(0, 116, 217, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.medical-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0074D9 0%, #079E5B 100%);
+  border-radius: inherit;
+  transition: width var(--transition-deliberate) var(--ease-medical);
+  position: relative;
+}
+
+.medical-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ========================================================================
+   PREMIUM LOADING STATES
+   ======================================================================== */
+
+.medical-skeleton {
+  background: linear-gradient(90deg, rgba(0, 116, 217, 0.05) 25%, rgba(0, 116, 217, 0.1) 50%, rgba(0, 116, 217, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.medical-pulse {
+  animation: medical-pulse 2s infinite;
+}
+
+@keyframes medical-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+/* ========================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.medical-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.3);
+  border-radius: 4px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .medical-btn-enhanced {
+    border-width: 2px;
+  }
+  
+  .medical-card-enhanced {
+    border-width: 2px;
+  }
+  
+  .medical-input-enhanced {
+    border-width: 3px;
+  }
+} 

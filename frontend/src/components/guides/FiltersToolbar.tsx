@@ -389,7 +389,7 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = React.memo(
     const statusSelect = useMemo(
       () => (
         <Select value={status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-48 bg-white/80 backdrop-blur-sm border-gray-200/60 hover:bg-white/90 transition-all duration-200">
+          <SelectTrigger className="w-full bg-white/80 backdrop-blur-sm border-gray-200/60 hover:bg-white/90 transition-all duration-200">
             <SelectValue placeholder="Todos os Status" />
           </SelectTrigger>
           <SelectContent className="bg-white/95 backdrop-blur-sm border border-gray-200/60">
@@ -457,16 +457,18 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = React.memo(
     // ============================================================================
 
     return (
-      <div className="space-y-4 p-6 bg-gradient-to-r from-white/60 to-gray-50/40 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm">
+      <div className="space-y-6 p-6 bg-gradient-to-r from-white/60 to-gray-50/40 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm">
         {/* Cabeçalho com título e badges informativos */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Filter className="h-5 w-5 text-brand-blue" />
               Filtros Avançados
             </h3>
-            {activeFiltersBadge}
-            {pendingBadge}
+            <div className="flex items-center gap-2">
+              {activeFiltersBadge}
+              {pendingBadge}
+            </div>
           </div>
 
           {/* Botão de limpeza - só aparece quando há filtros ativos */}
@@ -477,7 +479,7 @@ export const FiltersToolbar: React.FC<FiltersToolbarProps> = React.memo(
               onClick={handleClearAll}
               className="text-gray-600 hover:text-gray-800 hover:bg-gray-100/60 transition-all duration-200"
             >
-              <XCircle className="h-4 w-4 mr-1" />
+              <XCircle className="h-4 w-4 mr-2" />
               Limpar Filtros
             </Button>
           )}

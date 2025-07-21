@@ -182,20 +182,20 @@ export function DataGrid({
       >
         <div
           className={cn(
-            wrapperScrollable ? 'overflow-x-auto scrollbar-thin' : 'overflow-visible'
+            wrapperScrollable ? 'overflow-x-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 dark:scrollbar-track-gray-700 dark:scrollbar-thumb-gray-500' : 'overflow-visible'
           )}
         >
-          <Table scrollable={false} className="table-auto w-full">
+          <Table scrollable={false} className="table-auto w-full min-w-[800px] sm:min-w-[900px] lg:min-w-full">
             <TableHeader>
               <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                 {enhancedColumns.map((column) => {
                   // Special handling for selection and expand columns
                   if (column.field === '__select') {
                     return (
-                      <TableHead
-                        key="__select"
-                        className="w-[50px] text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
-                      >
+                                          <TableHead
+                      key="__select"
+                      className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
+                    >
                         <Checkbox
                           checked={allSelected}
                           {...(someSelected && { 'data-indeterminate': 'true' })}
@@ -208,10 +208,10 @@ export function DataGrid({
 
                   if (column.field === '__expand') {
                     return (
-                      <TableHead
-                        key="__expand"
-                        className="w-[50px] text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
-                      >
+                                          <TableHead
+                      key="__expand"
+                      className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
+                    >
                         {/* Empty header for expand column */}
                       </TableHead>
                     );
@@ -249,7 +249,7 @@ export function DataGrid({
                     <TableHead
                       key={column.field}
                       style={{ width: column.width, flex: column.flex }}
-                      className="text-center align-middle py-4 px-3 sm:px-4 bg-gray-50 dark:bg-gray-800/50"
+                      className="text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50 min-w-[100px] sm:min-w-[120px]"
                     >
                       {headerContent}
                     </TableHead>
@@ -280,7 +280,7 @@ export function DataGrid({
                           return (
                             <TableCell
                               key={`${rowId}-select`}
-                              className="w-[50px] text-center py-3 px-3 sm:px-4"
+                              className="w-[40px] sm:w-[50px] text-center py-2 sm:py-3 px-2 sm:px-3 md:px-4"
                             >
                               <Checkbox
                                 checked={selectedRows.includes(String(rowId))}
@@ -298,7 +298,7 @@ export function DataGrid({
                           return (
                             <TableCell
                               key={`${rowId}-expand`}
-                              className="w-[50px] text-center py-3 px-3 sm:px-4"
+                              className="w-[40px] sm:w-[50px] text-center py-2 sm:py-3 px-2 sm:px-3 md:px-4"
                             >
                               <Button
                                 variant="ghost"
@@ -324,11 +324,11 @@ export function DataGrid({
                           <TableCell
                             key={`${row?.id || globalIndex}-${column.field}`}
                             className={cn(
-                              'py-3 px-3 sm:px-4 transition-colors duration-200',
+                              'py-2 sm:py-3 px-2 sm:px-3 md:px-4 transition-colors duration-200',
                               isNumeric
                                 ? 'text-right font-mono tabular-nums whitespace-nowrap'
                                 : 'text-left',
-                              'text-gray-800 dark:text-gray-200'
+                              'text-gray-800 dark:text-gray-200 min-w-[80px] sm:min-w-[100px]'
                             )}
                           >
                             {column.renderCell ? (

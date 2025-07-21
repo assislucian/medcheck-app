@@ -18,7 +18,7 @@ interface PublicLayoutProps {
 
 export function PublicLayout({
   children,
-  title,
+  title = "MedCheck",
   description,
   showGradientBackground = false,
   showFooter = true,
@@ -35,7 +35,7 @@ export function PublicLayout({
   return (
     <>
       <Helmet>
-        <title>{title} | MedCheck</title>
+        <title>{title || "MedCheck"} | MedCheck</title>
         {description && <meta name="description" content={description} />}
       </Helmet>
       <div

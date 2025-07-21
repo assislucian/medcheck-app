@@ -1,4 +1,4 @@
-#!/Users/luciandeassis/backend_test/venv/bin/python3
+#!/Users/luciandeassis/backend_test/venv/bin/python
 """Extract pdf structure in XML format"""
 import logging
 import os.path

@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
+import { StandardPageLayout } from '../components/layout/StandardPageLayout';
 import {
   Card,
   CardContent,
@@ -361,7 +361,13 @@ const UnpaidProceduresPage = () => {
 
   if (loading) {
     return (
-      <AuthenticatedLayout>
+      <StandardPageLayout
+        title="Procedimentos Não Pagos"
+        description="Carregando dados..."
+        category="Gestão Crítica"
+        categoryIcon={<AlertTriangle className="h-5 w-5" />}
+        categoryColor="orange"
+      >
         <div className="space-y-6">
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-4">
@@ -370,34 +376,43 @@ const UnpaidProceduresPage = () => {
             </div>
           </div>
         </div>
-      </AuthenticatedLayout>
+      </StandardPageLayout>
     );
   }
 
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <Button
+        onClick={loadUnpaidData}
+        variant="outline"
+        size="sm"
+        className="bg-white/80 backdrop-blur-sm border-gray-200/60"
+      >
+        <RefreshCw className="h-4 w-4 mr-2" />
+        Atualizar
+      </Button>
+      <Button
+        onClick={handleExportExcel}
+        size="sm"
+        className="bg-orange-600 hover:bg-orange-700 text-white"
+      >
+        <Download className="h-4 w-4 mr-2" />
+        Exportar Excel
+      </Button>
+    </div>
+  );
+
   return (
-    <AuthenticatedLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Procedimentos Não Pagos
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Acompanhe os procedimentos que ainda não receberam pagamento dos convênios
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={loadUnpaidData} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
-            <Button onClick={handleExportExcel} variant="default" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Excel
-            </Button>
-          </div>
-        </div>
+    <StandardPageLayout
+      title="Procedimentos Não Pagos"
+      description="Acompanhe os procedimentos que ainda não receberam pagamento dos convênios"
+      category="Gestão Crítica"
+      categoryIcon={<AlertTriangle className="h-5 w-5" />}
+      categoryColor="orange"
+      actions={headerActions}
+      className="from-orange-50/30 via-white to-red-50/20"
+    >
+      <div className="space-y-8">
 
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -559,7 +574,7 @@ const UnpaidProceduresPage = () => {
           </CardContent>
         </Card>
       </div>
-    </AuthenticatedLayout>
+    </StandardPageLayout>
   );
 };
 

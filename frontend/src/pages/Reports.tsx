@@ -224,6 +224,26 @@ const ReportsPage = () => {
 
   return (
     <AuthenticatedLayout>
+      <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
+        <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+          {/* Header Humanizado seguindo padrão Dashboard */}
+          <div className="text-center space-y-4 pt-8">
+            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
+              <BarChart3 className="h-5 w-5 text-medical-700" />
+              <span className="text-sm font-medium text-medical-800">
+                Análise financeira detalhada
+              </span>
+            </div>
+
+            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
+              Relatórios Financeiros
+            </h1>
+
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Análise completa de procedimentos, pagamentos e glosas com base nos dados reais processados.
+            </p>
+          </div>
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row items-center justify-between">
@@ -606,6 +626,7 @@ const ReportsPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        </div>
       </div>
     </AuthenticatedLayout>
   );

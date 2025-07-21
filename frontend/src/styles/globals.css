@@ -1,20 +1,111 @@
+/* === IMPORT PREMIUM MEDICAL DESIGN SYSTEMS === */
+@import './typography.css';
+@import './interactions.css';
+
 @layer base {
   :root {
-    /* superfícies neutras */
-    --surface-0: 255 255 255; /* #FFFFFF  (base)          */
-    --surface-1: 249 250 251; /* #F9FAFB (card)           */
-    --surface-2: 243 244 246; /* #F3F4F6 (header tabela)  */
-    --surface-3: 229 231 235; /* #E5E7EB (border shade)   */
+    /* === MEDICAL COLOR SYSTEM === */
+    --medical-blue-50: 230 244 255;  /* #E6F4FF */
+    --medical-blue-500: 0 116 217;   /* #0074D9 */
+    --medical-blue-700: 0 43 91;     /* #002B5B */
+    --medical-mint-100: 213 245 235; /* #D5F5EB */
+    --medical-mint-500: 7 158 91;    /* #079E5B */
 
-    /* textos padrão */
-    --text-body: 17 24 39; /* #111827 */
+    /* === SURFACE SYSTEM - MEDICAL GRADE === */
+    --surface-0: 255 255 255; /* #FFFFFF  (base clinical white) */
+    --surface-1: 250 252 255; /* #FAFCFF (soft medical tint) */
+    --surface-2: 245 249 254; /* #F5F9FE (elevated medical) */
+    --surface-3: 240 246 253; /* #F0F6FD (medical border) */
+
+    /* === TYPOGRAPHY SYSTEM === */
+    --text-body: 31 41 55;        /* #1F2937 (medical authority) */
+    --text-secondary: 75 85 99;    /* #4B5563 (readable secondary) */
+    --text-caption: 156 163 175;   /* #9CA3AF (subtle medical) */
+
+    /* === SHADOW SYSTEM === */
+    --shadow-subtle: 0 1px 3px 0 rgba(0, 43, 91, 0.06), 0 1px 2px 0 rgba(0, 43, 91, 0.04);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 43, 91, 0.08), 0 2px 4px -1px rgba(0, 43, 91, 0.04);
+    --shadow-strong: 0 10px 15px -3px rgba(0, 43, 91, 0.1), 0 4px 6px -2px rgba(0, 43, 91, 0.05);
+
+    /* === RADIUS SYSTEM === */
+    --radius-sm: 0.375rem;   /* 6px */
+    --radius-md: 0.5rem;     /* 8px */
+    --radius-lg: 0.75rem;    /* 12px */
+    --radius-xl: 1rem;       /* 16px */
+    --radius-2xl: 1.5rem;    /* 24px */
+
+    /* === SPACING SYSTEM === */
+    --space-xs: 0.25rem;     /* 4px */
+    --space-sm: 0.5rem;      /* 8px */
+    --space-md: 1rem;        /* 16px */
+    --space-lg: 1.5rem;      /* 24px */
+    --space-xl: 2rem;        /* 32px */
+    --space-2xl: 3rem;       /* 48px */
   }
+  
   .dark {
-    --surface-0: 15 17 23; /* #0F1117  */
-    --surface-1: 20 23 29; /* #14171D  */
-    --surface-2: 26 29 36; /* #1A1D24  */
-    --surface-3: 32 36 44; /* #20242C  */
-    --text-body: 229 231 235; /* #E5E7EB */
+    /* === DARK MODE MEDICAL SURFACES === */
+    --surface-0: 15 17 23;    /* #0F1117  (clinical dark) */
+    --surface-1: 20 25 33;    /* #141921  (elevated dark) */
+    --surface-2: 26 32 44;    /* #1A202C  (medical dark) */
+    --surface-3: 32 40 54;    /* #202836  (border dark) */
+
+    /* === DARK MODE TYPOGRAPHY === */
+    --text-body: 230 244 255;     /* #E6F4FF (medical light) */
+    --text-secondary: 186 230 253; /* #BAE6FD (readable light) */
+    --text-caption: 125 211 252;   /* #7DD3FC (subtle light) */
+
+    /* === DARK MODE SHADOWS === */
+    --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-strong: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* === GLOBAL MEDICAL STYLES === */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: rgb(var(--surface-0));
+    color: rgb(var(--text-body));
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* === SELECTION STYLES === */
+  ::selection {
+    background-color: rgba(0, 116, 217, 0.2);
+    color: rgb(var(--text-body));
+  }
+
+  ::-moz-selection {
+    background-color: rgba(0, 116, 217, 0.2);
+    color: rgb(var(--text-body));
+  }
+
+  /* === SCROLLBAR STYLING === */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--surface-1));
+    border-radius: var(--radius-sm);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 116, 217, 0.3);
+    border-radius: var(--radius-sm);
+    border: 2px solid rgb(var(--surface-1));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 116, 217, 0.5);
   }
 }
 
@@ -35,5 +126,21 @@
   td.w-10,
   td.w-12 {
     @apply p-0 align-middle;
+  }
+
+  /* === PREMIUM SKELETON LOADING SYSTEM === */
+  .medical-skeleton {
+    @apply bg-gradient-to-r from-medical-100/70 via-medical-200/50 to-medical-100/70;
+    background-size: 200% 100%;
+    animation: medical-skeleton-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes medical-skeleton-pulse {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 }

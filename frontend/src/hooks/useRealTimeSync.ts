@@ -1,6 +1,7 @@
 /**
  * Hook profissional para sincronização em tempo real
  * Usa Server-Sent Events + BroadcastChannel como SaaS globais
+ * TEMPORARIAMENTE DESABILITADO SSE - apenas BroadcastChannel ativo
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
@@ -44,26 +45,11 @@ export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
     }
   }, []);
 
-  // Notificar servidor sobre mudanças
+  // Notificar servidor sobre mudanças (DESABILITADO)
   const notifyServer = useCallback(async (eventType: string, data: any = {}) => {
-    try {
-      const token = localStorage.getItem('token');
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-      await fetch(`${apiUrl}/api/v1/events/notify`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          event_type: eventType,
-          data,
-        }),
-      });
-    } catch (error) {
-      console.warn('Falha ao notificar servidor:', error);
-    }
+    // TEMPORARIAMENTE DESABILITADO - backend não possui endpoint
+    console.log('📝 Notificação servidor (simulada):', eventType, data);
+    return Promise.resolve();
   }, []);
 
   // Função principal para disparar updates
@@ -77,7 +63,7 @@ export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
       // 2. Broadcast para outras abas
       broadcastUpdate(eventType, data);
 
-      // 3. Notificar servidor (não blocking)
+      // 3. Simular notificação servidor (sem erro)
       notifyServer(eventType, data);
 
       // 4. Atualizar timestamp
@@ -88,17 +74,9 @@ export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
     [onActivityUpdate, broadcastUpdate, notifyServer]
   );
 
-  // Inicializar conexões
+  // Inicializar conexões (APENAS BROADCASTCHANNEL)
   useEffect(() => {
     if (!enabled) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.warn('Token não encontrado - não é possível conectar ao tempo real');
-      return;
-    }
-
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
     // 1. Inicializar BroadcastChannel (sync entre abas)
     try {
@@ -128,63 +106,15 @@ export const useRealTimeSync = (options: UseRealTimeSyncOptions = {}) => {
       };
 
       console.log('✅ BroadcastChannel inicializado');
+      // Simular conexão ativa
+      setIsConnected(true);
     } catch (error) {
       console.warn('BroadcastChannel não suportado:', error);
     }
 
-    // 2. Inicializar Server-Sent Events (updates do servidor) - apenas se tiver token
-    if (token && token.trim()) {
-      try {
-        eventSourceRef.current = new EventSource(
-          `${apiUrl}/api/v1/events/stream?token=${token}`
-        );
-
-        eventSourceRef.current.onopen = () => {
-          setIsConnected(true);
-          console.log('✅ Conectado ao servidor em tempo real');
-        };
-
-        eventSourceRef.current.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'connected') {
-              console.log('🎯 Tempo real ativo:', data.message);
-            } else if (data.type === 'heartbeat') {
-              // Heartbeat silencioso para manter conexão
-            } else {
-              // Eventos reais de dados
-              if (onDataChange) {
-                onDataChange({
-                  type: data.type,
-                  data: data.data,
-                  timestamp: data.timestamp,
-                });
-              }
-            }
-          } catch (error) {
-            console.warn('Erro ao processar SSE:', error);
-          }
-        };
-
-        eventSourceRef.current.onerror = (error) => {
-          setIsConnected(false);
-          console.warn('Erro na conexão SSE:', error);
-
-          // Reconectar automaticamente após 5s
-          setTimeout(() => {
-            if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
-              console.log('🔄 Tentando reconectar...');
-              // A reconexão será feita quando o useEffect rodar novamente
-            }
-          }, 5000);
-        };
-      } catch (error) {
-        console.warn('Erro ao inicializar SSE:', error);
-      }
-    } else {
-      console.log('⚠️ SSE não inicializado: token não disponível');
-    }
+    // 2. SSE TEMPORARIAMENTE DESABILITADO
+    // Evita erros de conexão com endpoint inexistente
+    console.log('ℹ️ SSE desabilitado temporariamente - apenas sync local ativo');
 
     // Cleanup
     return () => {

@@ -25,6 +25,7 @@ interface InfoCardProps {
   };
   loading?: boolean;
   hover?: boolean;
+  size?: 'sm' | 'default';
 }
 
 const variantStyles = {
@@ -70,7 +71,7 @@ const iconVariantStyles = {
 /**
  * InfoCard - Card profissional com gradientes e identidade visual médica
  */
-const InfoCard = ({
+export const InfoCard = ({
   icon,
   title,
   value,
@@ -81,27 +82,31 @@ const InfoCard = ({
   trend,
   loading = false,
   hover = true,
+  size = 'default',
 }: InfoCardProps) => {
+  const isSmall = size === 'sm';
+  
   if (loading) {
     return (
       <div
         className={cn(
-          'w-full rounded-xl border p-8 shadow-sm animate-pulse backdrop-blur-sm',
+          'w-full rounded-xl border shadow-sm animate-pulse backdrop-blur-sm',
+          isSmall ? 'p-4' : 'p-8',
           'bg-gradient-to-br from-gray-100/80 via-gray-200/60 to-gray-300/40 border-gray-200/60',
           'dark:from-gray-800/95 dark:via-gray-700/90 dark:to-gray-800/95 dark:border-gray-600/60',
           className
         )}
       >
-        <div className="flex items-start justify-between mb-6">
-          <div className="h-12 w-12 bg-gray-200/80 rounded-xl shadow-sm dark:bg-gray-600/60 animate-pulse" />
+        <div className={cn("flex items-start justify-between", isSmall ? "mb-3" : "mb-6")}>
+          <div className={cn("bg-gray-200/80 rounded-xl shadow-sm dark:bg-gray-600/60 animate-pulse", isSmall ? "h-8 w-8" : "h-12 w-12")} />
           {trend && (
-            <div className="h-4 w-12 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
+            <div className={cn("bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse", isSmall ? "h-3 w-8" : "h-4 w-12")} />
           )}
         </div>
-        <div className="space-y-4">
-          <div className="h-4 w-24 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
-          <div className="h-8 w-32 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
-          <div className="h-3 w-20 bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse" />
+        <div className={cn("space-y-", isSmall ? "2" : "4")}>
+          <div className={cn("bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse", isSmall ? "h-3 w-20" : "h-4 w-24")} />
+          <div className={cn("bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse", isSmall ? "h-6 w-24" : "h-8 w-32")} />
+          <div className={cn("bg-gray-200/80 rounded dark:bg-gray-600/60 animate-pulse", isSmall ? "h-2 w-16" : "h-3 w-20")} />
         </div>
       </div>
     );
@@ -110,7 +115,8 @@ const InfoCard = ({
   return (
     <div
       className={cn(
-        'w-full rounded-xl border p-8 shadow-sm transition-all duration-300 backdrop-blur-sm',
+        'w-full rounded-xl border shadow-sm transition-all duration-300 backdrop-blur-sm',
+        isSmall ? 'p-3' : 'p-4 sm:p-6 lg:p-8',
         hover &&
           'hover:shadow-lg hover:scale-[1.02] cursor-pointer hover:-translate-y-1',
         'group relative overflow-hidden',
@@ -128,11 +134,12 @@ const InfoCard = ({
 
       <div className="relative z-10">
         {/* Header com ícone e trend */}
-        <div className="flex items-start justify-between mb-6">
+        <div className={cn("flex items-start justify-between", isSmall ? "mb-3" : "mb-4 sm:mb-6")}>
           {icon && (
             <div
               className={cn(
-                'flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-300',
+                'flex items-center justify-center rounded-xl transition-all duration-300',
+                isSmall ? 'h-8 w-8' : 'h-10 w-10 sm:h-12 sm:w-12',
                 'group-hover:scale-110 group-hover:rotate-3',
                 iconVariantStyles[variant]
               )}
@@ -144,7 +151,8 @@ const InfoCard = ({
           {trend && (
             <div
               className={cn(
-                'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 backdrop-blur-sm',
+                'flex items-center gap-1 rounded-lg font-medium transition-all duration-300 backdrop-blur-sm',
+                isSmall ? 'px-2 py-1 text-xs' : 'px-3 py-1.5 text-xs',
                 'group-hover:scale-105',
                 trend.isPositive
                   ? 'bg-emerald-100/80 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-700/60'
@@ -162,15 +170,15 @@ const InfoCard = ({
         </div>
 
         {/* Conteúdo principal com espaçamento melhorado */}
-        <div className="space-y-3">
-          <div className="text-sm font-semibold text-gray-600 dark:text-gray-400 transition-colors duration-300 group-hover:text-gray-700 dark:group-hover:text-gray-300">
+        <div className={cn("space-y-", isSmall ? "1 sm:space-y-2" : "2 sm:space-y-3")}>
+          <div className={cn("font-semibold text-gray-600 dark:text-gray-400 transition-colors duration-300 group-hover:text-gray-700 dark:group-hover:text-gray-300", isSmall ? "text-xs" : "text-xs sm:text-sm")}>
             {title}
           </div>
-          <div className="text-3xl xl:text-4xl font-bold tracking-tight leading-none transition-all duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+          <div className={cn("font-bold tracking-tight leading-none transition-all duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400", isSmall ? "text-lg sm:text-xl" : "text-2xl sm:text-3xl xl:text-4xl")}>
             {value}
           </div>
           {description && (
-            <div className="text-sm text-gray-500 dark:text-gray-500 transition-colors duration-300 group-hover:text-gray-600 dark:group-hover:text-gray-400 leading-relaxed">
+            <div className={cn("text-gray-500 dark:text-gray-500 transition-colors duration-300 group-hover:text-gray-600 dark:group-hover:text-gray-400 leading-relaxed", isSmall ? "text-xs" : "text-xs sm:text-sm")}>
               {description}
             </div>
           )}
@@ -178,7 +186,7 @@ const InfoCard = ({
 
         {/* Children content */}
         {children && (
-          <div className="mt-6 transition-all duration-300 group-hover:translate-x-1">
+          <div className={cn("transition-all duration-300 group-hover:translate-x-1", isSmall ? "mt-3" : "mt-6")}>
             {children}
           </div>
         )}
@@ -186,5 +194,3 @@ const InfoCard = ({
     </div>
   );
 };
-
-export { InfoCard };
