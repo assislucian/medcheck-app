@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import MedCheckLogo from '@/components/ui/MedCheckLogo';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -189,63 +188,56 @@ const HeroSection: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/15 to-mint-50/20 dark:from-slate-900 dark:via-trust-900/8 dark:to-medical-900/8 overflow-hidden">
-      {/* Medical Professional Visual: Premium Clean Background */}
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden">
+      {/* Clean Professional Background */}
       <div className="absolute inset-0">
-        {/* Gradientes médicos premium ultra-suaves */}
-        <div className="absolute top-0 left-1/4 w-[900px] h-[900px] bg-gradient-to-br from-medical-200/12 via-brand-200/8 to-transparent rounded-full blur-[100px] medical-pulse-soft"></div>
-        <div className="absolute bottom-0 right-1/4 w-[1000px] h-[1000px] bg-gradient-to-tl from-mint-200/15 via-medical-200/10 to-transparent rounded-full blur-[120px] medical-pulse-soft animation-delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-gradient-to-r from-trust-200/8 via-mint-200/6 to-transparent rounded-full blur-[140px]"></div>
-
-        {/* Overlays médicos premium com profundidade */}
-        <div className="absolute inset-0 bg-gradient-to-br from-medical-100/4 via-transparent to-mint-100/4"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-brand-100/3 via-transparent to-trust-100/3"></div>
-        <div className="absolute inset-0 bg-gradient-to-bl from-medical-100/2 via-transparent to-mint-100/3"></div>
-
-        {/* Noise texture premium para profundidade */}
-        <div className="absolute inset-0 opacity-[0.015] bg-[url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%20256%20256%22%20xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cfilter%20id%3D%22noiseFilter%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.9%22%20numOctaves%3D%224%22%20stitchTiles%3D%22stitch%22/%3E%3C/filter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url(%23noiseFilter)%22/%3E%3C/svg%3E')]"></div>
+        {/* Subtle gradients for depth */}
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-gradient-to-br from-blue-100/30 via-indigo-100/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-[700px] h-[700px] bg-gradient-to-tl from-emerald-100/25 via-cyan-100/20 to-transparent rounded-full blur-3xl"></div>
+        
+        {/* Light overlay for professionalism */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-slate-50/30"></div>
       </div>
 
-      {/* Grid pattern médico ultra-sutil */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,116,217,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,116,217,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(0,116,217,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,116,217,0.01)_1px,transparent_1px)] bg-[size:80px_80px]"></div>
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:60px_60px]"></div>
 
       <div className="relative z-10">
-        {/* Header Premium com Cores Douradas */}
-        <header className="px-6 py-8">
+        {/* Clean Professional Header */}
+        <header className="px-6 py-6">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <MedCheckLogo
-                size="lg"
-                className="group-hover:scale-110 transition-transform duration-300"
-              />
-              <span className="text-3xl font-bold bg-gradient-to-r from-health-dark via-health-primary to-health-accent bg-clip-text text-transparent">
+            {/* Logo section without icon - just clean text */}
+            <div className="flex items-center">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
                 MedCheck
-              </span>
+              </h1>
             </div>
+            
+            {/* Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <nav className="flex space-x-8">
                 <button
                   onClick={() => handleNavigateToSection('solucoes')}
-                  className="text-ink dark:text-health-surface hover:text-health-primary dark:hover:text-health-accent transition-colors font-semibold"
+                  className="text-slate-700 hover:text-blue-600 transition-colors font-medium"
                 >
                   Soluções
                 </button>
                 <button
                   onClick={() => handleNavigateToSection('precos')}
-                  className="text-ink dark:text-health-surface hover:text-health-accent dark:hover:text-mint-500 transition-colors font-semibold"
+                  className="text-slate-700 hover:text-blue-600 transition-colors font-medium"
                 >
                   Preços
                 </button>
                 <button
                   onClick={() => handleNavigateToSection('contato')}
-                  className="text-ink dark:text-health-surface hover:text-health-primary dark:hover:text-health-accent transition-colors font-semibold"
+                  className="text-slate-700 hover:text-blue-600 transition-colors font-medium"
                 >
                   Contato
                 </button>
               </nav>
               <Button
                 onClick={handleLogin}
-                className="px-8 py-3 bg-gradient-to-r from-health-primary via-health-accent to-health-primary hover:from-health-dark hover:via-health-accent hover:to-health-dark text-white rounded-xl transition-all duration-300 hover:scale-105 shadow-xl shadow-health-primary/30 font-bold"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium"
               >
                 {session ? 'Dashboard' : 'Entrar'}
               </Button>
@@ -254,205 +246,134 @@ const HeroSection: React.FC = () => {
         </header>
 
         {/* Hero Content */}
-        <div className="px-6 py-16">
+        <div className="px-6 py-12">
           <div className="max-w-7xl mx-auto">
-            {/* Badge Premium with Cool Colors */}
-            <div className="flex justify-center mb-12">
-              <div className="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-health-surface/80 via-health-soft/70 to-health-surface/80 dark:from-health-dark/40 dark:via-health-primary/30 dark:to-health-dark/40 backdrop-blur-xl border border-health-primary/50 dark:border-health-accent/40 shadow-2xl shadow-health-primary/20">
-                <Award className="w-6 h-6 text-health-dark dark:text-health-accent mr-3" />
-                <span className="text-health-dark dark:text-health-surface font-bold text-lg">
+            {/* Professional Badge */}
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/80 backdrop-blur-sm border border-slate-200 shadow-sm">
+                <Award className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-slate-700 font-medium">
                   #1 em Auditoria Médica no Brasil - Mais de 2.500 médicos confiam
                 </span>
               </div>
             </div>
 
-            {/* Headline with Medical Colors */}
-            <div className="text-center max-w-6xl mx-auto mb-20">
-              <h1 className="text-6xl md:text-8xl font-bold mb-10 leading-tight">
-                <span className="text-ink dark:text-health-surface">
+            {/* Clean Main Headline */}
+            <div className="text-center max-w-5xl mx-auto mb-16">
+              <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+                <span className="text-slate-900 dark:text-white">
                   Médico, pare de{' '}
                 </span>
-                <span className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 bg-clip-text text-transparent drop-shadow-lg">
+                <span className="bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
                   perder dinheiro
                 </span>
                 <br />
-                <span className="text-ink dark:text-health-surface">com </span>
-                <span className="bg-gradient-to-r from-health-primary via-health-accent to-health-primary bg-clip-text text-transparent drop-shadow-lg">
+                <span className="text-slate-900 dark:text-white">com </span>
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
                   glosas abusivas
                 </span>
-              </h1>
+              </h2>
 
-              <p className="text-2xl md:text-3xl text-ink-light dark:text-health-surface mb-16 leading-relaxed max-w-5xl mx-auto font-medium">
+              <p className="text-xl md:text-2xl text-slate-600 mb-12 leading-relaxed max-w-4xl mx-auto">
                 A primeira plataforma brasileira que combina{' '}
-                <strong className="text-health-primary dark:text-health-accent font-bold">
-                  auditoria CBHPM
-                </strong>
-                ,
-                <strong className="text-health-accent dark:text-mint-500 font-bold">
-                  {' '}
-                  contestação automatizada
-                </strong>{' '}
-                e
-                <strong className="text-health-primary dark:text-health-accent font-bold">
-                  {' '}
-                  gestão financeira médica
-                </strong>{' '}
-                em um só lugar.
+                <strong className="text-blue-600 font-semibold">auditoria CBHPM</strong>,{' '}
+                <strong className="text-emerald-600 font-semibold">contestação automatizada</strong> e{' '}
+                <strong className="text-indigo-600 font-semibold">gestão financeira médica</strong> em um só lugar.
               </p>
 
-              {/* Pain Points Premium Medical Design */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+              {/* Clean Pain Points */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {painPoints.map((pain, index) => (
                   <div
                     key={index}
-                    className="group medical-card-premium medical-hover-lift medical-transition-slow rounded-3xl p-8 relative overflow-hidden"
+                    className="bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
                   >
-                    {/* Subtle gradient overlay for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-50/60 via-transparent to-rose-50/40 dark:from-red-900/20 dark:via-transparent dark:to-rose-900/10 rounded-3xl"></div>
-
-                    {/* Icon container with premium styling */}
-                    <div className="relative z-10 mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-100 to-rose-100 dark:from-red-900/40 dark:to-rose-900/40 flex items-center justify-center group-hover:scale-110 medical-transition border border-red-200/50 dark:border-red-800/50">
-                        <div className="text-red-600 dark:text-red-400">
-                          {pain.icon}
-                        </div>
-                      </div>
+                    <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center mb-4">
+                      <div className="text-red-600">{pain.icon}</div>
                     </div>
-
-                    {/* Content with improved hierarchy */}
-                    <div className="relative z-10 space-y-4">
-                      <h3 className="text-xl font-bold text-ink dark:text-health-surface leading-tight">
-                        {pain.title}
-                      </h3>
-                      <p className="text-ink-light dark:text-health-surface/80 text-sm leading-relaxed">
-                        {pain.description}
-                      </p>
-
-                      {/* Impact badge with premium styling */}
-                      <div className="inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r from-red-100/80 to-rose-100/80 dark:from-red-900/60 dark:to-rose-900/60 border border-red-200/60 dark:border-red-800/50 medical-elevation-1">
-                        <span className="text-red-700 dark:text-red-300 text-sm font-semibold">
-                          {pain.impact}
-                        </span>
-                      </div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      {pain.title}
+                    </h3>
+                    <p className="text-slate-600 text-sm mb-3">
+                      {pain.description}
+                    </p>
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                      {pain.impact}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* CTAs Premium Medical Design */}
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
+              {/* Clean CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                 <Button
                   onClick={handleStartTrial}
-                  className="group px-16 py-6 bg-gradient-to-r from-health-primary via-health-accent to-health-primary hover:from-health-dark hover:via-health-accent hover:to-health-dark text-white text-xl font-bold rounded-2xl medical-transition medical-elevation-2 hover:medical-elevation-3 flex items-center shadow-lg shadow-health-primary/20 hover:shadow-health-primary/30"
+                  className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center group"
                 >
-                  <span className="relative z-10">
-                    Começar Teste Grátis por 30 Dias
-                  </span>
-                  <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 medical-transition relative z-10" />
-
-                  {/* Shimmer effect overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 rounded-2xl"></div>
+                  <span>Começar Teste Grátis por 30 Dias</span>
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
 
                 <Button
                   onClick={handleShowDemo}
                   variant="outline"
-                  className="group px-16 py-6 medical-card-premium text-health-dark dark:text-health-surface text-xl font-bold rounded-2xl medical-transition medical-elevation-1 hover:medical-elevation-2 backdrop-blur-xl border border-health-primary/20 dark:border-health-accent/20 flex items-center"
+                  className="px-8 py-4 bg-white/80 backdrop-blur-sm border-slate-300 text-slate-700 text-lg font-semibold rounded-xl transition-all duration-200 hover:bg-slate-50 flex items-center"
                 >
-                  <Play className="mr-3 w-6 h-6 group-hover:scale-110 medical-transition" />
+                  <Play className="mr-2 w-5 h-5" />
                   <span>Ver Demonstração (3 min)</span>
                 </Button>
               </div>
 
-              {/* Stats Premium Medical Design */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-24">
+              {/* Clean Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
                 {stats.map((stat, index) => (
                   <div
                     key={index}
-                    className="text-center medical-card-premium medical-hover-lift medical-transition-slow rounded-3xl p-8 group medical-fade-in-up"
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className="text-center bg-white/60 backdrop-blur-sm rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
                   >
-                    {/* Gradient background with depth */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-health-surface/20 via-transparent to-health-soft/10 rounded-3xl opacity-0 group-hover:opacity-100 medical-transition"></div>
-
-                    <div className="relative z-10 space-y-4">
-                      {/* Number with enhanced gradient */}
-                      <div className="text-5xl md:text-6xl font-bold medical-text-gradient mb-4 group-hover:scale-105 medical-transition">
-                        {stat.value}
-                      </div>
-
-                      {/* Label with premium typography */}
-                      <div className="text-health-dark dark:text-health-surface font-bold text-xl mb-2 leading-tight">
-                        {stat.label}
-                      </div>
-
-                      {/* Subtitle with refined styling */}
-                      <div className="text-ink-light dark:text-health-accent text-sm font-medium opacity-80">
-                        {stat.sublabel}
-                      </div>
-
-                      {/* Decorative accent line */}
-                      <div className="w-12 h-0.5 bg-gradient-to-r from-health-primary to-health-accent mx-auto rounded-full opacity-0 group-hover:opacity-100 medical-transition"></div>
+                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                      {stat.value}
+                    </div>
+                    <div className="text-slate-900 font-semibold text-lg mb-1">
+                      {stat.label}
+                    </div>
+                    <div className="text-slate-600 text-sm">
+                      {stat.sublabel}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Solutions Premium Medical Design */}
-            <div id="solucoes" className="grid md:grid-cols-2 gap-12 mb-24">
+            {/* Clean Solutions */}
+            <div id="solucoes" className="grid md:grid-cols-2 gap-8 mb-16">
               {solutions.map((solution, index) => (
                 <div
                   key={index}
-                  className="group medical-card-premium medical-hover-lift medical-transition-slow rounded-3xl p-12 relative overflow-hidden medical-fade-in-up"
-                  style={{ animationDelay: `${index * 0.2}s` }}
+                  className="bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-8 hover:shadow-lg transition-all duration-300"
                 >
-                  {/* Premium gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-health-accent/5 via-transparent to-mint-200/10 rounded-3xl opacity-0 group-hover:opacity-100 medical-transition"></div>
-
-                  <div className="relative z-10 flex items-start space-x-8">
-                    {/* Icon container with enhanced styling */}
-                    <div className="flex-shrink-0">
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-health-accent/20 via-health-accent/10 to-mint-200/20 flex items-center justify-center group-hover:scale-110 medical-transition medical-elevation-2 border border-health-accent/20">
-                        <div className="text-health-accent dark:text-health-accent text-3xl">
-                          {solution.icon}
-                        </div>
-                      </div>
+                  <div className="flex items-start space-x-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0">
+                      <div className="text-blue-600">{solution.icon}</div>
                     </div>
-
-                    <div className="flex-1 space-y-6">
-                      {/* Title with premium typography */}
-                      <h3 className="text-3xl font-bold text-health-dark dark:text-health-surface leading-tight">
+                    <div className="flex-1 space-y-4">
+                      <h3 className="text-2xl font-bold text-slate-900">
                         {solution.title}
                       </h3>
-
-                      {/* Description with improved readability */}
-                      <p className="text-ink-light dark:text-health-surface/90 leading-relaxed text-lg">
+                      <p className="text-slate-600 leading-relaxed">
                         {solution.description}
                       </p>
-
-                      {/* Features with enhanced design */}
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {solution.features.map((feature, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center text-ink dark:text-health-surface/90 group-hover:translate-x-1 medical-transition"
-                            style={{ transitionDelay: `${idx * 0.05}s` }}
-                          >
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-health-accent to-mint-500 flex items-center justify-center mr-4 flex-shrink-0">
-                              <CheckCircle className="w-4 h-4 text-white" />
-                            </div>
-                            <span className="font-semibold">{feature}</span>
+                          <div key={idx} className="flex items-center text-slate-700">
+                            <CheckCircle className="w-5 h-5 text-emerald-600 mr-3 flex-shrink-0" />
+                            <span className="font-medium">{feature}</span>
                           </div>
                         ))}
                       </div>
-
-                      {/* Benefit badge with premium styling */}
-                      <div className="inline-flex items-center px-8 py-4 rounded-2xl medical-card-premium medical-elevation-1 border border-health-accent/20">
-                        <Target className="w-6 h-6 text-health-accent mr-3" />
-                        <span className="text-health-dark dark:text-health-surface font-bold text-lg">
-                          {solution.benefit}
-                        </span>
+                      <div className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-100 text-emerald-700 font-semibold">
+                        <Target className="w-5 h-5 mr-2" />
+                        {solution.benefit}
                       </div>
                     </div>
                   </div>
@@ -460,118 +381,80 @@ const HeroSection: React.FC = () => {
               ))}
             </div>
 
-            {/* Testimonials Premium Medical Design */}
-            <div className="mb-24">
-              <h2 className="text-5xl font-bold text-center text-health-dark dark:text-health-surface mb-16 medical-text-gradient">
+            {/* Clean Testimonials */}
+            <div className="mb-16">
+              <h2 className="text-4xl font-bold text-center text-slate-900 mb-12">
                 O que os médicos estão dizendo
               </h2>
-              <div className="grid md:grid-cols-3 gap-10">
+              <div className="grid md:grid-cols-3 gap-8">
                 {testimonials.map((testimonial, index) => (
                   <div
                     key={index}
-                    className="medical-card-premium medical-hover-lift medical-transition-slow rounded-3xl p-10 relative overflow-hidden group medical-fade-in-up"
-                    style={{ animationDelay: `${index * 0.15}s` }}
+                    className="bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
                   >
-                    {/* Subtle premium overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-health-surface/10 via-transparent to-health-soft/5 rounded-3xl opacity-0 group-hover:opacity-100 medical-transition"></div>
-
-                    <div className="relative z-10 space-y-6">
-                      {/* Header with avatar and info */}
-                      <div className="flex items-center space-x-5">
-                        <div className="w-16 h-16 bg-gradient-to-br from-health-primary to-health-accent rounded-2xl flex items-center justify-center text-white font-bold text-xl medical-elevation-2 group-hover:scale-110 medical-transition shadow-lg">
-                          {testimonial.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-health-dark dark:text-health-surface text-lg leading-tight">
-                            {testimonial.name}
-                          </h4>
-                          <p className="text-health-accent dark:text-health-accent font-semibold">
-                            {testimonial.specialty}
-                          </p>
-                          <p className="text-ink-light dark:text-health-surface/70 text-sm">
-                            {testimonial.location}
-                          </p>
-                        </div>
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold">
+                        {testimonial.avatar}
                       </div>
-
-                      {/* Stars with enhanced styling */}
-                      <div className="flex space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="w-6 h-6 text-health-accent fill-current group-hover:scale-110 medical-transition"
-                            style={{ transitionDelay: `${i * 0.05}s` }}
-                          />
-                        ))}
+                      <div>
+                        <h4 className="font-bold text-slate-900">
+                          {testimonial.name}
+                        </h4>
+                        <p className="text-blue-600 font-medium text-sm">
+                          {testimonial.specialty}
+                        </p>
+                        <p className="text-slate-500 text-sm">
+                          {testimonial.location}
+                        </p>
                       </div>
-
-                      {/* Quote with premium typography */}
-                      <blockquote className="text-health-dark dark:text-health-surface italic text-lg leading-relaxed font-medium relative">
-                        <span className="text-6xl text-health-accent/20 absolute -top-4 -left-2 font-serif">
-                          "
-                        </span>
-                        <span className="relative z-10">{testimonial.quote}</span>
-                        <span className="text-6xl text-health-accent/20 absolute -bottom-8 -right-2 font-serif">
-                          "
-                        </span>
-                      </blockquote>
                     </div>
+                    <div className="flex space-x-1 mb-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 text-yellow-500 fill-current" />
+                      ))}
+                    </div>
+                    <blockquote className="text-slate-700 italic leading-relaxed">
+                      "{testimonial.quote}"
+                    </blockquote>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* CTA Final Premium Medical Design */}
-            <div
-              id="precos"
-              className="text-center medical-card-premium medical-elevation-3 rounded-3xl p-20 relative overflow-hidden group"
-            >
-              {/* Premium background layers */}
-              <div className="absolute inset-0 bg-gradient-to-br from-health-surface/20 via-health-primary/5 to-health-soft/15 dark:from-health-dark/30 dark:via-health-primary/10 dark:to-health-accent/20 rounded-3xl"></div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-health-accent/3 to-transparent rounded-3xl"></div>
-
-              {/* Animated background elements */}
-              <div className="absolute top-10 left-10 w-20 h-20 bg-gradient-to-br from-health-accent/10 to-transparent rounded-full blur-xl group-hover:scale-150 medical-transition-slow"></div>
-              <div className="absolute bottom-10 right-10 w-32 h-32 bg-gradient-to-br from-health-primary/8 to-transparent rounded-full blur-2xl group-hover:scale-125 medical-transition-slow"></div>
-
-              <div className="relative z-10 space-y-12">
-                <div className="space-y-6">
-                  <h2 className="text-6xl font-bold medical-text-gradient leading-tight">
+            {/* Clean Final CTA */}
+            <div id="precos" className="text-center bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-12">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <h2 className="text-5xl font-bold text-slate-900">
                     Pronto para recuperar seu dinheiro?
                   </h2>
-                  <p className="text-2xl text-ink-light dark:text-health-surface max-w-4xl mx-auto leading-relaxed font-medium">
-                    Junte-se a mais de 2.500 médicos que já aumentaram sua receita com o
-                    MedCheck
+                  <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+                    Junte-se a mais de 2.500 médicos que já aumentaram sua receita com o MedCheck
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                   <Button
                     onClick={handleStartTrial}
-                    className="group px-20 py-8 bg-gradient-to-r from-health-primary via-health-accent to-health-primary hover:from-health-dark hover:via-health-accent hover:to-health-dark text-white text-2xl font-bold rounded-2xl medical-transition medical-elevation-2 hover:medical-elevation-3 flex items-center shadow-lg shadow-health-primary/20 hover:shadow-health-primary/30 relative overflow-hidden"
+                    className="px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xl font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center group"
                   >
-                    <span className="relative z-10">
-                      Começar Agora - Grátis por 30 Dias
-                    </span>
-                    <ArrowRight className="ml-4 w-8 h-8 group-hover:translate-x-1 medical-transition relative z-10" />
-
-                    {/* Enhanced shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1200 rounded-2xl"></div>
+                    <span>Começar Agora - Grátis por 30 Dias</span>
+                    <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
                   </Button>
 
-                  <div className="text-ink-light dark:text-health-accent font-semibold text-lg space-y-2">
-                    <div className="flex items-center justify-center space-x-6">
+                  <div className="text-slate-600 font-medium space-y-1">
+                    <div className="flex items-center justify-center space-x-4">
                       <span className="flex items-center">
-                        <CheckCircle className="w-5 h-5 text-health-accent mr-2" />
+                        <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
                         Sem cartão de crédito
                       </span>
                       <span className="flex items-center">
-                        <CheckCircle className="w-5 h-5 text-health-accent mr-2" />
+                        <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
                         Suporte especializado
                       </span>
                     </div>
                     <div className="flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-health-accent mr-2" />
+                      <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
                       Resultados em 7 dias
                     </div>
                   </div>
@@ -579,35 +462,27 @@ const HeroSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Social Proof with Health Colors */}
-            <div id="contato" className="text-center mt-20">
-              <p className="text-ink-light dark:text-health-accent mb-12 text-lg font-medium">
+            {/* Clean Social Proof */}
+            <div id="contato" className="text-center mt-16">
+              <p className="text-slate-600 mb-8 font-medium">
                 Confiado por médicos em todo o Brasil
               </p>
-              <div className="flex justify-center items-center space-x-12 opacity-80">
-                <div className="flex items-center space-x-3 p-6 rounded-xl bg-gradient-to-r from-health-surface/80 to-health-soft/80 dark:from-health-dark/30 dark:to-health-primary/30 shadow-lg">
-                  <Users className="w-6 h-6 text-health-primary dark:text-health-accent" />
-                  <span className="text-health-dark dark:text-health-surface font-bold">
-                    CFM Aprovado
-                  </span>
+              <div className="flex justify-center items-center space-x-8">
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
+                  <Users className="w-5 h-5 text-blue-600" />
+                  <span className="text-slate-700 font-medium">CFM Aprovado</span>
                 </div>
-                <div className="flex items-center space-x-3 p-6 rounded-xl bg-gradient-to-r from-health-soft/80 to-mint-100/80 dark:from-health-accent/30 dark:to-mint-900/30 shadow-lg">
-                  <Shield className="w-6 h-6 text-health-accent dark:text-mint-300" />
-                  <span className="text-health-dark dark:text-health-surface font-bold">
-                    LGPD Compliant
-                  </span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                  <span className="text-slate-700 font-medium">LGPD Compliant</span>
                 </div>
-                <div className="flex items-center space-x-3 p-6 rounded-xl bg-gradient-to-r from-health-surface/80 to-health-primary/80 dark:from-health-primary/30 dark:to-health-dark/30 shadow-lg">
-                  <Award className="w-6 h-6 text-health-primary dark:text-health-accent" />
-                  <span className="text-health-dark dark:text-health-surface font-bold">
-                    ISO 27001
-                  </span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
+                  <Award className="w-5 h-5 text-indigo-600" />
+                  <span className="text-slate-700 font-medium">ISO 27001</span>
                 </div>
-                <div className="flex items-center space-x-3 p-6 rounded-xl bg-gradient-to-r from-health-soft/80 to-health-surface/80 dark:from-health-accent/30 dark:to-health-dark/30 shadow-lg">
-                  <Briefcase className="w-6 h-6 text-health-accent dark:text-health-primary" />
-                  <span className="text-health-dark dark:text-health-surface font-bold">
-                    Suporte Jurídico
-                  </span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
+                  <Briefcase className="w-5 h-5 text-slate-600" />
+                  <span className="text-slate-700 font-medium">Suporte Jurídico</span>
                 </div>
               </div>
             </div>
@@ -619,12 +494,12 @@ const HeroSection: React.FC = () => {
       <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-amber-700 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-center text-slate-900">
               MedCheck em Ação - Demonstração Completa
             </DialogTitle>
           </DialogHeader>
           <div className="p-6">
-            <div className="aspect-video bg-black rounded-lg overflow-hidden mb-6">
+            <div className="aspect-video bg-slate-900 rounded-lg overflow-hidden mb-6">
               <iframe
                 className="w-full h-full"
                 src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
@@ -635,10 +510,10 @@ const HeroSection: React.FC = () => {
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-amber-100">
+                <h3 className="text-xl font-bold text-slate-900">
                   O que você verá na demonstração:
                 </h3>
-                <ul className="space-y-2 text-slate-700 dark:text-amber-200">
+                <ul className="space-y-2 text-slate-700">
                   <li className="flex items-center">
                     <CheckCircle className="w-5 h-5 text-emerald-600 mr-3" />
                     Upload e análise automática de demonstrativos
@@ -658,31 +533,31 @@ const HeroSection: React.FC = () => {
                 </ul>
               </div>
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-amber-100">
+                <h3 className="text-xl font-bold text-slate-900">
                   Resultados esperados:
                 </h3>
                 <div className="space-y-3">
-                  <div className="p-4 bg-gradient-to-r from-emerald-100/80 to-green-100/80 dark:from-emerald-900/30 dark:to-green-900/30 rounded-lg">
-                    <div className="text-emerald-800 dark:text-emerald-300 font-bold">
+                  <div className="p-4 bg-emerald-100 rounded-lg">
+                    <div className="text-emerald-800 font-bold">
                       +40% de recuperação
                     </div>
-                    <div className="text-emerald-600 dark:text-emerald-400 text-sm">
+                    <div className="text-emerald-600 text-sm">
                       Em honorários defasados
                     </div>
                   </div>
-                  <div className="p-4 bg-gradient-to-r from-amber-100/80 to-yellow-100/80 dark:from-amber-900/30 dark:to-yellow-900/30 rounded-lg">
-                    <div className="text-amber-800 dark:text-amber-300 font-bold">
+                  <div className="p-4 bg-blue-100 rounded-lg">
+                    <div className="text-blue-800 font-bold">
                       -70% de glosas
                     </div>
-                    <div className="text-amber-600 dark:text-amber-400 text-sm">
+                    <div className="text-blue-600 text-sm">
                       Com contestações automáticas
                     </div>
                   </div>
-                  <div className="p-4 bg-gradient-to-r from-blue-100/80 to-indigo-100/80 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg">
-                    <div className="text-blue-800 dark:text-blue-300 font-bold">
+                  <div className="p-4 bg-indigo-100 rounded-lg">
+                    <div className="text-indigo-800 font-bold">
                       8 horas/semana
                     </div>
-                    <div className="text-blue-600 dark:text-blue-400 text-sm">
+                    <div className="text-indigo-600 text-sm">
                       Economizadas em burocracia
                     </div>
                   </div>
@@ -695,7 +570,7 @@ const HeroSection: React.FC = () => {
                   setShowDemoModal(false);
                   handleStartTrial();
                 }}
-                className="px-8 py-3 bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:from-amber-700 hover:via-orange-700 hover:to-yellow-700 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 shadow-xl"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all duration-200"
               >
                 Começar Teste Grátis Agora
               </Button>
