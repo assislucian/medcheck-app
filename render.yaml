@@ -1,7 +1,6 @@
 databases:
   # === DATABASE SERVICE ===
   - name: medcheck-database
-    type: psql
     plan: free
     databaseName: medcheck_prod
     user: medcheck_user
