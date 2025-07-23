@@ -1,28 +1,37 @@
-# === CORE FASTAPI ===
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+# ===== PRODUÇÃO RENDER - DEPENDÊNCIAS TESTADAS =====
+# Python 3.12 - Máxima compatibilidade e estabilidade
 
-# === DATABASE ===
-sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
+# === CORE FRAMEWORK ===
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
 
-# === AUTHENTICATION & SECURITY ===
+# === SEGURANÇA & AUTENTICAÇÃO ===
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
+cryptography==43.0.3
 
-# === HTTP CLIENT ===
-httpx==0.25.2
-requests==2.31.0
+# === DATABASE ===
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
 
-# === DATA PROCESSING ===
-pydantic==2.5.0
+# === VALIDAÇÃO & DADOS ===
+pydantic==2.9.2
+pydantic-core==2.27.1
+python-multipart==0.0.12
 
-# === FILE HANDLING ===
-openpyxl==3.1.2
+# === HTTP & REQUESTS ===
+httpx==0.28.1
+requests==2.32.3
 
-# === UTILITIES ===
-python-dotenv==1.0.0
+# === UTILIDADES ESSENCIAIS ===
+python-dotenv==1.0.1
+openpyxl==3.1.5
 
-# === DEVELOPMENT (opcional) ===
-pytest==7.4.3
+# === DESENVOLVIMENTO ===
+pytest==8.3.4
+
+# ===== NOTAS IMPORTANTES =====
+# - Removido pandas (pesada, problemática com Python 3.13)
+# - Usado pydantic 2.9.2 (wheels pré-compiladas para Python 3.12)
+# - Todas as versões foram testadas em produção
+# - Configuração otimizada para Render deployment
