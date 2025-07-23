@@ -4,7 +4,7 @@ services:
     name: medcheck-backend
     env: python
     plan: starter
-    runtime: python-3.11.9
+    runtime: python-3.11.8
     buildCommand: |
       # Forçar Python 3.11
       echo "Python version:"
