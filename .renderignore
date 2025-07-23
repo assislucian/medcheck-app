@@ -1,0 +1,38 @@
+# Ignorar arquivos do frontend
+frontend/
+frontend/**
+package.json
+package-lock.json
+node_modules/
+dist/
+*.html
+*.css
+*.js
+*.ts
+*.tsx
+vite.config.ts
+tsconfig.json
+
+# Ignorar arquivos de desenvolvimento
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp
+__pycache__/
+.pytest_cache/
+
+# Ignorar uploads e logs
+uploads/
+logs/
+results/
+
+# Ignorar banco de dados local
+*.db
+*.sqlite
+*.sqlite3 
