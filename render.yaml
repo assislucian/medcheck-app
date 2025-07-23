@@ -27,7 +27,7 @@ services:
           property: connectionString
 
   # === DATABASE SERVICE ===
-  - type: pgsql
+  - type: psql
     name: medcheck-database
     plan: free
     databaseName: medcheck_prod
