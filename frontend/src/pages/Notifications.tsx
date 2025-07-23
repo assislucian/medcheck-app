@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StandardPageLayout } from '@/components/layout/StandardPageLayout';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,21 +20,18 @@ import {
   Upload,
   Download,
   Trash2,
-  Edit,
-  Eye,
   CheckCircle,
   XCircle,
   AlertCircle,
   Info,
   Clock,
-  Filter,
-  ArrowUpDown,
-  Loader2,
+  Shield,
+  BarChart3,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import { useRealTimeSync, REAL_TIME_EVENTS } from '@/hooks/useRealTimeSync';
+import { useRealTimeSync } from '@/hooks/useRealTimeSync';
 import {
   Select,
   SelectContent,
@@ -38,6 +41,7 @@ import {
 } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Helmet } from 'react-helmet-async';
 
 interface ActivityLog {
   id: string;
@@ -66,7 +70,7 @@ interface ActivityStats {
 
 const NotificationsPage = () => {
   usePageTitle({
-    title: 'Log de Atividades',
+    title: 'Atividades do Sistema',
     description:
       'Monitoramento em tempo real das atividades do sistema e auditoria de ações',
     keywords:
@@ -153,18 +157,16 @@ const NotificationsPage = () => {
         {}
       );
 
-      const mostCommonAction =
-        Object.entries(actionCounts).length > 0
-          ? Object.entries(actionCounts).reduce((a, b) =>
-              actionCounts[a[0]] > actionCounts[b[0]] ? a : b
-            )[0]
-          : 'N/A';
+      const mostCommonAction = Object.entries(actionCounts).reduce(
+        (a, b) => (actionCounts[a[0]] > actionCounts[b[0]] ? a : b),
+        ['', 0]
+      )[0];
 
       const avgDuration =
-        activityData
-          .filter((a: ActivityLog) => a.duration !== null)
-          .reduce((acc: number, a: ActivityLog) => acc + (a.duration || 0), 0) /
-          activityData.filter((a: ActivityLog) => a.duration !== null).length || 0;
+        activityData.reduce(
+          (acc: number, activity: ActivityLog) => acc + (activity.duration || 0),
+          0
+        ) / activityData.length;
 
       setStats({
         total_activities: activityData.length,
@@ -172,15 +174,19 @@ const NotificationsPage = () => {
         high_risk_activities: highRiskActivities.length,
         failed_activities: failedActivities.length,
         most_common_action: mostCommonAction,
-        average_session_duration: avgDuration,
+        average_session_duration: avgDuration || 0,
       });
 
       if (showToast) {
-        toast.success('Atividades atualizadas com sucesso');
+        toast.success('Atividades atualizadas!', {
+          description: `${activityData.length} registros carregados`,
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar atividades:', error);
-      toast.error('Erro ao carregar log de atividades');
+      toast.error('Erro ao carregar atividades', {
+        description: 'Não foi possível carregar o log de atividades',
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -248,7 +254,7 @@ const NotificationsPage = () => {
     switch (action.toLowerCase()) {
       case 'upload_guia':
       case 'upload_demonstrativo':
-        return <Upload className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
       case 'download':
         return <Download className="h-4 w-4" />;
       case 'delete_guia':
@@ -256,7 +262,7 @@ const NotificationsPage = () => {
         return <Trash2 className="h-4 w-4" />;
       case 'view_demonstrativo':
       case 'view_guia':
-        return <Eye className="h-4 w-4" />;
+        return <FileText className="h-4 w-4" />;
       case 'login':
         return <User className="h-4 w-4" />;
       case 'export':
@@ -350,287 +356,200 @@ const NotificationsPage = () => {
 
   if (loading) {
     return (
-      <StandardPageLayout
-        title="Log de Atividades"
-        description="Carregando histórico de atividades..."
-        category="Sistema & Suporte"
-        categoryIcon={<Activity className="h-5 w-5" />}
-        categoryColor="blue"
-        actions={headerActions}
-        className="from-blue-50/30 via-white to-green-50/20"
-      >
-        <div className="space-y-6">
-          <div className="text-center py-12">
-            <Loader2 className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-spin" />
-            <p className="text-lg text-gray-600">Carregando log de atividades...</p>
-          </div>
-        </div>
-      </StandardPageLayout>
+      <>
+        <Helmet>
+          <title>Atividades do Sistema | MedCheck</title>
+          <meta
+            name="description"
+            content="Monitoramento em tempo real das atividades do sistema e auditoria de ações"
+          />
+        </Helmet>
+
+        <AuthenticatedLayout
+          title="Atividades do Sistema"
+          description="Monitoramento e auditoria de ações"
+          isLoading={true}
+          loadingMessage="Carregando log de atividades..."
+        />
+      </>
     );
   }
 
   return (
-    <StandardPageLayout
-      title="Log de Atividades"
-      description="Monitoramento em tempo real das atividades do sistema e auditoria de ações realizadas"
-      category="Sistema & Suporte"
-      categoryIcon={<Activity className="h-5 w-5" />}
-      categoryColor="blue"
-      actions={headerActions}
-      className="from-blue-50/30 via-white to-green-50/20"
-    >
-      <div className="space-y-8">
+    <>
+      <Helmet>
+        <title>Atividades do Sistema | MedCheck</title>
+        <meta
+          name="description"
+          content="Monitoramento em tempo real das atividades do sistema e auditoria de ações"
+        />
+        <meta
+          name="keywords"
+          content="log de atividades, auditoria, monitoramento, segurança, atividades sistema"
+        />
 
-        {/* Estatísticas */}
-        {stats && (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium">Total de Atividades</p>
-                    <p className="text-2xl font-bold">{stats.total_activities}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Open Graph */}
+        <meta property="og:title" content="Atividades do Sistema | MedCheck" />
+        <meta
+          property="og:description"
+          content="Monitoramento e auditoria de atividades"
+        />
+        <meta property="og:type" content="website" />
+      </Helmet>
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="text-sm font-medium">Hoje</p>
-                    <p className="text-2xl font-bold">{stats.today_activities}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-red-600" />
-                  <div>
-                    <p className="text-sm font-medium">Alto Risco</p>
-                    <p className="text-2xl font-bold">{stats.high_risk_activities}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-orange-600" />
-                  <div>
-                    <p className="text-sm font-medium">Erros</p>
-                    <p className="text-2xl font-bold">{stats.failed_activities}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Filtros */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar atividades..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-
-              <Select value={actionFilter} onValueChange={setActionFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas as ações" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as ações</SelectItem>
-                  {uniqueActions.map((action) => (
-                    <SelectItem key={action} value={action}>
-                      {formatActionName(action)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={riskFilter} onValueChange={setRiskFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os riscos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os riscos</SelectItem>
-                  <SelectItem value="low">Baixo risco</SelectItem>
-                  <SelectItem value="medium">Médio risco</SelectItem>
-                  <SelectItem value="high">Alto risco</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos os períodos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os períodos</SelectItem>
-                  <SelectItem value="today">Hoje</SelectItem>
-                  <SelectItem value="week">Última semana</SelectItem>
-                  <SelectItem value="month">Último mês</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" onClick={clearFilters} className="w-full">
-                Limpar Filtros
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Lista de Atividades */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Atividades ({filteredActivities.length})</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                className="flex items-center gap-2"
-              >
-                <ArrowUpDown className="h-4 w-4" />
-                {sortOrder === 'desc' ? 'Mais recentes' : 'Mais antigas'}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {filteredActivities.length > 0 ? (
-              <div className="space-y-4">
-                {filteredActivities.map((activity) => (
-                  <div key={activity.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-full bg-gray-100">
-                          {getActionIcon(activity.action)}
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-medium">
-                              {formatActionName(activity.action)}
-                            </h4>
-                            {getResultBadge(activity.result, activity.risk_level)}
-                          </div>
-                          {activity.details && (
-                            <p className="text-sm text-muted-foreground">
-                              {activity.details}
-                            </p>
-                          )}
-                          {activity.target && (
-                            <div className="text-xs text-muted-foreground">
-                              {activity.target.tipo && (
-                                <span className="font-medium">Tipo: </span>
-                              )}
-                              {activity.target.tipo}
-                              {activity.target.arquivo && (
-                                <span className="ml-2">
-                                  <span className="font-medium">Arquivo: </span>
-                                  {activity.target.arquivo}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(activity.timestamp), {
-                            addSuffix: true,
-                            locale: ptBR,
-                          })}
-                        </div>
-                        <div className="text-xs">
-                          {new Date(activity.timestamp).toLocaleString('pt-BR')}
-                        </div>
-                        {activity.duration && (
-                          <div className="text-xs">Duração: {activity.duration}ms</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Tags e informações adicionais */}
-                    {(activity.tags?.length > 0 ||
-                      activity.compliance_flags?.length > 0) && (
-                      <div className="flex flex-wrap gap-2">
-                        {activity.tags?.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {activity.compliance_flags?.map((flag, index) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="text-xs bg-blue-100 text-blue-800"
-                          >
-                            {flag}
-                          </Badge>
-                        ))}
+      <AuthenticatedLayout
+        title="Atividades do Sistema"
+        description="Monitoramento e auditoria de ações realizadas no sistema"
+      >
+        <div className="space-y-6">
+          {/* Card Principal */}
+          <Card className="bg-white shadow-sm border-gray-200">
+            <CardHeader className="pb-4 border-b border-gray-100">
+              <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-medical-600" />
+                    Log de Atividades
+                    {stats && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {stats.total_activities} registros
+                      </Badge>
+                    )}
+                    {isConnected && (
+                      <div className="flex items-center gap-1 ml-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-green-700">Tempo Real</span>
                       </div>
                     )}
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    {filteredActivities.length} atividades encontradas
+                    {stats && stats.today_activities > 0 && (
+                      <span className="ml-2 text-brand-600">
+                        • {stats.today_activities} hoje
+                      </span>
+                    )}
+                  </CardDescription>
+                </div>
 
-                    {/* Informações de segurança */}
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <div className="flex items-center gap-4">
-                        <span>CRM: {activity.crm}</span>
-                        {activity.ip && <span>IP: {activity.ip}</span>}
-                        {activity.impact_score !== null && (
-                          <span>Impact: {activity.impact_score}</span>
-                        )}
+                <Button
+                  onClick={() => loadActivities(true)}
+                  variant="outline"
+                  size="sm"
+                  disabled={refreshing}
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`}
+                  />
+                  Atualizar
+                </Button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-6">
+              {/* Filtros Simplificados */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Buscar atividades..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+
+                <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas as ações" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as ações</SelectItem>
+                    <SelectItem value="upload">Upload</SelectItem>
+                    <SelectItem value="download">Download</SelectItem>
+                    <SelectItem value="delete">Exclusão</SelectItem>
+                    <SelectItem value="login">Login</SelectItem>
+                    <SelectItem value="logout">Logout</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todo período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todo período</SelectItem>
+                    <SelectItem value="today">Hoje</SelectItem>
+                    <SelectItem value="week">Última semana</SelectItem>
+                    <SelectItem value="month">Último mês</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Lista de Atividades */}
+              <div className="space-y-3">
+                {filteredActivities.length > 0 ? (
+                  filteredActivities.map((activity) => (
+                    <div
+                      key={activity.id}
+                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
+                            {getActionIcon(activity.action)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {formatActionName(activity.action)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {activity.details || 'Sem detalhes adicionais'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">
+                            {formatDistanceToNow(new Date(activity.timestamp), {
+                              addSuffix: true,
+                              locale: ptBR,
+                            })}
+                          </p>
+                          {activity.risk_level && activity.risk_level !== 'low' && (
+                            <Badge
+                              variant={
+                                activity.risk_level === 'high'
+                                  ? 'destructive'
+                                  : 'secondary'
+                              }
+                              className="text-xs mt-1"
+                            >
+                              {activity.risk_level === 'high'
+                                ? 'Alto Risco'
+                                : 'Médio Risco'}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  {activities.length === 0
-                    ? 'Pronto para registrar suas atividades!'
-                    : 'Nenhuma atividade encontrada'}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {activities.length === 0
-                    ? 'Suas ações no sistema (como upload, exclusão de guias, etc.) aparecerão aqui automaticamente.'
-                    : 'Tente ajustar os filtros para ver mais resultados.'}
-                </p>
-                {activities.length === 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    <p>
-                      💡 <strong>Dica:</strong> Experimente fazer upload de uma guia ou
-                      demonstrativo para ver como funciona!
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Nenhuma atividade encontrada
+                    </h3>
+                    <p className="text-gray-600">
+                      Tente ajustar os filtros ou aguarde novas atividades do sistema.
                     </p>
                   </div>
                 )}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </StandardPageLayout>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthenticatedLayout>
+    </>
   );
 };
 

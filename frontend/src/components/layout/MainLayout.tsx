@@ -90,39 +90,19 @@ export function MainLayout({
             }
           `}
         >
-          {/* Header Premium com UserMenu consolidado */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/90 border-b border-gray-200/60 shadow-sm dark:bg-gray-900/98 dark:border-gray-700/60 dark:shadow-gray-900/20">
-            <div className="flex h-20 items-center justify-between px-8 sm:px-10">
-              {/* Breadcrumbs com mais espaço */}
-              <div className="flex items-center space-x-6 flex-1">
+          {/* Header Clean e Otimizado */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200/50 dark:bg-gray-900/95 dark:border-gray-700/50">
+            <div className="flex h-16 items-center justify-between px-6">
+              {/* Breadcrumbs minimalistas */}
+              <div className="flex items-center flex-1">
                 <Breadcrumbs />
-                {title && (
-                  <div className="hidden md:block">
-                    <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                      {title}
-                    </h1>
-                    {description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {description}
-                      </p>
-                    )}
-                  </div>
-                )}
               </div>
 
-              {/* Search e User Menu consolidado */}
-              <div className="flex items-center space-x-6">
-                {/* Sync Status Indicator */}
-
-                {/* Deploy Version Indicator */}
-                <div className="hidden xl:flex items-center text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
-                  <span className="mr-1">v</span>
-                  <span>2025.01</span>
-                </div>
-
+              {/* Actions do usuário - simplificadas */}
+              <div className="flex items-center space-x-4">
                 <GlobalSearch className="hidden sm:flex" />
 
-                {/* UserMenu Premium - única fonte de informações do usuário */}
+                {/* UserMenu Premium */}
                 {currentUser && (
                   <UserMenu
                     name={displayName}
@@ -138,9 +118,9 @@ export function MainLayout({
             </div>
           </header>
 
-          {/* Page Content com espaçamento natural */}
+          {/* Page Content com espaçamento otimizado */}
           <main className="flex-1 bg-gray-50/30 dark:bg-gray-950/50">
-            <div className="p-8 sm:p-10">
+            <div className="p-6">
               {/* Renderizar children se fornecido, senão usar Outlet para rotas */}
               {children || <Outlet />}
             </div>

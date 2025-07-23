@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 interface BreadcrumbItem {
   label: string;
   href?: string;
-  icon?: React.ReactNode;
 }
 
 interface BreadcrumbsProps {
@@ -20,100 +19,63 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => {
   const location = useLocation();
 
-  // Mapear rotas para breadcrumbs automaticamente
+  // Mapear rotas para breadcrumbs minimalistas
   const routeMap: Record<string, BreadcrumbItem[]> = {
-    '/dashboard': [{ label: 'Centro de Comando', icon: <Home className="h-4 w-4" /> }],
+    '/dashboard': [],
     '/intelligence': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Intelligence Hub' },
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Central de Inteligência' },
     ],
-    '/guides': [
-      { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Guias Médicas', href: '/guides' },
-    ],
+    '/guides': [{ label: 'Dashboard', href: '/dashboard' }, { label: 'Guias Médicas' }],
     '/demonstratives': [
-      { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Demonstrativos', href: '/demonstratives' },
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Demonstrativos' },
     ],
     '/unpaid-procedures': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Gestão Crítica' },
-      { label: 'Glosas Pendentes' },
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Procedimentos Pendentes' },
     ],
-    '/reports': [
-      { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Relatórios', href: '/reports' },
-    ],
-    '/profile': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Configurações' },
-      { label: 'Perfil' },
-    ],
+    '/reports': [{ label: 'Dashboard', href: '/dashboard' }, { label: 'Relatórios' }],
+    '/profile': [{ label: 'Dashboard', href: '/dashboard' }, { label: 'Perfil' }],
     '/notifications': [
-      { name: 'Dashboard', href: '/dashboard' },
-      { name: 'Activity Log', href: '/notifications' },
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Atividades do Sistema' },
     ],
     '/help': [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-      { label: 'Suporte' },
+      { label: 'Dashboard', href: '/dashboard' },
       { label: 'Central de Ajuda' },
     ],
   };
 
   // Usar items customizados ou gerar automaticamente baseado na rota
-  const items = customItems ||
-    routeMap[location.pathname] || [
-      {
-        label: 'Centro de Comando',
-        href: '/dashboard',
-        icon: <Home className="h-4 w-4" />,
-      },
-    ];
+  const items = customItems || routeMap[location.pathname] || [];
 
+  // Se não há breadcrumbs ou só tem um item, não mostrar
   if (items.length <= 1) return null;
 
   return (
     <nav
-      className={cn(
-        'flex items-center space-x-1 text-sm text-muted-foreground py-2 px-1',
-        className
-      )}
+      className={cn('flex items-center text-sm text-gray-500', className)}
       aria-label="Breadcrumb"
     >
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center">
+        <Link
+          to="/dashboard"
+          className="flex items-center hover:text-gray-700 transition-colors"
+          aria-label="Voltar ao Dashboard"
+        >
+          <Home className="h-3.5 w-3.5" />
+        </Link>
+
         {items.map((item, index) => (
           <React.Fragment key={index}>
-            {index > 0 && <ChevronRight className="h-4 w-4 text-muted-foreground/60" />}
+            <ChevronRight className="h-3.5 w-3.5 mx-2 text-gray-400" />
             {item.href ? (
-              <Link
-                to={item.href}
-                className="flex items-center space-x-1 hover:text-primary transition-colors rounded px-2 py-1 hover:bg-muted/50"
-                aria-label={`Ir para ${item.label}`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
+              <Link to={item.href} className="hover:text-gray-700 transition-colors">
+                {item.label}
               </Link>
             ) : (
-              <div className="flex items-center space-x-1 font-medium text-foreground px-2 py-1">
-                {item.icon}
-                <span>{item.label}</span>
-              </div>
+              <span className="text-gray-900 font-medium">{item.label}</span>
             )}
           </React.Fragment>
         ))}

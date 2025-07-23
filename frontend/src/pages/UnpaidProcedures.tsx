@@ -3,12 +3,12 @@
  * =================================
  *
  * Lista procedimentos adicionados via guias que ainda não foram
- * pagos (não aparecem nos demonstrativos), permitindo ao médico
- * acompanhar quais procedimentos estão pendentes de pagamento.
+ * pagos (não aparecem nos demonstrativos), incluindo glosas e
+ * procedimentos expirados (mais de 30 dias).
  */
 
 import React, { useState, useEffect } from 'react';
-import { StandardPageLayout } from '../components/layout/StandardPageLayout';
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
 import {
   Card,
   CardContent,
@@ -30,21 +30,22 @@ import {
 import {
   AlertTriangle,
   Search,
-  FileText,
-  Calendar,
-  User,
-  Building2,
-  DollarSign,
   Clock,
   Download,
   RefreshCw,
-  Eye,
-  Filter,
+  CheckCircle,
+  FileText,
+  CalendarClock,
+  TrendingDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { useAuth } from '../contexts/auth/AuthContext';
-import PaymentStatusIndicator from '../components/payment/PaymentStatusIndicator';
+import { formatCurrency } from '../utils/format';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
+import { format, differenceInDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface UnpaidProcedure {
   numero_guia: string;
@@ -62,12 +63,13 @@ interface UnpaidProcedure {
   status_part?: string;
   days_since?: number;
   estimated_value?: number;
-  hospital?: string;
   urgency?: 'high' | 'medium' | 'low';
 }
 
 interface UnpaidStats {
   total_procedures: number;
+  paid_procedures: number;
+  unpaid_procedures: number;
   total_patients: number;
   total_estimated_value: number;
   oldest_procedure_days: number;
@@ -79,9 +81,17 @@ const UnpaidProceduresPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedHospital, setSelectedHospital] = useState<string>('all');
-  const [selectedUrgency, setSelectedUrgency] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('date_desc');
+  const [sortBy, setSortBy] = useState<string>('urgency_desc');
   const { user } = useAuth();
+
+  // SEO e Título Premium
+  usePageTitle({
+    title: 'Procedimentos Pendentes',
+    description:
+      'Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde',
+    keywords:
+      'procedimentos não pagos, pendências, honorários médicos, glosas, acompanhamento pagamentos',
+  });
 
   const loadUnpaidData = async () => {
     setLoading(true);
@@ -95,6 +105,9 @@ const UnpaidProceduresPage = () => {
       );
 
       setUnpaidData(response.data);
+      toast.success('Dados atualizados!', {
+        description: `${response.data.unpaid_procedures} procedimentos pendentes encontrados`,
+      });
     } catch (error) {
       console.error('Erro ao carregar procedimentos não pagos:', error);
       toast.error('Erro ao carregar dados', {
@@ -125,15 +138,18 @@ const UnpaidProceduresPage = () => {
         selectedHospital === 'all' ||
         (proc.prestador || '').toLowerCase().includes(selectedHospital.toLowerCase());
 
-      const urgencyMatch =
-        selectedUrgency === 'all' || proc.urgency === selectedUrgency;
-
-      return searchMatch && hospitalMatch && urgencyMatch;
+      return searchMatch && hospitalMatch;
     });
 
     // Ordenação
     filtered.sort((a, b) => {
       switch (sortBy) {
+        case 'urgency_desc':
+          const urgencyOrder = { high: 3, medium: 2, low: 1 };
+          return (
+            (urgencyOrder[b.urgency || 'low'] || 0) -
+            (urgencyOrder[a.urgency || 'low'] || 0)
+          );
         case 'date_desc':
           return new Date(b.data).getTime() - new Date(a.data).getTime();
         case 'date_asc':
@@ -142,19 +158,13 @@ const UnpaidProceduresPage = () => {
           return a.beneficiario.localeCompare(b.beneficiario);
         case 'value_desc':
           return (b.estimated_value || 0) - (a.estimated_value || 0);
-        case 'urgency_desc':
-          const urgencyOrder = { high: 3, medium: 2, low: 1 };
-          return (
-            (urgencyOrder[b.urgency || 'low'] || 0) -
-            (urgencyOrder[a.urgency || 'low'] || 0)
-          );
         default:
           return 0;
       }
     });
 
     return filtered;
-  }, [unpaidData, searchTerm, selectedHospital, selectedUrgency, sortBy]);
+  }, [unpaidData, searchTerm, selectedHospital, sortBy]);
 
   // Obter lista única de hospitais/prestadores
   const hospitals = React.useMemo(() => {
@@ -165,169 +175,7 @@ const UnpaidProceduresPage = () => {
     return unique.sort();
   }, [unpaidData]);
 
-  // Estatísticas dos dados filtrados
-  const filteredStats = React.useMemo(() => {
-    const totalValue = filteredData.reduce(
-      (sum, proc) => sum + (proc.estimated_value || 0),
-      0
-    );
-    const uniquePatients = new Set(filteredData.map((p) => p.beneficiario)).size;
-    const oldestDays = Math.max(...filteredData.map((p) => p.days_since || 0), 0);
-
-    return {
-      total_procedures: filteredData.length,
-      total_patients: uniquePatients,
-      total_estimated_value: totalValue,
-      oldest_procedure_days: oldestDays,
-    };
-  }, [filteredData]);
-
-  // Configuração das colunas
-  const columns = [
-    {
-      field: 'urgency',
-      headerName: 'Urgência',
-      width: 80,
-      renderCell: (params: any) => {
-        const urgency = params.value || 'low';
-        const config = {
-          high: { color: 'bg-red-100 text-red-800', icon: '🔴', label: 'Alta' },
-          medium: {
-            color: 'bg-yellow-100 text-yellow-800',
-            icon: '🟡',
-            label: 'Média',
-          },
-          low: { color: 'bg-green-100 text-green-800', icon: '🟢', label: 'Baixa' },
-        };
-        const { color, icon, label } = config[urgency as keyof typeof config];
-
-        return (
-          <div
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${color}`}
-          >
-            <span>{icon}</span>
-            <span>{label}</span>
-          </div>
-        );
-      },
-    },
-    {
-      field: 'numero_guia',
-      headerName: 'Nº Guia',
-      width: 120,
-      renderCell: (params: any) => (
-        <span className="font-mono text-blue-600 dark:text-blue-400">
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'data',
-      headerName: 'Data',
-      width: 100,
-      renderCell: (params: any) => {
-        const daysAgo = params.row.days_since || 0;
-        return (
-          <div className="text-center">
-            <div className="text-sm font-medium">{params.value}</div>
-            {daysAgo > 0 && (
-              <div
-                className={`text-xs ${
-                  daysAgo > 90
-                    ? 'text-red-600'
-                    : daysAgo > 30
-                      ? 'text-yellow-600'
-                      : 'text-gray-500'
-                }`}
-              >
-                {daysAgo} dias
-              </div>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      field: 'beneficiario',
-      headerName: 'Paciente',
-      width: 200,
-      renderCell: (params: any) => (
-        <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-gray-400" />
-          <span className="truncate" title={params.value}>
-            {params.value}
-          </span>
-        </div>
-      ),
-    },
-    {
-      field: 'codigo',
-      headerName: 'Código',
-      width: 100,
-      renderCell: (params: any) => (
-        <span className="font-mono text-gray-700 dark:text-gray-300">
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'descricao',
-      headerName: 'Procedimento',
-      width: 250,
-      renderCell: (params: any) => (
-        <span className="truncate" title={params.value}>
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: 'papel',
-      headerName: 'Papel',
-      width: 120,
-      renderCell: (params: any) => {
-        const papelColors = {
-          Cirurgiao: 'bg-blue-100 text-blue-800',
-          Anestesista: 'bg-purple-100 text-purple-800',
-          'Primeiro Auxiliar': 'bg-green-100 text-green-800',
-          'Segundo Auxiliar': 'bg-orange-100 text-orange-800',
-        };
-        const color =
-          papelColors[params.value as keyof typeof papelColors] ||
-          'bg-gray-100 text-gray-800';
-
-        return <Badge className={`${color} text-xs`}>{params.value}</Badge>;
-      },
-    },
-    {
-      field: 'prestador',
-      headerName: 'Hospital/Prestador',
-      width: 200,
-      renderCell: (params: any) => (
-        <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-gray-400" />
-          <span className="truncate" title={params.value}>
-            {params.value}
-          </span>
-        </div>
-      ),
-    },
-    {
-      field: 'estimated_value',
-      headerName: 'Valor Est.',
-      width: 120,
-      renderCell: (params: any) => {
-        const value = params.value || 0;
-        return (
-          <div className="flex items-center gap-1 text-green-700 dark:text-green-400 font-medium">
-            <DollarSign className="h-3 w-3" />
-            R$ {value.toFixed(2).replace('.', ',')}
-          </div>
-        );
-      },
-    },
-  ];
-
-  const handleExportExcel = async () => {
+  const exportToExcel = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
@@ -342,152 +190,299 @@ const UnpaidProceduresPage = () => {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `procedimentos-nao-pagos-${
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `procedimentos-nao-pagos-${
         new Date().toISOString().split('T')[0]
       }.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      link.click();
 
       toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar relatório:', error);
       toast.error('Erro ao exportar relatório');
     }
   };
 
+  // Colunas otimizadas para evitar scroll horizontal
+  const columns = [
+    {
+      field: 'numero_guia',
+      headerName: 'Guia',
+      width: 100,
+      renderCell: ({ value }) => (
+        <span className="font-mono text-xs text-gray-800">{value}</span>
+      ),
+    },
+    {
+      field: 'data',
+      headerName: 'Data',
+      width: 85,
+      renderCell: ({ value }) => {
+        try {
+          const [day, month, year] = value.split('/');
+          const date = new Date(Number(year), Number(month) - 1, Number(day));
+          return (
+            <span className="text-xs text-gray-600">
+              {format(date, 'dd/MM', { locale: ptBR })}
+            </span>
+          );
+        } catch {
+          return <span className="text-xs text-gray-400">{value}</span>;
+        }
+      },
+    },
+    {
+      field: 'beneficiario',
+      headerName: 'Paciente',
+      width: 150,
+      renderCell: ({ value }) => (
+        <span className="text-xs text-gray-800 truncate" title={value}>
+          {value}
+        </span>
+      ),
+    },
+    {
+      field: 'codigo',
+      headerName: 'Código',
+      width: 90,
+      renderCell: ({ value }) => (
+        <span className="font-mono text-xs text-blue-600">{value}</span>
+      ),
+    },
+    {
+      field: 'descricao',
+      headerName: 'Procedimento',
+      width: 200,
+      renderCell: ({ value }) => (
+        <span className="text-xs text-gray-700 truncate" title={value}>
+          {value}
+        </span>
+      ),
+    },
+    {
+      field: 'papel',
+      headerName: 'Função',
+      width: 100,
+      renderCell: ({ value }) => {
+        const roleColors = {
+          Cirurgião: 'bg-blue-50 text-blue-700 border-blue-200',
+          Cirurgiao: 'bg-blue-50 text-blue-700 border-blue-200',
+          Anestesista: 'bg-green-50 text-green-700 border-green-200',
+          'Primeiro Auxiliar': 'bg-amber-50 text-amber-700 border-amber-200',
+          '1º Auxiliar': 'bg-amber-50 text-amber-700 border-amber-200',
+          Auxiliar: 'bg-amber-50 text-amber-700 border-amber-200',
+        };
+        const color =
+          roleColors[value as keyof typeof roleColors] ||
+          'bg-gray-50 text-gray-700 border-gray-200';
+
+        return <Badge className={`text-xs px-2 py-0.5 ${color}`}>{value}</Badge>;
+      },
+    },
+    {
+      field: 'estimated_value',
+      headerName: 'Valor Est.',
+      width: 90,
+      renderCell: ({ value }) => (
+        <span className="font-mono text-xs text-green-700 font-medium">
+          {value ? formatCurrency(value) : '--'}
+        </span>
+      ),
+    },
+    {
+      field: 'days_since',
+      headerName: 'Dias',
+      width: 70,
+      renderCell: ({ value, row }) => {
+        if (!value || value === 0)
+          return (
+            <Badge variant="outline" className="text-xs">
+              --
+            </Badge>
+          );
+
+        let badgeColor = 'bg-gray-50 text-gray-700 border-gray-200';
+        let icon = <Clock className="h-3 w-3" />;
+
+        if (value > 90) {
+          badgeColor = 'bg-red-50 text-red-700 border-red-200';
+          icon = <AlertTriangle className="h-3 w-3" />;
+        } else if (value > 60) {
+          badgeColor = 'bg-orange-50 text-orange-700 border-orange-200';
+          icon = <CalendarClock className="h-3 w-3" />;
+        } else if (value > 30) {
+          badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+          icon = <Clock className="h-3 w-3" />;
+        }
+
+        return (
+          <Badge
+            className={`text-xs px-2 py-1 gap-1 ${badgeColor}`}
+            title={`Há ${value} dias`}
+          >
+            {icon}
+            {value}d
+          </Badge>
+        );
+      },
+    },
+    {
+      field: 'urgency',
+      headerName: 'Status',
+      width: 90,
+      renderCell: ({ value, row }) => {
+        const days = row.days_since || 0;
+
+        if (days > 90) {
+          return (
+            <Badge variant="destructive" className="gap-1 text-xs">
+              <TrendingDown className="h-3 w-3" />
+              Crítico
+            </Badge>
+          );
+        } else if (days > 60) {
+          return (
+            <Badge className="gap-1 text-xs bg-orange-50 text-orange-700 border-orange-200">
+              <AlertTriangle className="h-3 w-3" />
+              Alto
+            </Badge>
+          );
+        } else if (days > 30) {
+          return (
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Clock className="h-3 w-3" />
+              Médio
+            </Badge>
+          );
+        } else {
+          return (
+            <Badge variant="outline" className="gap-1 text-xs">
+              <CheckCircle className="h-3 w-3" />
+              Normal
+            </Badge>
+          );
+        }
+      },
+    },
+    {
+      field: 'prestador',
+      headerName: 'Hospital',
+      width: 120,
+      renderCell: ({ value }) => (
+        <span className="text-xs text-gray-600 truncate" title={value}>
+          {value || '--'}
+        </span>
+      ),
+    },
+  ];
+
   if (loading) {
     return (
-      <StandardPageLayout
-        title="Procedimentos Não Pagos"
-        description="Carregando dados..."
-        category="Gestão Crítica"
-        categoryIcon={<AlertTriangle className="h-5 w-5" />}
-        categoryColor="orange"
-      >
-        <div className="space-y-6">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-4">
-              <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
-              <p className="text-gray-600">Carregando procedimentos não pagos...</p>
-            </div>
-          </div>
-        </div>
-      </StandardPageLayout>
+      <>
+        <Helmet>
+          <title>Procedimentos Pendentes | MedCheck</title>
+          <meta
+            name="description"
+            content="Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde"
+          />
+        </Helmet>
+
+        <AuthenticatedLayout
+          title="Procedimentos Pendentes"
+          description="Controle de pagamentos pendentes"
+          isLoading={true}
+          loadingMessage="Analisando procedimentos pendentes..."
+        />
+      </>
     );
   }
 
-  const headerActions = (
-    <div className="flex items-center gap-3">
-      <Button
-        onClick={loadUnpaidData}
-        variant="outline"
-        size="sm"
-        className="bg-white/80 backdrop-blur-sm border-gray-200/60"
-      >
-        <RefreshCw className="h-4 w-4 mr-2" />
-        Atualizar
-      </Button>
-      <Button
-        onClick={handleExportExcel}
-        size="sm"
-        className="bg-orange-600 hover:bg-orange-700 text-white"
-      >
-        <Download className="h-4 w-4 mr-2" />
-        Exportar Excel
-      </Button>
-    </div>
-  );
-
   return (
-    <StandardPageLayout
-      title="Procedimentos Não Pagos"
-      description="Acompanhe os procedimentos que ainda não receberam pagamento dos convênios"
-      category="Gestão Crítica"
-      categoryIcon={<AlertTriangle className="h-5 w-5" />}
-      categoryColor="orange"
-      actions={headerActions}
-      className="from-orange-50/30 via-white to-red-50/20"
-    >
-      <div className="space-y-8">
+    <>
+      <Helmet>
+        <title>Procedimentos Pendentes | MedCheck</title>
+        <meta
+          name="description"
+          content="Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde"
+        />
+        <meta
+          name="keywords"
+          content="procedimentos não pagos, pendências, honorários médicos, glosas, acompanhamento pagamentos"
+        />
 
-        {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-red-100 rounded-lg">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
-                </div>
+        {/* Open Graph */}
+        <meta property="og:title" content="Procedimentos Pendentes | MedCheck" />
+        <meta
+          property="og:description"
+          content="Gestão de procedimentos pendentes de pagamento"
+        />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
+      <AuthenticatedLayout
+        title="Procedimentos Pendentes"
+        description="Acompanhe procedimentos que aguardam confirmação de pagamento"
+      >
+        <div className="space-y-6">
+          {/* Card Principal */}
+          <Card className="bg-white shadow-sm border-gray-200">
+            <CardHeader className="pb-4 border-b border-gray-100">
+              <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
                 <div>
-                  <p className="text-sm text-gray-600">Total de Procedimentos</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {filteredStats.total_procedures}
-                  </p>
+                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    Procedimentos Pendentes
+                    {unpaidData && (
+                      <Badge variant="secondary" className="ml-2 text-xs">
+                        {unpaidData.unpaid_procedures} pendentes
+                      </Badge>
+                    )}
+                    {unpaidData && unpaidData.oldest_procedure_days > 30 && (
+                      <Badge variant="destructive" className="ml-2 text-xs">
+                        {unpaidData.oldest_procedure_days > 90 ? 'CRÍTICO' : 'EXPIRADO'}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    {filteredData.length} procedimentos encontrados
+                    {unpaidData && unpaidData.total_patients > 0 && (
+                      <span className="ml-2 text-brand-600">
+                        • {unpaidData.total_patients} pacientes
+                      </span>
+                    )}
+                    {unpaidData && unpaidData.total_estimated_value > 0 && (
+                      <span className="ml-2 text-trust-600">
+                        • {formatCurrency(unpaidData.total_estimated_value)} estimado
+                      </span>
+                    )}
+                    {unpaidData && unpaidData.oldest_procedure_days > 30 && (
+                      <span className="ml-2 text-red-600">
+                        • Mais antigo: {unpaidData.oldest_procedure_days} dias
+                      </span>
+                    )}
+                  </CardDescription>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button onClick={loadUnpaidData} variant="outline" size="sm">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Atualizar
+                  </Button>
+                  <Button
+                    onClick={exportToExcel}
+                    size="sm"
+                    className="bg-medical-600 hover:bg-medical-700 text-white"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar
+                  </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </CardHeader>
 
-          <Card>
             <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <User className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Pacientes Afetados</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {filteredStats.total_patients}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Valor Estimado</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    R${' '}
-                    {filteredStats.total_estimated_value.toFixed(2).replace('.', ',')}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-orange-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Mais Antigo</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {filteredStats.oldest_procedure_days} dias
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filtros */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Buscar</label>
+              {/* Filtros Simplificados */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
@@ -497,16 +492,13 @@ const UnpaidProceduresPage = () => {
                     className="pl-10"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Hospital/Prestador</label>
                 <Select value={selectedHospital} onValueChange={setSelectedHospital}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Todos" />
+                    <SelectValue placeholder="Todos os hospitais" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">Todos os hospitais</SelectItem>
                     {hospitals.map((hospital) => (
                       <SelectItem key={hospital} value={hospital}>
                         {hospital}
@@ -514,67 +506,71 @@ const UnpaidProceduresPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Urgência</label>
-                <Select value={selectedUrgency} onValueChange={setSelectedUrgency}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="high">Alta</SelectItem>
-                    <SelectItem value="medium">Média</SelectItem>
-                    <SelectItem value="low">Baixa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Ordenar por</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Ordenação" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="urgency_desc">Prioridade (alta)</SelectItem>
                     <SelectItem value="date_desc">Data (mais recente)</SelectItem>
-                    <SelectItem value="date_asc">Data (mais antigo)</SelectItem>
+                    <SelectItem value="date_asc">Data (mais antiga)</SelectItem>
                     <SelectItem value="patient_asc">Paciente (A-Z)</SelectItem>
                     <SelectItem value="value_desc">Valor (maior)</SelectItem>
-                    <SelectItem value="urgency_desc">Urgência (alta)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Tabela de Dados */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Lista de Procedimentos Não Pagos
-            </CardTitle>
-            <CardDescription>
-              {filteredData.length > 0
-                ? `${filteredData.length} procedimento(s) encontrado(s)`
-                : 'Nenhum procedimento não pago encontrado'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DataGrid
-              rows={filteredData}
-              columns={columns}
-              pageSize={50}
-              loading={loading}
-              emptyMessage="Nenhum procedimento não pago encontrado"
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </StandardPageLayout>
+              {/* Alerta para procedimentos críticos */}
+              {unpaidData && unpaidData.oldest_procedure_days > 90 && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                    <span className="font-medium text-red-800">
+                      Atenção: Procedimentos Críticos Detectados
+                    </span>
+                  </div>
+                  <p className="text-sm text-red-700 mt-1">
+                    Há procedimentos com mais de 90 dias sem pagamento. Recomenda-se
+                    entrar em contato com os convênios.
+                  </p>
+                </div>
+              )}
+
+              {/* DataGrid Otimizado */}
+              <div className="w-full overflow-hidden border border-gray-200 rounded-lg bg-white">
+                <DataGrid
+                  rows={filteredData.map((item, index) => ({ id: index, ...item }))}
+                  columns={columns}
+                  pageSize={20}
+                  className="border-0"
+                  paginationLabel="Procedimentos por página:"
+                  rowsPerPageOptions={[10, 20, 50]}
+                />
+              </div>
+
+              {/* Estado Vazio */}
+              {filteredData.length === 0 && !loading && (
+                <div className="text-center py-12">
+                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Nenhum procedimento pendente
+                  </h3>
+                  <p className="text-gray-600 max-w-sm mx-auto">
+                    Todos os seus procedimentos foram processados e pagos pelos
+                    convênios.
+                  </p>
+                  <Button onClick={loadUnpaidData} variant="outline" className="mt-4">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Verificar novamente
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </AuthenticatedLayout>
+    </>
   );
 };
 
