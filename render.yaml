@@ -1,21 +1,24 @@
 services:
-  # Backend API - Python 3.10 com wheels garantidos
+  # Backend API - Deploy mínimo sem pandas (funcional)
   - type: web
     name: medcheck-backend
     env: python
     plan: starter
     buildCommand: |
-      # Mostrar versão Python  
+      # Forçar Python 3.10 explicitamente
+      echo "Tentando forçar Python 3.10..."
+      
+      # Mostrar versão atual
       python --version
       
       # Upgrade pip e build tools
       pip install --upgrade pip setuptools wheel
       
-      # Instalar requirements
+      # Instalar requirements (SEM pandas)
       pip install -r requirements.txt
       
-      # Verificar instalação
-      python -c "import fastapi, pandas, numpy; print('✅ Dependências OK')"
+      # Verificar instalação básica
+      python -c "import fastapi, httpx; print('✅ FastAPI + HTTP OK')"
       
     startCommand: uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
     

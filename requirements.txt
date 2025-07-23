@@ -1,29 +1,22 @@
-# Build essentials para Python 3.10
+# Build essentials
 setuptools>=65.0.0
 wheel>=0.38.0
 
-# FastAPI Core - estável Python 3.10
+# FastAPI Core APENAS - sem processamento pesado
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 
-# Processamento - versões COM wheels para Python 3.10
-pandas==2.1.4
-numpy==1.25.2
-
-# HTTP e arquivos
+# HTTP básico
 httpx==0.25.2
 aiofiles==23.2.1
 
-# Excel
-openpyxl==3.1.2
-
-# Validação - Python 3.10 compatível
+# Validação
 pydantic==2.5.2
 python-multipart==0.0.6
 
-# Utilitários
+# Utilitários básicos
 python-dotenv==1.0.0
 
-# Auth (se necessário)
+# Auth básico
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
