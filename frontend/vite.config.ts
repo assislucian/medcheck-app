@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
       '/api': {
         target:
           mode === 'production'
-            ? 'https://medcheck-app-medcheck.up.railway.app'
+            ? 'https://medcheck-backend.onrender.com'
             : 'http://localhost:8000',
         changeOrigin: true,
         secure: true,
@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
       '/token': {
         target:
           mode === 'production'
-            ? 'https://medcheck-app-medcheck.up.railway.app'
+            ? 'https://medcheck-backend.onrender.com'
             : 'http://localhost:8000',
         changeOrigin: true,
         secure: true,
@@ -106,5 +106,12 @@ export default defineConfig(({ mode }) => ({
   preview: {
     port: 8080,
     host: true,
+    allowedHosts: [
+      'medcheck-frontend.onrender.com',
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      '.onrender.com' // Permite qualquer subdomínio do Render
+    ],
   },
 }));
