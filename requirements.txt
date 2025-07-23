@@ -1,36 +1,29 @@
-# ===== MEDCHECK BACKEND - RENDER PYTHON 3.13 =====
-
-# Build essentials
-setuptools>=69.0.0
-wheel>=0.42.0
-
-# FastAPI Stack - com wheels Python 3.13
+# === CORE FASTAPI ===
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-starlette==0.27.0
 
-# Database - PostgreSQL
-psycopg2-binary==2.9.9
+# === DATABASE ===
 sqlalchemy==2.0.23
-alembic==1.13.1
+psycopg2-binary==2.9.9
 
-# HTTP & Async
-httpx==0.25.2
-aiofiles==23.2.1
-
-# Validation & Forms
-pydantic==2.5.2
-python-multipart==0.0.6
-
-# Security & Auth
+# === AUTHENTICATION & SECURITY ===
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
 
-# Environment & Config
+# === HTTP CLIENT ===
+httpx==0.25.2
+requests==2.31.0
+
+# === DATA PROCESSING ===
+pydantic==2.5.0
+
+# === FILE HANDLING ===
+openpyxl==3.1.2
+python-csv==1.0
+
+# === UTILITIES ===
 python-dotenv==1.0.0
 
-# CORS
-fastapi-cors==0.0.6
-
-# Utilities
-python-dateutil==2.8.2
+# === DEVELOPMENT (opcional) ===
+pytest==7.4.3
