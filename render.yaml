@@ -1,18 +1,21 @@
 services:
-  # Backend API - FastAPI (usar Python padrão do Render)
+  # Backend API - FastAPI (Python 3.13.4 com wheels)
   - type: web
     name: medcheck-backend
     env: python
     plan: starter
     buildCommand: |
-      # Mostrar versão Python padrão
+      # Mostrar versão Python
       python --version
       
-      # Upgrade pip primeiro
-      pip install --upgrade pip
+      # Upgrade pip e instalar build essentials primeiro
+      pip install --upgrade pip setuptools wheel
       
-      # Instalar requirements
+      # Instalar requirements (que já inclui setuptools/wheel)
       pip install -r requirements.txt
+      
+      # Verificar instalação crítica
+      python -c "import fastapi, pandas, numpy; print('✅ Dependências OK')"
       
     startCommand: uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
     

@@ -1,23 +1,29 @@
-# FastAPI Core - versões estáveis universais
-fastapi==0.95.0
-uvicorn[standard]==0.22.0
+# Build essentials para Python 3.13
+setuptools>=65.0.0
+wheel>=0.38.0
 
-# Processamento básico - versões com wheels garantidos
-pandas==1.5.3
-numpy==1.24.0
-openpyxl==3.1.0
+# FastAPI Core - compatível com Python 3.13
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Processamento - versões COM wheels para Python 3.13
+pandas==2.2.0
+numpy==1.26.3
 
 # HTTP e arquivos
-httpx==0.24.0
-aiofiles==23.1.0
+httpx==0.25.2
+aiofiles==23.2.1
 
-# Validação
-pydantic==1.10.7
+# Excel
+openpyxl==3.1.2
+
+# Validação - Python 3.13 compatível
+pydantic==2.5.2
 python-multipart==0.0.6
 
-# Utilitários essenciais
+# Utilitários
 python-dotenv==1.0.0
 
-# Auth básico (se necessário)
+# Auth (se necessário)
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
