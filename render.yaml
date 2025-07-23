@@ -5,43 +5,26 @@ services:
     runtime: python
     plan: free
     branch: main
+    healthCheckPath: /health
     buildCommand: |
       echo "🚀 Starting MedCheck Backend Build..."
-      echo "Python version:" $(python --version)
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       echo "✅ Dependencies installed successfully"
-      python -c "import fastapi, pydantic, sqlalchemy, psycopg2; print('✅ All critical imports working')"
-      echo "✅ Backend build completed"
     startCommand: |
       echo "🚀 Starting MedCheck API Production..."
       python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
     envVars:
-      # === APLICAÇÃO ===
+      - key: PYTHON_VERSION
+        value: 3.12.9
       - key: ENVIRONMENT
         value: production
-      - key: DEBUG
-        value: false
-
-      # === SEGURANÇA ===
       - key: SECRET_KEY
         generateValue: true
-      - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: 60
-
-      # === DATABASE (PostgreSQL automático do Render) ===
       - key: DATABASE_URL
         fromDatabase:
           name: medcheck-database
           property: connectionString
-
-      # === CORS (Frontend URLs) ===
-      - key: FRONTEND_ORIGIN
-        value: https://medcheck-frontend.onrender.com
-
-      # === LOG LEVEL ===
-      - key: LOG_LEVEL
-        value: INFO
 
   # === DATABASE SERVICE ===
   - type: pgsql
@@ -56,13 +39,11 @@ services:
     runtime: node
     plan: free
     branch: main
+    healthCheckPath: /
     buildCommand: |
       echo "🚀 Starting Frontend Build..."
       cd frontend
-      echo "Node version:" $(node --version)
-      echo "NPM version:" $(npm --version)
-      npm ci
-      echo "✅ Dependencies installed"
+      npm install
       npm run build
       echo "✅ Frontend build completed"
     startCommand: |
@@ -70,17 +51,8 @@ services:
       cd frontend
       npm run preview -- --host 0.0.0.0 --port $PORT
     envVars:
-      # === API CONFIGURATION ===
       - key: VITE_API_URL
         value: https://medcheck-backend.onrender.com
-
-      # === ENVIRONMENT ===
-      - key: NODE_ENV
-        value: production
-
-      # === BUILD OPTIMIZATION ===
-      - key: GENERATE_SOURCEMAP
-        value: false
 
 # === CONFIGURAÇÕES GLOBAIS ===
 previewsEnabled: false
