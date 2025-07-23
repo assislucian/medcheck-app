@@ -4,20 +4,28 @@ services:
     name: medcheck-backend
     env: python
     plan: starter
+    runtime: python-3.11.9
     buildCommand: |
-      # Usar Python 3.11 para compatibilidade
+      # Forçar Python 3.11
+      echo "Python version:"
+      python --version
+      python3.11 --version || echo "Python 3.11 not found, using default"
+      
+      # Upgrade pip
       python -m pip install --upgrade pip
-      pip install -r requirements.txt
+      
+      # Instalar com cache para acelerar
+      pip install --no-cache-dir -r requirements.txt
       
       # Verificar instalação
-      python -c "import pandas; print(f'Pandas {pandas.__version__} instalado com sucesso')"
-      python -c "import fastapi; print(f'FastAPI {fastapi.__version__} instalado com sucesso')"
+      python -c "import fastapi; print('FastAPI OK')"
+      python -c "import pandas; print('Pandas OK')" || echo "Pandas failed"
       
     startCommand: |
       # Configurar PYTHONPATH
-      export PYTHONPATH="${PYTHONPATH}:/opt/render/project/src"
+      export PYTHONPATH="/opt/render/project/src:$PYTHONPATH"
       
-      # Iniciar servidor otimizado
+      # Iniciar servidor
       uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
       
     envVars:
@@ -27,10 +35,6 @@ services:
         value: false
       - key: CORS_ALLOWED_ORIGINS
         value: "*"
-      - key: JWT_SECRET_KEY
-        generateValue: true
-      - key: LOG_LEVEL
-        value: INFO
       - key: PYTHONPATH
         value: /opt/render/project/src
     

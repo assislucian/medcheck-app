@@ -1,4 +1,4 @@
-# === DEPENDÊNCIAS MEDCHECK - VERSÃO OTIMIZADA ===
+# === DEPENDÊNCIAS MEDCHECK - OTIMIZADO PARA DEPLOY RÁPIDO ===
 
 # Framework Web Principal
 fastapi==0.115.12
@@ -12,60 +12,24 @@ python-multipart==0.0.6
 
 # Banco de Dados
 sqlalchemy==2.0.23
-# sqlite3 - Built-in Python (não precisa instalar)
 
-# Processamento de Dados - Versões compatíveis
-pandas==2.2.2
-numpy==1.26.4
+# Processamento de Dados - Versões com wheels
+pandas==2.2.0
+numpy==1.26.3
 
 # Processamento de PDFs
 PyMuPDF==1.23.26
 pdfplumber==0.10.3
-pdfminer.six==20221105
 
 # Processamento de Excel
 openpyxl==3.1.2
-xlrd==2.0.1
 
-# Rate Limiting e Performance
+# Rate Limiting
 slowapi==0.1.9
 
 # Validação de Dados
 pydantic==2.11.3
-pydantic-core==2.33.1
 
 # Utilitários de Data
 python-dateutil==2.9.0.post0
 pytz==2025.2
-
-# HTTP e CORS
-# python-multipart já incluído acima
-
-# Logs e Monitoramento
-# logging - Built-in Python (não precisa instalar)
-
-# ===== DEPENDÊNCIAS DE PERFORMANCE (NOVAS) =====
-# Para cache Redis (opcional, para escala enterprise)
-# redis==5.0.1
-# celery==5.3.4
-
-# ===== DEPENDÊNCIAS DE DESENVOLVIMENTO =====
-# pytest==7.4.3
-# pytest-asyncio==0.21.1
-# httpx==0.25.2
-
-# ===== VERSÕES FIXADAS PARA ESTABILIDADE =====
-# Estas versões foram testadas com as otimizações implementadas
-# e garantem compatibilidade total com o sistema otimizado.
-
-# Performance esperada com estas dependências:
-# - Cache hits: < 50ms
-# - Database queries: < 5ms  
-# - PDF parsing: Evitado via cache
-# - Total response time: < 100ms
-
-# Configurações de produção recomendadas:
-# - Workers: 2-4 (baseado em CPU)
-# - Max connections: 100-200
-# - Timeout: 30s
-# - Keep-alive: 5s
