@@ -1,3 +1,11 @@
+databases:
+  # === DATABASE SERVICE ===
+  - name: medcheck-database
+    type: psql
+    plan: free
+    databaseName: medcheck_prod
+    user: medcheck_user
+
 services:
   # === BACKEND SERVICE ===
   - type: web
@@ -25,13 +33,6 @@ services:
         fromDatabase:
           name: medcheck-database
           property: connectionString
-
-  # === DATABASE SERVICE ===
-  - type: psql
-    name: medcheck-database
-    plan: free
-    databaseName: medcheck_prod
-    user: medcheck_user
 
   # === FRONTEND SERVICE ===
   - type: web
