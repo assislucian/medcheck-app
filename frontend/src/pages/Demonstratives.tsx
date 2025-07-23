@@ -173,16 +173,41 @@ function parseBRLToNumber(val) {
 }
 
 const getProceduresColumns = (navigate) => [
-  { field: 'guia', headerName: 'Guia', width: 90 },
-  { field: 'data', headerName: 'Data', width: 90 },
-  { field: 'paciente', headerName: 'Paciente', width: 140 },
-  { field: 'codigo', headerName: 'Código', width: 90 },
-  { field: 'descricao', headerName: 'Descrição', flex: 1, minWidth: 200 },
-  { field: 'quantidade', headerName: 'Qtd', width: 50 },
+  { 
+    field: 'guia', 
+    headerName: 'Guia', 
+    width: 80
+  },
+  { 
+    field: 'data', 
+    headerName: 'Data', 
+    width: 85
+  },
+  { 
+    field: 'paciente', 
+    headerName: 'Paciente', 
+    width: 140
+  },
+  { 
+    field: 'codigo', 
+    headerName: 'Código', 
+    width: 80
+  },
+  { 
+    field: 'descricao', 
+    headerName: 'Descrição', 
+    flex: 1,
+    minWidth: 200
+  },
+  { 
+    field: 'quantidade', 
+    headerName: 'Qtd', 
+    width: 45
+  },
   {
     field: 'apresentado',
     headerName: 'Apresentado',
-    width: 120,
+    width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
       <span className="font-medium text-slate-700 whitespace-nowrap">
@@ -190,10 +215,10 @@ const getProceduresColumns = (navigate) => [
       </span>
     ),
   },
-  {
+    {
     field: 'liberado',
-    headerName: 'Liberado',
-    width: 120,
+    headerName: 'Liberado', 
+    width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
       <span className="font-medium text-emerald-700 whitespace-nowrap">
@@ -204,7 +229,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'glosa',
     headerName: 'Glosa',
-    width: 120,
+    width: 100,
     renderCell: ({ value }) => {
       const hasGlosa = value > 0;
       return (
@@ -229,7 +254,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'cbhpm',
     headerName: 'CBHPM',
-    width: 120,
+    width: 100,
     valueGetter: (params) => params.row.cbhpm,
     valueFormatter: (params) =>
       params.value && params.value > 0 ? formatCurrency(params.value) : '--',
@@ -245,7 +270,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'diferenca',
     headerName: 'Diferença',
-    width: 140,
+    width: 120,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? params.row.liberado - params.row.cbhpm
@@ -277,7 +302,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'delta_percent',
     headerName: 'Delta %',
-    width: 90,
+    width: 80,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? ((params.row.liberado - params.row.cbhpm) / params.row.cbhpm) * 100
@@ -303,7 +328,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'participacao',
     headerName: 'Participação',
-    width: 130,
+    width: 120,
     renderCell: ({ value, row }) => {
       const participacao = String(value || '')
         .trim()
@@ -319,7 +344,6 @@ const getProceduresColumns = (navigate) => [
               className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
               onClick={(e) => {
                 e.stopPropagation();
-                // Navegar para a página de guias na aba de upload
                 navigate('/guides?tab=upload');
               }}
               title="Clique para inserir guia"
@@ -586,50 +610,56 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-w-7xl w-full p-0 max-h-[95vh] h-[95vh] overflow-hidden shadow-xl"
-        style={{ boxSizing: 'border-box', maxWidth: '95vw' }}
+        className="p-0 overflow-hidden shadow-xl"
+        style={{ 
+          boxSizing: 'border-box', 
+          width: 'min(1550px, 96vw)',
+          height: 'min(920px, 92vh)',
+          maxWidth: '96vw',
+          maxHeight: '92vh'
+        }}
       >
-        <div className="flex flex-col h-full min-h-0 gap-5 p-6">
-          <DialogHeader className="flex-shrink-0 border-b border-gray-100/60 pb-5">
-            <div className="flex items-center justify-between">
-              <div>
+                  <div className="flex flex-col h-full min-h-0 gap-3 p-3 overflow-hidden">
+                      <DialogHeader className="flex-shrink-0 border-b border-gray-100/60 pb-3">
+                         <div className="flex items-center justify-between overflow-hidden">
+               <div className="flex-shrink-0">
                 <DialogTitle className="text-xl font-semibold text-gray-900">
                   {demonstrative.periodo}
-            </DialogTitle>
+                </DialogTitle>
                 <DialogDescription className="text-sm text-gray-500 mt-1">
                   {totals.totalProcedimentos} procedimentos detalhados
-            </DialogDescription>
-                  </div>
+                </DialogDescription>
+              </div>
               
               {/* Resumo discreto e elegante */}
-              <div className="flex items-center gap-6 text-sm bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100">
-                <div className="flex items-center gap-2">
+               <div className="flex items-center gap-6 text-sm bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0">
+                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-emerald-500/80"></div>
                   <span className="text-gray-500 text-xs uppercase tracking-wide">Liberado</span>
                   <span className="font-semibold text-emerald-700">{formatCurrency(totals.totalLiberado)}</span>
-                  </div>
-                <div className="w-px h-4 bg-gray-200"></div>
-                <div className="flex items-center gap-2">
+                </div>
+                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
                   <span className="text-gray-500 text-xs uppercase tracking-wide">Glosas</span>
                   <span className="font-semibold text-red-700">{formatCurrency(totals.totalGlosa)}</span>
-                  </div>
-                <div className="w-px h-4 bg-gray-200"></div>
-                <div className="flex items-center gap-2">
+                </div>
+                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-blue-500/80"></div>
                   <span className="text-gray-500 text-xs uppercase tracking-wide">Taxa</span>
                   <span className="font-semibold text-blue-700">
                     {totals.totalApresentado > 0
                       ? `${((totals.totalLiberado / totals.totalApresentado) * 100).toFixed(0)}%`
                       : '0%'}
-                    </span>
-                  </div>
-                  </div>
+                  </span>
                 </div>
+              </div>
+            </div>
           </DialogHeader>
           {/* Barra de filtros elegante e minimalista */}
-          <div className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-gray-200/40 shadow-sm">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+           <div className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-2 rounded-lg border border-gray-200/40 shadow-sm overflow-hidden">
+             <div className="flex items-center gap-2 text-sm text-gray-600 flex-shrink-0">
               {(() => {
                 const filteredCount = procedures.filter((row) => {
                   if (showOnlyPendentes) {
@@ -654,8 +684,8 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   </>
                 );
               })()}
-                  </div>
-            <div className="flex items-center gap-2">
+            </div>
+             <div className="flex items-center gap-2 flex-shrink-0 overflow-hidden">
               <Button
                 size="sm"
                 variant={showOnlyPendentes ? 'default' : 'outline'}
@@ -674,7 +704,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     return novo;
                   });
                 }}
-                className={`text-sm font-medium transition-all duration-200 ${
+                                 className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
                   showOnlyPendentes
                     ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-sm'
                     : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white/70'
@@ -689,7 +719,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   await handleExportPDF();
                   toast.success('PDF exportado com sucesso.');
                 }}
-                className="border-gray-200 text-gray-600 hover:bg-gray-50/70 text-sm font-medium transition-all duration-200 bg-white/70"
+                 className="h-7 px-3 text-xs border-gray-200 text-gray-600 hover:bg-gray-50/70 font-medium transition-all duration-200 bg-white/70"
               >
                 <Download className="w-3 h-3 mr-1" />
                 PDF
@@ -713,7 +743,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                       return novo;
                     });
                   }}
-                  className={`text-sm font-medium transition-all duration-200 ${
+                                     className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
                     showOnlyGlosas
                       ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-sm'
                       : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white/70'
@@ -728,25 +758,25 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
           {/* Tabela de procedimentos - Design elegante e focado */}
           <div className="flex-1 min-h-0 overflow-hidden">
             <Card className="h-full flex flex-col border-gray-200 shadow-lg rounded-xl bg-white">
-              <CardHeader className="flex-shrink-0 py-4 px-6 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 rounded-t-xl">
+               <CardHeader className="flex-shrink-0 py-2 px-4 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 rounded-t-xl">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-1.5">
+                   <div className="flex items-center gap-6 overflow-hidden">
+                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-emerald-500/70"></div>
                       <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Confirmado</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-amber-500/70"></div>
                       <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pendente</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-red-500/70"></div>
                       <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Glosa</span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 min-h-0 p-0 bg-white">
+               <CardContent className="flex-1 min-h-0 p-0 bg-white overflow-hidden">
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <Loader2 className="animate-spin text-blue-500 w-6 h-6" />
@@ -755,44 +785,46 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     </span>
                   </div>
                 ) : (
-                  <div className="h-full overflow-auto">
-                    <DataGrid
-                      rows={procedures
-                        .map((p, idx) => ({ id: idx, ...p }))
-                        .filter((row) => {
-                          // Filtro de pendentes
-                          if (showOnlyPendentes) {
-                            return (
-                              String(row.participacao || '')
-                                .trim()
-                                .toLowerCase() === 'upload guia'
-                            );
-                          }
+                                       <div className="h-full w-full overflow-hidden">
+                      <div className="h-full w-full overflow-auto">
+                        <DataGrid
+                          rows={procedures
+                            .map((p, idx) => ({ id: idx, ...p }))
+                            .filter((row) => {
+                              // Filtro de pendentes
+                              if (showOnlyPendentes) {
+                                return (
+                                  String(row.participacao || '')
+                                    .trim()
+                                    .toLowerCase() === 'upload guia'
+                                );
+                              }
 
-                          // Filtro de glosas
-                          if (showOnlyGlosas) {
-                            const glosaValue =
-                              Number(row.financial?.glosa ?? row.glosa) || 0;
-                            return glosaValue > 0;
-                          }
+                              // Filtro de glosas
+                              if (showOnlyGlosas) {
+                                const glosaValue =
+                                  Number(row.financial?.glosa ?? row.glosa) || 0;
+                                return glosaValue > 0;
+                              }
 
-                          // Mostrar todos
-                          return true;
-                        })}
-                      columns={getProceduresColumns(navigate)}
-                      pageSize={pageSize}
-                      currentPage={currentPage}
-                      onPageChange={setCurrentPage}
-                      onPageSizeChange={(newSize) => {
-                        setPageSize(newSize);
-                        setCurrentPage(0); // Reset para primeira página
-                      }}
-                      className="border-0"
-                      wrapperScrollable={false}
-                      paginationLabel="Procedimentos por página:"
-                      rowsPerPageOptions={[10, 20, 50, 100]}
-                    />
-                  </div>
+                              // Mostrar todos
+                              return true;
+                            })}
+                          columns={getProceduresColumns(navigate)}
+                          pageSize={pageSize}
+                          currentPage={currentPage}
+                          onPageChange={setCurrentPage}
+                          onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setCurrentPage(0); // Reset para primeira página
+                          }}
+                          className="w-full border-0 [&_table]:w-full [&_table]:table-auto"
+                          wrapperScrollable={false}
+                          paginationLabel="Procedimentos por página:"
+                          rowsPerPageOptions={[10, 20, 50, 100]}
+                        />
+                      </div>
+                   </div>
                 )}
               </CardContent>
             </Card>
@@ -1366,7 +1398,7 @@ const DemonstrativesPage = () => {
 
       {/* Background com Gradiente Médico Consistente */}
       <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-gray-50/20 to-emerald-50/30">
-      <AuthenticatedLayout
+        <AuthenticatedLayout
           title="Demonstrativos & Honorários"
           description="Central de análise e gerenciamento de demonstrativos de pagamento médico com análise financeira avançada e insights de performance"
         >
@@ -1381,8 +1413,8 @@ const DemonstrativesPage = () => {
               </div>
 
               <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-700 via-green-600 to-gray-800 bg-clip-text text-transparent">
-                  Demonstrativos & Honorários
-                </h1>
+                Demonstrativos & Honorários
+              </h1>
 
               <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
                 Central de análise e gerenciamento de demonstrativos de pagamento médico com insights de performance
@@ -1405,8 +1437,8 @@ const DemonstrativesPage = () => {
                   <FileBarChart className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? 'Atualizando...' : 'Atualizar'}
                 </Button>
-                  </div>
               </div>
+            </div>
 
         <div className="w-full space-y-8">
           {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
@@ -1481,170 +1513,170 @@ const DemonstrativesPage = () => {
               <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
             </div>
             
-            {loading ? (
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonInfoCard key={i} />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                {/* Card Valores Liberados - Verde */}
-                <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-                  <CardContent className="relative p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
-                          <CheckCircle className="h-4 w-4 text-emerald-700" />
-                        </div>
-                        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
-                          Liberado
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                          Total Liberado
-                        </p>
-                        <p className="text-xl font-bold text-emerald-800 leading-none">
-                          {formatCurrency(summaryStats.totalProcessado)}
-                        </p>
-                      </div>
+        {loading ? (
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonInfoCard key={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {/* Card Valores Liberados - Verde */}
+            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+              <CardContent className="relative p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
+                      <CheckCircle className="h-4 w-4 text-emerald-700" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
+                      Liberado
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                      Total Liberado
+                    </p>
+                    <p className="text-xl font-bold text-emerald-800 leading-none">
+                      {formatCurrency(summaryStats.totalProcessado)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                {/* Card Glosas - Vermelho */}
-                <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
-                  <CardContent className="relative p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-red-100 to-rose-100">
-                          <AlertCircle className="h-4 w-4 text-red-700" />
-                        </div>
-                        <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                          Glosas
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                          Total Glosado
-                        </p>
-                        <p className="text-xl font-bold text-red-800 leading-none">
-                          {formatCurrency(summaryStats.totalGlosa)}
-                        </p>
-                      </div>
+            {/* Card Glosas - Vermelho */}
+            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
+              <CardContent className="relative p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-red-100 to-rose-100">
+                      <AlertCircle className="h-4 w-4 text-red-700" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                      Glosas
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                      Total Glosado
+                    </p>
+                    <p className="text-xl font-bold text-red-800 leading-none">
+                      {formatCurrency(summaryStats.totalGlosa)}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                {/* Card Procedimentos - Azul */}
-                <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
-                  <CardContent className="relative p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
-                          <FileText className="h-4 w-4 text-blue-700" />
-                        </div>
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
-                          Processados
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                          Procedimentos
-                        </p>
-                        <p className="text-xl font-bold text-blue-800 leading-none">
-                          {summaryStats.totalProcedimentos}
-                        </p>
-                      </div>
+            {/* Card Procedimentos - Azul */}
+            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
+              <CardContent className="relative p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
+                      <FileText className="h-4 w-4 text-blue-700" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                      Processados
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                      Procedimentos
+                    </p>
+                    <p className="text-xl font-bold text-blue-800 leading-none">
+                      {summaryStats.totalProcedimentos}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                {/* Card Demonstrativos - Âmbar */}
-                <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
-                  <CardContent className="relative p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
-                          <ClipboardList className="h-4 w-4 text-amber-700" />
-                        </div>
-                        <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
-                          Analisados
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
-                          Demonstrativos
-                        </p>
-                        <p className="text-xl font-bold text-amber-800 leading-none">
-                          {demonstratives.length}
-                        </p>
-                      </div>
+            {/* Card Demonstrativos - Âmbar */}
+            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
+              <CardContent className="relative p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
+                      <ClipboardList className="h-4 w-4 text-amber-700" />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </section>
+                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                      Analisados
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
+                      Demonstrativos
+                    </p>
+                    <p className="text-xl font-bold text-amber-800 leading-none">
+                      {demonstratives.length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </section>
 
           {/* 3. FERRAMENTAS: Filtros e Busca */}
           <section className="space-y-4">
-            <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
               <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
               <h3 className="text-base font-medium text-gray-700">Filtros & Análise</h3>
               <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
-            </div>
+                </div>
 
             <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
               <CardContent className="p-4 space-y-4">
                 {/* Linha 1: Busca */}
                 <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Buscar por período, arquivo..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por período, arquivo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
-                    />
-                  </div>
-                  
+                />
+              </div>
+              
                   {/* Status Filter */}
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="status-filter" className="text-sm font-medium whitespace-nowrap">
-                      Status:
-                    </Label>
-                    <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="status-filter" className="text-sm font-medium whitespace-nowrap">
+                    Status:
+                  </Label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                       <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
                         <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="liberado">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            Liberado
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="glosado">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                            Glosado
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      <SelectItem value="liberado">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                          Liberado
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="glosado">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                          Glosado
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+              </div>
 
                 {/* Linha 2: Filtros de Data */}
                 <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-gray-50/30 p-3 rounded-lg border border-gray-200/40">
@@ -1652,8 +1684,8 @@ const DemonstrativesPage = () => {
                     <Label className="text-sm font-medium text-gray-600 whitespace-nowrap">
                       Período de Upload:
                     </Label>
-                  </div>
-                  
+            </div>
+            
                   <div className="flex flex-wrap gap-3 items-center flex-1">
                     {/* Data Início */}
                     <div className="flex items-center gap-2">
@@ -1744,9 +1776,9 @@ const DemonstrativesPage = () => {
                 </div>
 
                 {/* Informações dos Filtros */}
-                {filteredDemonstratives.length !== demonstratives.length && (
+            {filteredDemonstratives.length !== demonstratives.length && (
                   <div className="text-xs text-gray-600 bg-blue-50/60 p-2 rounded-lg border border-blue-200/40">
-                    Mostrando {filteredDemonstratives.length} de {demonstratives.length} demonstrativos
+                Mostrando {filteredDemonstratives.length} de {demonstratives.length} demonstrativos
                     {(startDate || endDate) && (
                       <span className="ml-1">
                         • Período: {startDate || 'início'} até {endDate || 'hoje'}
@@ -1757,11 +1789,11 @@ const DemonstrativesPage = () => {
                         • Últimos {selectedPeriod === '30d' ? '30 dias' : selectedPeriod === '90d' ? '90 dias' : selectedPeriod === '6m' ? '6 meses' : '1 ano'}
                       </span>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
 
           {/* 4. ANÁLISE: DataGrid */}
           <section className="space-y-4">
@@ -1771,18 +1803,18 @@ const DemonstrativesPage = () => {
               <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
             </div>
 
-            <div className="w-full">
-              <DataGrid
-                rows={filteredDemonstratives}
-                columns={columns}
-                loading={loading}
-                className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-lg"
-              />
+      <div className="w-full">
+        <DataGrid
+          rows={filteredDemonstratives}
+          columns={columns}
+          loading={loading}
+          className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-lg"
+        />
             </div>
           </section>
+      </div>
         </div>
-        </div>
-      </AuthenticatedLayout>
+    </AuthenticatedLayout>
     </div>
     </>
   );

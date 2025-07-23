@@ -1,35 +1,33 @@
-# === DEPENDÊNCIAS MEDCHECK - OTIMIZADO PARA DEPLOY RÁPIDO ===
+# Core FastAPI
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
 
-# Framework Web Principal
-fastapi==0.115.12
-uvicorn[standard]==0.25.0
-starlette==0.46.2
-
-# Autenticação e Segurança
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
-
-# Banco de Dados
-sqlalchemy==2.0.23
-
-# Processamento de Dados - Versões com wheels
-pandas==2.2.0
-numpy==1.26.3
-
-# Processamento de PDFs
-PyMuPDF==1.23.26
-pdfplumber==0.10.3
-
-# Processamento de Excel
+# Essential processing - com wheels pré-compilados 
+pandas==2.1.4
+numpy==1.25.2
 openpyxl==3.1.2
 
-# Rate Limiting
-slowapi==0.1.9
+# Async & HTTP
+httpx==0.25.2
+aiofiles==23.2.1
 
-# Validação de Dados
-pydantic==2.11.3
+# Documentation & validation
+pydantic==2.5.2
+python-multipart==0.0.6
 
-# Utilitários de Data
-python-dateutil==2.9.0.post0
-pytz==2025.2
+# File handling & utilities
+python-magic==0.4.27
+Pillow==10.1.0
+
+# CORS
+fastapi-cors==0.0.6
+
+# Logging & config
+python-dotenv==1.0.0
+
+# Authentication (se necessário)
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Database (se necessário)
+SQLAlchemy==2.0.23

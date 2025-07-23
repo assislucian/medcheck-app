@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
@@ -21,8 +21,19 @@ import {
   Clock,
   Building,
   Stethoscope,
+  Shield,
+  ArrowUpRight,
+  TrendingDown,
+  RefreshCw,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { InfoCard } from '../components/ui/InfoCard';
+import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { formatCurrency } from '../utils/format';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
 
 interface AnalyticsData {
   summary?: {
@@ -77,6 +88,13 @@ export default function IntelligenceHub() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
+  // SEO e Título Premium
+  usePageTitle({
+    title: 'Central de Inteligência',
+    description: 'Insights inteligentes e análises avançadas dos seus dados médicos com IA',
+    keywords: 'inteligência artificial médica, analytics médicos, insights, análise dados médicos, IA saúde'
+  });
+
   useEffect(() => {
     fetchAnalytics();
   }, []);
@@ -122,7 +140,7 @@ export default function IntelligenceHub() {
     }
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrencyLocal = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -135,205 +153,143 @@ export default function IntelligenceHub() {
 
   if (loading) {
     return (
-      <AuthenticatedLayout
-        title="Central de Inteligência CBHPM"
-        description="Carregando insights inteligentes..."
-        isLoading={true}
-        loadingMessage="Processando dados com IA..."
-      />
+      <>
+        <Helmet>
+          <title>Central de Inteligência | MedCheck</title>
+          <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
+        </Helmet>
+        
+        {/* Background com Gradiente Médico */}
+        <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
+          <AuthenticatedLayout
+            title="Central de Inteligência"
+            description="Processando insights com IA..."
+            isLoading={true}
+            loadingMessage="Analisando seus dados com inteligência artificial..."
+          />
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <AuthenticatedLayout
-        title="Central de Inteligência CBHPM"
-        description="Erro ao carregar dados"
-      >
-        <div className="flex flex-col items-center justify-center py-12">
-          <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold text-red-600 mb-2">
-            Erro ao Carregar Dados
-          </h2>
-          <p className="text-gray-600 mb-4 text-center max-w-md">{error}</p>
-          <Button onClick={fetchAnalytics} className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Tentar Novamente
-          </Button>
+      <>
+        <Helmet>
+          <title>Central de Inteligência | MedCheck</title>
+          <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
+        </Helmet>
+        
+        {/* Background com Gradiente Médico */}
+        <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
+          <AuthenticatedLayout
+            title="Central de Inteligência"
+            description="Erro ao carregar dados"
+          >
+            <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+              <Card className="bg-white/80 backdrop-blur-sm border-red-200/60 shadow-xl">
+                <CardContent className="p-12 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+                    <AlertTriangle className="h-8 w-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Erro ao carregar análises
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    {error}
+                  </p>
+                  <Button onClick={fetchAnalytics} className="bg-medical-600 hover:bg-medical-700">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Tentar novamente
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </AuthenticatedLayout>
         </div>
-      </AuthenticatedLayout>
+      </>
     );
   }
 
+  const summary = analyticsData?.summary;
+  const taxaRecuperacao = summary ? (summary.total_recebido_historico / (summary.total_recebido_historico + summary.total_glosado_historico)) * 100 : 0;
+
   return (
-    <AuthenticatedLayout
-      title="Central de Inteligência CBHPM"
-      description="Análise inteligente para maximizar sua receita médica"
-    >
-      {/* Background with Clean Medical Gradient */}
+    <>
+      <Helmet>
+        <title>Central de Inteligência | MedCheck</title>
+        <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
+        <meta name="keywords" content="inteligência artificial médica, analytics médicos, insights, análise dados médicos, IA saúde" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Central de Inteligência | MedCheck" />
+        <meta property="og:description" content="IA avançada para análise de dados médicos" />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
+      {/* Background com Gradiente Médico */}
       <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
-        <div className="space-y-12 px-4 sm:px-6 lg:px-8">
-          {/* Header Humanizado seguindo padrão Dashboard */}
-          <div className="text-center space-y-4 pt-8">
-            <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
-              <Brain className="h-5 w-5 text-medical-700" />
-              <span className="text-sm font-medium text-medical-800">
-                Inteligência Artificial Médica
-              </span>
+        <AuthenticatedLayout
+          title="Central de Inteligência"
+          description="Insights avançados e análises inteligentes dos seus dados médicos"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+            {/* Header Elegante com Badge */}
+            <div className="text-center space-y-4 pt-8">
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
+                <Brain className="h-5 w-5 text-medical-700" />
+                <span className="text-sm font-medium text-medical-800">
+                  Powered by Inteligência Artificial
+                </span>
+              </div>
+
+              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
+                Central de Inteligência
+              </h1>
+
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                Transforme seus dados médicos em insights acionáveis com análises avançadas e inteligência artificial
+              </p>
             </div>
 
-            <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
-              Central de Inteligência
-            </h1>
-
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Análise avançada com IA para maximizar sua receita médica. Insights inteligentes, predições e recomendações personalizadas.
-            </p>
-          </div>
-
-          {/* Cards de Resumo Premium */}
-          <div className="space-y-16">
-            {analyticsData?.summary && (
-              <section className="space-y-8">
-                <div className="text-center space-y-3">
-                  <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
-                      <BarChart3 className="h-6 w-6 text-purple-700" />
-                    </div>
-                    Resumo Inteligente
-                  </h2>
-                  <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-                    Análise completa dos seus dados médicos com insights gerados por
-                    inteligência artificial.
-                  </p>
-                </div>
-
-                {/* Grid de Cards com Gradientes Premium */}
-                <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                  {/* Card Total Recebido - Verde */}
-                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-                    <CardContent className="relative p-8">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
-                            <DollarSign className="h-7 w-7 text-emerald-700" />
-                          </div>
-                          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                            Histórico
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">
-                            Total Recebido
-                          </p>
-                          <p className="text-3xl font-bold text-emerald-800 leading-none">
-                            {formatCurrency(
-                              analyticsData.summary.total_recebido_historico
-                            )}
-                          </p>
-                          <p className="text-sm text-emerald-600">
-                            Valor total histórico recebido
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Card Glosas - Vermelho */}
-                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
-                    <CardContent className="relative p-8">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="p-3 rounded-xl bg-gradient-to-br from-red-100 to-rose-100">
-                            <AlertTriangle className="h-7 w-7 text-red-700" />
-                          </div>
-                          <Badge className="bg-red-100 text-red-700 border-red-200">
-                            Perdido
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold uppercase tracking-wide text-red-600">
-                            Total Glosado
-                          </p>
-                          <p className="text-3xl font-bold text-red-800 leading-none">
-                            {formatCurrency(
-                              analyticsData.summary.total_glosado_historico
-                            )}
-                          </p>
-                          <p className="text-sm text-red-600">
-                            Valor total perdido em glosas
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Card Taxa Recuperação - Azul */}
-                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
-                    <CardContent className="relative p-8">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100">
-                            <TrendingUp className="h-7 w-7 text-blue-700" />
-                          </div>
-                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                            Performance
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-                            Taxa Recuperação
-                          </p>
-                          <p className="text-3xl font-bold text-blue-800 leading-none">
-                            {formatPercentage(
-                              analyticsData.summary.taxa_recuperacao_media
-                            )}
-                          </p>
-                          <p className="text-sm text-blue-600">
-                            Taxa média de recuperação
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Card Projeção - Âmbar */}
-                  <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
-                    <CardContent className="relative p-8">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100">
-                            <Target className="h-7 w-7 text-amber-700" />
-                          </div>
-                          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-                            Projeção
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold uppercase tracking-wide text-amber-600">
-                            Projeção Anual
-                          </p>
-                          <p className="text-3xl font-bold text-amber-800 leading-none">
-                            {formatCurrency(analyticsData.summary.projecao_anual)}
-                          </p>
-                          <p className="text-sm text-amber-600">
-                            Estimativa baseada em IA
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
-            )}
+            {/* Cards de Métricas Principais */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <InfoCard
+                title="Valor Total Processado"
+                value={formatCurrencyLocal(summary?.total_recebido_historico || 0)}
+                subtitle="em demonstrativos históricos"
+                icon={<DollarSign className="h-5 w-5 text-trust-600" />}
+                trend={{ value: 0, isPositive: true }}
+                className="bg-gradient-to-br from-trust-50 to-trust-100 border-trust-200"
+              />
+              
+              <InfoCard
+                title="Taxa de Recuperação"
+                value={`${taxaRecuperacao.toFixed(1)}%`}
+                subtitle="dos valores apresentados"
+                icon={<TrendingUp className="h-5 w-5 text-medical-600" />}
+                trend={{ value: 0, isPositive: true }}
+                className="bg-gradient-to-br from-medical-50 to-medical-100 border-medical-200"
+              />
+              
+              <InfoCard
+                title="Procedimentos Analisados"
+                value={<AnimatedNumber value={summary?.total_procedimentos_historico || 0} />}
+                subtitle="com IA avançada"
+                icon={<Activity className="h-5 w-5 text-brand-600" />}
+                trend={{ value: 0, isPositive: true }}
+                className="bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200"
+              />
+              
+              <InfoCard
+                title="Projeção Anual"
+                value={formatCurrencyLocal(summary?.projecao_anual || 0)}
+                subtitle="baseada em IA"
+                icon={<Target className="h-5 w-5 text-mint-600" />}
+                trend={{ value: 0, isPositive: true }}
+                className="bg-gradient-to-br from-mint-50 to-mint-100 border-mint-200"
+              />
+            </div>
 
             {/* Seção Principal com Tabs Premium */}
             <section className="space-y-8">
@@ -436,7 +392,7 @@ export default function IntelligenceHub() {
                             </p>
                             <p className="text-gray-700 font-medium">
                               Receita:{' '}
-                              {formatCurrency(
+                              {formatCurrencyLocal(
                                 analyticsData.temporal_analytics.melhor_mes.recebido
                               )}
                             </p>
@@ -479,7 +435,7 @@ export default function IntelligenceHub() {
                             </div>
                             <div className="pt-2 border-t border-blue-100">
                               <p className="text-2xl font-bold text-blue-700">
-                                {formatCurrency(
+                                {formatCurrencyLocal(
                                   analyticsData.summary.total_recebido_historico
                                 )}
                               </p>
@@ -640,7 +596,7 @@ export default function IntelligenceHub() {
                                       Receita Total
                                     </p>
                                     <p className="font-bold text-emerald-700 text-lg">
-                                      {formatCurrency(proc.recebido_total)}
+                                      {formatCurrencyLocal(proc.recebido_total)}
                                     </p>
                                   </div>
                                   <div className="bg-red-50 rounded-lg p-3">
@@ -648,7 +604,7 @@ export default function IntelligenceHub() {
                                       Glosas
                                     </p>
                                     <p className="font-bold text-red-700 text-lg">
-                                      {formatCurrency(proc.glosado_total)}
+                                      {formatCurrencyLocal(proc.glosado_total)}
                                     </p>
                                   </div>
                                   <div className="bg-blue-50 rounded-lg p-3">
@@ -747,7 +703,7 @@ export default function IntelligenceHub() {
                                         Recebido
                                       </p>
                                       <p className="font-bold text-emerald-700">
-                                        {formatCurrency(month.recebido)}
+                                        {formatCurrencyLocal(month.recebido)}
                                       </p>
                                     </div>
                                     <div className="bg-red-50 rounded-lg p-3">
@@ -755,7 +711,7 @@ export default function IntelligenceHub() {
                                         Glosado
                                       </p>
                                       <p className="font-bold text-red-700">
-                                        {formatCurrency(month.glosado)}
+                                        {formatCurrencyLocal(month.glosado)}
                                       </p>
                                     </div>
                                     <div className="bg-blue-50 rounded-lg p-3">
@@ -913,8 +869,8 @@ export default function IntelligenceHub() {
               </div>
             </section>
           </div>
-        </div>
+        </AuthenticatedLayout>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 };

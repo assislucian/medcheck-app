@@ -4,12 +4,10 @@ services:
     name: medcheck-backend
     env: python
     plan: starter
-    runtime: python-3.11.8
     buildCommand: |
-      # Forçar Python 3.11
+      # Verificar Python
       echo "Python version:"
       python --version
-      python3.11 --version || echo "Python 3.11 not found, using default"
       
       # Upgrade pip
       python -m pip install --upgrade pip
@@ -29,6 +27,8 @@ services:
       uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
       
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.11"
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
