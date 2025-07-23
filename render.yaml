@@ -4,6 +4,7 @@ databases:
     plan: free
     databaseName: medcheck_prod
     user: medcheck_user
+    region: oregon
 
 services:
   # === BACKEND SERVICE ===
@@ -13,21 +14,14 @@ services:
     plan: free
     branch: main
     healthCheckPath: /health
+    region: oregon
     buildCommand: |
-      echo "🚀 Starting MedCheck Backend Build..."
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
-      echo "✅ Dependencies installed successfully"
-    startCommand: |
-      echo "🚀 Starting MedCheck API Production..."
-      python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
+    startCommand: "python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.9
-      - key: ENVIRONMENT
-        value: production
-      - key: SECRET_KEY
-        generateValue: true
       - key: DATABASE_URL
         fromDatabase:
           name: medcheck-database
@@ -40,20 +34,12 @@ services:
     plan: free
     branch: main
     healthCheckPath: /
-    buildCommand: |
-      echo "🚀 Starting Frontend Build..."
-      cd frontend
-      npm install
-      npm run build
-      echo "✅ Frontend build completed"
-    startCommand: |
-      echo "🚀 Starting Frontend Production Server..."
-      cd frontend
-      npm run preview -- --host 0.0.0.0 --port $PORT
+    region: oregon
+    buildCommand: "cd frontend && npm install && npm run build"
+    startCommand: "cd frontend && npm run preview -- --host 0.0.0.0 --port $PORT"
     envVars:
       - key: VITE_API_URL
-        value: https://medcheck-backend.onrender.com
-
-# === CONFIGURAÇÕES GLOBAIS ===
-previewsEnabled: false
-region: oregon
+        fromService:
+          type: web
+          name: medcheck-backend
+          property: url
