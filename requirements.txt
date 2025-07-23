@@ -12,7 +12,7 @@ python-multipart==0.0.6
 
 # Banco de Dados
 sqlalchemy==2.0.23
-sqlite3==*  # Built-in Python
+# sqlite3 - Built-in Python (não precisa instalar)
 
 # Processamento de Dados
 pandas==2.1.4
@@ -39,10 +39,10 @@ python-dateutil==2.9.0.post0
 pytz==2025.2
 
 # HTTP e CORS
-python-multipart==0.0.6
+# python-multipart já incluído acima
 
 # Logs e Monitoramento
-logging==*  # Built-in Python
+# logging - Built-in Python (não precisa instalar)
 
 # ===== DEPENDÊNCIAS DE PERFORMANCE (NOVAS) =====
 # Para cache Redis (opcional, para escala enterprise)

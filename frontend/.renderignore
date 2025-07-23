@@ -1,0 +1,31 @@
+# Ignorar arquivos do backend
+../requirements.txt
+../src/
+../backend/
+../*.py
+../*.db
+../logs/
+../uploads/
+../scripts/
+../tests/
+../.venv/
+../__pycache__/
+
+# Ignorar arquivos de desenvolvimento
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignorar node_modules (será instalado pelo Render)
+node_modules/
+
+# Ignorar arquivos de cache
+.cache/
+.parcel-cache/
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp 
