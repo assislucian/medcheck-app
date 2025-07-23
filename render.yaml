@@ -1,25 +1,27 @@
 services:
-  # Backend API - FastAPI (Python 3.13.4 com wheels)
+  # Backend API - Python 3.10 com wheels garantidos
   - type: web
     name: medcheck-backend
     env: python
     plan: starter
     buildCommand: |
-      # Mostrar versão Python
+      # Mostrar versão Python  
       python --version
       
-      # Upgrade pip e instalar build essentials primeiro
+      # Upgrade pip e build tools
       pip install --upgrade pip setuptools wheel
       
-      # Instalar requirements (que já inclui setuptools/wheel)
+      # Instalar requirements
       pip install -r requirements.txt
       
-      # Verificar instalação crítica
+      # Verificar instalação
       python -c "import fastapi, pandas, numpy; print('✅ Dependências OK')"
       
     startCommand: uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 1
     
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.10.0"
       - key: ENVIRONMENT
         value: production
       - key: DEBUG

@@ -1,14 +1,14 @@
-# Build essentials para Python 3.13
+# Build essentials para Python 3.10
 setuptools>=65.0.0
 wheel>=0.38.0
 
-# FastAPI Core - compatível com Python 3.13
+# FastAPI Core - estável Python 3.10
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 
-# Processamento - versões COM wheels para Python 3.13
-pandas==2.2.0
-numpy==1.26.3
+# Processamento - versões COM wheels para Python 3.10
+pandas==2.1.4
+numpy==1.25.2
 
 # HTTP e arquivos
 httpx==0.25.2
@@ -17,7 +17,7 @@ aiofiles==23.2.1
 # Excel
 openpyxl==3.1.2
 
-# Validação - Python 3.13 compatível
+# Validação - Python 3.10 compatível
 pydantic==2.5.2
 python-multipart==0.0.6
 
