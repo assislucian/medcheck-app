@@ -39,7 +39,4 @@ services:
     startCommand: "cd frontend && npm run preview -- --host 0.0.0.0 --port $PORT"
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: medcheck-backend
-          property: url
+        value: https://medcheck-backend.onrender.com
