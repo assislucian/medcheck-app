@@ -141,7 +141,7 @@ const RegisterForm = () => {
         );
       }
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 

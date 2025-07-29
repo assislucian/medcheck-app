@@ -25,6 +25,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     create_engine,
     text,
 )
@@ -73,12 +74,19 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    crm = Column(String, unique=True, index=True)
+    crm = Column(
+        String, unique=False, index=True
+    )  # Alterado para não ser único globalmente
+    uf = Column(String, index=True)  # Adicionado campo UF
     nome = Column(String)
     email = Column(String)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    terms_accepted = Column(Boolean, default=False)
+    terms_version = Column(String, nullable=True)
+
+    __table_args__ = (UniqueConstraint("crm", "uf", name="uix_crm_uf"),)
 
 
 class GuiaMedica(Base):
