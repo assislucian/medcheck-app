@@ -4,7 +4,6 @@ databases:
     plan: free
     databaseName: medcheck_prod
     user: medcheck_user
-    region: oregon
 
 services:
   # === BACKEND SERVICE ===
@@ -14,7 +13,6 @@ services:
     plan: free
     branch: main
     healthCheckPath: /health
-    region: oregon
     buildCommand: |
       pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
@@ -34,7 +32,6 @@ services:
     plan: free
     branch: main
     healthCheckPath: /
-    region: oregon
     buildCommand: "cd frontend && npm install && npm run build"
     startCommand: "cd frontend && npm run preview -- --host 0.0.0.0 --port $PORT"
     envVars:
