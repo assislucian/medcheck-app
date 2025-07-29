@@ -173,8 +173,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
-        "https://*.onrender.com",
         "https://medcheck-frontend.onrender.com",
+        "https://medcheck-backend.onrender.com",
+        # Adicionar outros domínios conforme necessário
     ],
     allow_credentials=True,
     allow_methods=["*"],
