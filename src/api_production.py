@@ -145,6 +145,10 @@ class UserResponse(BaseModel):
     is_active: bool
 
 
+class GuideIdList(BaseModel):
+    guide_ids: List[str]
+
+
 # ===== FASTAPI APP =====
 app = FastAPI(
     title="MedCheck API",
@@ -763,6 +767,34 @@ async def delete_guia(
     db.commit()
 
     return {"message": "Guia deleted successfully"}
+
+
+@app.post("/api/v1/guias/batch-delete")
+async def batch_delete_guias(
+    payload: GuideIdList,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Deletar várias guias em lote"""
+    if not payload.guide_ids:
+        raise HTTPException(status_code=400, detail="Nenhuma guia selecionada")
+
+    try:
+        deleted_count = (
+            db.query(Guia)
+            .filter(
+                Guia.numero_guia.in_(payload.guide_ids),
+                Guia.user_crm == current_user.crm,
+            )
+            .delete(synchronize_session=False)
+        )
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Erro ao deletar guias em lote: {e}")
+        raise HTTPException(status_code=500, detail="Erro ao deletar guias")
+
+    return {"message": f"{deleted_count} guias deletadas com sucesso"}
 
 
 # ===== VALIDATION ENDPOINTS =====

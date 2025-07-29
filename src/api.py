@@ -14,7 +14,7 @@ import time
 import zipfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import List, Optional, Dict, Tuple
+from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import pandas as pd
@@ -193,8 +193,12 @@ class Guia(Base):
         Index("idx_guia_crm_uf", "crm", "uf"),  # Isolamento por médico
         Index("idx_guia_status_data", "status", "data"),  # Filtros por status e data
         # NOVOS ÍNDICES PARA CROSSCHECK PERFORMANCE
-        Index("idx_crosscheck_guia_codigo", "numero_guia", "codigo"),  # Chave primária crosscheck
-        Index("idx_crosscheck_crm_guia_codigo", "crm", "numero_guia", "codigo"),  # Crosscheck + usuário
+        Index(
+            "idx_crosscheck_guia_codigo", "numero_guia", "codigo"
+        ),  # Chave primária crosscheck
+        Index(
+            "idx_crosscheck_crm_guia_codigo", "crm", "numero_guia", "codigo"
+        ),  # Crosscheck + usuário
         Index("idx_guia_papel_crm", "papel", "crm"),  # Filtros por papel
     )
 
@@ -528,16 +532,18 @@ else:
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
 # --- Endpoint Root ---
 @app.get("/")
 def root():
     """Endpoint raiz com informações da API"""
     return {
-        "message": "MedCheck API - Sistema Médico Premium", 
+        "message": "MedCheck API - Sistema Médico Premium",
         "version": "1.0.0",
         "status": "operational",
-        "docs": "/docs"
+        "docs": "/docs",
     }
+
 
 # --- CORS seguro ---
 # Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
@@ -786,6 +792,10 @@ class NotifyInactiveResponse(BaseModel):
 class BulkDeleteResponse(BaseModel):
     message: str
     deleted_crms: list[str]
+
+
+class GuideIdList(BaseModel):
+    guide_ids: List[str]
 
 
 # --- Simulação de fila de jobs (substitua por Celery/RQ em produção) ---
@@ -1563,10 +1573,10 @@ def list_demonstrativos(user: dict = Depends(get_current_user)):
         """Converte string 'R$ X.XXX,XX' para float"""
         if not value_str or value_str == "R$ 0,00":
             return 0.0
-        
+
         # Remove "R$ " e espaços
         clean_value = value_str.replace("R$ ", "").strip()
-        
+
         # Formato brasileiro: pode ter vírgulas como separadores de milhares E decimais
         # Exemplos: "5,539,90", "5.372,22", "167,68"
         if "," in clean_value:
@@ -1575,18 +1585,18 @@ def list_demonstrativos(user: dict = Depends(get_current_user)):
             if last_comma_pos > 0:
                 # Separa parte inteira e decimal
                 integer_part = clean_value[:last_comma_pos]
-                decimal_part = clean_value[last_comma_pos + 1:]
-                
+                decimal_part = clean_value[last_comma_pos + 1 :]
+
                 # Remove todos os separadores da parte inteira (pontos e vírgulas)
                 integer_part = integer_part.replace(".", "").replace(",", "")
-                
+
                 # Monta o número no formato americano
                 clean_value = f"{integer_part}.{decimal_part}"
-        
+
         # Se não tem vírgula, assume que pontos são separadores de milhares
         else:
             clean_value = clean_value.replace(".", "")
-        
+
         try:
             return float(clean_value)
         except ValueError:
@@ -1698,17 +1708,23 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
             return []
 
         # --- OTIMIZAÇÃO: Associação de participações médicas CACHEADA ---
-        
+
         # Usa cache ao invés de reprocessar PDFs
         participacoes_map = get_cached_participacoes(user["crm"], user["uf"])
 
-        logger.info(f"[PERFORMANCE] Participações carregadas: {len(participacoes_map)} chaves (via cache)")
+        logger.info(
+            f"[PERFORMANCE] Participações carregadas: {len(participacoes_map)} chaves (via cache)"
+        )
 
         # Log reduzido para performance
         if len(participacoes_map) > 10:
-            logger.info(f"[PERFORMANCE] Amostra de chaves: {list(participacoes_map.keys())[:10]}...")
+            logger.info(
+                f"[PERFORMANCE] Amostra de chaves: {list(participacoes_map.keys())[:10]}..."
+            )
         else:
-            logger.info(f"[PERFORMANCE] Chaves encontradas: {list(participacoes_map.keys())}")
+            logger.info(
+                f"[PERFORMANCE] Chaves encontradas: {list(participacoes_map.keys())}"
+            )
 
         # --- Cruzamento com CBHPM ---
         from src.parsers.cbhpm_parser import CBHPMParser
@@ -2173,6 +2189,39 @@ def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Erro ao deletar guia {numero_guia}: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
+    finally:
+        db.close()
+
+
+@app.post("/api/v1/guias/batch-delete")
+def batch_delete_guias(
+    payload: GuideIdList,
+    user: dict = Depends(get_current_user),
+):
+    """Deletar várias guias em lote"""
+    db = SessionLocal()
+    try:
+        if not payload.guide_ids:
+            raise HTTPException(status_code=400, detail="Nenhuma guia selecionada")
+
+        deleted_count = (
+            db.query(Guia)
+            .filter(
+                Guia.numero_guia.in_(payload.guide_ids),
+                Guia.crm == user["crm"],
+                Guia.uf == user["uf"],
+            )
+            .delete(synchronize_session=False)
+        )
+        db.commit()
+
+        return {"message": f"{deleted_count} guias deletadas com sucesso"}
+    except Exception as e:
+        db.rollback()
+        logger.error(
+            f"Erro ao deletar guias em lote no ambiente de desenvolvimento: {e}"
+        )
+        raise HTTPException(status_code=500, detail="Erro ao deletar guias")
     finally:
         db.close()
 
@@ -4371,6 +4420,7 @@ def list_guias(
 # ENDPOINT TEMPORÁRIO PARA CRIAR DADOS DE TESTE
 # =============================================================================
 
+
 @app.post("/api/v1/guias/create-sample-data")
 def create_sample_data(user: dict = Depends(get_current_user)):
     """
@@ -4379,21 +4429,21 @@ def create_sample_data(user: dict = Depends(get_current_user)):
     """
     crm = user.get("crm")
     uf = user.get("uf")
-    
+
     if not crm or not uf:
         raise HTTPException(status_code=401, detail="Usuário não autenticado")
-    
+
     db = SessionLocal()
     try:
         # Verificar se já existem dados para este usuário
         existing_count = db.query(Guia).filter_by(crm=crm, uf=uf).count()
-        
+
         if existing_count > 0:
             return {
                 "message": f"Usuário já possui {existing_count} guias. Dados de exemplo não criados.",
-                "existing_count": existing_count
+                "existing_count": existing_count,
             }
-        
+
         # Criar dados de exemplo
         sample_guias = [
             {
@@ -4409,7 +4459,7 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 "nome_medico": user.get("nome", "Dr. Médico"),
                 "dt_inicio": "15/01/2024 08:00",
                 "dt_fim": "15/01/2024 10:30",
-                "status_part": "Fechada"
+                "status_part": "Fechada",
             },
             {
                 "numero_guia": "123456790",
@@ -4424,7 +4474,7 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 "nome_medico": user.get("nome", "Dr. Médico"),
                 "dt_inicio": "16/01/2024 14:00",
                 "dt_fim": "16/01/2024 16:45",
-                "status_part": "Fechada"
+                "status_part": "Fechada",
             },
             {
                 "numero_guia": "123456791",
@@ -4439,7 +4489,7 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 "nome_medico": user.get("nome", "Dr. Médico"),
                 "dt_inicio": "17/01/2024 09:30",
                 "dt_fim": "17/01/2024 11:00",
-                "status_part": "Fechada"
+                "status_part": "Fechada",
             },
             {
                 "numero_guia": "123456792",
@@ -4454,7 +4504,7 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 "nome_medico": user.get("nome", "Dr. Médico"),
                 "dt_inicio": "18/01/2024 15:00",
                 "dt_fim": "18/01/2024 15:30",
-                "status_part": "Fechada"
+                "status_part": "Fechada",
             },
             {
                 "numero_guia": "123456793",
@@ -4469,10 +4519,10 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 "nome_medico": user.get("nome", "Dr. Médico"),
                 "dt_inicio": "19/01/2024 07:00",
                 "dt_fim": "19/01/2024 09:30",
-                "status_part": "Fechada"
-            }
+                "status_part": "Fechada",
+            },
         ]
-        
+
         guias_criadas = 0
         for sample in sample_guias:
             guia = Guia(
@@ -4493,56 +4543,65 @@ def create_sample_data(user: dict = Depends(get_current_user)):
                 dt_fim=sample["dt_fim"],
                 status_part=sample["status_part"],
                 file_hash=f"sample_hash_{guias_criadas}",
-                filename=f"sample_guide_{guias_criadas}.pdf"
+                filename=f"sample_guide_{guias_criadas}.pdf",
             )
             db.add(guia)
             guias_criadas += 1
-        
+
         db.commit()
-        
-        logger.info(f"Criados dados de exemplo para {crm} ({uf}): {guias_criadas} guias")
-        
+
+        logger.info(
+            f"Criados dados de exemplo para {crm} ({uf}): {guias_criadas} guias"
+        )
+
         return {
             "message": f"Dados de exemplo criados com sucesso!",
             "guias_criadas": guias_criadas,
-            "user": {"crm": crm, "uf": uf, "nome": user.get("nome")}
+            "user": {"crm": crm, "uf": uf, "nome": user.get("nome")},
         }
-        
+
     except Exception as e:
         db.rollback()
         logger.error(f"Erro ao criar dados de exemplo para {crm}: {e}")
-        raise HTTPException(status_code=500, detail=f"Erro ao criar dados de exemplo: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Erro ao criar dados de exemplo: {str(e)}"
+        )
     finally:
         db.close()
+
 
 # === CACHE GLOBAL PARA PARTICIPAÇÕES ===
 import functools
 import time
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 # Cache de participações em memória (para produção, usar Redis)
 _participacoes_cache: Dict[str, Tuple[dict, float]] = {}
 _cache_ttl = 300  # 5 minutos
 
+
 def get_cached_participacoes(user_crm: str, user_uf: str) -> dict:
     """Retorna participações do cache ou recomputa se expirado"""
     cache_key = f"participacoes_{user_crm}_{user_uf}"
     current_time = time.time()
-    
+
     # Verifica se existe cache válido
     if cache_key in _participacoes_cache:
         cached_data, timestamp = _participacoes_cache[cache_key]
         if current_time - timestamp < _cache_ttl:
-            logger.info(f"[CACHE HIT] Participações para {user_crm} (idade: {current_time - timestamp:.1f}s)")
+            logger.info(
+                f"[CACHE HIT] Participações para {user_crm} (idade: {current_time - timestamp:.1f}s)"
+            )
             return cached_data
-    
+
     # Recomputa participações (otimizado)
     logger.info(f"[CACHE MISS] Recomputando participações para {user_crm}")
     participacoes_map = _compute_participacoes_optimized(user_crm, user_uf)
-    
+
     # Salva no cache
     _participacoes_cache[cache_key] = (participacoes_map, current_time)
     return participacoes_map
+
 
 def _compute_participacoes_optimized(user_crm: str, user_uf: str) -> dict:
     """Versão otimizada do cálculo de participações"""
@@ -4550,42 +4609,46 @@ def _compute_participacoes_optimized(user_crm: str, user_uf: str) -> dict:
     try:
         # OTIMIZAÇÃO: Query apenas os metadados necessários ao invés de fazer parsing
         participacoes_map = {}
-        
+
         # Busca participações já processadas no banco (se existirem)
-        guias_participacoes = db.query(Guia).filter_by(
-            crm=user_crm, 
-            uf=user_uf
-        ).with_entities(
-            Guia.numero_guia, 
-            Guia.codigo, 
-            Guia.papel,
-            Guia.nome_medico,
-            Guia.data
-        ).all()
-        
+        guias_participacoes = (
+            db.query(Guia)
+            .filter_by(crm=user_crm, uf=user_uf)
+            .with_entities(
+                Guia.numero_guia, Guia.codigo, Guia.papel, Guia.nome_medico, Guia.data
+            )
+            .all()
+        )
+
         # Cria mapa de participações sem parsing de PDF
         for guia_meta in guias_participacoes:
             key = (guia_meta.numero_guia, guia_meta.codigo)
             if key not in participacoes_map:
                 participacoes_map[key] = []
-            
-            participacoes_map[key].append({
-                'crm': user_crm,
-                'nome': guia_meta.nome_medico or '',
-                'papel': guia_meta.papel or '',
-                'inicio': guia_meta.data or '',
-                'fim': guia_meta.data or '',
-                'status': 'Fechada'
-            })
-        
-        logger.info(f"[OTIMIZADO] Mapeamento criado sem parsing: {len(participacoes_map)} chaves")
+
+            participacoes_map[key].append(
+                {
+                    "crm": user_crm,
+                    "nome": guia_meta.nome_medico or "",
+                    "papel": guia_meta.papel or "",
+                    "inicio": guia_meta.data or "",
+                    "fim": guia_meta.data or "",
+                    "status": "Fechada",
+                }
+            )
+
+        logger.info(
+            f"[OTIMIZADO] Mapeamento criado sem parsing: {len(participacoes_map)} chaves"
+        )
         return participacoes_map
-        
+
     finally:
         db.close()
 
+
 # === CBHPM CACHE SINGLETON ===
 _cbhpm_parser = None
+
 
 def get_cbhpm_parser():
     """Singleton para parser CBHPM (carrega apenas uma vez)"""
@@ -4593,13 +4656,15 @@ def get_cbhpm_parser():
     if _cbhpm_parser is None:
         try:
             from src.parsers.cbhpm_parser import CBHPMParser
+
             _cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
             logger.info("[CBHPM] Parser carregado com sucesso (singleton)")
         except Exception as e:
             logger.error(f"[CBHPM] Erro ao carregar: {e}")
             _cbhpm_parser = False  # Marca como falha para não tentar novamente
-    
+
     return _cbhpm_parser if _cbhpm_parser is not False else None
+
 
 @app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
@@ -4653,11 +4718,11 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
         guias_registradas = (
             db.query(Guia).filter_by(crm=user["crm"], uf=user["uf"]).all()
         )
-        
+
         logger.info(
             f"[DEBUG] Guias registradas no banco para usuário {user['crm']}: {[g.numero_guia for g in guias_registradas]}"
         )
-        
+
         # Processa apenas as guias registradas no banco
         for guia in guias_registradas:
             if not guia.filename:
@@ -4723,6 +4788,7 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
         # --- Cruzamento com CBHPM ---
         try:
             from src.parsers.cbhpm_parser import CBHPMParser
+
             cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
         except Exception as e:
             logger.warning(f"Erro ao carregar CBHPM: {e}")
@@ -4842,42 +4908,48 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
         logger.info(
             f"Processados {len(payments)} procedimentos do demonstrativo {demo_id}"
         )
-        
+
         return payments
 
     finally:
         db.close()
 
+
 # === ENDPOINTS DE MONITORAMENTO E PERFORMANCE ===
+
 
 @app.get("/api/v1/performance/cache-stats")
 def get_performance_stats(user: dict = Depends(get_current_user)):
     """Endpoint para monitorar performance e cache do sistema"""
     try:
         from src.performance_optimizations import get_cache_stats
+
         cache_stats = get_cache_stats()
     except ImportError:
         cache_stats = {"error": "Performance optimizations not available"}
-    
+
     return {
         "cache": cache_stats,
         "timestamp": datetime.now().isoformat(),
-        "user": user["crm"]
+        "user": user["crm"],
     }
+
 
 @app.post("/api/v1/performance/clear-cache")
 def clear_performance_cache(user: dict = Depends(get_current_user)):
     """Endpoint para limpar cache (apenas para admins/debug)"""
     try:
         from src.performance_optimizations import clear_all_cache
+
         clear_all_cache()
         return {"success": True, "message": "Cache cleared"}
     except ImportError:
         return {"success": False, "message": "Performance optimizations not available"}
 
+
 # === OTIMIZAÇÕES APLICADAS ===
 # 1. Cache de participações: 2000ms -> 50ms
-# 2. CBHPM singleton: 500ms -> 1ms  
+# 2. CBHPM singleton: 500ms -> 1ms
 # 3. Logs reduzidos: 50+ -> 5 logs
 # 4. Índices compostos no banco
 # 5. Carregamento lazy opcional
