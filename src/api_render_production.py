@@ -260,7 +260,7 @@ async def health_check():
     }
 
 
-@app.post("/api/auth/register", response_model=UserResponse)
+@app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registrar novo usuário"""
     # Verificar se CRM já existe
