@@ -15,8 +15,9 @@ import axios from 'axios';
 import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
+import { useAuth } from '../contexts/auth/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://medcheck-backend.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const registerSchema = z
   .object({

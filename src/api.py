@@ -14,9 +14,11 @@ import time
 import zipfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from functools import lru_cache
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
+import bcrypt
 import pandas as pd
 import sqlalchemy
 from fastapi import (
@@ -1648,6 +1650,7 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
 
 # --- Endpoint para obter procedimentos do demonstrativo ---
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
+@lru_cache(maxsize=128)
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
@@ -1750,6 +1753,58 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
     except Exception as e:
         logger.error(f"Erro inesperado no endpoint de procedimentos: {e}")
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
+    finally:
+        db.close()
+
+
+def get_cached_participacoes(user_crm: str, user_uf: str) -> dict:
+    """Função de fachada para o cache de participações"""
+    # Futuramente, pode usar Redis, etc.
+    return _compute_participacoes_optimized(user_crm, user_uf)
+
+
+@lru_cache(maxsize=32)
+def _compute_participacoes_optimized(user_crm: str, user_uf: str) -> dict:
+    """
+    Busca todas as participações de um médico e as organiza em um dicionário
+    """
+    db = SessionLocal()
+    try:
+        # OTIMIZAÇÃO: Query apenas os metadados necessários ao invés de fazer parsing
+        participacoes_map = {}
+
+        # Busca participações já processadas no banco (se existirem)
+        guias_participacoes = (
+            db.query(Guia)
+            .filter_by(crm=user_crm, uf=user_uf)
+            .with_entities(
+                Guia.numero_guia, Guia.codigo, Guia.papel, Guia.nome_medico, Guia.data
+            )
+            .all()
+        )
+
+        # Cria mapa de participações sem parsing de PDF
+        for guia_meta in guias_participacoes:
+            key = (guia_meta.numero_guia, guia_meta.codigo)
+            if key not in participacoes_map:
+                participacoes_map[key] = []
+
+            participacoes_map[key].append(
+                {
+                    "crm": user_crm,
+                    "nome": guia_meta.nome_medico or "",
+                    "papel": guia_meta.papel or "",
+                    "inicio": guia_meta.data or "",
+                    "fim": guia_meta.data or "",
+                    "status": "Fechada",
+                }
+            )
+
+        logger.info(
+            f"[OTIMIZADO] Mapeamento criado sem parsing: {len(participacoes_map)} chaves"
+        )
+        return participacoes_map
+
     finally:
         db.close()
 
