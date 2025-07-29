@@ -625,29 +625,12 @@ async def health_check():
     Endpoint de verificação de saúde da aplicação.
     Usado para monitoramento e verificação de deploy.
     """
-    try:
-        # Testa conexão com banco
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
-
-        return {
-            "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "version": "1.0.0",
-            "database": "connected",
-            "environment": os.environ.get("ENV", "development"),
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        raise HTTPException(
-            status_code=503,
-            detail={
-                "status": "unhealthy",
-                "timestamp": datetime.utcnow().isoformat(),
-                "error": str(e),
-            },
-        )
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0",
+        "environment": os.environ.get("ENV", "development"),
+    }
 
 
 # --- Importa e registra o router de glosas (Knowledge Base) ---

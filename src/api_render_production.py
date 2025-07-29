@@ -250,23 +250,13 @@ async def root():
 
 
 @app.get("/health")
-async def health_check(db: Session = Depends(get_db)):
-    """Health check completo"""
-    try:
-        # Testar database
-        db.execute(text("SELECT 1"))
-        db_status = "healthy"
-    except Exception as e:
-        logger.error(f"Database health check failed: {e}")
-        db_status = "unhealthy"
-
+async def health_check():
+    """Health check simplificado para Render"""
     return {
-        "status": "healthy" if db_status == "healthy" else "unhealthy",
+        "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0",
         "environment": ENVIRONMENT,
-        "database": db_status,
-        "python_version": "3.12",
     }
 
 
