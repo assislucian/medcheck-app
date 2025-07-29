@@ -78,7 +78,7 @@ class User(Base):
     crm = Column(String, unique=False, index=True)
     uf = Column(String, index=True)
     nome = Column(String)
-    email = Column(String, unique=True, index=True)  # E-mail deve ser único
+    email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -122,8 +122,8 @@ class UserCreate(BaseModel):
     uf: str
     crm: str
     nome: str
-    email: str  # Adicionado e-mail
-    password: str  # Manter consistência com a app de desenvolvimento
+    email: str
+    password: str
     terms_accepted: bool
     terms_version: str
 
@@ -275,12 +275,10 @@ async def health_check():
 @app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registrar novo usuário"""
-    # Verificar se e-mail já existe
     db_user_by_email = db.query(User).filter(User.email == user.email).first()
     if db_user_by_email:
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
-    # Verificar se CRM já existe para a UF
     db_user_by_crm = (
         db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
     )
@@ -295,7 +293,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
         )
 
-    hashed_password = get_password_hash(user.password)  # Usar user.password
+    hashed_password = get_password_hash(user.password)
     db_user = User(
         crm=user.crm,
         uf=user.uf,

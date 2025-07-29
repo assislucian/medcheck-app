@@ -56,6 +56,7 @@ import { SkeletonInfoCard } from '../components/ui/skeleton';
 import { useAuth } from '../contexts/auth/AuthContext';
 import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
 import { useFileUpload } from '../hooks/useFileUpload';
+import { formatValidationError } from '../utils/errorUtils';
 
 const mockDetailedProcedures = [
   {
@@ -1231,9 +1232,10 @@ const DemonstrativesPage = () => {
 
       if (error.response?.status === 422) {
         console.error('Detalhes do erro 422:', error.response.data);
-        toast.error(
-          `Erro de validação: ${error.response.data.detail || 'Arquivo inválido'}`
+        const formattedError = formatValidationError(
+          error.response.data.detail || 'Arquivo inválido'
         );
+        toast.error(`Erro de validação: ${formattedError}`);
       } else if (error.response?.status === 401) {
         toast.error('Token de autenticação inválido. Faça login novamente.');
       } else {

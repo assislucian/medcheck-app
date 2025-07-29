@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ResponsiveLayout, useResponsiveClasses, DeviceRender } from '../components/layout/ResponsiveLayout';
-import { ResponsiveDataGrid, useDemonstrativesGridConfig } from '../components/ui/ResponsiveDataGrid';
+import {
+  ResponsiveLayout,
+  useResponsiveClasses,
+  DeviceRender,
+} from '../components/layout/ResponsiveLayout';
+import {
+  ResponsiveDataGrid,
+  useDemonstrativesGridConfig,
+} from '../components/ui/ResponsiveDataGrid';
 import { useDevice } from '../hooks/use-device';
 import {
   Card,
@@ -46,17 +53,18 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { SkeletonInfoCard } from '../components/ui/skeleton';
 import { useAuth } from '../contexts/auth/AuthContext';
+import { formatValidationError } from '../utils/errorUtils';
 
 const DemonstrativesResponsivePage = () => {
   const { isMobile, isTablet } = useDevice();
   const { container, grid, card, title: titleClass, spacing } = useResponsiveClasses();
   const navigate = useNavigate();
   const { userProfile } = useAuth();
-  
+
   // SEO otimizado para mobile
   usePageTitle({
     title: isMobile ? 'Demonstrativos' : 'Gestão de Demonstrativos',
-    description: isMobile 
+    description: isMobile
       ? 'Análise rápida de demonstrativos médicos'
       : 'Central de análise e gerenciamento de demonstrativos de pagamento médico com análise financeira avançada',
     keywords: 'demonstrativos médicos, gestão financeira médica, análise pagamentos',
@@ -98,11 +106,11 @@ const DemonstrativesResponsivePage = () => {
         const uploadDate = new Date(demo.upload_time);
         const start = startDate ? new Date(startDate) : new Date('1900-01-01');
         const end = endDate ? new Date(endDate) : new Date('2100-12-31');
-        
+
         if (endDate) {
           end.setHours(23, 59, 59, 999);
         }
-        
+
         return uploadDate >= start && uploadDate <= end;
       });
     } else if (selectedPeriod !== 'all') {
@@ -139,7 +147,9 @@ const DemonstrativesResponsivePage = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos`,
+        `${
+          import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setDemonstratives(response.data);
@@ -166,7 +176,7 @@ const DemonstrativesResponsivePage = () => {
     }
 
     setUploading(true);
-    
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -179,23 +189,25 @@ const DemonstrativesResponsivePage = () => {
       uploadFiles.forEach((file) => {
         formData.append('files', file);
       });
-      
+
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/upload`,
+        `${
+          import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos/upload`,
         formData,
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-      
+
       if (response.data && Array.isArray(response.data)) {
         const results = response.data;
-        const successCount = results.filter(r => r.success).length;
-        
-        results.forEach(result => {
+        const successCount = results.filter((r) => r.success).length;
+
+        results.forEach((result) => {
           if (result.success) {
             toast.success(`"${result.filename}" processado com sucesso`);
           } else if (result.duplicate) {
@@ -204,13 +216,15 @@ const DemonstrativesResponsivePage = () => {
             toast.error(`Erro em "${result.filename}": ${result.error}`);
           }
         });
-        
+
         if (successCount > 0) {
           toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
           await fetchDemonstratives();
           setUploadFiles([]);
-          
-          const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+
+          const fileInput = document.getElementById(
+            'demo-file-upload'
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = '';
         } else {
           toast.info('Nenhum arquivo novo foi processado');
@@ -219,16 +233,20 @@ const DemonstrativesResponsivePage = () => {
         toast.success('Upload realizado com sucesso');
         await fetchDemonstratives();
         setUploadFiles([]);
-        
-        const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+
+        const fileInput = document.getElementById(
+          'demo-file-upload'
+        ) as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       }
-
     } catch (error: any) {
       console.error('Erro no upload:', error);
-      
+
       if (error.response?.status === 422) {
-        toast.error(`Erro de validação: ${error.response.data.detail || 'Arquivo inválido'}`);
+        const formattedError = formatValidationError(
+          error.response.data.detail || 'Arquivo inválido'
+        );
+        toast.error(`Erro de validação: ${formattedError}`);
       } else if (error.response?.status === 401) {
         toast.error('Faça login novamente');
       } else {
@@ -241,11 +259,13 @@ const DemonstrativesResponsivePage = () => {
 
   const handleDeleteDemonstrativo = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este demonstrativo?')) return;
-    
+
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/${id}`,
+        `${
+          import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Demonstrativo excluído com sucesso');
@@ -258,10 +278,19 @@ const DemonstrativesResponsivePage = () => {
 
   // Estatísticas globais
   const summaryStats = {
-    totalProcessado: demonstratives.reduce((sum, d) => sum + (d.total_approved || 0), 0),
+    totalProcessado: demonstratives.reduce(
+      (sum, d) => sum + (d.total_approved || 0),
+      0
+    ),
     totalGlosa: demonstratives.reduce((sum, d) => sum + (d.total_glosa || 0), 0),
-    totalProcedimentos: demonstratives.reduce((sum, d) => sum + (d.total_procedures || 0), 0),
-    totalApresentado: demonstratives.reduce((sum, d) => sum + (d.total_presented || 0), 0),
+    totalProcedimentos: demonstratives.reduce(
+      (sum, d) => sum + (d.total_procedures || 0),
+      0
+    ),
+    totalApresentado: demonstratives.reduce(
+      (sum, d) => sum + (d.total_presented || 0),
+      0
+    ),
   };
 
   // Colunas para o grid (desktop)
@@ -339,7 +368,9 @@ const DemonstrativesResponsivePage = () => {
         className="flex-1"
         onClick={() => {
           // Scroll para seção de upload
-          document.getElementById('upload-section')?.scrollIntoView({ behavior: 'smooth' });
+          document
+            .getElementById('upload-section')
+            ?.scrollIntoView({ behavior: 'smooth' });
         }}
       >
         <Upload className="h-4 w-4 mr-1" />
@@ -351,13 +382,21 @@ const DemonstrativesResponsivePage = () => {
   return (
     <>
       <Helmet>
-        <title>{isMobile ? 'Demonstrativos' : 'Demonstrativos & Honorários'} - MedCheck</title>
-        <meta name="description" content={
-          isMobile 
-            ? 'Análise rápida de demonstrativos médicos' 
-            : 'Central de análise e gerenciamento de demonstrativos de pagamento médico'
-        } />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+        <title>
+          {isMobile ? 'Demonstrativos' : 'Demonstrativos & Honorários'} - MedCheck
+        </title>
+        <meta
+          name="description"
+          content={
+            isMobile
+              ? 'Análise rápida de demonstrativos médicos'
+              : 'Central de análise e gerenciamento de demonstrativos de pagamento médico'
+          }
+        />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no"
+        />
       </Helmet>
 
       <ResponsiveLayout
@@ -387,16 +426,15 @@ const DemonstrativesResponsivePage = () => {
                 </h1>
 
                 <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-                  Central de análise e gerenciamento de demonstrativos de pagamento médico com insights de performance
+                  Central de análise e gerenciamento de demonstrativos de pagamento
+                  médico com insights de performance
                 </p>
               </div>
             }
             mobile={
               <div className="text-center space-y-2">
                 <h1 className={titleClass}>Demonstrativos</h1>
-                <p className="text-sm text-gray-600">
-                  Análise de honorários médicos
-                </p>
+                <p className="text-sm text-gray-600">Análise de honorários médicos</p>
               </div>
             }
           />
@@ -410,10 +448,9 @@ const DemonstrativesResponsivePage = () => {
                   {isMobile ? 'Upload' : 'Upload de Demonstrativos'}
                 </CardTitle>
                 <CardDescription>
-                  {isMobile 
+                  {isMobile
                     ? 'Envie seus demonstrativos para análise'
-                    : 'Faça upload dos seus demonstrativos de pagamento para análise financeira automatizada'
-                  }
+                    : 'Faça upload dos seus demonstrativos de pagamento para análise financeira automatizada'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -447,7 +484,7 @@ const DemonstrativesResponsivePage = () => {
                     )}
                   </Button>
                 </div>
-                
+
                 {uploadFiles.length > 0 && (
                   <div className="text-sm text-emerald-700 bg-emerald-100/60 p-3 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -467,7 +504,7 @@ const DemonstrativesResponsivePage = () => {
               <h3 className="text-base font-medium text-gray-700">Resumo Financeiro</h3>
               <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
             </div>
-            
+
             {loading ? (
               <div className={grid}>
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -494,7 +531,11 @@ const DemonstrativesResponsivePage = () => {
                         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
                           Total Liberado
                         </p>
-                        <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-emerald-800 leading-none`}>
+                        <p
+                          className={`${
+                            isMobile ? 'text-lg' : 'text-xl'
+                          } font-bold text-emerald-800 leading-none`}
+                        >
                           {formatCurrency(summaryStats.totalProcessado)}
                         </p>
                       </div>
@@ -520,7 +561,11 @@ const DemonstrativesResponsivePage = () => {
                         <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
                           Total Glosado
                         </p>
-                        <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-red-800 leading-none`}>
+                        <p
+                          className={`${
+                            isMobile ? 'text-lg' : 'text-xl'
+                          } font-bold text-red-800 leading-none`}
+                        >
                           {formatCurrency(summaryStats.totalGlosa)}
                         </p>
                       </div>
@@ -545,7 +590,11 @@ const DemonstrativesResponsivePage = () => {
                         <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
                           Procedimentos
                         </p>
-                        <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-blue-800 leading-none`}>
+                        <p
+                          className={`${
+                            isMobile ? 'text-lg' : 'text-xl'
+                          } font-bold text-blue-800 leading-none`}
+                        >
                           {summaryStats.totalProcedimentos}
                         </p>
                       </div>
@@ -570,7 +619,11 @@ const DemonstrativesResponsivePage = () => {
                         <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
                           Demonstrativos
                         </p>
-                        <p className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-amber-800 leading-none`}>
+                        <p
+                          className={`${
+                            isMobile ? 'text-lg' : 'text-xl'
+                          } font-bold text-amber-800 leading-none`}
+                        >
                           {demonstratives.length}
                         </p>
                       </div>
@@ -602,11 +655,16 @@ const DemonstrativesResponsivePage = () => {
                         className="pl-10"
                       />
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label className="text-xs font-medium text-gray-600">Status</Label>
-                        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                        <Label className="text-xs font-medium text-gray-600">
+                          Status
+                        </Label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={setSelectedStatus}
+                        >
                           <SelectTrigger className="h-9">
                             <SelectValue />
                           </SelectTrigger>
@@ -617,10 +675,15 @@ const DemonstrativesResponsivePage = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
-                        <Label className="text-xs font-medium text-gray-600">Período</Label>
-                        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                        <Label className="text-xs font-medium text-gray-600">
+                          Período
+                        </Label>
+                        <Select
+                          value={selectedPeriod}
+                          onValueChange={setSelectedPeriod}
+                        >
                           <SelectTrigger className="h-9">
                             <SelectValue />
                           </SelectTrigger>
@@ -634,7 +697,9 @@ const DemonstrativesResponsivePage = () => {
                       </div>
                     </div>
 
-                    {(searchTerm || selectedStatus !== 'all' || selectedPeriod !== 'all') && (
+                    {(searchTerm ||
+                      selectedStatus !== 'all' ||
+                      selectedPeriod !== 'all') && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -657,7 +722,9 @@ const DemonstrativesResponsivePage = () => {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">Filtros & Análise</h3>
+                  <h3 className="text-base font-medium text-gray-700">
+                    Filtros & Análise
+                  </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
@@ -674,10 +741,15 @@ const DemonstrativesResponsivePage = () => {
                           className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
                         />
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
-                        <Label className="text-sm font-medium whitespace-nowrap">Status:</Label>
-                        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                        <Label className="text-sm font-medium whitespace-nowrap">
+                          Status:
+                        </Label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={setSelectedStatus}
+                        >
                           <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
                             <SelectValue />
                           </SelectTrigger>
@@ -695,10 +767,12 @@ const DemonstrativesResponsivePage = () => {
                       <Label className="text-sm font-medium text-gray-600 whitespace-nowrap">
                         Período de Upload:
                       </Label>
-                      
+
                       <div className="flex flex-wrap gap-3 items-center flex-1">
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm font-medium whitespace-nowrap">De:</Label>
+                          <Label className="text-sm font-medium whitespace-nowrap">
+                            De:
+                          </Label>
                           <Input
                             type="date"
                             value={startDate}
@@ -711,7 +785,9 @@ const DemonstrativesResponsivePage = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm font-medium whitespace-nowrap">Até:</Label>
+                          <Label className="text-sm font-medium whitespace-nowrap">
+                            Até:
+                          </Label>
                           <Input
                             type="date"
                             value={endDate}
@@ -726,9 +802,11 @@ const DemonstrativesResponsivePage = () => {
                         <div className="w-px h-6 bg-gray-300"></div>
 
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm font-medium whitespace-nowrap">Ou selecione:</Label>
-                          <Select 
-                            value={selectedPeriod} 
+                          <Label className="text-sm font-medium whitespace-nowrap">
+                            Ou selecione:
+                          </Label>
+                          <Select
+                            value={selectedPeriod}
                             onValueChange={(value) => {
                               setSelectedPeriod(value);
                               if (value !== 'all') {
@@ -750,7 +828,11 @@ const DemonstrativesResponsivePage = () => {
                           </Select>
                         </div>
 
-                        {(startDate || endDate || selectedPeriod !== 'all' || selectedStatus !== 'all' || searchTerm) && (
+                        {(startDate ||
+                          endDate ||
+                          selectedPeriod !== 'all' ||
+                          selectedStatus !== 'all' ||
+                          searchTerm) && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -771,7 +853,8 @@ const DemonstrativesResponsivePage = () => {
 
                     {filteredDemonstratives.length !== demonstratives.length && (
                       <div className="text-xs text-gray-600 bg-blue-50/60 p-2 rounded-lg border border-blue-200/40">
-                        Mostrando {filteredDemonstratives.length} de {demonstratives.length} demonstrativos
+                        Mostrando {filteredDemonstratives.length} de{' '}
+                        {demonstratives.length} demonstrativos
                       </div>
                     )}
                   </CardContent>
@@ -819,4 +902,4 @@ const DemonstrativesResponsivePage = () => {
   );
 };
 
-export default DemonstrativesResponsivePage; 
+export default DemonstrativesResponsivePage;

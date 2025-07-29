@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/auth/AuthContext';
+import { formatValidationError } from '../utils/errorUtils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -129,11 +130,13 @@ const RegisterForm = () => {
       }
     } catch (error: any) {
       if (error.response && error.response.status === 422) {
-        // Erro de validação vindo do backend
-        toast.error(`Erro de Validação: ${error.response.data.detail}`);
+        // Erro de validação vindo do backend - formato corrigido
+        const formattedError = formatValidationError(error.response.data.detail);
+        toast.error(`Erro de Validação: ${formattedError}`);
       } else if (error.response && error.response.data && error.response.data.detail) {
         // Outros erros com uma mensagem `detail` do backend
-        toast.error(`Erro: ${error.response.data.detail}`);
+        const formattedError = formatValidationError(error.response.data.detail);
+        toast.error(`Erro: ${formattedError}`);
       } else {
         // Erros genéricos de rede ou outros
         toast.error(
