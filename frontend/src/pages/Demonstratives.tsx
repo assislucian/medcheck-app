@@ -28,12 +28,6 @@ import {
   DialogTrigger,
 } from '../components/ui/dialog';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '../components/ui/tooltip';
-import {
   FileText,
   Upload,
   Eye,
@@ -57,14 +51,11 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency } from '../utils/format';
 import { DataGrid } from '../components/ui/data-grid';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { FileType } from '../types/upload';
 import { usePageTitle } from '../hooks/usePageTitle';
-import {
-  SkeletonInfoCard,
-} from '../components/ui/skeleton';
+import { SkeletonInfoCard } from '../components/ui/skeleton';
 import { useAuth } from '../contexts/auth/AuthContext';
 import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
+import { useFileUpload } from '../hooks/useFileUpload';
 
 const mockDetailedProcedures = [
   {
@@ -173,36 +164,36 @@ function parseBRLToNumber(val) {
 }
 
 const getProceduresColumns = (navigate) => [
-  { 
-    field: 'guia', 
-    headerName: 'Guia', 
-    width: 80
+  {
+    field: 'guia',
+    headerName: 'Guia',
+    width: 80,
   },
-  { 
-    field: 'data', 
-    headerName: 'Data', 
-    width: 85
+  {
+    field: 'data',
+    headerName: 'Data',
+    width: 85,
   },
-  { 
-    field: 'paciente', 
-    headerName: 'Paciente', 
-    width: 140
+  {
+    field: 'paciente',
+    headerName: 'Paciente',
+    width: 140,
   },
-  { 
-    field: 'codigo', 
-    headerName: 'Código', 
-    width: 80
+  {
+    field: 'codigo',
+    headerName: 'Código',
+    width: 80,
   },
-  { 
-    field: 'descricao', 
-    headerName: 'Descrição', 
+  {
+    field: 'descricao',
+    headerName: 'Descrição',
     flex: 1,
-    minWidth: 200
+    minWidth: 200,
   },
-  { 
-    field: 'quantidade', 
-    headerName: 'Qtd', 
-    width: 45
+  {
+    field: 'quantidade',
+    headerName: 'Qtd',
+    width: 45,
   },
   {
     field: 'apresentado',
@@ -215,9 +206,9 @@ const getProceduresColumns = (navigate) => [
       </span>
     ),
   },
-    {
+  {
     field: 'liberado',
-    headerName: 'Liberado', 
+    headerName: 'Liberado',
     width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
@@ -340,7 +331,7 @@ const getProceduresColumns = (navigate) => [
         return (
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
-            <Badge 
+            <Badge
               className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
               onClick={(e) => {
                 e.stopPropagation();
@@ -492,7 +483,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     doc.text(`Demonstrativo - ${demonstrative.periodo || ''}`, 10, 10);
-    
+
     // Usar autoTable corretamente
     (doc as any).autoTable({
       head: [
@@ -611,18 +602,18 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
       </DialogTrigger>
       <DialogContent
         className="p-0 overflow-hidden shadow-xl"
-        style={{ 
-          boxSizing: 'border-box', 
+        style={{
+          boxSizing: 'border-box',
           width: 'min(1550px, 96vw)',
           height: 'min(920px, 92vh)',
           maxWidth: '96vw',
-          maxHeight: '92vh'
+          maxHeight: '92vh',
         }}
       >
-                  <div className="flex flex-col h-full min-h-0 gap-3 p-3 overflow-hidden">
-                      <DialogHeader className="flex-shrink-0 border-b border-gray-100/60 pb-3">
-                         <div className="flex items-center justify-between overflow-hidden">
-               <div className="flex-shrink-0">
+        <div className="flex flex-col h-full min-h-0 gap-3 p-3 overflow-hidden">
+          <DialogHeader className="flex-shrink-0 border-b border-gray-100/60 pb-3">
+            <div className="flex items-center justify-between overflow-hidden">
+              <div className="flex-shrink-0">
                 <DialogTitle className="text-xl font-semibold text-gray-900">
                   {demonstrative.periodo}
                 </DialogTitle>
@@ -630,27 +621,40 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   {totals.totalProcedimentos} procedimentos detalhados
                 </DialogDescription>
               </div>
-              
+
               {/* Resumo discreto e elegante */}
-               <div className="flex items-center gap-6 text-sm bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0">
-                 <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-6 text-sm bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-emerald-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Liberado</span>
-                  <span className="font-semibold text-emerald-700">{formatCurrency(totals.totalLiberado)}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                    Liberado
+                  </span>
+                  <span className="font-semibold text-emerald-700">
+                    {formatCurrency(totals.totalLiberado)}
+                  </span>
                 </div>
-                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
-                 <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Glosas</span>
-                  <span className="font-semibold text-red-700">{formatCurrency(totals.totalGlosa)}</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                    Glosas
+                  </span>
+                  <span className="font-semibold text-red-700">
+                    {formatCurrency(totals.totalGlosa)}
+                  </span>
                 </div>
-                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
-                 <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-blue-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Taxa</span>
+                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                    Taxa
+                  </span>
                   <span className="font-semibold text-blue-700">
                     {totals.totalApresentado > 0
-                      ? `${((totals.totalLiberado / totals.totalApresentado) * 100).toFixed(0)}%`
+                      ? `${(
+                          (totals.totalLiberado / totals.totalApresentado) *
+                          100
+                        ).toFixed(0)}%`
                       : '0%'}
                   </span>
                 </div>
@@ -658,12 +662,16 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
             </div>
           </DialogHeader>
           {/* Barra de filtros elegante e minimalista */}
-           <div className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-2 rounded-lg border border-gray-200/40 shadow-sm overflow-hidden">
-             <div className="flex items-center gap-2 text-sm text-gray-600 flex-shrink-0">
+          <div className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-2 rounded-lg border border-gray-200/40 shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 text-sm text-gray-600 flex-shrink-0">
               {(() => {
                 const filteredCount = procedures.filter((row) => {
                   if (showOnlyPendentes) {
-                    return String(row.participacao || '').trim().toLowerCase() === 'upload guia';
+                    return (
+                      String(row.participacao || '')
+                        .trim()
+                        .toLowerCase() === 'upload guia'
+                    );
                   }
                   if (showOnlyGlosas) {
                     const glosaValue = Number(row.financial?.glosa ?? row.glosa) || 0;
@@ -671,7 +679,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   }
                   return true;
                 }).length;
-                
+
                 return (
                   <>
                     <span className="font-medium">{filteredCount}</span>
@@ -679,13 +687,14 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                       {filteredCount === 1 ? 'procedimento' : 'procedimentos'}
                       {showOnlyPendentes && ' • pendentes'}
                       {showOnlyGlosas && ' • com glosas'}
-                      {(showOnlyPendentes || showOnlyGlosas) && ` de ${procedures.length}`}
+                      {(showOnlyPendentes || showOnlyGlosas) &&
+                        ` de ${procedures.length}`}
                     </span>
                   </>
                 );
               })()}
             </div>
-             <div className="flex items-center gap-2 flex-shrink-0 overflow-hidden">
+            <div className="flex items-center gap-2 flex-shrink-0 overflow-hidden">
               <Button
                 size="sm"
                 variant={showOnlyPendentes ? 'default' : 'outline'}
@@ -704,7 +713,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     return novo;
                   });
                 }}
-                                 className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
+                className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
                   showOnlyPendentes
                     ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-sm'
                     : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white/70'
@@ -719,7 +728,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   await handleExportPDF();
                   toast.success('PDF exportado com sucesso.');
                 }}
-                 className="h-7 px-3 text-xs border-gray-200 text-gray-600 hover:bg-gray-50/70 font-medium transition-all duration-200 bg-white/70"
+                className="h-7 px-3 text-xs border-gray-200 text-gray-600 hover:bg-gray-50/70 font-medium transition-all duration-200 bg-white/70"
               >
                 <Download className="w-3 h-3 mr-1" />
                 PDF
@@ -743,7 +752,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                       return novo;
                     });
                   }}
-                                     className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
+                  className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
                     showOnlyGlosas
                       ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-sm'
                       : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white/70'
@@ -758,25 +767,31 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
           {/* Tabela de procedimentos - Design elegante e focado */}
           <div className="flex-1 min-h-0 overflow-hidden">
             <Card className="h-full flex flex-col border-gray-200 shadow-lg rounded-xl bg-white">
-               <CardHeader className="flex-shrink-0 py-2 px-4 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 rounded-t-xl">
+              <CardHeader className="flex-shrink-0 py-2 px-4 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 rounded-t-xl">
                 <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-6 overflow-hidden">
-                     <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-6 overflow-hidden">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-emerald-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Confirmado</span>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                        Confirmado
+                      </span>
                     </div>
-                     <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-amber-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Pendente</span>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                        Pendente
+                      </span>
                     </div>
-                     <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-red-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Glosa</span>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                        Glosa
+                      </span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-               <CardContent className="flex-1 min-h-0 p-0 bg-white overflow-hidden">
+              <CardContent className="flex-1 min-h-0 p-0 bg-white overflow-hidden">
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <Loader2 className="animate-spin text-blue-500 w-6 h-6" />
@@ -785,46 +800,46 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     </span>
                   </div>
                 ) : (
-                                       <div className="h-full w-full overflow-hidden">
-                      <div className="h-full w-full overflow-auto">
-                        <DataGrid
-                          rows={procedures
-                            .map((p, idx) => ({ id: idx, ...p }))
-                            .filter((row) => {
-                              // Filtro de pendentes
-                              if (showOnlyPendentes) {
-                                return (
-                                  String(row.participacao || '')
-                                    .trim()
-                                    .toLowerCase() === 'upload guia'
-                                );
-                              }
+                  <div className="h-full w-full overflow-hidden">
+                    <div className="h-full w-full overflow-auto">
+                      <DataGrid
+                        rows={procedures
+                          .map((p, idx) => ({ id: idx, ...p }))
+                          .filter((row) => {
+                            // Filtro de pendentes
+                            if (showOnlyPendentes) {
+                              return (
+                                String(row.participacao || '')
+                                  .trim()
+                                  .toLowerCase() === 'upload guia'
+                              );
+                            }
 
-                              // Filtro de glosas
-                              if (showOnlyGlosas) {
-                                const glosaValue =
-                                  Number(row.financial?.glosa ?? row.glosa) || 0;
-                                return glosaValue > 0;
-                              }
+                            // Filtro de glosas
+                            if (showOnlyGlosas) {
+                              const glosaValue =
+                                Number(row.financial?.glosa ?? row.glosa) || 0;
+                              return glosaValue > 0;
+                            }
 
-                              // Mostrar todos
-                              return true;
-                            })}
-                          columns={getProceduresColumns(navigate)}
-                          pageSize={pageSize}
-                          currentPage={currentPage}
-                          onPageChange={setCurrentPage}
-                          onPageSizeChange={(newSize) => {
-                            setPageSize(newSize);
-                            setCurrentPage(0); // Reset para primeira página
-                          }}
-                          className="w-full border-0 [&_table]:w-full [&_table]:table-auto"
-                          wrapperScrollable={false}
-                          paginationLabel="Procedimentos por página:"
-                          rowsPerPageOptions={[10, 20, 50, 100]}
-                        />
-                      </div>
-                   </div>
+                            // Mostrar todos
+                            return true;
+                          })}
+                        columns={getProceduresColumns(navigate)}
+                        pageSize={pageSize}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(newSize) => {
+                          setPageSize(newSize);
+                          setCurrentPage(0); // Reset para primeira página
+                        }}
+                        className="w-full border-0 [&_table]:w-full [&_table]:table-auto"
+                        wrapperScrollable={false}
+                        paginationLabel="Procedimentos por página:"
+                        rowsPerPageOptions={[10, 20, 50, 100]}
+                      />
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -926,12 +941,12 @@ const DemonstrativesPage = () => {
         const uploadDate = new Date(demo.upload_time);
         const start = startDate ? new Date(startDate) : new Date('1900-01-01');
         const end = endDate ? new Date(endDate) : new Date('2100-12-31');
-        
+
         // Ajustar fim do dia para incluir todo o dia selecionado
         if (endDate) {
           end.setHours(23, 59, 59, 999);
         }
-        
+
         return uploadDate >= start && uploadDate <= end;
       });
     }
@@ -1033,13 +1048,15 @@ const DemonstrativesPage = () => {
       const token = localStorage.getItem('token');
       console.log('🔄 Buscando demonstrativos...');
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos`,
+        `${
+          import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       console.log('✅ Dados recebidos do backend:', response.data);
-      
+
       // Log específico para debug dos valores
       response.data.forEach((demo, index) => {
         console.log(`📊 Demo ${index + 1}:`, {
@@ -1049,10 +1066,10 @@ const DemonstrativesPage = () => {
           total_glosa: demo.total_glosa,
           apresentado_string: demo.apresentado,
           liberado_string: demo.liberado,
-          glosa_string: demo.glosa
+          glosa_string: demo.glosa,
         });
       });
-      
+
       setDemonstratives(response.data);
     } catch (error) {
       console.error('❌ Erro ao carregar demonstrativos:', error);
@@ -1073,18 +1090,18 @@ const DemonstrativesPage = () => {
   //     const token = localStorage.getItem('token');
   //     const formData = new FormData();
   //     formData.append('file', file);
-      
+
   //     const response = await axios.post(
   //       `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/check-duplicate`,
   //       formData,
   //       {
-  //         headers: { 
+  //         headers: {
   //           Authorization: `Bearer ${token}`,
   //           'Content-Type': 'multipart/form-data'
   //         },
   //       }
   //     );
-      
+
   //     return response.data.is_duplicate || false;
   //   } catch (error) {
   //     console.warn('Erro ao verificar duplicatas:', error);
@@ -1132,7 +1149,7 @@ const DemonstrativesPage = () => {
     }
 
     setUploading(true);
-    
+
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -1142,35 +1159,40 @@ const DemonstrativesPage = () => {
       }
 
       const formData = new FormData();
-      
+
       // Adicionar todos os arquivos como array
       uploadFiles.forEach((file) => {
         formData.append('files', file);
       });
-      
-      console.log('Enviando arquivos:', uploadFiles.map(f => f.name));
-      
+
+      console.log(
+        'Enviando arquivos:',
+        uploadFiles.map((f) => f.name)
+      );
+
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/upload`,
+        `${
+          import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos/upload`,
         formData,
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-      
+
       console.log('Resposta do upload:', response.data);
-      
+
       if (response.data && Array.isArray(response.data)) {
         const results = response.data;
-        const successCount = results.filter(r => r.success).length;
-        const duplicateCount = results.filter(r => r.duplicate).length;
-        const errorCount = results.filter(r => !r.success && !r.duplicate).length;
-        
+        const successCount = results.filter((r) => r.success).length;
+        const duplicateCount = results.filter((r) => r.duplicate).length;
+        const errorCount = results.filter((r) => !r.success && !r.duplicate).length;
+
         // Feedback detalhado por arquivo
-        results.forEach(result => {
+        results.forEach((result) => {
           if (result.success) {
             toast.success(`"${result.filename}" processado com sucesso`);
           } else if (result.duplicate) {
@@ -1179,15 +1201,17 @@ const DemonstrativesPage = () => {
             toast.error(`Erro em "${result.filename}": ${result.error}`);
           }
         });
-        
+
         // Resumo final
         if (successCount > 0) {
           toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
           await fetchDemonstratives(); // Recarregar dados
           setUploadFiles([]); // Limpar arquivos
-          
+
           // Limpar input
-          const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+          const fileInput = document.getElementById(
+            'demo-file-upload'
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = '';
         } else {
           toast.info('Nenhum arquivo novo foi processado');
@@ -1196,17 +1220,20 @@ const DemonstrativesPage = () => {
         toast.success('Upload realizado com sucesso');
         await fetchDemonstratives();
         setUploadFiles([]);
-        
-        const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+
+        const fileInput = document.getElementById(
+          'demo-file-upload'
+        ) as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       }
-
     } catch (error: any) {
       console.error('Erro no upload:', error);
-      
+
       if (error.response?.status === 422) {
         console.error('Detalhes do erro 422:', error.response.data);
-        toast.error(`Erro de validação: ${error.response.data.detail || 'Arquivo inválido'}`);
+        toast.error(
+          `Erro de validação: ${error.response.data.detail || 'Arquivo inválido'}`
+        );
       } else if (error.response?.status === 401) {
         toast.error('Token de autenticação inválido. Faça login novamente.');
       } else {
@@ -1232,7 +1259,7 @@ const DemonstrativesPage = () => {
   // };
 
   // const handleExportProcedures = async () => {
-  //   // Implementação comentada para evitar warning  
+  //   // Implementação comentada para evitar warning
   // };
 
   // const clearFilters = () => {
@@ -1243,38 +1270,29 @@ const DemonstrativesPage = () => {
 
   // Estatísticas globais (sempre usar todos os demonstrativos, não filtrados)
   const summaryStats = {
-    totalProcessado: demonstratives.reduce(
-      (sum, d) => {
-        const value = d.total_approved || 0;
-        console.log(`💰 Demo "${d.periodo}": total_approved = ${value}`);
-        return sum + value;
-      },
-      0
-    ),
+    totalProcessado: demonstratives.reduce((sum, d) => {
+      const value = d.total_approved || 0;
+      console.log(`💰 Demo "${d.periodo}": total_approved = ${value}`);
+      return sum + value;
+    }, 0),
     totalGlosa: demonstratives.reduce((sum, d) => {
       const value = d.total_glosa || 0;
       console.log(`🚫 Demo "${d.periodo}": total_glosa = ${value}`);
       return sum + value;
     }, 0),
-    totalProcedimentos: demonstratives.reduce(
-      (sum, d) => {
-        const value = d.total_procedures || 0;
-        console.log(`📋 Demo "${d.periodo}": total_procedures = ${value}`);
-        return sum + value;
-      },
-      0
-    ),
+    totalProcedimentos: demonstratives.reduce((sum, d) => {
+      const value = d.total_procedures || 0;
+      console.log(`📋 Demo "${d.periodo}": total_procedures = ${value}`);
+      return sum + value;
+    }, 0),
     // Novos cálculos inteligentes
     demonstrativosComGlosa: demonstratives.filter((d) => d.total_glosa > 0).length,
     demonstrativosSemGlosa: demonstratives.filter((d) => d.total_glosa === 0).length,
-    totalApresentado: demonstratives.reduce(
-      (sum, d) => {
-        const value = d.total_presented || 0;
-        console.log(`📄 Demo "${d.periodo}": total_presented = ${value}`);
-        return sum + value;
-      },
-      0
-    ),
+    totalApresentado: demonstratives.reduce((sum, d) => {
+      const value = d.total_presented || 0;
+      console.log(`📄 Demo "${d.periodo}": total_presented = ${value}`);
+      return sum + value;
+    }, 0),
   };
 
   // Debug dos cálculos
@@ -1383,13 +1401,17 @@ const DemonstrativesPage = () => {
     <>
       <Helmet>
         <title>Demonstrativos & Honorários - MedCheck</title>
-        <meta name="description" content="Central de análise e gerenciamento de demonstrativos de pagamento médico com análise financeira avançada e insights de performance" />
+        <meta
+          name="description"
+          content="Central de análise e gerenciamento de demonstrativos de pagamento médico com análise financeira avançada e insights de performance"
+        />
         <script type="application/ld+json">
           {JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'MedCheck - Demonstrativos',
-            description: 'Plataforma para análise e gerenciamento de demonstrativos de pagamento médico',
+            description:
+              'Plataforma para análise e gerenciamento de demonstrativos de pagamento médico',
             applicationCategory: 'HealthApplication',
             operatingSystem: 'Web',
           })}
@@ -1417,7 +1439,8 @@ const DemonstrativesPage = () => {
               </h1>
 
               <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-                Central de análise e gerenciamento de demonstrativos de pagamento médico com insights de performance
+                Central de análise e gerenciamento de demonstrativos de pagamento médico
+                com insights de performance
               </p>
 
               {/* Actions Compactas */}
@@ -1426,7 +1449,7 @@ const DemonstrativesPage = () => {
                   <TrendingUp className="h-3 w-3 text-emerald-600" />
                   Análise Avançada
                 </Badge>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -1434,388 +1457,427 @@ const DemonstrativesPage = () => {
                   disabled={loading}
                   className="gap-1 text-xs px-3 py-1"
                 >
-                  <FileBarChart className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                  <FileBarChart
+                    className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`}
+                  />
                   {loading ? 'Atualizando...' : 'Atualizar'}
                 </Button>
               </div>
             </div>
 
-        <div className="w-full space-y-8">
-          {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
-          <section aria-label="Upload de Demonstrativos" className="space-y-6">
-            <Card className="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 border-emerald-200 shadow-lg w-full relative overflow-hidden">
-              {/* Linha de destaque superior */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-              
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3 text-emerald-900">
-                  <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
-                    <Upload className="h-6 w-6 text-emerald-700" />
-                  </div>
-                  Upload de Demonstrativos
-                </CardTitle>
-                <CardDescription className="text-emerald-700">
-                  <strong>Analise seus pagamentos:</strong> Faça upload dos seus demonstrativos de pagamento para análise financeira automatizada
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="demo-file-upload" className="sr-only">
-                      Selecionar arquivos
-                    </Label>
-                    <Input
-                      id="demo-file-upload"
-                      type="file"
-                      multiple
-                      accept=".pdf,.csv,.xlsx"
-                      onChange={handleFileChange}
-                      disabled={uploading}
-                      className="cursor-pointer bg-white/80 border-emerald-200/60"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleSimpleUpload}
-                    disabled={uploadFiles.length === 0 || uploading}
-                    className="min-w-[120px] bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
-                  >
-                    {uploading ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Enviar
-                      </>
-                    )}
-                  </Button>
-                </div>
-                
-                {uploadFiles.length > 0 && (
-                  <div className="text-sm text-emerald-700 bg-emerald-100/60 p-4 rounded-xl border border-emerald-200/60">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-600" />
-                      <strong>{uploadFiles.length} arquivo(s) selecionado(s):</strong> {uploadFiles.map(f => f.name).join(', ')}
+            <div className="w-full space-y-8">
+              {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
+              <section aria-label="Upload de Demonstrativos" className="space-y-6">
+                <Card className="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 border-emerald-200 shadow-lg w-full relative overflow-hidden">
+                  {/* Linha de destaque superior */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-emerald-900">
+                      <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
+                        <Upload className="h-6 w-6 text-emerald-700" />
+                      </div>
+                      Upload de Demonstrativos
+                    </CardTitle>
+                    <CardDescription className="text-emerald-700">
+                      <strong>Analise seus pagamentos:</strong> Faça upload dos seus
+                      demonstrativos de pagamento para análise financeira automatizada
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <Label htmlFor="demo-file-upload" className="sr-only">
+                          Selecionar arquivos
+                        </Label>
+                        <Input
+                          id="demo-file-upload"
+                          type="file"
+                          multiple
+                          accept=".pdf,.csv,.xlsx"
+                          onChange={handleFileChange}
+                          disabled={uploading}
+                          className="cursor-pointer bg-white/80 border-emerald-200/60"
+                        />
+                      </div>
+                      <Button
+                        onClick={handleSimpleUpload}
+                        disabled={uploadFiles.length === 0 || uploading}
+                        className="min-w-[120px] bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800"
+                      >
+                        {uploading ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Enviar
+                          </>
+                        )}
+                      </Button>
                     </div>
+
+                    {uploadFiles.length > 0 && (
+                      <div className="text-sm text-emerald-700 bg-emerald-100/60 p-4 rounded-xl border border-emerald-200/60">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-emerald-600" />
+                          <strong>
+                            {uploadFiles.length} arquivo(s) selecionado(s):
+                          </strong>{' '}
+                          {uploadFiles.map((f) => f.name).join(', ')}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* 2. INFORMAÇÃO: Cards de Resumo Financeiro (Hierarquia Menor) */}
+              <section aria-label="Visão Geral Financeira" className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full"></div>
+                  <h3 className="text-base font-medium text-gray-700">
+                    Resumo Financeiro
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                </div>
+
+                {loading ? (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <SkeletonInfoCard key={i} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                    {/* Card Valores Liberados - Verde */}
+                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
+                      <CardContent className="relative p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
+                              <CheckCircle className="h-4 w-4 text-emerald-700" />
+                            </div>
+                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
+                              Liberado
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                              Total Liberado
+                            </p>
+                            <p className="text-xl font-bold text-emerald-800 leading-none">
+                              {formatCurrency(summaryStats.totalProcessado)}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Card Glosas - Vermelho */}
+                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
+                      <CardContent className="relative p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-red-100 to-rose-100">
+                              <AlertCircle className="h-4 w-4 text-red-700" />
+                            </div>
+                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                              Glosas
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                              Total Glosado
+                            </p>
+                            <p className="text-xl font-bold text-red-800 leading-none">
+                              {formatCurrency(summaryStats.totalGlosa)}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Card Procedimentos - Azul */}
+                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
+                      <CardContent className="relative p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
+                              <FileText className="h-4 w-4 text-blue-700" />
+                            </div>
+                            <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
+                              Processados
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                              Procedimentos
+                            </p>
+                            <p className="text-xl font-bold text-blue-800 leading-none">
+                              {summaryStats.totalProcedimentos}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Card Demonstrativos - Âmbar */}
+                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
+                      <CardContent className="relative p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
+                              <ClipboardList className="h-4 w-4 text-amber-700" />
+                            </div>
+                            <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
+                              Analisados
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
+                              Demonstrativos
+                            </p>
+                            <p className="text-xl font-bold text-amber-800 leading-none">
+                              {demonstratives.length}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </section>
+              </section>
 
-          {/* 2. INFORMAÇÃO: Cards de Resumo Financeiro (Hierarquia Menor) */}
-          <section aria-label="Visão Geral Financeira" className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full"></div>
-              <h3 className="text-base font-medium text-gray-700">Resumo Financeiro</h3>
-              <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
-            </div>
-            
-        {loading ? (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonInfoCard key={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {/* Card Valores Liberados - Verde */}
-            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-              <CardContent className="relative p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
-                      <CheckCircle className="h-4 w-4 text-emerald-700" />
-                    </div>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
-                      Liberado
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                      Total Liberado
-                    </p>
-                    <p className="text-xl font-bold text-emerald-800 leading-none">
-                      {formatCurrency(summaryStats.totalProcessado)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card Glosas - Vermelho */}
-            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
-              <CardContent className="relative p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-red-100 to-rose-100">
-                      <AlertCircle className="h-4 w-4 text-red-700" />
-                    </div>
-                    <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                      Glosas
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                      Total Glosado
-                    </p>
-                    <p className="text-xl font-bold text-red-800 leading-none">
-                      {formatCurrency(summaryStats.totalGlosa)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card Procedimentos - Azul */}
-            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
-              <CardContent className="relative p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
-                      <FileText className="h-4 w-4 text-blue-700" />
-                    </div>
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
-                      Processados
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                      Procedimentos
-                    </p>
-                    <p className="text-xl font-bold text-blue-800 leading-none">
-                      {summaryStats.totalProcedimentos}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Card Demonstrativos - Âmbar */}
-            <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
-              <CardContent className="relative p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
-                      <ClipboardList className="h-4 w-4 text-amber-700" />
-                    </div>
-                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
-                      Analisados
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
-                      Demonstrativos
-                    </p>
-                    <p className="text-xl font-bold text-amber-800 leading-none">
-                      {demonstratives.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </section>
-
-          {/* 3. FERRAMENTAS: Filtros e Busca */}
-          <section className="space-y-4">
+              {/* 3. FERRAMENTAS: Filtros e Busca */}
+              <section className="space-y-4">
                 <div className="flex items-center gap-2">
-              <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
-              <h3 className="text-base font-medium text-gray-700">Filtros & Análise</h3>
-              <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                  <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
+                  <h3 className="text-base font-medium text-gray-700">
+                    Filtros & Análise
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
-            <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
-              <CardContent className="p-4 space-y-4">
-                {/* Linha 1: Busca */}
-                <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por período, arquivo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
-                />
-              </div>
-              
-                  {/* Status Filter */}
+                <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
+                  <CardContent className="p-4 space-y-4">
+                    {/* Linha 1: Busca */}
+                    <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
+                      <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Buscar por período, arquivo..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                        />
+                      </div>
+
+                      {/* Status Filter */}
+                      <div className="flex items-center gap-2">
+                        <Label
+                          htmlFor="status-filter"
+                          className="text-sm font-medium whitespace-nowrap"
+                        >
+                          Status:
+                        </Label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={setSelectedStatus}
+                        >
+                          <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todos</SelectItem>
+                            <SelectItem value="liberado">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                Liberado
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="glosado">
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                Glosado
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Linha 2: Filtros de Data */}
+                    <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-gray-50/30 p-3 rounded-lg border border-gray-200/40">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm font-medium text-gray-600 whitespace-nowrap">
+                          Período de Upload:
+                        </Label>
+                      </div>
+
+                      <div className="flex flex-wrap gap-3 items-center flex-1">
+                        {/* Data Início */}
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="start-date"
+                            className="text-sm font-medium whitespace-nowrap"
+                          >
+                            De:
+                          </Label>
+                          <Input
+                            id="start-date"
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => {
+                              setStartDate(e.target.value);
+                              // Limpar período pré-definido quando usar data personalizada
+                              if (e.target.value) setSelectedPeriod('all');
+                            }}
+                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                          />
+                        </div>
+
+                        {/* Data Fim */}
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="end-date"
+                            className="text-sm font-medium whitespace-nowrap"
+                          >
+                            Até:
+                          </Label>
+                          <Input
+                            id="end-date"
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => {
+                              setEndDate(e.target.value);
+                              // Limpar período pré-definido quando usar data personalizada
+                              if (e.target.value) setSelectedPeriod('all');
+                            }}
+                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                          />
+                        </div>
+
+                        {/* Divisor */}
+                        <div className="w-px h-6 bg-gray-300"></div>
+
+                        {/* Períodos Rápidos */}
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor="period-filter"
+                            className="text-sm font-medium whitespace-nowrap"
+                          >
+                            Ou selecione:
+                          </Label>
+                          <Select
+                            value={selectedPeriod}
+                            onValueChange={(value) => {
+                              setSelectedPeriod(value);
+                              // Limpar datas personalizadas quando usar período pré-definido
+                              if (value !== 'all') {
+                                setStartDate('');
+                                setEndDate('');
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-[120px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos</SelectItem>
+                              <SelectItem value="30d">30 dias</SelectItem>
+                              <SelectItem value="90d">90 dias</SelectItem>
+                              <SelectItem value="6m">6 meses</SelectItem>
+                              <SelectItem value="1y">1 ano</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Botão Limpar Filtros */}
+                        {(startDate ||
+                          endDate ||
+                          selectedPeriod !== 'all' ||
+                          selectedStatus !== 'all' ||
+                          searchTerm) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setStartDate('');
+                              setEndDate('');
+                              setSelectedPeriod('all');
+                              setSelectedStatus('all');
+                              setSearchTerm('');
+                            }}
+                            className="h-9 text-xs px-3 text-gray-600 hover:text-gray-800"
+                          >
+                            Limpar Filtros
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Informações dos Filtros */}
+                    {filteredDemonstratives.length !== demonstratives.length && (
+                      <div className="text-xs text-gray-600 bg-blue-50/60 p-2 rounded-lg border border-blue-200/40">
+                        Mostrando {filteredDemonstratives.length} de{' '}
+                        {demonstratives.length} demonstrativos
+                        {(startDate || endDate) && (
+                          <span className="ml-1">
+                            • Período: {startDate || 'início'} até {endDate || 'hoje'}
+                          </span>
+                        )}
+                        {selectedPeriod !== 'all' && (
+                          <span className="ml-1">
+                            • Últimos{' '}
+                            {selectedPeriod === '30d'
+                              ? '30 dias'
+                              : selectedPeriod === '90d'
+                                ? '90 dias'
+                                : selectedPeriod === '6m'
+                                  ? '6 meses'
+                                  : '1 ano'}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </section>
+
+              {/* 4. ANÁLISE: DataGrid */}
+              <section className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="status-filter" className="text-sm font-medium whitespace-nowrap">
-                    Status:
-                  </Label>
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                      <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="liberado">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                          Liberado
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="glosado">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                          Glosado
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-                {/* Linha 2: Filtros de Data */}
-                <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-gray-50/30 p-3 rounded-lg border border-gray-200/40">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm font-medium text-gray-600 whitespace-nowrap">
-                      Período de Upload:
-                    </Label>
-            </div>
-            
-                  <div className="flex flex-wrap gap-3 items-center flex-1">
-                    {/* Data Início */}
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="start-date" className="text-sm font-medium whitespace-nowrap">
-                        De:
-                      </Label>
-                      <Input
-                        id="start-date"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          // Limpar período pré-definido quando usar data personalizada
-                          if (e.target.value) setSelectedPeriod('all');
-                        }}
-                        className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
-                      />
-                    </div>
-
-                    {/* Data Fim */}
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="end-date" className="text-sm font-medium whitespace-nowrap">
-                        Até:
-                      </Label>
-                      <Input
-                        id="end-date"
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => {
-                          setEndDate(e.target.value);
-                          // Limpar período pré-definido quando usar data personalizada
-                          if (e.target.value) setSelectedPeriod('all');
-                        }}
-                        className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
-                      />
-                    </div>
-
-                    {/* Divisor */}
-                    <div className="w-px h-6 bg-gray-300"></div>
-
-                    {/* Períodos Rápidos */}
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="period-filter" className="text-sm font-medium whitespace-nowrap">
-                        Ou selecione:
-                      </Label>
-                      <Select 
-                        value={selectedPeriod} 
-                        onValueChange={(value) => {
-                          setSelectedPeriod(value);
-                          // Limpar datas personalizadas quando usar período pré-definido
-                          if (value !== 'all') {
-                            setStartDate('');
-                            setEndDate('');
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-[120px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos</SelectItem>
-                          <SelectItem value="30d">30 dias</SelectItem>
-                          <SelectItem value="90d">90 dias</SelectItem>
-                          <SelectItem value="6m">6 meses</SelectItem>
-                          <SelectItem value="1y">1 ano</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Botão Limpar Filtros */}
-                    {(startDate || endDate || selectedPeriod !== 'all' || selectedStatus !== 'all' || searchTerm) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setStartDate('');
-                          setEndDate('');
-                          setSelectedPeriod('all');
-                          setSelectedStatus('all');
-                          setSearchTerm('');
-                        }}
-                        className="h-9 text-xs px-3 text-gray-600 hover:text-gray-800"
-                      >
-                        Limpar Filtros
-                      </Button>
-                    )}
-                  </div>
+                  <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
+                  <h3 className="text-base font-medium text-gray-700">
+                    Análise Detalhada
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
-                {/* Informações dos Filtros */}
-            {filteredDemonstratives.length !== demonstratives.length && (
-                  <div className="text-xs text-gray-600 bg-blue-50/60 p-2 rounded-lg border border-blue-200/40">
-                Mostrando {filteredDemonstratives.length} de {demonstratives.length} demonstrativos
-                    {(startDate || endDate) && (
-                      <span className="ml-1">
-                        • Período: {startDate || 'início'} até {endDate || 'hoje'}
-                      </span>
-                    )}
-                    {selectedPeriod !== 'all' && (
-                      <span className="ml-1">
-                        • Últimos {selectedPeriod === '30d' ? '30 dias' : selectedPeriod === '90d' ? '90 dias' : selectedPeriod === '6m' ? '6 meses' : '1 ano'}
-                      </span>
-                    )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-          {/* 4. ANÁLISE: DataGrid */}
-          <section className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
-              <h3 className="text-base font-medium text-gray-700">Análise Detalhada</h3>
-              <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                <div className="w-full">
+                  <DataGrid
+                    rows={filteredDemonstratives}
+                    columns={columns}
+                    loading={loading}
+                    className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-lg"
+                  />
+                </div>
+              </section>
             </div>
-
-      <div className="w-full">
-        <DataGrid
-          rows={filteredDemonstratives}
-          columns={columns}
-          loading={loading}
-          className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-lg"
-        />
-            </div>
-          </section>
+          </div>
+        </AuthenticatedLayout>
       </div>
-        </div>
-    </AuthenticatedLayout>
-    </div>
     </>
   );
 };

@@ -112,21 +112,16 @@ class Demonstrativo(Base):
 
 # ===== PYDANTIC MODELS =====
 class UserCreate(BaseModel):
+    uf: str
     crm: str
     nome: str
-    email: str
-    password: str
+    senha: str
+    terms_accepted: bool
+    terms_version: str
 
 
 class UserResponse(BaseModel):
-    id: int
-    crm: str
-    nome: str
-    email: str
-    is_active: bool
-
-    class Config:
-        from_attributes = True
+    message: str
 
 
 class Token(BaseModel):
@@ -263,25 +258,35 @@ async def health_check():
 @app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registrar novo usuário"""
-    # Verificar se CRM já existe
-    db_user = db.query(User).filter(User.crm == user.crm).first()
+    db_user = db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="CRM já cadastrado")
+        raise HTTPException(
+            status_code=400, detail="CRM já cadastrado para este estado (UF)"
+        )
 
-    # Criar usuário
+    if not user.terms_accepted:
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
+        )
+
     hashed_password = get_password_hash(user.password)
     db_user = User(
         crm=user.crm,
+        uf=user.uf,
         nome=user.nome,
         email=user.email,
         hashed_password=hashed_password,
+        terms_accepted=user.terms_accepted,
+        terms_version=user.terms_version,
+        created_at=datetime.utcnow(),
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
     logger.info(f"✅ New user registered: {user.crm}")
-    return db_user
+    return UserResponse(message="Cadastro realizado com sucesso!")
 
 
 @app.post("/token", response_model=Token)

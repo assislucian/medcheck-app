@@ -104,7 +104,7 @@ const RegisterForm = () => {
     }
     setIsLoading(true);
     try {
-      await axios.post(`${API_URL}/api/v1/register`, {
+      const response = await axios.post(`${API_URL}/api/v1/register`, {
         uf,
         crm,
         nome,
@@ -112,15 +112,36 @@ const RegisterForm = () => {
         terms_accepted: acceptedTerms,
         terms_version: TERMS_VERSION,
       });
-      toast.success('Cadastro realizado com sucesso! Faça login abaixo.');
-      navigate('/login');
+
+      if (response.data.message === 'Cadastro realizado com sucesso!') {
+        toast.success('Cadastro realizado com sucesso!');
+        // Tenta fazer login automaticamente após o registro
+        const loginSuccess = await login(values.crm, values.senha);
+        if (loginSuccess) {
+          navigate('/dashboard');
+        } else {
+          // Se o login automático falhar, direciona para a página de login
+          navigate('/login');
+        }
+      } else {
+        // Caso a API retorne uma mensagem de erro controlada
+        toast.error(response.data.message || 'Ocorreu um erro no cadastro.');
+      }
     } catch (error: any) {
-      setRegisterError(
-        error?.response?.data?.detail ||
-          'Erro ao realizar cadastro. Tente novamente mais tarde.'
-      );
+      if (error.response && error.response.status === 422) {
+        // Erro de validação vindo do backend
+        toast.error(`Erro de Validação: ${error.response.data.detail}`);
+      } else if (error.response && error.response.data && error.response.data.detail) {
+        // Outros erros com uma mensagem `detail` do backend
+        toast.error(`Erro: ${error.response.data.detail}`);
+      } else {
+        // Erros genéricos de rede ou outros
+        toast.error(
+          'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
+        );
+      }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
