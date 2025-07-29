@@ -123,7 +123,7 @@ class UserCreate(BaseModel):
     crm: str
     nome: str
     email: str  # Adicionado e-mail
-    senha: str
+    password: str  # Manter consistência com a app de desenvolvimento
     terms_accepted: bool
     terms_version: str
 
@@ -295,7 +295,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
         )
 
-    hashed_password = get_password_hash(user.senha)
+    hashed_password = get_password_hash(user.password)  # Usar user.password
     db_user = User(
         crm=user.crm,
         uf=user.uf,
