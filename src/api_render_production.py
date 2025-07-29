@@ -31,6 +31,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
+from starlette.responses import JSONResponse
 
 # ===== CONFIGURAÇÃO =====
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./medcheck.db")
@@ -74,12 +75,10 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    crm = Column(
-        String, unique=False, index=True
-    )  # Alterado para não ser único globalmente
-    uf = Column(String, index=True)  # Adicionado campo UF
+    crm = Column(String, unique=False, index=True)
+    uf = Column(String, index=True)
     nome = Column(String)
-    email = Column(String)
+    email = Column(String, unique=True, index=True)  # E-mail deve ser único
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -123,6 +122,7 @@ class UserCreate(BaseModel):
     uf: str
     crm: str
     nome: str
+    email: str  # Adicionado e-mail
     senha: str
     terms_accepted: bool
     terms_version: str
@@ -136,6 +136,15 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+
+class PasswordRecoveryRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 
 class GuiaResponse(BaseModel):
@@ -266,8 +275,16 @@ async def health_check():
 @app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registrar novo usuário"""
-    db_user = db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
-    if db_user:
+    # Verificar se e-mail já existe
+    db_user_by_email = db.query(User).filter(User.email == user.email).first()
+    if db_user_by_email:
+        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
+    # Verificar se CRM já existe para a UF
+    db_user_by_crm = (
+        db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
+    )
+    if db_user_by_crm:
         raise HTTPException(
             status_code=400, detail="CRM já cadastrado para este estado (UF)"
         )
@@ -278,7 +295,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
             detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
         )
 
-    hashed_password = get_password_hash(user.password)
+    hashed_password = get_password_hash(user.senha)
     db_user = User(
         crm=user.crm,
         uf=user.uf,
@@ -312,6 +329,72 @@ async def login_for_access_token(
 
     access_token = create_access_token(data={"sub": user.crm})
     return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+
+@app.post("/api/auth/password-recovery")
+async def password_recovery(
+    request: PasswordRecoveryRequest, db: Session = Depends(get_db)
+):
+    """Solicitar recuperação de senha"""
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Resposta genérica para não revelar se o e-mail existe
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": (
+                    "Se um usuário com este e-mail existir, "
+                    "um link de recuperação será enviado."
+                )
+            },
+        )
+
+    # Gerar token de reset (curta duração)
+    reset_token = create_access_token(
+        data={"sub": user.crm, "type": "password_reset"},
+        expires_delta=timedelta(minutes=15),
+    )
+
+    # **Simulação de envio de e-mail**
+    # Em um app real, aqui você enviaria um e-mail com o link contendo o token.
+    # Para este projeto, vamos retornar o token para facilitar o teste.
+    logger.info(f"🔑 Token de reset gerado para {user.email}: {reset_token}")
+
+    return {
+        "message": "Link de recuperação enviado (simulado).",
+        "reset_token": reset_token,  # Apenas para fins de teste
+    }
+
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Redefinir a senha com um token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token inválido ou expirado",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            raise credentials_exception
+
+        crm: str = payload.get("sub")
+        if crm is None:
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.crm == crm).first()
+    if not user:
+        raise credentials_exception
+
+    # Atualizar senha
+    user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+
+    return {"message": "Senha redefinida com sucesso!"}
 
 
 @app.get("/api/dashboard/stats")

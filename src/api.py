@@ -129,6 +129,9 @@ class Medico(Base):
     crm = Column(String, nullable=False)
     uf = Column(String, nullable=False)
     nome = Column(String, nullable=False)
+    email = Column(
+        String, unique=True, nullable=False, index=True
+    )  # E-mail deve ser único
     senha_hash = Column(String, nullable=False)
     terms_accepted = Column(Integer, nullable=False, default=0)  # 0 = False, 1 = True
     terms_accepted_at = Column(DateTime, nullable=True)
@@ -691,6 +694,7 @@ class RegisterRequest(BaseModel):
     uf: str
     crm: str
     nome: str
+    email: str  # Adicionado e-mail
     senha: str
     terms_accepted: bool
     terms_version: str
@@ -718,6 +722,15 @@ class StatusResponse(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str
+
+
+class PasswordRecoveryRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 
 class ActivityLogEntry(BaseModel):
@@ -835,6 +848,9 @@ def register_medico(req: RegisterRequest, request: Request):
 
     db = SessionLocal()
     try:
+        if db.query(Medico).filter_by(email=req.email).first():
+            raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
         if db.query(Medico).filter_by(crm=req.crm, uf=req.uf).first():
             raise HTTPException(
                 status_code=400, detail="CRM já cadastrado para este estado (UF)"
@@ -849,6 +865,7 @@ def register_medico(req: RegisterRequest, request: Request):
             crm=req.crm,
             uf=req.uf,
             nome=req.nome,
+            email=req.email,
             senha_hash=senha_hash,
             terms_accepted=1 if req.terms_accepted else 0,
             terms_accepted_at=datetime.utcnow(),
@@ -4992,3 +5009,72 @@ def clear_performance_cache(user: dict = Depends(get_current_user)):
 # 4. Índices compostos no banco
 # 5. Carregamento lazy opcional
 # 6. Monitoramento de performance
+
+
+@app.post("/api/v1/password-recovery")
+def password_recovery(
+    req: PasswordRecoveryRequest,
+    db: Session = Depends(SessionLocal),
+):
+    """
+    Inicia o fluxo de recuperação de senha.
+    Em um ambiente real, enviaria um e-mail com o token.
+    """
+    medico = db.query(Medico).filter_by(email=req.email).first()
+    if not medico:
+        # Resposta genérica para evitar enumeração de usuários
+        return {
+            "message": "Se o e-mail estiver cadastrado, um link de recuperação foi enviado."
+        }
+
+    # Gerar token de curta duração
+    token = create_access_token(
+        data={"crm": medico.crm, "uf": medico.uf, "type": "reset"},
+        expires_delta=timedelta(minutes=15),  # Token válido por 15 minutos
+    )
+
+    # Simulação do envio de e-mail
+    logger.info(f"Gerado token de reset para {medico.email}: {token}")
+
+    return {
+        "message": "Link de recuperação enviado (simulado)",
+        "reset_token": token,  # Retornado apenas para facilitar o teste
+    }
+
+
+@app.post("/api/v1/reset-password")
+def reset_password(
+    req: ResetPasswordRequest,
+    db: Session = Depends(SessionLocal),
+):
+    """Reseta a senha usando um token válido."""
+    try:
+        payload = decode_jwt(req.token)
+        if payload.get("type") != "reset":
+            raise HTTPException(
+                status_code=400, detail="Token inválido para reset de senha"
+            )
+
+        crm = payload.get("crm")
+        uf = payload.get("uf")
+
+        medico = db.query(Medico).filter_by(crm=crm, uf=uf).first()
+        if not medico:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+        # Validação de senha forte
+        is_strong, msg = senha_forte(req.new_password)
+        if not is_strong:
+            raise HTTPException(status_code=400, detail=msg)
+
+        medico.senha_hash = bcrypt.hashpw(
+            req.new_password.encode(), bcrypt.gensalt()
+        ).decode()
+        db.commit()
+
+        return {"message": "Senha alterada com sucesso."}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Erro ao resetar senha: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno ao resetar senha.")

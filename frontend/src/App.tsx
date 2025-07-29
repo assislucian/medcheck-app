@@ -5,20 +5,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HelmetProvider } from 'react-helmet-async';
 
 // Performance Systems
-import { 
-  PerformanceTracker, 
-  IntelligentPreloader, 
+import {
+  PerformanceTracker,
+  IntelligentPreloader,
   ResourceOptimizer,
   MemoryManager,
-  PRELOAD_STRATEGIES 
+  PRELOAD_STRATEGIES,
 } from '@/utils/performance';
 
 // Premium Loading Components
-import { 
-  LoadingProvider, 
+import {
+  LoadingProvider,
   PremiumSuspenseFallback,
   PremiumErrorFallback,
-  PageTransition 
+  PageTransition,
 } from '@/components/ui/PremiumLoading';
 
 // Context and Auth
@@ -48,6 +48,8 @@ const Index = React.lazy(() => import('@/pages/Index'));
 const UpgradeEnterprise = React.lazy(() => import('@/pages/UpgradeEnterprise'));
 const PricingPage = React.lazy(() => import('@/pages/Pricing'));
 const CheckoutPage = React.lazy(() => import('@/pages/Checkout'));
+const ForgotPasswordPage = React.lazy(() => import('@/pages/ForgotPassword'));
+const ResetPasswordPage = React.lazy(() => import('@/pages/ResetPassword'));
 
 /* ========================================================================
    PERFORMANCE MONITORING COMPONENT
@@ -57,22 +59,22 @@ const PerformanceMonitor: React.FC = () => {
   useEffect(() => {
     const tracker = PerformanceTracker.getInstance();
     const preloader = IntelligentPreloader.getInstance();
-    
+
     // Initialize performance tracking
     tracker.init();
-    
+
     // Preload critical routes
-    PRELOAD_STRATEGIES.CRITICAL.forEach(route => {
+    PRELOAD_STRATEGIES.CRITICAL.forEach((route) => {
       preloader.preloadRoute(route, 'high');
     });
-    
+
     // Setup DNS prefetching for external resources
     ResourceOptimizer.prefetchDNS([
       'https://api.medcheck.com',
       'https://cdn.medcheck.com',
-      'https://fonts.googleapis.com'
+      'https://fonts.googleapis.com',
     ]);
-    
+
     // Cleanup on unmount
     return () => {
       tracker.cleanup();
@@ -98,7 +100,7 @@ const RoutePreloader: React.FC<RoutePreloaderProps> = ({ children }) => {
   useEffect(() => {
     // Preload likely next routes based on current location
     const currentPath = location.pathname;
-    
+
     const routePatterns: Record<string, string[]> = {
       '/dashboard': ['/guides', '/reports', '/demonstratives'],
       '/guides': ['/demonstratives', '/reports', '/intelligence-hub'],
@@ -106,7 +108,7 @@ const RoutePreloader: React.FC<RoutePreloaderProps> = ({ children }) => {
       '/reports': ['/guides', '/demonstratives', '/intelligence-hub'],
       '/intelligence-hub': ['/guides', '/reports', '/demonstratives'],
       '/profile': ['/dashboard', '/help'],
-      '/': ['/dashboard', '/login', '/about']
+      '/': ['/dashboard', '/login', '/about'],
     };
 
     const nextRoutes = routePatterns[currentPath] || [];
@@ -140,7 +142,7 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error Boundary caught an error:', error, errorInfo);
-    
+
     // Log to performance monitoring
     const tracker = PerformanceTracker.getInstance();
     // tracker.logError(error, errorInfo); // Would implement in real system
@@ -170,11 +172,7 @@ interface RouteWrapperProps {
 }
 
 const RouteWrapper: React.FC<RouteWrapperProps> = ({ children, isLoading = false }) => {
-  return (
-    <PageTransition isLoading={isLoading}>
-      {children}
-    </PageTransition>
-  );
+  return <PageTransition isLoading={isLoading}>{children}</PageTransition>;
 };
 
 /* ========================================================================
@@ -186,181 +184,258 @@ const App: React.FC = () => {
     <HelmetProvider>
       <ErrorBoundary>
         <LoadingProvider>
-        <TooltipProvider>
-          <Router>
-            <AuthProvider>
-              <PerformanceMonitor />
-              
-              <RoutePreloader>
-                <motion.div 
-                  className="min-h-screen"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Suspense 
-                    fallback={
-                      <PremiumSuspenseFallback 
-                        variant="page" 
-                        message="Carregando MedCheck Premium..." 
-                      />
-                    }
+          <TooltipProvider>
+            <Router>
+              <AuthProvider>
+                <PerformanceMonitor />
+
+                <RoutePreloader>
+                  <motion.div
+                    className="min-h-screen"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <AnimatePresence mode="wait">
-                      <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={
-                          <RouteWrapper>
-                            <Index />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/about" element={
-                          <RouteWrapper>
-                            <PublicLayout title="Sobre - MedCheck">
-                              <About />
-                            </PublicLayout>
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/pricing" element={
-                          <RouteWrapper>
-                            <PublicLayout title="Preços - MedCheck">
-                              <PricingPage />
-                            </PublicLayout>
-                          </RouteWrapper>
-                        } />
+                    <Suspense
+                      fallback={
+                        <PremiumSuspenseFallback
+                          variant="page"
+                          message="Carregando MedCheck Premium..."
+                        />
+                      }
+                    >
+                      <AnimatePresence mode="wait">
+                        <Routes>
+                          {/* Public Routes */}
+                          <Route
+                            path="/"
+                            element={
+                              <RouteWrapper>
+                                <Index />
+                              </RouteWrapper>
+                            }
+                          />
 
-                        {/* Auth Routes */}
-                        <Route path="/login" element={
-                          <RouteWrapper>
-                            <Login />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/register" element={
-                          <RouteWrapper>
-                            <Register />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/auth/callback" element={
-                          <RouteWrapper>
-                            <AuthCallback />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/health-plan-selection" element={
-                          <RouteWrapper>
-                            <HealthPlanSelection />
-                          </RouteWrapper>
-                        } />
+                          <Route
+                            path="/about"
+                            element={
+                              <RouteWrapper>
+                                <PublicLayout title="Sobre - MedCheck">
+                                  <About />
+                                </PublicLayout>
+                              </RouteWrapper>
+                            }
+                          />
 
-                        {/* Protected Routes */}
-                        <Route path="/dashboard" element={
-                          <RouteWrapper>
-                            <Dashboard />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/guides" element={
-                          <RouteWrapper>
-                            <Guides />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/demonstratives" element={
-                          <RouteWrapper>
-                            <Demonstratives />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/reports" element={
-                          <RouteWrapper>
-                            <Reports />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/intelligence-hub" element={
-                          <RouteWrapper>
-                            <IntelligenceHub />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/unpaid-procedures" element={
-                          <RouteWrapper>
-                            <UnpaidProcedures />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/profile" element={
-                          <RouteWrapper>
-                            <Profile />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/help" element={
-                          <RouteWrapper>
-                            <Help />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/notifications" element={
-                          <RouteWrapper>
-                            <Notifications />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/upgrade-enterprise" element={
-                          <RouteWrapper>
-                            <UpgradeEnterprise />
-                          </RouteWrapper>
-                        } />
-                        
-                        <Route path="/checkout" element={
-                          <RouteWrapper>
-                            <CheckoutPage />
-                          </RouteWrapper>
-                        } />
+                          <Route
+                            path="/pricing"
+                            element={
+                              <RouteWrapper>
+                                <PublicLayout title="Preços - MedCheck">
+                                  <PricingPage />
+                                </PublicLayout>
+                              </RouteWrapper>
+                            }
+                          />
 
-                        {/* 404 Route */}
-                        <Route path="*" element={
-                          <RouteWrapper>
-                            <div className="min-h-screen flex items-center justify-center">
-                              <PremiumErrorFallback 
-                                error={new Error('Página não encontrada')}
-                                resetError={() => window.location.href = '/dashboard'}
-                              />
-                            </div>
-                          </RouteWrapper>
-                        } />
-                      </Routes>
-                    </AnimatePresence>
-                  </Suspense>
-                </motion.div>
-              </RoutePreloader>
+                          {/* Auth Routes */}
+                          <Route
+                            path="/login"
+                            element={
+                              <RouteWrapper>
+                                <Login />
+                              </RouteWrapper>
+                            }
+                          />
 
-              {/* Toast Notifications */}
-              <Toaster 
-                richColors 
-                position="top-right"
-                className="medical-toaster"
-                toastOptions={{
-                  style: {
-                    background: 'rgb(var(--surface-1))',
-                    color: 'rgb(var(--text-body))',
-                    border: '1px solid rgb(var(--medical-blue-500) / 0.2)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-medium)',
-                    backdropFilter: 'blur(8px)',
-                  }
-                }}
-              />
-            </AuthProvider>
-          </Router>
-        </TooltipProvider>
-      </LoadingProvider>
-    </ErrorBoundary>
+                          <Route
+                            path="/register"
+                            element={
+                              <RouteWrapper>
+                                <Register />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/auth/callback"
+                            element={
+                              <RouteWrapper>
+                                <AuthCallback />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/forgot-password"
+                            element={
+                              <RouteWrapper>
+                                <ForgotPasswordPage />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/reset-password"
+                            element={
+                              <RouteWrapper>
+                                <ResetPasswordPage />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/health-plan-selection"
+                            element={
+                              <RouteWrapper>
+                                <HealthPlanSelection />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          {/* Protected Routes */}
+                          <Route
+                            path="/dashboard"
+                            element={
+                              <RouteWrapper>
+                                <Dashboard />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/guides"
+                            element={
+                              <RouteWrapper>
+                                <Guides />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/demonstratives"
+                            element={
+                              <RouteWrapper>
+                                <Demonstratives />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/reports"
+                            element={
+                              <RouteWrapper>
+                                <Reports />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/intelligence-hub"
+                            element={
+                              <RouteWrapper>
+                                <IntelligenceHub />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/unpaid-procedures"
+                            element={
+                              <RouteWrapper>
+                                <UnpaidProcedures />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/profile"
+                            element={
+                              <RouteWrapper>
+                                <Profile />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/help"
+                            element={
+                              <RouteWrapper>
+                                <Help />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/notifications"
+                            element={
+                              <RouteWrapper>
+                                <Notifications />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/upgrade-enterprise"
+                            element={
+                              <RouteWrapper>
+                                <UpgradeEnterprise />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/checkout"
+                            element={
+                              <RouteWrapper>
+                                <CheckoutPage />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          {/* 404 Route */}
+                          <Route
+                            path="*"
+                            element={
+                              <RouteWrapper>
+                                <div className="min-h-screen flex items-center justify-center">
+                                  <PremiumErrorFallback
+                                    error={new Error('Página não encontrada')}
+                                    resetError={() =>
+                                      (window.location.href = '/dashboard')
+                                    }
+                                  />
+                                </div>
+                              </RouteWrapper>
+                            }
+                          />
+                        </Routes>
+                      </AnimatePresence>
+                    </Suspense>
+                  </motion.div>
+                </RoutePreloader>
+
+                {/* Toast Notifications */}
+                <Toaster
+                  richColors
+                  position="top-right"
+                  className="medical-toaster"
+                  toastOptions={{
+                    style: {
+                      background: 'rgb(var(--surface-1))',
+                      color: 'rgb(var(--text-body))',
+                      border: '1px solid rgb(var(--medical-blue-500) / 0.2)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-medium)',
+                      backdropFilter: 'blur(8px)',
+                    },
+                  }}
+                />
+              </AuthProvider>
+            </Router>
+          </TooltipProvider>
+        </LoadingProvider>
+      </ErrorBoundary>
     </HelmetProvider>
   );
 };
