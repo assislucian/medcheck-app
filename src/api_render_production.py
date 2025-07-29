@@ -327,7 +327,11 @@ async def login_for_access_token(
         )
 
     access_token = create_access_token(data={"sub": user.crm})
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse(message="Login realizado com sucesso!"),
+    }
 
 
 @app.post("/api/auth/password-recovery")
