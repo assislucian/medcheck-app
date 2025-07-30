@@ -1,28 +1,30 @@
 services:
-  # Frontend Static Site - CORREÇÃO FINAL E DEFINITIVA
-  - type: web # O tipo de serviço é 'web'
+  # Frontend Static Site
+  - type: web
     name: medcheck-frontend
-    runtime: static # O 'runtime' o define como um site estático
-    # Isola o build APENAS para o diretório frontend, resolvendo a detecção de linguagem
+    runtime: static
     rootDir: frontend
     buildCommand: npm ci && npm run build
-    # 'publishPath' é a diretiva correta para 'runtime: static'
-    publishPath: dist
-    # SPA routing para React Router
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://medcheck-backend.onrender.com
 
-  # Backend API Service - Configuração Definitiva
+  # Backend API Service
   - type: web
     name: medcheck-backend
     runtime: python
-    # Fixa a versão do Python para 3.11 (LTS e estável no Render)
     pythonVersion: "3.11"
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
         value: production
