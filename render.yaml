@@ -1,12 +1,14 @@
 services:
-  # Frontend Static Site - Configuração Definitiva
-  - type: static
+  # Frontend Static Site - CORREÇÃO FINAL E DEFINITIVA
+  - type: web # O tipo de serviço é 'web'
     name: medcheck-frontend
-    # Isola o build APENAS para o diretório frontend
+    runtime: static # O 'runtime' o define como um site estático
+    # Isola o build APENAS para o diretório frontend, resolvendo a detecção de linguagem
     rootDir: frontend
     buildCommand: npm ci && npm run build
-    publishPath: dist
-    # SPA routing continua igual
+    # 'staticPublishPath' é a diretiva correta para 'runtime: static'
+    staticPublishPath: dist
+    # SPA routing para React Router
     routes:
       - type: rewrite
         source: /*
