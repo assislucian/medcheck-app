@@ -1,12 +1,11 @@
 services:
-  # Frontend Static Site com configuração SPA
-  # NOTA: medcheck-frontend-v2 é usado porque 'medcheck-frontend' já existe
-  # com tipo diferente. Para usar o nome original, delete o serviço antigo no Dashboard
+  # Frontend Static Site - Otimizado para produção
   - type: web
-    name: medcheck-frontend-v2
+    name: medcheck-frontend
     runtime: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
+    # Configuração SPA crítica para React Router
     routes:
       - type: rewrite
         source: /*
@@ -14,27 +13,44 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # URL do backend para chamadas de API
+      - key: VITE_API_URL
+        value: https://medcheck-backend.onrender.com
     autoDeployTrigger: commit
 
-  # Backend Web Service
+  # Backend API Service - Configuração completa
   - type: web
     name: medcheck-backend
     runtime: python
-    plan: free # Adicionando o plano gratuito
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: ENV
+      # Configurações básicas
+      - key: ENVIRONMENT
         value: production
       - key: DEBUG
         value: false
+      # Configurações JWT/Security
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 480
+      # Database connection
       - key: DATABASE_URL
         fromDatabase:
           name: medcheck-db
           property: connectionString
+      # CORS Origins - URLs permitidas
+      - key: CORS_ORIGINS
+        value: https://medcheck-frontend.onrender.com,http://localhost:3000,http://localhost:8080
     autoDeployTrigger: commit
 
 databases:
+  # PostgreSQL database - Free tier
   - name: medcheck-db
     plan: free
-    region: oregon # Região padrão, mas é bom ser explícito

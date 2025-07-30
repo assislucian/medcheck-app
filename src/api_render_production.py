@@ -168,19 +168,34 @@ app = FastAPI(
 )
 
 # ===== CORS =====
+# Configuração dinâmica de CORS baseada em variáveis de ambiente
+CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
+DEFAULT_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    "https://medcheck-frontend.onrender.com",
+    "https://medcheck-backend.onrender.com",
+]
+
+# Combinar origens padrão com as definidas no ambiente
+cors_origins = DEFAULT_ORIGINS
+if CORS_ORIGINS_ENV:
+    cors_origins.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
+
+# Remover duplicatas mantendo ordem
+cors_origins = list(dict.fromkeys(cors_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://medcheck-frontend.onrender.com",
-        "https://medcheck-backend.onrender.com",
-        # Adicionar outros domínios conforme necessário
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Log das origens CORS para debug
+logger.info(f"🌐 CORS Origins configured: {cors_origins}")
 
 
 # ===== DEPENDENCIES =====
