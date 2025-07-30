@@ -1,94 +1,149 @@
-# === MEDCHECK GITIGNORE - VERSÃO OTIMIZADA ===
+# === MEDCHECK GITIGNORE - PADRÕES PROFISSIONAIS 2024 ===
 
-# Dependências Python
+# === DEPENDÊNCIAS E AMBIENTES VIRTUAIS ===
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-venv/
 .venv/
+venv/
 env/
 ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.pip-cache/
+*.egg-info/
+dist/
+build/
 
-# Dependências Node.js
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm
+.yarn-integrity
 frontend/node_modules/
 frontend/.next/
 frontend/out/
 frontend/build/
 frontend/dist/
 
-# Arquivos de configuração local
+# === CONFIGURAÇÕES E SEGREDOS ===
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets
 
-# Banco de dados
+# === BANCO DE DADOS ===
 *.db
 *.sqlite
 *.sqlite3
+*.sqlite-journal
 medicos.db*
+*.db-shm
+*.db-wal
 
-# Logs
+# === LOGS E MONITORING ===
 logs/
 *.log
 *.out
+*.err
+log/
+log-*
+*.log.*
 
-# Uploads e arquivos temporários
+# === UPLOADS E DADOS TEMPORÁRIOS ===
 uploads/
 results/
+tmp/
+temp/
 *.tmp
 *.temp
+data/guias/*.pdf
+data/demonstrativos/*.pdf
+backup_*.sh
 
-# IDEs
+# === IDEs E EDITORES ===
+# VSCode
 .vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# JetBrains
 .idea/
+*.iws
+*.iml
+*.ipr
+
+# Vim/Emacs
 *.swp
 *.swo
 *~
+.vim/
+.emacs.d/
 
-# Sistema operacional
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# === SISTEMA OPERACIONAL ===
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
+.AppleDouble
+.LSOverride
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Build artifacts
-*.egg-info/
-dist/
-build/
+# Linux
+.directory
+.fuse_hidden*
 
-# Arquivos de PID e controle
+# === TESTES E COVERAGE ===
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.nyc_output
+htmlcov/
+test-results/
+.tox/
+.cache/
+
+# === DOCKER ===
+.dockerignore
+*.dockerignore
+
+# === CI/CD E DEPLOYMENT ===
+.github/secrets/
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+
+# === ARQUIVOS DE DESENVOLVIMENTO ===
+*.pid
 .backend.pid
 .frontend.pid
-*.pid
-
-# Arquivos de teste
-test-results/
-coverage/
-.nyc_output
-.coverage
-
-# Arquivos específicos do projeto
-data/guias/*.pdf
-data/demonstrativos/*.pdf
-backup_*.sh
-legacy_cleanup_backup/
-
-# Cache de performance (mantém otimizações)
-.cache/
 *.cache
 
-# Arquivos temporários de desenvolvimento
+# Scripts temporários de desenvolvimento
 alias_setup.sh
 quick.sh
 diagnose_system.sh
@@ -97,7 +152,8 @@ start_perfect.sh
 manage*.sh
 monitor.sh
 
-# Documentação de desenvolvimento (não para produção)
+# === DOCUMENTAÇÃO DE DESENVOLVIMENTO ===
+# Manter apenas docs essenciais para produção
 ANALISE_*.md
 CORREÇÃO_*.md
 CORREÇÕES_*.md
@@ -107,7 +163,10 @@ RELATÓRIO_*.md
 REVISAO_*.md
 TRANSFORMACAO_*.md
 
-# Manter apenas documentação essencial para produção:
-# - README.md
-# - docs/
-# - PERFORMANCE_AUDIT_REPORT.md (importante para monitoramento)
+# === ARQUIVOS ESPECÍFICOS DO PROJETO ===
+legacy_cleanup_backup/
+
+# === MANTER ARQUIVOS ESSENCIAIS ===
+# !README.md
+# !docs/
+# !PERFORMANCE_AUDIT_REPORT.md
