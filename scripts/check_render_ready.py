@@ -93,16 +93,17 @@ def check_render_yaml():
         with open("render.yaml", "r") as f:
             content = f.read()
 
-        # Verificações críticas
+        # Verificações críticas CORRIGIDAS
         checks = [
             ("medcheck-frontend", "Frontend service"),
             ("medcheck-backend", "Backend service"),
             ("medcheck-db", "Database service"),
-            ("static", "Static site runtime"),
-            ("python", "Python runtime"),
+            ("type: static", "Frontend static type (CORRETO)"),
+            ("runtime: python", "Backend Python runtime"),
             ("/*", "SPA routing"),
-            ("npm run build", "Build command"),
-            ("uvicorn", "Start command"),
+            ("npm run build", "Frontend build command"),
+            ("uvicorn", "Backend start command"),
+            ("publishPath: frontend/dist", "Static publish path"),
         ]
 
         all_good = True

@@ -1,0 +1,32 @@
+# Git Attributes - Detecção de linguagem e tratamento de arquivos
+
+# Forçar detecção como projeto JavaScript/TypeScript para Render
+*.js linguist-detectable=true
+*.ts linguist-detectable=true
+*.tsx linguist-detectable=true
+*.jsx linguist-detectable=true
+
+# Frontend files
+frontend/** linguist-detectable=true
+frontend/src/** linguist-language=TypeScript
+frontend/package.json linguist-detectable=true
+
+# Reduzir peso dos arquivos Python na detecção
+*.py linguist-detectable=false
+src/**.py linguist-vendored=true
+backend/**.py linguist-vendored=true
+
+# Arquivos de documentação
+*.md linguist-documentation=true
+docs/** linguist-documentation=true
+
+# Arquivos de dados
+data/** linguist-vendored=true
+samples/** linguist-vendored=true
+uploads/** linguist-vendored=true
+
+# Build artifacts
+dist/** linguist-generated=true
+build/** linguist-generated=true
+*.min.js linguist-generated=true
+*.min.css linguist-generated=true

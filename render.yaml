@@ -1,37 +1,31 @@
 services:
-  # Frontend Static Site - Otimizado para produção
-  - type: web
+  # Frontend Static Site - Configuração Definitiva
+  - type: static
     name: medcheck-frontend
-    runtime: static
-    buildCommand: cd frontend && npm ci && npm run build
-    staticPublishPath: frontend/dist
-    # Configuração SPA crítica para React Router
+    # Isola o build APENAS para o diretório frontend
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    publishPath: dist
+    # SPA routing continua igual
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
-    envVars:
-      - key: NODE_ENV
-        value: production
-      # URL do backend para chamadas de API
-      - key: VITE_API_URL
-        value: https://medcheck-backend.onrender.com
-    autoDeployTrigger: commit
 
-  # Backend API Service - Configuração completa
+  # Backend API Service - Configuração Definitiva
   - type: web
     name: medcheck-backend
     runtime: python
+    # Fixa a versão do Python para 3.11 (LTS e estável no Render)
+    pythonVersion: "3.11"
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
     envVars:
-      # Configurações básicas
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
         value: false
-      # Configurações JWT/Security
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET
@@ -40,17 +34,13 @@ services:
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: 480
-      # Database connection
       - key: DATABASE_URL
         fromDatabase:
           name: medcheck-db
           property: connectionString
-      # CORS Origins - URLs permitidas
       - key: CORS_ORIGINS
-        value: https://medcheck-frontend.onrender.com,http://localhost:3000,http://localhost:8080
-    autoDeployTrigger: commit
+        value: https://medcheck-frontend.onrender.com
 
 databases:
-  # PostgreSQL database - Free tier
   - name: medcheck-db
     plan: free

@@ -1,38 +1,51 @@
-# Ignorar arquivos do frontend
-frontend/
-frontend/**
-package.json
-package-lock.json
-node_modules/
-dist/
-*.html
-*.css
-*.js
-*.ts
-*.tsx
-vite.config.ts
-tsconfig.json
+# RENDER IGNORE - Arquivos que devem ser ignorados durante deploy
+# Garante que o frontend seja tratado como site estático puro
 
-# Ignorar arquivos de desenvolvimento
-*.log
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Ignorar arquivos temporários
-*.tmp
-*.temp
+# Arquivos Python (backend)
+*.py
+*.pyc
 __pycache__/
-.pytest_cache/
+requirements.txt
+.venv/
+venv/
+.env
+src/
+backend/
 
-# Ignorar uploads e logs
-uploads/
-logs/
-results/
+# Arquivos de configuração Python
+pytest.ini
+setup.py
+setup.cfg
+pyproject.toml
+mypy.ini
+.flake8
+.isort.cfg
 
-# Ignorar banco de dados local
+# Banco de dados
 *.db
 *.sqlite
-*.sqlite3 
+*.sqlite3
+migrations/
+
+# Logs e uploads
+logs/
+uploads/
+results/
+
+# Arquivos temporários
+.coverage
+.pytest_cache/
+.mypy_cache/
+.tox/
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Scripts Python
+scripts/*.py
+
+# Diretórios específicos do backend
+data/
+samples/
+tests/
