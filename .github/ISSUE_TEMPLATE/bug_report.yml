@@ -1,0 +1,111 @@
+name: 🐛 Bug Report
+description: Reportar um problema ou comportamento inesperado
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar este bug! Forneça o máximo de detalhes possível.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrição do Bug
+      description: Descreva claramente o que aconteceu
+      placeholder: |
+        Exemplo: Ao fazer upload de um PDF, a aplicação retorna erro 500...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Comportamento Esperado
+      description: O que deveria acontecer?
+      placeholder: |
+        Exemplo: O PDF deveria ser processado e exibir os procedimentos...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Passos para Reproduzir
+      description: Como reproduzir este problema?
+      placeholder: |
+        1. Acesse a página...
+        2. Clique em...
+        3. Veja o erro...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 🌍 Ambiente
+      description: Onde o bug ocorreu?
+      options:
+        - Local (desenvolvimento)
+        - Staging
+        - Produção
+        - Não sei
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🧩 Componente Afetado
+      description: Qual parte do sistema?
+      options:
+        - Frontend (React)
+        - Backend (FastAPI)
+        - Database
+        - Upload/Parser
+        - Authentication
+        - API Integration
+        - Deploy/Infrastructure
+        - Não sei
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: 🌐 Browser/Versão (se frontend)
+      description: Ex Chrome 120, Firefox 119, Safari 17
+      placeholder: Chrome 120.0.0.0
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Logs/Erros
+      description: Cole logs, stack traces ou mensagens de erro
+      render: text
+      placeholder: |
+        Paste error messages, console logs, or stack traces here...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: ➕ Informações Adicionais
+      description: Screenshots, contexto adicional, workarounds
+      placeholder: |
+        - Screenshots
+        - Dados de exemplo que causam o erro
+        - Workarounds temporários
+        - Configuração específica
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Confirme antes de submeter
+      options:
+        - label: Verifiquei se não há issues duplicadas
+          required: true
+        - label: Testei na última versão disponível
+          required: true
+        - label: Inclui informações suficientes para reproduzir
+          required: true

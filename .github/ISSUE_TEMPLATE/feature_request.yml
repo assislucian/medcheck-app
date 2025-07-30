@@ -1,0 +1,127 @@
+name: ✨ Feature Request
+description: Sugerir uma nova funcionalidade ou melhoria
+title: "[Feature] "
+labels: ["enhancement", "needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        💡 Obrigado por sugerir melhorias! Ajude-nos a entender sua necessidade.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problema ou Necessidade
+      description: Que problema esta funcionalidade resolveria?
+      placeholder: |
+        Exemplo: Como médico, tenho dificuldade para comparar valores entre diferentes convênios...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Solução Proposta
+      description: Como você gostaria que isso funcionasse?
+      placeholder: |
+        Exemplo: Gostaria de ter uma tela que mostrasse uma tabela comparativa...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Prioridade
+      description: Quão importante é esta funcionalidade?
+      options:
+        - Baixa - seria legal ter
+        - Média - melhoraria significativamente a experiência
+        - Alta - funcionalidade crítica para meu workflow
+        - Não sei
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user_type
+    attributes:
+      label: 👥 Tipo de Usuário
+      description: Que tipo de usuário se beneficiaria?
+      options:
+        - Médico individual
+        - Clínica/consultório
+        - Hospital
+        - Administrador do sistema
+        - Desenvolvedor/integração
+        - Todos os usuários
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 🧩 Área do Sistema
+      description: Onde esta funcionalidade se encaixaria?
+      options:
+        - Upload e processamento de guias
+        - Análise e comparação de valores
+        - Relatórios e exports
+        - Dashboard e visualizações
+        - Autenticação e perfil
+        - Configurações do sistema
+        - API/integrações
+        - Mobile/responsividade
+        - Nova área/módulo
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternativas Consideradas
+      description: Outras soluções que você pensou?
+      placeholder: |
+        - Tentei fazer X mas não funcionou porque...
+        - Poderia ser implementado como Y mas seria melhor Z porque...
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: 🎨 Mockup/Wireframe (opcional)
+      description: Desenhos, screenshots, ou links para protótipos
+      placeholder: |
+        Cole imagens ou links para wireframes/mockups aqui...
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: ✅ Critérios de Aceite
+      description: Como saberemos que está pronto?
+      placeholder: |
+        - [ ] Usuário pode fazer X
+        - [ ] Sistema valida Y
+        - [ ] Performance mantém Z
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical
+    attributes:
+      label: 🔧 Considerações Técnicas
+      description: Impactos técnicos que você prevê
+      placeholder: |
+        - Pode precisar de mudanças no banco de dados
+        - Requer integração com API externa
+        - Impacto na performance
+        - Questões de segurança/LGPD
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      options:
+        - label: Verifiquei se não existe feature similar em aberto
+          required: true
+        - label: Esta funcionalidade se alinha com os objetivos do projeto
+          required: true
+        - label: Considerei o impacto nos usuários existentes
+          required: true
