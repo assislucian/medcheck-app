@@ -20,6 +20,7 @@ services:
   - type: web
     name: medcheck-backend
     runtime: python
+    plan: free # Adicionando o plano gratuito
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT
     envVars:
