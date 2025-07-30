@@ -11,14 +11,13 @@ import {
 } from './ui/card';
 import { SelectCustom } from './ui/select';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
-import { useAuth } from '../contexts/auth/AuthContext';
+// usamos o serviço unificado (sem axios direto aqui)
+import { registerUser, loginWithPassword } from '@/services/api';
+// se quiser manter suas funções utilitárias de formatação de erro, pode usar:
 import { formatValidationError } from '../utils/errorUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const registerSchema = z
   .object({
@@ -40,10 +39,11 @@ const registerSchema = z
     path: ['confirmPassword'],
   });
 
-const TERMS_VERSION = '2025-05-05'; // Atualize conforme a versão/data dos termos
+const TERMS_VERSION = '2025-05-05'; // mantenha sua versão/data de termos
 
 const RegisterForm = () => {
-  const [uf, setUf] = useState('');
+  // defina um default para UF para evitar enviar string vazia
+  const [uf, setUf] = useState('SP');
   const [crm, setCrm] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -72,22 +72,14 @@ const RegisterForm = () => {
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const newErrors: {
-          uf?: string;
-          crm?: string;
-          nome?: string;
-          email?: string;
-          password?: string;
-          confirmPassword?: string;
-        } = {};
+        const newErrors: typeof errors = {};
         error.errors.forEach((err) => {
           if (err.path[0] === 'uf') newErrors.uf = err.message;
           if (err.path[0] === 'crm') newErrors.crm = err.message;
           if (err.path[0] === 'nome') newErrors.nome = err.message;
           if (err.path[0] === 'email') newErrors.email = err.message;
           if (err.path[0] === 'password') newErrors.password = err.message;
-          if (err.path[0] === 'confirmPassword')
-            newErrors.confirmPassword = err.message;
+          if (err.path[0] === 'confirmPassword') newErrors.confirmPassword = err.message;
         });
         setErrors(newErrors);
       }
@@ -99,56 +91,50 @@ const RegisterForm = () => {
     e.preventDefault();
     setRegisterError(null);
     setAcceptError(null);
+
     if (!acceptedTerms) {
       setAcceptError(
         'É necessário aceitar os Termos de Uso e a Política de Privacidade para se cadastrar.'
       );
       return;
     }
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
+
     setIsLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/api/v1/register`, {
+      // ENVIO EXATO QUE O BACKEND ESPERA
+      const resp = await registerUser({
         uf,
         crm,
-        nome,
+        nome,             // 'nome' (não 'name')
         email,
-        senha: password,
+        password,         // AQUI ESTAVA O PROBLEMA: era 'senha'
         terms_accepted: acceptedTerms,
         terms_version: TERMS_VERSION,
       });
 
-      if (response.data.message === 'Cadastro realizado com sucesso!') {
-        toast.success('Cadastro realizado com sucesso!');
-        // Tenta fazer login automaticamente após o registro
-        const loginSuccess = await login(crm, password, uf);
-        if (loginSuccess) {
-          navigate('/dashboard');
-        } else {
-          // Se o login automático falhar, direciona para a página de login
-          navigate('/login');
-        }
-      } else {
-        // Caso a API retorne uma mensagem de erro controlada
-        toast.error(response.data.message || 'Ocorreu um erro no cadastro.');
+      // sucesso (o backend retorna { message: "..." })
+      toast.success(resp?.message ?? 'Cadastro realizado com sucesso!');
+
+      // login automático: /token espera username=email e password
+      try {
+        await loginWithPassword(email, password);
+        navigate('/dashboard');
+      } catch {
+        // Se o login automático falhar, direciona para login
+        navigate('/login');
       }
     } catch (error: any) {
-      if (error.response && error.response.status === 422) {
-        // Erro de validação vindo do backend - formato corrigido
-        const formattedError = formatValidationError(error.response.data.detail);
-        toast.error(`Erro de Validação: ${formattedError}`);
-      } else if (error.response && error.response.data && error.response.data.detail) {
-        // Outros erros com uma mensagem `detail` do backend
-        const formattedError = formatValidationError(error.response.data.detail);
-        toast.error(`Erro: ${formattedError}`);
-      } else {
-        // Erros genéricos de rede ou outros
-        toast.error(
-          'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
-        );
-      }
+      // Traz a mensagem detalhada (422) que o serviço já formata (detail do FastAPI)
+      const raw = error?.message ?? 'Erro ao cadastrar';
+      // Se você quiser manter a sua util formatValidationError para arrays de detail:
+      let msg = raw;
+      try {
+        const parsed = JSON.parse(raw);
+        msg = formatValidationError(parsed) || raw;
+      } catch {}
+      toast.error(msg);
+      setRegisterError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +178,7 @@ const RegisterForm = () => {
               <SelectCustom
                 id="uf"
                 value={uf}
-                onChange={(e) => setUf(e.target.value)}
+                onChange={(e: any) => setUf(e?.target?.value ?? e)}  {/* suporta nativo/custom */}
                 placeholder="Selecione seu estado"
                 disabled={isLoading}
               >
@@ -269,7 +255,7 @@ const RegisterForm = () => {
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Digite seu nome completo"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
               autoComplete="name"
               disabled={isLoading}
             />
@@ -293,7 +279,7 @@ const RegisterForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Digite seu e-mail"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
               autoComplete="email"
               disabled={isLoading}
             />
@@ -319,7 +305,7 @@ const RegisterForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Crie uma senha forte"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
                   autoComplete="new-password"
                   disabled={isLoading}
                 />
@@ -329,11 +315,7 @@ const RegisterForm = () => {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                   disabled={isLoading}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
@@ -357,7 +339,7 @@ const RegisterForm = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirme sua senha"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
                   autoComplete="new-password"
                   disabled={isLoading}
                 />
@@ -367,11 +349,7 @@ const RegisterForm = () => {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                   disabled={isLoading}
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.confirmPassword && (
@@ -382,7 +360,7 @@ const RegisterForm = () => {
             </div>
           </div>
 
-          {/* Termos e Condições Premium */}
+          {/* Termos e Condições */}
           <div className="bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/10 dark:via-orange-900/5 dark:to-yellow-900/10 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/20">
             <div className="flex items-start gap-4">
               <input
@@ -416,8 +394,7 @@ const RegisterForm = () => {
                     className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline decoration-amber-300/50"
                   >
                     Política de Privacidade
-                  </a>{' '}
-                  do MedCheck, e estou ciente do tratamento de dados conforme LGPD.
+                  </a>.
                 </label>
                 <div className="mt-3 p-3 bg-slate-100/60 dark:bg-slate-800/40 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
                   <p className="text-xs text-slate-600 dark:text-amber-200/60 leading-relaxed">
