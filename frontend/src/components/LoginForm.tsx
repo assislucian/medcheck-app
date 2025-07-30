@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { SelectCustom } from '@/components/ui/select';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
@@ -27,11 +26,7 @@ const LoginForm = () => {
   const [crm, setCrm] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    uf?: string;
-    crm?: string;
-    password?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ uf?: string; crm?: string; password?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const { login } = useAuth();
@@ -63,17 +58,13 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await login(uf, crm, password);
+      await login(uf, crm, password); // <-- envia UF + CRM + senha
       navigate(redirectUrl);
     } catch (error: any) {
-      setAuthError(
-        error?.message || 'Erro ao fazer login. Tente novamente mais tarde.'
-      );
+      setAuthError(error?.message || 'Erro ao fazer login. Tente novamente mais tarde.');
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +72,6 @@ const LoginForm = () => {
 
   return (
     <Card className="w-full max-w-lg mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-health-surface/30 dark:border-health-accent/30 shadow-2xl shadow-health-primary/20 dark:shadow-health-dark/40 rounded-2xl overflow-hidden">
-      {/* Header Premium with Health Colors */}
       <CardHeader className="text-center pb-8 pt-10 bg-gradient-to-br from-health-surface/50 via-health-soft/30 to-health-surface/40 dark:from-health-dark/20 dark:via-health-primary/10 dark:to-health-dark/15">
         <div className="flex items-center justify-center mb-4">
           <Shield className="w-8 h-8 text-health-primary dark:text-health-accent mr-3" />
@@ -107,10 +97,7 @@ const LoginForm = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label
-              htmlFor="uf"
-              className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90"
-            >
+            <label htmlFor="uf" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Estado (UF)
             </label>
             <SelectCustom
@@ -148,18 +135,11 @@ const LoginForm = () => {
               <option value="SE">Sergipe (SE)</option>
               <option value="TO">Tocantins (TO)</option>
             </SelectCustom>
-            {errors.uf && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                {errors.uf}
-              </div>
-            )}
+            {errors.uf && <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{errors.uf}</div>}
           </div>
 
           <div>
-            <label
-              htmlFor="crm"
-              className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90"
-            >
+            <label htmlFor="crm" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Número do CRM
             </label>
             <input
@@ -172,18 +152,11 @@ const LoginForm = () => {
               autoComplete="username"
               disabled={isLoading}
             />
-            {errors.crm && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                {errors.crm}
-              </div>
-            )}
+            {errors.crm && <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{errors.crm}</div>}
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90"
-            >
+            <label htmlFor="password" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Senha
             </label>
             <div className="relative">
@@ -203,18 +176,10 @@ const LoginForm = () => {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-light dark:text-health-accent/60 hover:text-health-primary dark:hover:text-health-accent transition-colors"
                 disabled={isLoading}
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            {errors.password && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                {errors.password}
-              </div>
-            )}
+            {errors.password && <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{errors.password}</div>}
           </div>
 
           <div className="flex justify-end">
@@ -258,8 +223,7 @@ const LoginForm = () => {
           </Link>
         </span>
         <p className="text-xs text-center text-ink-light dark:text-health-surface/50">
-          Ao fazer login, você concorda com nossos Termos de Uso e Política de
-          Privacidade
+          Ao fazer login, você concorda com nossos Termos de Uso e Política de Privacidade
         </p>
       </CardFooter>
     </Card>
