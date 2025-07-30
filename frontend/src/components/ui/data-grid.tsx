@@ -30,9 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import React from 'react';
 
 interface DataGridProps {
   rows: any[];
@@ -182,20 +181,25 @@ export function DataGrid({
       >
         <div
           className={cn(
-            wrapperScrollable ? 'overflow-x-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 dark:scrollbar-track-gray-700 dark:scrollbar-thumb-gray-500' : 'overflow-visible'
+            wrapperScrollable
+              ? 'overflow-x-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 dark:scrollbar-track-gray-700 dark:scrollbar-thumb-gray-500'
+              : 'overflow-visible'
           )}
         >
-          <Table scrollable={false} className="table-auto w-full min-w-[800px] sm:min-w-[900px] lg:min-w-full">
+          <Table
+            scrollable={false}
+            className="table-auto w-full min-w-[800px] sm:min-w-[900px] lg:min-w-full"
+          >
             <TableHeader>
               <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                 {enhancedColumns.map((column) => {
                   // Special handling for selection and expand columns
                   if (column.field === '__select') {
                     return (
-                                          <TableHead
-                      key="__select"
-                      className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
-                    >
+                      <TableHead
+                        key="__select"
+                        className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
+                      >
                         <Checkbox
                           checked={allSelected}
                           {...(someSelected && { 'data-indeterminate': 'true' })}
@@ -208,10 +212,10 @@ export function DataGrid({
 
                   if (column.field === '__expand') {
                     return (
-                                          <TableHead
-                      key="__expand"
-                      className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
-                    >
+                      <TableHead
+                        key="__expand"
+                        className="w-[40px] sm:w-[50px] text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
+                      >
                         {/* Empty header for expand column */}
                       </TableHead>
                     );

@@ -171,8 +171,8 @@ export default defineConfig(({ mode }) => ({
       },
     },
     sourcemap: false, // Desabilitar sourcemap em produção para reduzir tamanho
-    // Desabilitar minificação temporariamente para resolver problema de forwardRef
-    minify: mode === 'production' ? 'esbuild' : false,
+    // DESABILITAR MINIFICAÇÃO COMPLETAMENTE para resolver problema de forwardRef
+    minify: false,
     // Usar esbuild que é menos agressivo que terser
     esbuild:
       mode === 'production'
