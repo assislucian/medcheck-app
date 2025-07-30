@@ -48,11 +48,16 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // CRÍTICO: Forçar resolução específica do React para evitar conflitos
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
     },
     // Configurações para resolver conflitos de React
     dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     // Garantir que React seja sempre resolvido da mesma fonte
-    conditions: ['react', 'import', 'module', 'browser', 'default'],
+    conditions: ['import', 'module', 'browser', 'default'],
+    // Forçar extensões para evitar ambiguidade
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
   },
 
   // Configurações de build otimizadas para performance
@@ -171,21 +176,27 @@ export default defineConfig(({ mode }) => ({
       },
     },
     sourcemap: false, // Desabilitar sourcemap em produção para reduzir tamanho
-    // DESABILITAR MINIFICAÇÃO COMPLETAMENTE para resolver problema de forwardRef
-    minify: false,
-    // Usar esbuild que é menos agressivo que terser
+    // SOLUÇÃO DEFINITIVA: Usar esbuild com configurações específicas para React
+    minify: mode === 'production' ? 'esbuild' : false,
+    // Configurações esbuild específicas para React no Render
     esbuild:
       mode === 'production'
         ? {
             target: 'es2020',
-            // Preservar nomes importantes
+            // CRÍTICO: Preservar exports e imports do React
             keepNames: true,
-            // Não remover console em produção para debug
-            drop: [],
-            // Configurações específicas para React
+            format: 'esm',
+            // Não otimizar chamadas que podem quebrar React
+            treeShaking: false,
+            // Preservar side effects
+            sideEffects: false,
+            // Definições para garantir compatibilidade
             define: {
               'process.env.NODE_ENV': '"production"',
+              global: 'globalThis',
             },
+            // Não remover nada que possa quebrar React
+            drop: [],
           }
         : {},
   },
