@@ -2,7 +2,6 @@
 const API_URL =
   import.meta.env.VITE_API_URL ?? 'https://medcheck-backend.onrender.com';
 
-// ===== REGISTER =====
 export type RegisterPayload = {
   uf: string;
   crm: string;
@@ -21,7 +20,6 @@ export async function registerUser(payload: RegisterPayload) {
   });
 
   if (!res.ok) {
-    // Traz o motivo real (FastAPI retorna 'detail' no 422)
     let detail = `HTTP ${res.status}`;
     try {
       const data = await res.json();
@@ -33,7 +31,6 @@ export async function registerUser(payload: RegisterPayload) {
   return res.json(); // { message: "..." }
 }
 
-// ===== LOGIN ===== (form-urlencoded para /token)
 export async function loginWithPassword(email: string, password: string) {
   const form = new URLSearchParams();
   form.set('username', email);
