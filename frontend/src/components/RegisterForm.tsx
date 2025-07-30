@@ -25,6 +25,7 @@ const registerSchema = z
     uf: z.string().min(2, 'Selecione a UF'),
     crm: z.string().min(4, 'Informe o CRM'),
     nome: z.string().min(2, 'Informe o nome completo'),
+    email: z.string().email('Informe um e-mail válido'),
     password: z
       .string()
       .min(8, 'A senha deve ter pelo menos 8 caracteres')
@@ -45,6 +46,7 @@ const RegisterForm = () => {
   const [uf, setUf] = useState('');
   const [crm, setCrm] = useState('');
   const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +55,7 @@ const RegisterForm = () => {
     uf?: string;
     crm?: string;
     nome?: string;
+    email?: string;
     password?: string;
     confirmPassword?: string;
   }>({});
@@ -64,7 +67,7 @@ const RegisterForm = () => {
 
   const validateForm = () => {
     try {
-      registerSchema.parse({ uf, crm, nome, password, confirmPassword });
+      registerSchema.parse({ uf, crm, nome, email, password, confirmPassword });
       setErrors({});
       return true;
     } catch (error) {
@@ -73,6 +76,7 @@ const RegisterForm = () => {
           uf?: string;
           crm?: string;
           nome?: string;
+          email?: string;
           password?: string;
           confirmPassword?: string;
         } = {};
@@ -80,6 +84,7 @@ const RegisterForm = () => {
           if (err.path[0] === 'uf') newErrors.uf = err.message;
           if (err.path[0] === 'crm') newErrors.crm = err.message;
           if (err.path[0] === 'nome') newErrors.nome = err.message;
+          if (err.path[0] === 'email') newErrors.email = err.message;
           if (err.path[0] === 'password') newErrors.password = err.message;
           if (err.path[0] === 'confirmPassword')
             newErrors.confirmPassword = err.message;
@@ -109,6 +114,7 @@ const RegisterForm = () => {
         uf,
         crm,
         nome,
+        email,
         senha: password,
         terms_accepted: acceptedTerms,
         terms_version: TERMS_VERSION,
@@ -117,7 +123,7 @@ const RegisterForm = () => {
       if (response.data.message === 'Cadastro realizado com sucesso!') {
         toast.success('Cadastro realizado com sucesso!');
         // Tenta fazer login automaticamente após o registro
-        const loginSuccess = await login(values.crm, values.senha);
+        const loginSuccess = await login(crm, password, uf);
         if (loginSuccess) {
           navigate('/dashboard');
         } else {
@@ -270,6 +276,30 @@ const RegisterForm = () => {
             {errors.nome && (
               <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
                 {errors.nome}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+            >
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Digite seu e-mail"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              autoComplete="email"
+              disabled={isLoading}
+            />
+            {errors.email && (
+              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                {errors.email}
               </div>
             )}
           </div>

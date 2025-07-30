@@ -35,27 +35,97 @@ export default defineConfig(({ mode }) => ({
     // componentTagger(),
   ].filter(Boolean),
 
-  // Configurações de build otimizadas para Vercel
+  // Configurações de build otimizadas para performance
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    // Aumentar limite para evitar warnings desnecessários
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tabs',
-          ],
-          router: ['react-router-dom'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
-          utils: ['date-fns', 'clsx', 'classnames'],
-          query: ['@tanstack/react-query'],
-          supabase: ['@supabase/supabase-js'],
-          chart: ['recharts'],
-          pdf: ['jspdf', 'jspdf-autotable', 'pdfjs-dist'],
-          excel: ['exceljs'],
+        manualChunks: (id) => {
+          // Separar dependências de forma mais inteligente
+          if (id.includes('node_modules')) {
+            // Bibliotecas de PDF em chunk separado
+            if (
+              id.includes('jspdf') ||
+              id.includes('pdfjs') ||
+              id.includes('html2canvas')
+            ) {
+              return 'pdf';
+            }
+            // Bibliotecas de Excel em chunk separado
+            if (id.includes('exceljs') || id.includes('xlsx')) {
+              return 'excel';
+            }
+            // Bibliotecas de UI em chunk separado
+            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
+              return 'ui';
+            }
+            // Bibliotecas de gráficos em chunk separado
+            if (id.includes('recharts') || id.includes('chart.js')) {
+              return 'chart';
+            }
+            // React e dependências core
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor';
+            }
+            // Router em chunk separado
+            if (id.includes('react-router')) {
+              return 'router';
+            }
+            // Forms em chunk separado
+            if (
+              id.includes('react-hook-form') ||
+              id.includes('zod') ||
+              id.includes('@hookform')
+            ) {
+              return 'forms';
+            }
+            // Utilitários de data e formatação
+            if (
+              id.includes('date-fns') ||
+              id.includes('format') ||
+              id.includes('clsx')
+            ) {
+              return 'utils';
+            }
+            // Query em chunk separado
+            if (id.includes('@tanstack')) {
+              return 'query';
+            }
+            // Supabase em chunk separado
+            if (id.includes('supabase')) {
+              return 'supabase';
+            }
+            // Outras dependências node_modules
+            return 'vendor';
+          }
+
+          // Páginas grandes em chunks separados
+          if (id.includes('/pages/Demonstratives')) {
+            return 'page-demonstratives';
+          }
+          if (id.includes('/pages/Dashboard')) {
+            return 'page-dashboard';
+          }
+          if (id.includes('/pages/Reports')) {
+            return 'page-reports';
+          }
+          if (id.includes('/pages/Profile')) {
+            return 'page-profile';
+          }
+
+          // Componentes pesados em chunks separados
+          if (id.includes('/components/dashboard')) {
+            return 'dashboard-components';
+          }
+          if (id.includes('/components/reports')) {
+            return 'reports-components';
+          }
+          if (id.includes('/components/upload')) {
+            return 'upload-components';
+          }
         },
       },
     },
@@ -63,16 +133,17 @@ export default defineConfig(({ mode }) => ({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: mode === 'production',
         drop_debugger: true,
+        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
       },
     },
   },
 
   // Otimizações para dependências
   optimizeDeps: {
-    include: ['jspdf', 'jspdf-autotable', 'react', 'react-dom', 'exceljs'],
-    exclude: ['@supabase/supabase-js'],
+    include: ['react', 'react-dom'],
+    exclude: ['@supabase/supabase-js', 'jspdf', 'jspdf-autotable'],
   },
   ssr: {
     noExternal: ['jspdf', 'jspdf-autotable', 'exceljs'],
@@ -111,7 +182,7 @@ export default defineConfig(({ mode }) => ({
       'localhost',
       '127.0.0.1',
       '0.0.0.0',
-      '.onrender.com' // Permite qualquer subdomínio do Render
+      '.onrender.com', // Permite qualquer subdomínio do Render
     ],
   },
 }));

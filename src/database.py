@@ -81,7 +81,7 @@ def migrate_database(engine):
                     logger.info("Medicos table recreated successfully")
 
         # Verificar outras colunas essenciais
-        required_columns = ["crm", "uf", "nome", "senha_hash"]
+        required_columns = ["crm", "uf", "nome", "email", "senha_hash"]
         missing_columns = [col for col in required_columns if col not in medico_cols]
 
         if missing_columns:

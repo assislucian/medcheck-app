@@ -47,9 +47,8 @@ import {
 import { toast } from 'sonner';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { formatCurrency } from '../utils/format';
+import { exportDemonstrativeToPDF } from '../utils/pdfExport';
 import { DataGrid } from '../components/ui/data-grid';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { SkeletonInfoCard } from '../components/ui/skeleton';
@@ -481,38 +480,12 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
 
   console.log('DEBUG: Renderizando DemonstrativeDetailDialog', demonstrative);
 
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
-    doc.text(`Demonstrativo - ${demonstrative.periodo || ''}`, 10, 10);
-
-    // Usar autoTable corretamente
-    (doc as any).autoTable({
-      head: [
-        [
-          'Guia',
-          'Data',
-          'Paciente',
-          'Código',
-          'Descrição',
-          'Qtd',
-          'Apresentado',
-          'Liberado',
-          'Glosa',
-        ],
-      ],
-      body: procedures.map((p) => [
-        p.guia,
-        p.date || p.data,
-        p.patient || p.paciente,
-        p.code || p.codigo,
-        p.description || p.descricao,
-        p.quantity || p.qtd,
-        p.financial?.presented_value ?? p.apresentado,
-        p.financial?.approved_value ?? p.liberado,
-        p.financial?.glosa ?? p.glosa,
-      ]),
-    });
-    doc.save(`demonstrativo_${demonstrative.periodo || ''}.pdf`);
+  const handleExportPDF = async () => {
+    try {
+      await exportDemonstrativeToPDF(demonstrative.periodo || '', procedures);
+    } catch (error) {
+      toast.error('Erro ao exportar PDF. Tente novamente.');
+    }
   };
 
   const glosas = procedures.filter(

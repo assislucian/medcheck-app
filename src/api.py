@@ -56,7 +56,7 @@ from sqlalchemy import (
     func,
     text,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from src.parsers.cbhpm_parser import CBHPMParser
 from src.services.parse import parse_demonstrativo, parse_guide_pdf
@@ -310,7 +310,7 @@ def _ensure_medicos_table_structure():
                     logger.info("Medicos table recreated successfully")
 
         # Verificar outras colunas essenciais
-        required_columns = ["crm", "uf", "nome", "senha_hash"]
+        required_columns = ["crm", "uf", "nome", "email", "senha_hash"]
         missing_columns = [col for col in required_columns if col not in medico_cols]
 
         if missing_columns:
@@ -2478,15 +2478,37 @@ def validate_uf(uf: str) -> bool:
 @app.get("/api/v1/profile")
 def get_profile(user: dict = Depends(get_current_user)):
     """Retorna dados básicos do usuário autenticado."""
-    return {
-        "crm": user.get("crm"),
-        "uf": user.get("uf"),
-        "nome": user.get("nome", "Usuário"),
-        "email": user.get("email", ""),
-        "specialty": user.get("specialty", ""),
-        "hospital": user.get("hospital", ""),
-        "avatar_url": user.get("avatar_url", ""),
-    }
+    db = SessionLocal()
+    try:
+        # Buscar dados completos do médico no banco
+        medico = (
+            db.query(Medico).filter_by(crm=user.get("crm"), uf=user.get("uf")).first()
+        )
+
+        if not medico:
+            # Fallback para dados do JWT se não encontrar no banco
+            return {
+                "crm": user.get("crm"),
+                "uf": user.get("uf"),
+                "nome": user.get("nome", "Usuário"),
+                "email": "",
+                "specialty": "",
+                "hospital": "",
+                "avatar_url": "",
+            }
+
+        # Retornar dados completos do banco
+        return {
+            "crm": medico.crm,
+            "uf": medico.uf,
+            "nome": medico.nome,
+            "email": medico.email or "",
+            "specialty": "",  # Será implementado futuramente
+            "hospital": "",  # Será implementado futuramente
+            "avatar_url": "",  # Será implementado futuramente
+        }
+    finally:
+        db.close()
 
 
 @app.patch("/api/v1/profile", response_model=UpdateProfileResponse)
