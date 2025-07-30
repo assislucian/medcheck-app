@@ -14,9 +14,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { LoadingSpinner } from './ui/loading-spinner';
 import { Shield, Eye, EyeOff, UserPlus, CheckCircle } from 'lucide-react';
-// usamos o serviço unificado (sem axios direto aqui)
 import { registerUser, loginWithPassword } from '@/services/api';
-// se quiser manter suas funções utilitárias de formatação de erro, pode usar:
 import { formatValidationError } from '../utils/errorUtils';
 
 const registerSchema = z
@@ -39,10 +37,9 @@ const registerSchema = z
     path: ['confirmPassword'],
   });
 
-const TERMS_VERSION = '2025-05-05'; // mantenha sua versão/data de termos
+const TERMS_VERSION = '2025-05-05'; // ajuste conforme sua versão/data
 
 const RegisterForm = () => {
-  // defina um default para UF para evitar enviar string vazia
   const [uf, setUf] = useState('SP');
   const [crm, setCrm] = useState('');
   const [nome, setNome] = useState('');
@@ -64,6 +61,12 @@ const RegisterForm = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptError, setAcceptError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Handler compatível com SelectCustom e <select> nativo
+  const handleUfChange = (valueOrEvent: any) => {
+    const value = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
+    setUf(value);
+  };
 
   const validateForm = () => {
     try {
@@ -102,18 +105,17 @@ const RegisterForm = () => {
 
     setIsLoading(true);
     try {
-      // ENVIO EXATO QUE O BACKEND ESPERA
+      // payload EXATO que o backend espera
       const resp = await registerUser({
         uf,
         crm,
-        nome,             // 'nome' (não 'name')
+        nome,            // 'nome' (não 'name')
         email,
-        password,         // AQUI ESTAVA O PROBLEMA: era 'senha'
+        password,        // aqui estava o problema no seu código (era 'senha')
         terms_accepted: acceptedTerms,
         terms_version: TERMS_VERSION,
       });
 
-      // sucesso (o backend retorna { message: "..." })
       toast.success(resp?.message ?? 'Cadastro realizado com sucesso!');
 
       // login automático: /token espera username=email e password
@@ -121,13 +123,11 @@ const RegisterForm = () => {
         await loginWithPassword(email, password);
         navigate('/dashboard');
       } catch {
-        // Se o login automático falhar, direciona para login
         navigate('/login');
       }
     } catch (error: any) {
-      // Traz a mensagem detalhada (422) que o serviço já formata (detail do FastAPI)
+      // o serviço já tenta retornar o detail do FastAPI; vamos formatar se vier array
       const raw = error?.message ?? 'Erro ao cadastrar';
-      // Se você quiser manter a sua util formatValidationError para arrays de detail:
       let msg = raw;
       try {
         const parsed = JSON.parse(raw);
@@ -142,7 +142,7 @@ const RegisterForm = () => {
 
   return (
     <Card className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-amber-200/30 dark:border-amber-700/30 shadow-2xl shadow-amber-500/20 dark:shadow-amber-900/40 rounded-2xl overflow-hidden">
-      {/* Header Premium com Gradiente */}
+      {/* Header */}
       <CardHeader className="text-center pb-8 pt-10 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/20 dark:via-orange-900/10 dark:to-yellow-900/15">
         <div className="flex items-center justify-center mb-4">
           <UserPlus className="w-8 h-8 text-amber-600 dark:text-amber-400 mr-3" />
@@ -178,7 +178,7 @@ const RegisterForm = () => {
               <SelectCustom
                 id="uf"
                 value={uf}
-                onChange={(e: any) => setUf(e?.target?.value ?? e)}  {/* suporta nativo/custom */}
+                onChange={handleUfChange}
                 placeholder="Selecione seu estado"
                 disabled={isLoading}
               >
@@ -255,7 +255,7 @@ const RegisterForm = () => {
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               placeholder="Digite seu nome completo"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
               autoComplete="name"
               disabled={isLoading}
             />
@@ -279,7 +279,7 @@ const RegisterForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Digite seu e-mail"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
               autoComplete="email"
               disabled={isLoading}
             />
@@ -305,7 +305,7 @@ const RegisterForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Crie uma senha forte"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
                   autoComplete="new-password"
                   disabled={isLoading}
                 />
@@ -339,7 +339,7 @@ const RegisterForm = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirme sua senha"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duração-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
                   autoComplete="new-password"
                   disabled={isLoading}
                 />
