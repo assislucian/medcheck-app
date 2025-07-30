@@ -1,101 +1,86 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-interface User {
+type Session = {
+  accessToken: string;
   crm: string;
-  nome: string;
-}
+  uf: string | null;
+};
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  login: (crm: string, senha: string) => Promise<void>;
+type AuthContextType = {
+  session: Session | null;
+  loading: boolean;
+  login: (uf: string, crm: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (crm: string, nome: string, senha: string) => Promise<void>;
-}
+};
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+const API_URL =
+  import.meta.env.VITE_API_URL ?? 'https://medcheck-backend.onrender.com';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Carrega token do localStorage ao iniciar
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      // Decodifica JWT para obter dados do usuário (simples, sem validação de assinatura)
+    // restaura sessão
+    const raw = localStorage.getItem('medcheck_session');
+    if (raw) {
       try {
-        const payload = JSON.parse(atob(savedToken.split('.')[1]));
-        setUser({ crm: payload.crm, nome: payload.nome });
-      } catch {
-        setUser(null);
-      }
+        const parsed = JSON.parse(raw);
+        setSession(parsed);
+      } catch {}
     }
+    setLoading(false);
   }, []);
 
-  // Configura axios para enviar token automaticamente
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('token', token);
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
-    }
-  }, [token]);
+  const login = async (uf: string, crm: string, password: string) => {
+    // /token usa application/x-www-form-urlencoded
+    const form = new URLSearchParams();
+    form.set('username', crm);    // backend usa CRM como username
+    form.set('password', password);
+    form.set('uf', uf);           // <-- enviamos UF para validar no backend
 
-  // Login
-  async function login(crm: string, senha: string) {
-    const params = new URLSearchParams();
-    params.append('username', crm);
-    params.append('password', senha);
-    const res = await axios.post(`${API_URL}/token`, params, {
+    const res = await fetch(`${API_URL}/token`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form,
     });
-    const accessToken = res.data?.access_token;
-    if (!accessToken) {
-      throw new Error('Token de acesso não recebido');
+
+    if (!res.ok) {
+      let detail = `HTTP ${res.status}`;
+      try {
+        const data = await res.json();
+        if (data?.detail) detail = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+      } catch {}
+      throw new Error(detail);
     }
-    setToken(accessToken);
-    // Decodifica JWT para obter dados do usuário
-    const payload = JSON.parse(atob(accessToken.split('.')[1]));
-    setUser({ crm: payload.crm, nome: payload.nome });
-  }
 
-  // Logout
-  function logout() {
-    setToken(null);
-    setUser(null);
-  }
-
-  // Cadastro
-  async function register(crm: string, nome: string, senha: string) {
-    await axios.post(`${API_URL}/api/v1/register`, { crm, nome, senha });
-  }
-
-  const value: AuthContextType = {
-    user,
-    token,
-    isAuthenticated: !!token,
-    login,
-    logout,
-    register,
+    const data = await res.json(); // { access_token, token_type, user }
+    // podemos decodificar o JWT se quiser extrair uf/crm; mas o backend já valida UF
+    const newSession: Session = {
+      accessToken: data.access_token,
+      crm,
+      uf,
+    };
+    setSession(newSession);
+    localStorage.setItem('medcheck_session', JSON.stringify(newSession));
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  const logout = () => {
+    setSession(null);
+    localStorage.removeItem('medcheck_session');
+  };
+
+  return (
+    <AuthContext.Provider value={{ session, loading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
+};
