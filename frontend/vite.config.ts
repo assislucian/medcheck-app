@@ -35,6 +35,22 @@ export default defineConfig(({ mode }) => ({
     // componentTagger(),
   ].filter(Boolean),
 
+  // Configurações críticas para resolver problemas de forwardRef
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(mode),
+    __DEV__: mode === 'development',
+    // Garantir que React está disponível globalmente
+    global: 'globalThis',
+  },
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+    // Configurações para resolver conflitos de React
+    dedupe: ['react', 'react-dom'],
+  },
+
   // Configurações de build otimizadas para performance
   build: {
     outDir: 'dist',
@@ -42,8 +58,21 @@ export default defineConfig(({ mode }) => ({
     // Aumentar limite para evitar warnings desnecessários
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      // Configurações mais robustas para evitar problemas de bundling
+      external: (id) => {
+        // Não externalizar nada para evitar problemas de referência
+        return false;
+      },
       output: {
         manualChunks: (id) => {
+          // React e ReactDOM sempre juntos no vendor principal
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/')
+          ) {
+            return 'vendor-react';
+          }
+
           // Separar dependências de forma mais inteligente
           if (id.includes('node_modules')) {
             // Bibliotecas de PDF em chunk separado
@@ -65,10 +94,6 @@ export default defineConfig(({ mode }) => ({
             // Bibliotecas de gráficos em chunk separado
             if (id.includes('recharts') || id.includes('chart.js')) {
               return 'chart';
-            }
-            // React e dependências core
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
             }
             // Router em chunk separado
             if (id.includes('react-router')) {
@@ -129,7 +154,7 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    sourcemap: true,
+    sourcemap: false, // Desabilitar sourcemap em produção para reduzir tamanho
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -137,27 +162,45 @@ export default defineConfig(({ mode }) => ({
         drop_debugger: true,
         pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
       },
+      mangle: {
+        // Preservar nomes críticos do React para evitar problemas
+        reserved: [
+          'React',
+          'ReactDOM',
+          'forwardRef',
+          'useState',
+          'useEffect',
+          'useCallback',
+          'useMemo',
+        ],
+      },
     },
   },
 
-  // Otimizações para dependências
+  // Otimizações críticas para dependências React
   optimizeDeps: {
-    include: ['react', 'react-dom'],
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      // Forçar pré-bundling de dependências críticas
+      '@radix-ui/react-slot',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      'react-router-dom',
+      '@tanstack/react-query',
+    ],
     exclude: ['@supabase/supabase-js', 'jspdf', 'jspdf-autotable'],
+    // Força Vite a reprocessar dependências se mudaram
+    force: true,
   },
+
+  // Configurações SSR para evitar problemas de hidratação
   ssr: {
     noExternal: ['jspdf', 'jspdf-autotable', 'exceljs'],
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-
-  // Define configurações específicas para produção
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(mode),
-    __DEV__: mode === 'development',
   },
 
   test: {
@@ -174,6 +217,7 @@ export default defineConfig(({ mode }) => ({
     ],
   },
 
+  // Configurações críticas para o preview/produção
   preview: {
     port: 8080,
     host: true,
@@ -184,5 +228,10 @@ export default defineConfig(({ mode }) => ({
       '0.0.0.0',
       '.onrender.com', // Permite qualquer subdomínio do Render
     ],
+    // Configurações para resolver problemas de CORS e CSP
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    },
   },
 }));
