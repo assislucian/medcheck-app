@@ -67,6 +67,18 @@ export default defineConfig(({ mode }) => ({
         // Não externalizar nada para evitar problemas de referência
         return false;
       },
+      // Configurações específicas para preservar React
+      treeshake: {
+        // Preservar side effects do React
+        moduleSideEffects: (id, external) => {
+          // Preservar side effects para React e componentes UI
+          return (
+            id.includes('react') ||
+            id.includes('@radix-ui') ||
+            id.includes('lucide-react')
+          );
+        },
+      },
       output: {
         manualChunks: (id) => {
           // React e ReactDOM sempre juntos no vendor principal
@@ -159,42 +171,23 @@ export default defineConfig(({ mode }) => ({
       },
     },
     sourcemap: false, // Desabilitar sourcemap em produção para reduzir tamanho
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-        pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
-        // Reduzir agressividade na compressão para preservar React refs
-        keep_fnames: true,
-        keep_classnames: true,
-      },
-      mangle: {
-        // Preservar nomes críticos do React para evitar problemas
-        reserved: [
-          'React',
-          'ReactDOM',
-          'forwardRef',
-          'useState',
-          'useEffect',
-          'useCallback',
-          'useMemo',
-          'createElement',
-          'Component',
-          'PureComponent',
-          'memo',
-          'Fragment',
-        ],
-        // Ser menos agressivo com nomes de propriedades
-        keep_fnames: true,
-        keep_classnames: true,
-      },
-      // Manter formatação básica para debugging
-      format: {
-        preserve_annotations: true,
-        comments: false,
-      },
-    },
+    // Desabilitar minificação temporariamente para resolver problema de forwardRef
+    minify: mode === 'production' ? 'esbuild' : false,
+    // Usar esbuild que é menos agressivo que terser
+    esbuild:
+      mode === 'production'
+        ? {
+            target: 'es2020',
+            // Preservar nomes importantes
+            keepNames: true,
+            // Não remover console em produção para debug
+            drop: [],
+            // Configurações específicas para React
+            define: {
+              'process.env.NODE_ENV': '"production"',
+            },
+          }
+        : {},
   },
 
   // Otimizações críticas para dependências React
@@ -216,6 +209,15 @@ export default defineConfig(({ mode }) => ({
     exclude: ['@supabase/supabase-js', 'jspdf', 'jspdf-autotable'],
     // Força Vite a reprocessar dependências se mudaram
     force: true,
+    // Configurações específicas para React ESM
+    esbuildOptions: {
+      target: 'es2020',
+      // Preservar side effects importantes
+      keepNames: true,
+      // Configurações específicas para JSX
+      jsx: 'automatic',
+      jsxImportSource: 'react',
+    },
   },
 
   // Configurações SSR para evitar problemas de hidratação
