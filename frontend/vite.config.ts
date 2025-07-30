@@ -3,14 +3,14 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: '/', // garante assets absolutos: /assets/...
+  base: '/', // assets absolutos: /assets/...
   plugins: [react()],
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') }
+    alias: { '@': path.resolve(__dirname, './src') },
   },
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
   },
   server: {
     proxy: {
@@ -21,7 +21,7 @@ export default defineConfig({
       '/token': {
         target: 'https://medcheck-backend.onrender.com',
         changeOrigin: true,
-      }
-    }
-  }
+      },
+    },
+  },
 });
