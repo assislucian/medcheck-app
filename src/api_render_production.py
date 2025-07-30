@@ -56,16 +56,21 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    # Configurações otimizadas para Render
-    **(
-        {"check_same_thread": False}
-        if "sqlite" in DATABASE_URL
-        else {"pool_size": 3, "max_overflow": 7, "pool_timeout": 30}
-    ),
-)
+# Cria engine de forma segura para SQLite e PostgreSQL
+if "sqlite" in DATABASE_URL:
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+        pool_size=3,
+        max_overflow=7,
+        pool_timeout=30,
+    )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
