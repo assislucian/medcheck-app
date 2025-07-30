@@ -6,8 +6,8 @@ services:
     # Isola o build APENAS para o diretório frontend, resolvendo a detecção de linguagem
     rootDir: frontend
     buildCommand: npm ci && npm run build
-    # 'staticPublishPath' é a diretiva correta para 'runtime: static'
-    staticPublishPath: dist
+    # 'publishPath' é a diretiva correta para 'runtime: static'
+    publishPath: dist
     # SPA routing para React Router
     routes:
       - type: rewrite
