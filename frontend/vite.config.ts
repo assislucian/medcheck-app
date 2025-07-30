@@ -41,6 +41,8 @@ export default defineConfig(({ mode }) => ({
     __DEV__: mode === 'development',
     // Garantir que React está disponível globalmente
     global: 'globalThis',
+    // Garantir compatibilidade com diferentes formas de importação React
+    'import.meta.env.REACT_VERSION': JSON.stringify('18.3.1'),
   },
 
   resolve: {
@@ -48,7 +50,9 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, './src'),
     },
     // Configurações para resolver conflitos de React
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    // Garantir que React seja sempre resolvido da mesma fonte
+    conditions: ['react', 'import', 'module', 'browser', 'default'],
   },
 
   // Configurações de build otimizadas para performance
@@ -161,6 +165,9 @@ export default defineConfig(({ mode }) => ({
         drop_console: mode === 'production',
         drop_debugger: true,
         pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
+        // Reduzir agressividade na compressão para preservar React refs
+        keep_fnames: true,
+        keep_classnames: true,
       },
       mangle: {
         // Preservar nomes críticos do React para evitar problemas
@@ -172,7 +179,20 @@ export default defineConfig(({ mode }) => ({
           'useEffect',
           'useCallback',
           'useMemo',
+          'createElement',
+          'Component',
+          'PureComponent',
+          'memo',
+          'Fragment',
         ],
+        // Ser menos agressivo com nomes de propriedades
+        keep_fnames: true,
+        keep_classnames: true,
+      },
+      // Manter formatação básica para debugging
+      format: {
+        preserve_annotations: true,
+        comments: false,
       },
     },
   },
