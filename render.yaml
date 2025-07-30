@@ -1,7 +1,9 @@
 services:
   # Frontend Static Site com configuração SPA
+  # NOTA: medcheck-frontend-v2 é usado porque 'medcheck-frontend' já existe
+  # com tipo diferente. Para usar o nome original, delete o serviço antigo no Dashboard
   - type: web
-    name: medcheck-frontend
+    name: medcheck-frontend-v2
     runtime: static
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: frontend/dist
