@@ -31,10 +31,16 @@ export async function registerUser(payload: RegisterPayload) {
   return res.json(); // { message: "..." }
 }
 
-export async function loginWithPassword(email: string, password: string) {
+/**
+ * Login com senha e UF.
+ * O backend passará a exigir que a UF enviada aqui
+ * seja igual à UF cadastrada do usuário.
+ */
+export async function loginWithPassword(email: string, password: string, uf: string) {
   const form = new URLSearchParams();
-  form.set('username', email);
+  form.set('username', email);   // OAuth2PasswordRequestForm
   form.set('password', password);
+  form.set('uf', uf);            // <-- NOVO: envia UF para validação
 
   const res = await fetch(`${API_URL}/token`, {
     method: 'POST',
