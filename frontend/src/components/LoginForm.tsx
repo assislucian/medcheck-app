@@ -36,6 +36,12 @@ const LoginForm = () => {
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect') || '/health-plan-selection';
 
+  /** Compatível com <select> nativo ou SelectCustom */
+  const handleUfChange = (valueOrEvent: any) => {
+    const value = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
+    setUf(value);
+  };
+
   const validateForm = () => {
     try {
       loginSchema.parse({ uf, crm, password });
@@ -61,7 +67,7 @@ const LoginForm = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await login(uf, crm, password); // <-- envia UF + CRM + senha
+      await login(uf, crm, password); // envia UF + CRM + senha
       navigate(redirectUrl);
     } catch (error: any) {
       setAuthError(error?.message || 'Erro ao fazer login. Tente novamente mais tarde.');
@@ -103,7 +109,7 @@ const LoginForm = () => {
             <SelectCustom
               id="uf"
               value={uf}
-              onChange={(e) => setUf(e.target.value)}
+              onChange={handleUfChange}
               placeholder="Selecione seu estado"
               disabled={isLoading}
             >
