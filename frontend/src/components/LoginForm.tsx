@@ -109,7 +109,9 @@ const LoginForm = () => {
             <SelectCustom
               id="uf"
               value={uf}
-              onChange={handleUfChange}
+              onChange={handleUfChange}        // para <select> nativo
+              // @ts-ignore - algumas libs não tipam onValueChange
+              onValueChange={handleUfChange}   // para SelectCustom (Radix/Headless)
               placeholder="Selecione seu estado"
               disabled={isLoading}
             >
