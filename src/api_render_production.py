@@ -1,6 +1,7 @@
 """
 MedCheck API - Versão Produção Render
 Otimizada para máxima compatibilidade e deploy estável
+Python 3.12 + dependências testadas
 """
 
 import json
@@ -32,16 +33,18 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 from starlette.responses import JSONResponse
 
-# ===== CONFIG =====
+# ===== CONFIGURAÇÃO =====
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./medcheck.db")
 SECRET_KEY = os.getenv("SECRET_KEY", "medcheck-secret-production-render-2025")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
 # ===== LOGGING =====
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # ===== SECURITY =====
@@ -49,9 +52,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # ===== DATABASE =====
+# Fix para Render - PostgreSQL URL
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
+# Cria engine de forma segura para SQLite e PostgreSQL
 if "sqlite" in DATABASE_URL:
     engine = create_engine(
         DATABASE_URL,
@@ -68,6 +73,7 @@ else:
     )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 # ===== MODELS =====
 class User(Base):
@@ -167,6 +173,7 @@ app = FastAPI(
 )
 
 # ===== CORS =====
+# Configuração dinâmica de CORS baseada em variáveis de ambiente
 CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
 DEFAULT_ORIGINS = [
     "http://localhost:3000",
@@ -175,7 +182,14 @@ DEFAULT_ORIGINS = [
     "https://medcheck-frontend.onrender.com",
     "https://medcheck-backend.onrender.com",
 ]
-cors_origins = list(dict.fromkeys(DEFAULT_ORIGINS + [o.strip() for o in CORS_ORIGINS_ENV.split(",") if o.strip()]))
+
+# Combinar origens padrão com as definidas no ambiente
+cors_origins = DEFAULT_ORIGINS
+if CORS_ORIGINS_ENV:
+    cors_origins.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
+
+# Remover duplicatas mantendo ordem
+cors_origins = list(dict.fromkeys(cors_origins))
 
 app.add_middleware(
     CORSMiddleware,
@@ -184,7 +198,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Log das origens CORS para debug
 logger.info(f"🌐 CORS Origins configured: {cors_origins}")
+
 
 # ===== DEPENDENCIES =====
 def get_db():
@@ -194,36 +211,49 @@ def get_db():
     finally:
         db.close()
 
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
+
 
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials",
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        sub: str = payload.get("sub")
-        if sub is None:
+        crm: str = payload.get("sub")
+        uf: Optional[str] = payload.get("uf")
+        if crm is None or uf is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = db.query(User).filter(User.crm == sub).first()
+
+    # ⚠️ Importante: buscar por CRM + UF para não confundir usuários com mesmo CRM
+    user = db.query(User).filter(User.crm == crm, User.uf == uf).first()
     if user is None:
         raise credentials_exception
     return user
 
-# ===== CUSTOM FORM COM UF =====
+
+# ===== CUSTOM FORM COM UF (para /token) =====
 class OAuth2PasswordRequestFormWithUF(OAuth2PasswordRequestForm):
     def __init__(
         self,
@@ -235,26 +265,39 @@ class OAuth2PasswordRequestFormWithUF(OAuth2PasswordRequestForm):
         client_secret: Optional[str] = Form(None),
         uf: Optional[str] = Form(None),  # <-- UF enviada pelo frontend
     ):
-        super().__init__(grant_type=grant_type, username=username, password=password, scope=scope,
-                         client_id=client_id, client_secret=client_secret)
+        super().__init__(
+            grant_type=grant_type,
+            username=username,
+            password=password,
+            scope=scope,
+            client_id=client_id,
+            client_secret=client_secret,
+        )
         self.uf = uf
+
 
 # ===== STARTUP =====
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"🚀 MedCheck API starting - Environment: {ENVIRONMENT}")
     try:
+        # Criar tabelas
         Base.metadata.create_all(bind=engine)
         logger.info("✅ Database tables created/verified")
+
+        # Testar conexão
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
             logger.info("✅ Database connection successful")
+
     except Exception as e:
         logger.error(f"❌ Startup error: {e}")
+
 
 # ===== ENDPOINTS =====
 @app.get("/")
 async def root():
+    """Endpoint raiz"""
     return {
         "message": "MedCheck API - Produção Render",
         "version": "1.0.0",
@@ -263,22 +306,38 @@ async def root():
         "status": "operational",
     }
 
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat(), "version": "1.0.0", "environment": ENVIRONMENT}
+    """Health check simplificado para Render"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "1.0.0",
+        "environment": ENVIRONMENT,
+    }
+
 
 @app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    """Registrar novo usuário"""
     db_user_by_email = db.query(User).filter(User.email == user.email).first()
     if db_user_by_email:
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
-    db_user_by_crm = db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
+    db_user_by_crm = (
+        db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
+    )
     if db_user_by_crm:
-        raise HTTPException(status_code=400, detail="CRM já cadastrado para este estado (UF)")
+        raise HTTPException(
+            status_code=400, detail="CRM já cadastrado para este estado (UF)"
+        )
 
     if not user.terms_accepted:
-        raise HTTPException(status_code=400, detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.")
+        raise HTTPException(
+            status_code=400,
+            detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
+        )
 
     hashed_password = get_password_hash(user.password)
     db_user = User(
@@ -294,14 +353,23 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
     logger.info(f"✅ New user registered: {user.crm} / {user.uf}")
     return UserResponse(message="Cadastro realizado com sucesso!")
 
+
 @app.post("/token", response_model=Token)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestFormWithUF = Depends(), db: Session = Depends(get_db)
+    form_data: OAuth2PasswordRequestFormWithUF = Depends(),
+    db: Session = Depends(get_db),
 ):
-    """Login com verificação de UF."""
+    """Login e geração de token (valida UF)."""
+    if not form_data.uf:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="UF é obrigatória no login",
+        )
+
     user = db.query(User).filter(User.crm == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -311,17 +379,16 @@ async def login_for_access_token(
         )
 
     # Verificar UF enviada contra UF do usuário
-    if form_data.uf and user.uf and form_data.uf.upper() != user.uf.upper():
+    if user.uf and form_data.uf.upper() != user.uf.upper():
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="UF inválida para este usuário",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.crm, "uf": user.uf, "crm": user.crm},
-        expires_delta=access_token_expires,
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return {
         "access_token": access_token,
@@ -329,10 +396,77 @@ async def login_for_access_token(
         "user": UserResponse(message="Login realizado com sucesso!"),
     }
 
-# ---- Perfil do usuário (compatível com /api/profile e /profile) ----
+
+@app.post("/api/auth/password-recovery")
+async def password_recovery(
+    request: PasswordRecoveryRequest, db: Session = Depends(get_db)
+):
+    """Solicitar recuperação de senha"""
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Resposta genérica para não revelar se o e-mail existe
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": (
+                    "Se um usuário com este e-mail existir, "
+                    "um link de recuperação será enviado."
+                )
+            },
+        )
+
+    # Gerar token de reset (curta duração)
+    reset_token = create_access_token(
+        data={"sub": user.crm, "uf": user.uf, "type": "password_reset"},
+        expires_delta=timedelta(minutes=15),
+    )
+
+    # **Simulação de envio de e-mail**
+    logger.info(f"🔑 Token de reset gerado para {user.email}: {reset_token}")
+
+    return {
+        "message": "Link de recuperação enviado (simulado).",
+        "reset_token": reset_token,  # Apenas para fins de teste
+    }
+
+
+@app.post("/api/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Redefinir a senha com um token"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Token inválido ou expirado",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "password_reset":
+            raise credentials_exception
+
+        crm: str = payload.get("sub")
+        uf: Optional[str] = payload.get("uf")
+        if crm is None or uf is None:
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.crm == crm, User.uf == uf).first()
+    if not user:
+        raise credentials_exception
+
+    # Atualizar senha
+    user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+
+    return {"message": "Senha redefinida com sucesso!"}
+
+
+# ===== ALIASES p/ compatibilidade do frontend (evitar 404) =====
 @app.get("/api/profile")
 @app.get("/profile")
 async def get_profile(current_user: User = Depends(get_current_user)):
+    """Perfil do usuário logado"""
     return {
         "crm": current_user.crm,
         "uf": current_user.uf,
@@ -342,22 +476,29 @@ async def get_profile(current_user: User = Depends(get_current_user)):
         "is_active": current_user.is_active,
     }
 
-# ---- Dashboard (alias) ----
+
 @app.get("/api/dashboard/stats")
 @app.get("/api/dashboard")
 @app.get("/dashboard")
-async def get_dashboard_stats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def get_dashboard_stats(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """Estatísticas do dashboard"""
     try:
+        # Buscar guias do usuário
         guias = db.query(GuiaMedica).filter(GuiaMedica.crm == current_user.crm).all()
+
+        # Calcular estatísticas
         total_guias = len(guias)
         guias_pagas = [g for g in guias if g.status == "PAGO"]
         guias_pendentes = [g for g in guias if g.status == "PENDENTE"]
+
         return {
             "totals": {
                 "totalGuias": total_guias,
                 "totalRecebido": sum(g.valor_total or 0 for g in guias_pagas),
                 "totalPendente": sum(g.valor_total or 0 for g in guias_pendentes),
-                "totalProcedimentos": total_guias * 3,
+                "totalProcedimentos": total_guias * 3,  # Estimativa
             },
             "guias": [
                 {
@@ -365,23 +506,32 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user), db
                     "valor_total": g.valor_total,
                     "status": g.status,
                     "convenio": g.convenio,
-                    "data": (g.data_atendimento.isoformat() if g.data_atendimento else None),
+                    "data": (
+                        g.data_atendimento.isoformat() if g.data_atendimento else None
+                    ),
                 }
-                for g in guias[:10]
+                for g in guias[:10]  # Limitar para performance
             ],
         }
     except Exception as e:
         logger.error(f"Error getting dashboard stats: {e}")
         return {
-            "totals": {"totalGuias": 0, "totalRecebido": 0.0, "totalPendente": 0.0, "totalProcedimentos": 0},
+            "totals": {
+                "totalGuias": 0,
+                "totalRecebido": 0.0,
+                "totalPendente": 0.0,
+                "totalProcedimentos": 0,
+            },
             "guias": [],
         }
 
-# ---- Unpaid procedures (compat) ----
+
 @app.get("/api/unpaid-procedures")
 @app.get("/unpaid-procedures")
-async def unpaid_procedures(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Retorna procedimentos/GUIAS pendentes do usuário."""
+async def unpaid_procedures(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """Procedimentos/Guias pendentes do usuário (simples)"""
     pendentes = (
         db.query(GuiaMedica)
         .filter(GuiaMedica.crm == current_user.crm, GuiaMedica.status == "PENDENTE")
@@ -393,14 +543,17 @@ async def unpaid_procedures(current_user: User = Depends(get_current_user), db: 
             procs = json.loads(g.procedimentos or "[]")
         except Exception:
             procs = []
-        items.append({
-            "numero_guia": g.numero_guia,
-            "data": g.data_atendimento.isoformat() if g.data_atendimento else None,
-            "valor_total": g.valor_total,
-            "convenio": g.convenio,
-            "procedimentos": procs,
-        })
+        items.append(
+            {
+                "numero_guia": g.numero_guia,
+                "data": g.data_atendimento.isoformat() if g.data_atendimento else None,
+                "valor_total": g.valor_total,
+                "convenio": g.convenio,
+                "procedimentos": procs,
+            }
+        )
     return {"items": items, "count": len(items)}
+
 
 @app.get("/api/guides")
 async def get_guides(
@@ -409,6 +562,7 @@ async def get_guides(
     page: int = 0,
     size: int = 10,
 ):
+    """Listar guias médicas"""
     try:
         offset = page * size
         guias = (
@@ -418,7 +572,9 @@ async def get_guides(
             .limit(size)
             .all()
         )
+
         total = db.query(GuiaMedica).filter(GuiaMedica.crm == current_user.crm).count()
+
         return {
             "guides": [
                 {
@@ -427,8 +583,10 @@ async def get_guides(
                     "valor_total": g.valor_total,
                     "status": g.status,
                     "convenio": g.convenio,
-                    "data": (g.data_atendimento.isoformat() if g.data_atendimento else None),
-                    "qtdProcedimentos": 3,
+                    "data": (
+                        g.data_atendimento.isoformat() if g.data_atendimento else None
+                    ),
+                    "qtdProcedimentos": 3,  # Estimativa
                 }
                 for g in guias
             ],
@@ -441,17 +599,28 @@ async def get_guides(
         logger.error(f"Error getting guides: {e}")
         return {"guides": [], "total": 0, "page": page, "size": size, "totalPages": 0}
 
+
 @app.post("/api/guides/upload")
 async def upload_guides(
     files: List[UploadFile] = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    """Upload de arquivos (simulado)"""
     try:
         uploaded_files = []
         for file in files:
-            file_info = {"filename": file.filename, "size": 0, "type": file.content_type, "status": "processed", "guias_found": 1}
+            # Simular processamento
+            file_info = {
+                "filename": file.filename,
+                "size": 0,
+                "type": file.content_type,
+                "status": "processed",
+                "guias_found": 1,
+            }
             uploaded_files.append(file_info)
+
+            # Criar guia de exemplo
             guia_exemplo = GuiaMedica(
                 numero_guia=f"G{uuid.uuid4().hex[:8].upper()}",
                 crm=current_user.crm,
@@ -459,17 +628,27 @@ async def upload_guides(
                 valor_total=1500.00,
                 status="PENDENTE",
                 convenio="Unimed",
-                procedimentos=json.dumps([{"codigo": "10101012", "descricao": "Consulta"}]),
+                procedimentos=json.dumps(
+                    [{"codigo": "10101012", "descricao": "Consulta"}]
+                ),
             )
             db.add(guia_exemplo)
+
         db.commit()
         logger.info(f"✅ Files uploaded by user {current_user.crm}")
-        return {"message": "Arquivos processados com sucesso", "files": uploaded_files, "total_files": len(uploaded_files)}
+
+        return {
+            "message": "Arquivos processados com sucesso",
+            "files": uploaded_files,
+            "total_files": len(uploaded_files),
+        }
     except Exception as e:
         logger.error(f"Error uploading files: {e}")
         raise HTTPException(status_code=500, detail="Erro no upload")
 
+
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
