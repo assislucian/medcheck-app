@@ -36,9 +36,12 @@ const LoginForm = () => {
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl = searchParams.get('redirect') || '/health-plan-selection';
 
-  /** Compatível com <select> nativo ou SelectCustom */
-  const handleUfChange = (valueOrEvent: any) => {
-    const value = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
+  /** Captura valor vindo como string, event ou objeto { value } */
+  const handleUfChange = (raw: any) => {
+    let value = '';
+    if (typeof raw === 'string') value = raw;
+    else if (raw?.target) value = raw.target.value;
+    else if (typeof raw?.value === 'string') value = raw.value;
     setUf(value);
   };
 
@@ -67,7 +70,7 @@ const LoginForm = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await login(uf, crm, password); // envia UF + CRM + senha
+      await login(uf, crm, password);
       navigate(redirectUrl);
     } catch (error: any) {
       setAuthError(error?.message || 'Erro ao fazer login. Tente novamente mais tarde.');
@@ -82,9 +85,7 @@ const LoginForm = () => {
         <div className="flex items-center justify-center mb-4">
           <Shield className="w-8 h-8 text-health-primary dark:text-health-accent mr-3" />
           <div className="w-2 h-2 bg-health-accent rounded-full animate-pulse mr-2"></div>
-          <span className="text-sm font-medium text-health-accent dark:text-mint-400">
-            Acesso Seguro
-          </span>
+          <span className="text-sm font-medium text-health-accent dark:text-mint-400">Acesso Seguro</span>
         </div>
         <CardTitle className="text-3xl font-bold bg-gradient-to-r from-health-dark via-health-primary to-health-accent bg-clip-text text-transparent mb-2">
           Área do Médico
@@ -102,6 +103,7 @@ const LoginForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ---- UF ---- */}
           <div>
             <label htmlFor="uf" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Estado (UF)
@@ -109,43 +111,25 @@ const LoginForm = () => {
             <SelectCustom
               id="uf"
               value={uf}
-              onChange={handleUfChange}        // para <select> nativo
-              // @ts-ignore - algumas libs não tipam onValueChange
-              onValueChange={handleUfChange}   // para SelectCustom (Radix/Headless)
+              onChange={handleUfChange}          // <select> nativo
+              // @ts-ignore - algumas libs tipam diferente
+              onValueChange={handleUfChange}     // Radix Select
+              // @ts-ignore
+              onSelectionChange={handleUfChange} // fallback para wrappers
               placeholder="Selecione seu estado"
               disabled={isLoading}
             >
-              <option value="AC">Acre (AC)</option>
-              <option value="AL">Alagoas (AL)</option>
-              <option value="AP">Amapá (AP)</option>
-              <option value="AM">Amazonas (AM)</option>
-              <option value="BA">Bahia (BA)</option>
-              <option value="CE">Ceará (CE)</option>
-              <option value="DF">Distrito Federal (DF)</option>
-              <option value="ES">Espírito Santo (ES)</option>
-              <option value="GO">Goiás (GO)</option>
-              <option value="MA">Maranhão (MA)</option>
-              <option value="MT">Mato Grosso (MT)</option>
-              <option value="MS">Mato Grosso do Sul (MS)</option>
-              <option value="MG">Minas Gerais (MG)</option>
-              <option value="PA">Pará (PA)</option>
-              <option value="PB">Paraíba (PB)</option>
-              <option value="PR">Paraná (PR)</option>
-              <option value="PE">Pernambuco (PE)</option>
-              <option value="PI">Piauí (PI)</option>
-              <option value="RJ">Rio de Janeiro (RJ)</option>
-              <option value="RN">Rio Grande do Norte (RN)</option>
-              <option value="RS">Rio Grande do Sul (RS)</option>
-              <option value="RO">Rondônia (RO)</option>
-              <option value="RR">Roraima (RR)</option>
-              <option value="SC">Santa Catarina (SC)</option>
-              <option value="SP">São Paulo (SP)</option>
-              <option value="SE">Sergipe (SE)</option>
-              <option value="TO">Tocantins (TO)</option>
+              {[
+                'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',
+                'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
+              ].map((ufCode) => (
+                <option key={ufCode} value={ufCode}>{ufCode}</option>
+              ))}
             </SelectCustom>
             {errors.uf && <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{errors.uf}</div>}
           </div>
 
+          {/* ---- CRM ---- */}
           <div>
             <label htmlFor="crm" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Número do CRM
@@ -156,13 +140,14 @@ const LoginForm = () => {
               value={crm}
               onChange={(e) => setCrm(e.target.value)}
               placeholder="Digite seu CRM"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-health-surface/50 dark:border-health-accent/50 rounded-xl text-ink dark:text-health-surface placeholder:text-ink-light dark:placeholder:text-health-accent/60 focus:outline-none focus:ring-2 focus:ring-health-primary/50 focus:border-health-primary/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-health-surface/50 dark:border-health-accent/50 rounded-xl text-ink dark:text-health-surface"
               autoComplete="username"
               disabled={isLoading}
             />
             {errors.crm && <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">{errors.crm}</div>}
           </div>
 
+          {/* ---- Password ---- */}
           <div>
             <label htmlFor="password" className="block text-sm font-semibold mb-3 text-ink dark:text-health-surface/90">
               Senha
@@ -174,14 +159,14 @@ const LoginForm = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Digite sua senha"
-                className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-health-surface/50 dark:border-health-accent/50 rounded-xl text-ink dark:text-health-surface placeholder:text-ink-light dark:placeholder:text-health-accent/60 focus:outline-none focus:ring-2 focus:ring-health-primary/50 focus:border-health-primary/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
+                className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-health-surface/50 dark:border-health-accent/50 rounded-xl text-ink dark:text-health-surface"
                 autoComplete="current-password"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-ink-light dark:text-health-accent/60 hover:text-health-primary dark:hover:text-health-accent transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-light dark:text-health-accent/60"
                 disabled={isLoading}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -191,26 +176,24 @@ const LoginForm = () => {
           </div>
 
           <div className="flex justify-end">
-            <Link
-              to="/forgot-password"
-              className="text-sm font-medium text-health-primary dark:text-health-accent hover:text-health-dark dark:hover:text-mint-300 transition-colors underline decoration-health-accent/50 hover:decoration-health-primary"
-            >
+            <Link to="/forgot-password" className="text-sm font-medium text-health-primary underline">
               Esqueceu a senha?
             </Link>
           </div>
 
+          {/* ---- Botão ---- */}
           <Button
             type="submit"
-            className="w-full py-4 text-lg font-bold bg-gradient-to-r from-health-primary via-health-accent to-health-primary hover:from-health-dark hover:via-health-accent hover:to-health-dark text-white rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-health-primary/30 dark:shadow-health-dark/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="w-full py-4 text-lg font-bold bg-gradient-to-r from-health-primary via-health-accent to-health-primary text-white rounded-xl"
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="flex items-center justify-center gap-3">
+              <span className="flex items-center gap-3">
                 <LoadingSpinner size="sm" />
                 Entrando...
               </span>
             ) : (
-              <span className="flex items-center justify-center gap-2">
+              <span className="flex items-center gap-2">
                 Entrar na Plataforma
                 <Shield className="w-5 h-5" />
               </span>
@@ -219,20 +202,14 @@ const LoginForm = () => {
         </form>
       </CardContent>
 
-      <CardFooter className="flex flex-col gap-4 px-8 pb-8 bg-gradient-to-br from-health-surface/30 via-health-soft/20 to-health-surface/30 dark:from-health-dark/10 dark:via-health-primary/5 dark:to-health-dark/10">
+      <CardFooter className="flex flex-col gap-4 px-8 pb-8">
         <div className="w-full h-px bg-gradient-to-r from-transparent via-health-primary/50 to-transparent"></div>
         <span className="text-ink-light dark:text-health-surface/70 text-center">
           Não tem uma conta?{' '}
-          <Link
-            to="/register"
-            className="font-semibold text-health-primary dark:text-health-accent hover:text-health-dark dark:hover:text-mint-300 transition-colors underline decoration-health-accent/50 hover:decoration-health-primary"
-          >
+          <Link to="/register" className="font-semibold text-health-primary underline">
             Cadastre-se gratuitamente
           </Link>
         </span>
-        <p className="text-xs text-center text-ink-light dark:text-health-surface/50">
-          Ao fazer login, você concorda com nossos Termos de Uso e Política de Privacidade
-        </p>
       </CardFooter>
     </Card>
   );
