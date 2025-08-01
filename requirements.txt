@@ -16,7 +16,7 @@ psycopg2-binary==2.9.9
 
 # === VALIDAÇÃO & DADOS ===
 pydantic==2.7.4
-python-multipart==0.0.9
+python-multipart==0.0.20
 
 # === HTTP & REQUESTS ===
 httpx==0.27.0
