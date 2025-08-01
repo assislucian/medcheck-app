@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const params = new URLSearchParams();
       params.append('username', crm);
       params.append('password', senha);
-      params.append('scope', uf);
+      params.append('uf', uf);
 
       const res = await axios.post(`${API_URL}/token`, params, {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

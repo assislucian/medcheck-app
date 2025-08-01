@@ -172,7 +172,7 @@ export class AuthManager {
       const params = new URLSearchParams();
       params.append('username', crm);
       params.append('password', senha);
-      params.append('scope', uf);
+      params.append('uf', uf);
 
       const response = await fetch(`${this.getApiUrl()}/token`, {
         method: 'POST',

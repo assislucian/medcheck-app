@@ -154,6 +154,9 @@ const DashboardPage = () => {
           description="Acompanhe seus honorários, glosas e pendências de forma clara e organizada. Sua gestão médica simplificada."
         >
           <div className="space-y-12 px-4 sm:px-6 lg:px-8">
+            {/* Sistema de Alertas Inteligentes */}
+            <SmartAlertsSystem />
+
             {/* Header Componentizado */}
             <DashboardHeader 
               userName={userProfile?.nome}
