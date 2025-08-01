@@ -280,6 +280,8 @@ class OAuth2PasswordRequestFormWithUF(OAuth2PasswordRequestForm):
 @app.on_event("startup")
 async def startup_event():
     logger.info(f"🚀 MedCheck API starting - Environment: {ENVIRONMENT}")
+    logger.info(f"🔧 Database URL: {DATABASE_URL[:50]}...")
+    logger.info(f"🔐 Secret Key configured: {'***' if SECRET_KEY else 'NO'}")
     try:
         # Criar tabelas
         Base.metadata.create_all(bind=engine)
@@ -287,11 +289,17 @@ async def startup_event():
 
         # Testar conexão
         with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-            logger.info("✅ Database connection successful")
+            result = conn.execute(text("SELECT 1"))
+            logger.info(f"✅ Database connection successful: {result.fetchone()}")
+
+        logger.info("🎯 Startup completed successfully")
 
     except Exception as e:
         logger.error(f"❌ Startup error: {e}")
+        logger.error(f"❌ Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"❌ Traceback: {traceback.format_exc()}")
+        raise
 
 
 # ===== ENDPOINTS =====
@@ -310,11 +318,35 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check simplificado para Render"""
+    try:
+        # Testar conexão com banco
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0",
         "environment": ENVIRONMENT,
+        "database": db_status,
+        "cors_origins": len(cors_origins),
+        "secret_key_configured": bool(SECRET_KEY),
+    }
+
+@app.get("/debug/info")
+async def debug_info():
+    """Informações de debug para diagnóstico (remover em produção)"""
+    return {
+        "environment": ENVIRONMENT,
+        "database_url_prefix": DATABASE_URL[:20] + "..." if DATABASE_URL else "None",
+        "cors_origins_count": len(cors_origins),
+        "cors_origins": cors_origins[:3],  # Apenas primeiras 3 para segurança
+        "secret_key_length": len(SECRET_KEY) if SECRET_KEY else 0,
+        "python_version": os.environ.get("PYTHON_VERSION", "unknown"),
+        "port": os.environ.get("PORT", "not_set"),
     }
 
 
