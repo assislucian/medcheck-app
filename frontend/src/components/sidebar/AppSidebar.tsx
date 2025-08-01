@@ -10,6 +10,7 @@ import {
   User,
   Settings,
   TrendingUp,
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/AuthContext';
 import { useRealTimeSync } from '../../hooks/useRealTimeSync';
@@ -150,18 +151,32 @@ export function AppSidebar() {
       ],
     },
     {
+      id: 'analytics',
+      title: 'Inteligência',
+      items: [
+        {
+          icon: BarChart3,
+          label: 'Relatórios',
+          href: '/reports',
+          description: 'Análise financeira avançada',
+          color: 'purple',
+        },
+      ],
+    },
+    {
       id: 'system',
       title: 'Sistema',
       items: [
-        {
-          icon: Bell,
-          label: 'Atividades',
-          href: '/notifications',
-          description: 'Log do sistema',
-          color: 'slate',
-          badge: unreadNotifications,
-          badgeVariant: 'default',
-        },
+        // Item temporariamente removido
+        // {
+        //   icon: Bell,
+        //   label: 'Atividades',
+        //   href: '/notifications',
+        //   description: 'Log do sistema',
+        //   color: 'slate',
+        //   badge: unreadNotifications,
+        //   badgeVariant: 'default',
+        // },
         {
           icon: User,
           label: 'Perfil',

@@ -68,12 +68,14 @@ export const MobileMenu = ({
             >
               Perfil
             </Link>
+            {/* Temporariamente desabilitado
             <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
               <Link to="/notifications" onClick={() => setIsOpen(false)}>
                 <Activity className="mr-2 h-4 w-4" />
                 Activity Log
               </Link>
             </Button>
+            */}
             <Link
               to="/help"
               className="block px-3 py-2 rounded-md text-base font-medium hover:bg-muted"

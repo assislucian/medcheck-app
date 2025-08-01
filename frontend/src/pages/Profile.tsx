@@ -177,7 +177,10 @@ const Profile = () => {
   };
 
   return (
-    <>
+    <AuthenticatedLayout
+      title="Meu Perfil Médico"
+      description="Gerencie seus dados profissionais e configurações pessoais"
+    >
       <Helmet>
         <title>Meu Perfil Médico | MedCheck</title>
         <meta
@@ -199,23 +202,38 @@ const Profile = () => {
       </Helmet>
 
       {/* Background com Gradiente Médico */}
-      <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
-        <AuthenticatedLayout
-          title="Meu Perfil Médico"
-          description="Gerencie seus dados profissionais e configurações pessoais"
-        >
-          <div className="space-y-8 px-4 sm:px-6 lg:px-8 py-8">
-            {/* Card Principal com Avatar e Tabs */}
-            <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-xl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50/30 via-gray-50/20 to-blue-50/30">
+        <div className="space-y-8 px-4 sm:px-6 lg:px-8">
+          {/* Header Discreto Seguindo Padrão Dashboard */}
+          <div className="text-center space-y-3 pt-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-slate-100 to-blue-100 border border-slate-200/50">
+              <User className="h-4 w-4 text-slate-700" />
+              <span className="text-xs font-medium text-slate-800">
+                Perfil profissional
+              </span>
+            </div>
+
+            <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-700 via-blue-600 to-gray-800 bg-clip-text text-transparent">
+              Meu Perfil Médico
+            </h1>
+
+            <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              Gerencie seus dados profissionais, configurações e estatísticas de uso
+              da plataforma
+            </p>
+          </div>
+          
+          {/* Card Principal com Avatar e Tabs */}
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-xl">
               <CardHeader className="pb-6 border-b border-gray-100">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                   <div className="relative">
-                    <div className="w-20 h-20 bg-gradient-to-br from-medical-100 to-brand-100 rounded-full flex items-center justify-center border border-medical-200">
-                      <User className="w-10 h-10 text-medical-700" />
+                    <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-blue-100 rounded-full flex items-center justify-center border border-slate-200">
+                      <User className="w-10 h-10 text-slate-700" />
                     </div>
                     <Button
                       size="sm"
-                      className="absolute -bottom-1 -right-1 rounded-full w-8 h-8 bg-medical-600 hover:bg-medical-700"
+                      className="absolute -bottom-1 -right-1 rounded-full w-8 h-8 bg-slate-600 hover:bg-slate-700"
                       onClick={() => toast.info('Função de upload de avatar em breve')}
                     >
                       <Camera className="w-4 h-4" />
@@ -735,10 +753,9 @@ const Profile = () => {
                 </Tabs>
               </CardContent>
             </Card>
-          </div>
-        </AuthenticatedLayout>
+        </div>
       </div>
-    </>
+    </AuthenticatedLayout>
   );
 };
 

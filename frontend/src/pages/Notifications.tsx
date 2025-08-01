@@ -71,10 +71,8 @@ interface ActivityStats {
 const NotificationsPage = () => {
   usePageTitle({
     title: 'Atividades do Sistema',
-    description:
-      'Monitoramento em tempo real das atividades do sistema e auditoria de ações',
-    keywords:
-      'log de atividades, auditoria, monitoramento, segurança, atividades sistema',
+    description: 'Monitoramento em tempo real das atividades do sistema e auditoria de ações',
+    keywords: 'log de atividades, auditoria, monitoramento, segurança, atividades sistema',
   });
 
   const [activities, setActivities] = useState<ActivityLog[]>([]);
@@ -272,56 +270,156 @@ const NotificationsPage = () => {
     }
   };
 
-  const getResultBadge = (result: string | null, riskLevel: string | null) => {
-    if (riskLevel === 'high') {
-      return (
-        <Badge variant="destructive" className="text-xs">
-          Alto Risco
-        </Badge>
-      );
+  const renderActivityDetails = (activity: ActivityLog) => {
+    const target = activity.target;
+    const action = activity.action.toLowerCase();
+    
+    if (!target || Object.keys(target).length === 0) {
+      return getDefaultMessage(action);
     }
 
-    switch (result) {
-      case 'success':
+    switch (action) {
+      case 'upload_guia':
         return (
-          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
-            Sucesso
-          </Badge>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-blue-700">📎 {target.arquivo}</span>
+            </div>
+            {target.procedimentos && (
+              <div className="text-xs text-gray-500">
+                {target.procedimentos} procedimento(s) processado(s)
+              </div>
+            )}
+          </div>
         );
-      case 'error':
-      case 'failed':
+        
+      case 'upload_demonstrativo':
         return (
-          <Badge variant="destructive" className="text-xs">
-            Erro
-          </Badge>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-green-700">📊 {target.arquivo}</span>
+            </div>
+            <div className="flex gap-4 text-xs text-gray-500">
+              {target.período && <span>📅 {target.período}</span>}
+              {target.total_procedimentos && <span>🔢 {target.total_procedimentos} procedimentos</span>}
+            </div>
+          </div>
         );
-      case 'warning':
+        
+      case 'delete_guia':
         return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
-            Aviso
-          </Badge>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-red-700">🗑️ Guia #{target.guia}</span>
+              {target.resultado === 'success' && (
+                <Badge className="bg-red-100 text-red-800 text-xs">Excluída</Badge>
+              )}
+            </div>
+          </div>
         );
+        
+      case 'login_success':
+        return (
+          <span className="text-green-600 font-medium">🎉 Bem-vindo ao sistema!</span>
+        );
+        
+      case 'login_failed':
+        return (
+          <span className="text-red-600 font-medium">⚠️ Credenciais inválidas</span>
+        );
+        
+      case 'register':
+        return (
+          <span className="text-blue-600 font-medium">🎊 Conta criada com sucesso!</span>
+        );
+        
       default:
-        return (
-          <Badge variant="outline" className="text-xs">
-            Info
-          </Badge>
+        if (typeof activity.details === 'string') {
+          return activity.details;
+        }
+        return target.arquivo ? (
+          <span className="font-medium text-gray-700">📁 {target.arquivo}</span>
+        ) : (
+          getDefaultMessage(action)
         );
     }
   };
 
+  const getDefaultMessage = (action: string) => {
+    switch (action) {
+      case 'login':
+      case 'login_success':
+        return '🔐 Sessão iniciada com segurança';
+      case 'login_failed':
+        return '🚫 Tentativa de acesso negada';
+      case 'register':
+        return '📝 Novo usuário registrado';
+      default:
+        return '✨ Atividade realizada com sucesso';
+    }
+  };
+
+  const getResultBadge = (activity: ActivityLog) => {
+    const isFailure = activity.action.includes('failed') || activity.result === 'error';
+    const isSuccess = activity.result === 'success' || activity.action.includes('success');
+    const isLogin = activity.action.toLowerCase().includes('login');
+    const isUpload = activity.action.toLowerCase().includes('upload');
+    const isDelete = activity.action.toLowerCase().includes('delete');
+    
+    if (isFailure) {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          ❌ Falha
+        </Badge>
+      );
+    }
+    
+    if (isSuccess || isLogin) {
+      return (
+        <Badge className="bg-green-100 text-green-800 text-xs">
+          ✅ Sucesso
+        </Badge>
+      );
+    }
+    
+    if (isUpload) {
+      return (
+        <Badge className="bg-blue-100 text-blue-800 text-xs">
+          📤 Enviado
+        </Badge>
+      );
+    }
+    
+    if (isDelete) {
+      return (
+        <Badge className="bg-orange-100 text-orange-800 text-xs">
+          🗑️ Removido
+        </Badge>
+      );
+    }
+    
+    return (
+      <Badge variant="outline" className="text-xs">
+        ℹ️ Info
+      </Badge>
+    );
+  };
+
   const formatActionName = (action: string) => {
     const actionMap: Record<string, string> = {
-      upload_guia: 'Upload de Guia',
-      upload_demonstrativo: 'Upload de Demonstrativo',
-      delete_guia: 'Exclusão de Guia',
-      delete_demonstrativo: 'Exclusão de Demonstrativo',
-      view_demonstrativo: 'Visualização de Demonstrativo',
-      view_guia: 'Visualização de Guia',
-      login: 'Login no Sistema',
-      export: 'Exportação de Dados',
-      validate: 'Validação de Dados',
-      crosscheck: 'Cruzamento de Dados',
+      upload_guia: '📄 Guia médica enviada',
+      upload_demonstrativo: '📊 Demonstrativo enviado',
+      delete_guia: '🗑️ Guia médica excluída',
+      delete_demonstrativo: '🗑️ Demonstrativo excluído',
+      view_demonstrativo: '👀 Demonstrativo visualizado',
+      view_guia: '👀 Guia médica visualizada',
+      login: '✅ Login realizado',
+      login_success: '✅ Acesso autorizado',
+      login_failed: '❌ Falha no login',
+      export: '📤 Dados exportados',
+      register: '👤 Novo cadastro realizado',
+      validate: '✅ Dados validados',
+      crosscheck: '🔄 Cruzamento realizado',
     };
 
     return (
@@ -503,9 +601,9 @@ const NotificationsPage = () => {
                             <p className="font-medium text-gray-900">
                               {formatActionName(activity.action)}
                             </p>
-                            <p className="text-sm text-gray-600">
-                              {activity.details || 'Sem detalhes adicionais'}
-                            </p>
+                            <div className="text-sm text-gray-600">
+                              {renderActivityDetails(activity)}
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
@@ -515,20 +613,9 @@ const NotificationsPage = () => {
                               locale: ptBR,
                             })}
                           </p>
-                          {activity.risk_level && activity.risk_level !== 'low' && (
-                            <Badge
-                              variant={
-                                activity.risk_level === 'high'
-                                  ? 'destructive'
-                                  : 'secondary'
-                              }
-                              className="text-xs mt-1"
-                            >
-                              {activity.risk_level === 'high'
-                                ? 'Alto Risco'
-                                : 'Médio Risco'}
-                            </Badge>
-                          )}
+                          <div className="mt-1">
+                            {getResultBadge(activity)}
+                          </div>
                         </div>
                       </div>
                     </div>

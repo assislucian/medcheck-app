@@ -896,6 +896,36 @@ const DemonstrativesPage = () => {
     fetchDemonstratives();
   }, []);
 
+  // Event listeners para QuickActions (botão flutuante)
+  useEffect(() => {
+    const handleOpenDemoUpload = () => {
+      // Simular clique no input de upload
+      const fileInput = document.querySelector('input[type="file"][accept*=".pdf"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    };
+
+    const handleExportDemoData = () => {
+      // Chamar função de export existente ou implementar nova
+      if (demonstratives && demonstratives.length > 0) {
+        exportAllDemonstrativesData();
+      } else {
+        toast.info('Nenhum demonstrativo disponível para exportar');
+      }
+    };
+
+    // Adicionar listeners
+    window.addEventListener('openDemoUpload', handleOpenDemoUpload);
+    window.addEventListener('exportDemoData', handleExportDemoData);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('openDemoUpload', handleOpenDemoUpload);
+      window.removeEventListener('exportDemoData', handleExportDemoData);
+    };
+  }, [demonstratives]);
+
   // Aplicar filtros
   useEffect(() => {
     let filtered = demonstratives;
@@ -1015,6 +1045,44 @@ const DemonstrativesPage = () => {
     }
     fetchPendingAudits();
   }, [demonstratives]);
+
+  // Função para exportar todos os dados dos demonstrativos
+  const exportAllDemonstrativesData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Token de acesso não encontrado');
+        return;
+      }
+
+      // Usar o endpoint de reports para exportar dados
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/reports/export?format=excel`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+
+      // Criar download
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `demonstrativos_completo_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success('Dados exportados com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao exportar dados:', error);
+      toast.error('Erro ao exportar dados dos demonstrativos');
+    }
+  };
 
   const fetchDemonstratives = async () => {
     setLoading(true);
@@ -1425,6 +1493,8 @@ const DemonstrativesPage = () => {
                   Análise Avançada
                 </Badge>
 
+                {/* Botão "Atualizar" removido conforme solicitado */}
+                {/*
                 <Button
                   variant="outline"
                   size="sm"
@@ -1437,6 +1507,7 @@ const DemonstrativesPage = () => {
                   />
                   {loading ? 'Atualizando...' : 'Atualizar'}
                 </Button>
+                */}
               </div>
             </div>
 

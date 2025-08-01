@@ -1,0 +1,44 @@
+{
+  "timestamp": "20250801_183620",
+  "database_path": "medicos.db",
+  "table_name": "medicos",
+  "total_users": 3,
+  "users": [
+    {
+      "id": 1,
+      "crm": "6091",
+      "uf": "RN",
+      "nome": "Dr. Teste Silva",
+      "email": "teste@medcheck.com",
+      "senha_hash": "$2b$12$G6nEhP4pn.HegQ7/Z7gBQufjGrRr645cDvIsHT9PiI6z6KW9DuB8q",
+      "terms_accepted": 1,
+      "terms_accepted_at": "2025-08-01 10:48:09.109407",
+      "terms_version": "2025-05-05",
+      "last_login_at": "2025-08-01 10:52:15.427276"
+    },
+    {
+      "id": 2,
+      "crm": "6091",
+      "uf": "TO",
+      "nome": "MOISES TOCA",
+      "email": "moises@moises.com",
+      "senha_hash": "$2b$12$4/Uvt2BChNzu36o3rv23o.59KsJouKr3AtRh.wa.GPMMruH/d3myK",
+      "terms_accepted": 1,
+      "terms_accepted_at": "2025-08-01 11:38:39.291635",
+      "terms_version": "2025-05-05",
+      "last_login_at": "2025-08-01 16:00:30.395592"
+    },
+    {
+      "id": 3,
+      "crm": "123456",
+      "uf": "SP",
+      "nome": "Test User",
+      "email": "test@test.com",
+      "senha_hash": "$2b$12$LPBEg1f9USR7De2DaCkd1uPXb8JrJE.7SaeCQfeMTj8ONoQ20gt6S",
+      "terms_accepted": 1,
+      "terms_accepted_at": "2025-08-01 11:38:39.506741",
+      "terms_version": "2025-05-05",
+      "last_login_at": null
+    }
+  ]
+}

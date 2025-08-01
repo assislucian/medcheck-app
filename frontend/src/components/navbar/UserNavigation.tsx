@@ -6,7 +6,7 @@ export const UserNavigation = () => {
     { name: 'Guias', path: '/guides' },
     { name: 'Demonstrativos', path: '/demonstratives' },
     { name: 'Não Pagos', path: '/unpaid-procedures' },
-    { name: 'Activity Log', path: '/notifications' },
+    // { name: 'Activity Log', path: '/notifications' }, // Temporariamente removido
     { name: 'Relatórios', path: '/reports' },
     { name: 'Suporte', path: '/help' },
   ];

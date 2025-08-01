@@ -89,14 +89,15 @@ export const GlobalSearch: React.FC<GlobalSearchProps> = ({ trigger, className }
       href: '/reports',
       category: 'Análise',
     },
-    {
-      id: 'notifications',
-      title: 'Activity Log',
-      description: 'Log de atividades do sistema',
-      icon: <Activity className="h-4 w-4" />,
-      href: '/notifications',
-      category: 'Sistema',
-    },
+    // Temporariamente removido
+    // {
+    //   id: 'notifications',
+    //   title: 'Activity Log',
+    //   description: 'Log de atividades do sistema',
+    //   icon: <Activity className="h-4 w-4" />,
+    //   href: '/notifications',
+    //   category: 'Sistema',
+    // },
     {
       id: 'help',
       title: 'Suporte',

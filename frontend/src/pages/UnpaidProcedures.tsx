@@ -1,577 +1,721 @@
-/**
- * Página de Procedimentos Não Pagos
- * =================================
- *
- * Lista procedimentos adicionados via guias que ainda não foram
- * pagos (não aparecem nos demonstrativos), incluindo glosas e
- * procedimentos expirados (mais de 30 dias).
- */
+import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
+import { DataGrid } from "../components/ui/data-grid";
+import { Button } from "../components/ui/button";
+import { AlertCircle, Download, FileX, Filter, Loader2, Shield, AlertTriangle, Copy, FileText, Printer } from "lucide-react";
+import { Badge } from "../components/ui/badge";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/auth/AuthContext";
+import { InfoCard } from "../components/ui/InfoCard";
+import axios from "axios";
+import { differenceInCalendarDays } from "date-fns";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
+import { Textarea } from "../components/ui/textarea";
+import { toast } from "sonner";
+import jsPDF from 'jspdf';
 
-import React, { useState, useEffect } from 'react';
-import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '../components/ui/card';
-import { DataGrid } from '../components/ui/data-grid';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Input } from '../components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import {
-  AlertTriangle,
-  Search,
-  Clock,
-  Download,
-  RefreshCw,
-  CheckCircle,
-  FileText,
-  CalendarClock,
-  TrendingDown,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import axios from 'axios';
-import { useAuth } from '../contexts/auth/AuthContext';
-import { formatCurrency } from '../utils/format';
-import { usePageTitle } from '../hooks/usePageTitle';
-import { Helmet } from 'react-helmet-async';
-import { format, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-interface UnpaidProcedure {
-  numero_guia: string;
-  data: string;
-  beneficiario: string;
-  codigo: string;
-  descricao: string;
-  papel: string;
-  prestador: string;
-  qtd: number;
-  crm: string;
-  nome_medico?: string;
-  dt_inicio?: string;
-  dt_fim?: string;
-  status_part?: string;
-  days_since?: number;
-  estimated_value?: number;
-  urgency?: 'high' | 'medium' | 'low';
+function calcularDiasParaContestar(data: string) {
+  // data no formato DD/MM/YYYY ou YYYY-MM-DD
+  let dataBase: Date;
+  if (/\d{2}\/\d{2}\/\d{4}/.test(data)) {
+    const [dia, mes, ano] = data.split("/");
+    dataBase = new Date(Number(ano), Number(mes) - 1, Number(dia));
+  } else if (/\d{4}-\d{2}-\d{2}/.test(data)) {
+    const [ano, mes, dia] = data.split("-");
+    dataBase = new Date(Number(ano), Number(mes) - 1, Number(dia));
+  } else {
+    dataBase = new Date(data);
+  }
+  const hoje = new Date();
+  const diff = differenceInCalendarDays(hoje, dataBase);
+  return Math.max(0, 30 - diff);
 }
 
-interface UnpaidStats {
-  total_procedures: number;
-  paid_procedures: number;
-  unpaid_procedures: number;
-  total_patients: number;
-  total_estimated_value: number;
-  oldest_procedure_days: number;
-  unpaid_list: UnpaidProcedure[];
+
+
+function getPrazoStatus(dias: number) {
+  if (dias > 5) return "success";
+  if (dias > 0) return "warning";
+  return "destructive";
+}
+
+function PrazoBadge({ dias }: { dias: number }) {
+  const status = getPrazoStatus(dias);
+  let label = dias > 1 ? `${dias} dias` : dias === 1 ? "1 dia" : "Expirado";
+  return (
+    <Badge
+      variant={status}
+      className={
+        status === "success"
+          ? "bg-green-100 text-green-800 border border-green-200 font-medium"
+          : status === "warning"
+          ? "bg-yellow-100 text-yellow-800 border border-yellow-200 font-medium"
+          : "bg-red-100 text-red-800 border border-red-200 font-medium"
+      }
+      aria-label={label}
+      tabIndex={0}
+    >
+      {label}
+    </Badge>
+  );
+}
+
+function TruncatedCell({ text }: { text: string }) {
+  const [show, setShow] = useState(false);
+  return (
+    <TooltipProvider>
+      <Tooltip open={show} onOpenChange={setShow}>
+        <TooltipTrigger
+          onFocus={() => setShow(true)}
+          onBlur={() => setShow(false)}
+          onMouseEnter={() => setShow(true)}
+          onMouseLeave={() => setShow(false)}
+          tabIndex={0}
+          className="truncate max-w-xs outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+          aria-label={text}
+        >
+          {text}
+        </TooltipTrigger>
+        <TooltipContent>{text}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function formatValor(valor: number) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 }
 
 const UnpaidProceduresPage = () => {
-  const [unpaidData, setUnpaidData] = useState<UnpaidStats | null>(null);
+  const [unpaidProcedures, setUnpaidProcedures] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedHospital, setSelectedHospital] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('urgency_desc');
-  const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  
+  const [contestationDialog, setContestationDialog] = useState(false);
+  const [selectedProcedure, setSelectedProcedure] = useState<any>(null);
+  const [contestationText, setContestationText] = useState('');
+  const [generated, setGenerated] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
+  
+  const { userProfile } = useAuth();
 
-  // SEO e Título Premium
-  usePageTitle({
-    title: 'Procedimentos Pendentes',
-    description:
-      'Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde',
-    keywords:
-      'procedimentos não pagos, pendências, honorários médicos, glosas, acompanhamento pagamentos',
-  });
+  // Event listeners para QuickActions (botão flutuante)
+  useEffect(() => {
+    const handleExportGlosas = () => {
+      // Exportar dados das glosas em CSV
+      if (unpaidProcedures && unpaidProcedures.length > 0) {
+        const csvData = unpaidProcedures.map(proc => ({
+          Data: proc.data,
+          Guia: proc.guia,
+          Beneficiario: proc.beneficiario,
+          Procedimento: proc.procedimento,
+          Valor: proc.valorApresentado,
+          Motivo: proc.motivoNaoPagamento,
+          'Dias Restantes': calcularDiasParaContestar(proc.data)
+        }));
 
-  const loadUnpaidData = async () => {
+        // Converter para CSV
+        const headers = Object.keys(csvData[0]);
+        const csvContent = [
+          headers.join(','),
+          ...csvData.map(row => 
+            headers.map(header => `"${row[header] || ''}"`).join(',')
+          )
+        ].join('\n');
+
+        // Download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `glosas_pendentes_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast.success('Dados exportados com sucesso!');
+      } else {
+        toast.info('Nenhuma glosa disponível para exportar');
+      }
+    };
+
+    const handleOpenBulkContest = () => {
+      // Funcionalidade de contestação em lote
+      if (unpaidProcedures && unpaidProcedures.length > 0) {
+        const procedimentosContestaveis = unpaidProcedures.filter(proc => {
+          const dias = calcularDiasParaContestar(proc.data);
+          return dias > 0; // Apenas procedimentos dentro do prazo
+        });
+
+        if (procedimentosContestaveis.length > 0) {
+          toast.info(`${procedimentosContestaveis.length} procedimentos podem ser contestados. Funcionalidade em desenvolvimento.`);
+        } else {
+          toast.warning('Nenhum procedimento está dentro do prazo para contestação (30 dias).');
+        }
+      } else {
+        toast.info('Nenhum procedimento disponível para contestação');
+      }
+    };
+
+    // Adicionar listeners
+    window.addEventListener('exportGlosas', handleExportGlosas);
+    window.addEventListener('openBulkContest', handleOpenBulkContest);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('exportGlosas', handleExportGlosas);
+      window.removeEventListener('openBulkContest', handleOpenBulkContest);
+    };
+  }, [unpaidProcedures]);
+
+  useEffect(() => {
+    const fetchUnpaidProcedures = async () => {
     setLoading(true);
+      setError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/v1/unpaid-procedures`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setUnpaidData(response.data);
-      toast.success('Dados atualizados!', {
-        description: `${response.data.unpaid_procedures} procedimentos pendentes encontrados`,
-      });
-    } catch (error) {
-      console.error('Erro ao carregar procedimentos não pagos:', error);
-      toast.error('Erro ao carregar dados', {
-        description: 'Não foi possível carregar os procedimentos não pagos.',
-      });
+        // 1. Buscar todos os demonstrativos
+        const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const demonstrativos = res.data || [];
+        // 2. Buscar detalhes de cada demonstrativo (em paralelo)
+        const detalhesAll = await Promise.all(
+          demonstrativos.map(async (d: any) => {
+            try {
+              const resDetalhes = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/${d.id}/detalhes`, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              return resDetalhes.data || [];
+            } catch {
+              return [];
+            }
+          })
+        );
+        // 3. Filtrar procedimentos glosados
+        const glosados = detalhesAll.flat().filter((p: any) => {
+          const glosa = Number(p.financial?.glosa ?? p.glosa) || 0;
+          return glosa > 0;
+        });
+        // 4. Mapear para o formato esperado pela tabela/dialog
+        const mapped = glosados.map((p: any, idx: number) => {
+          const beneficiario = p.beneficiario || 
+                              p.paciente || 
+                              p.patient_name || 
+                              p.nome_paciente || 
+                              p.nome_beneficiario || 
+                              p.beneficiary_name ||
+                              p.patient ||
+                              'Beneficiário não informado';
+          
+          // Debug log para verificar dados
+          if (!beneficiario || beneficiario === 'Beneficiário não informado') {
+            console.log('Dados do procedimento sem beneficiário:', p);
+          }
+          
+          return {
+            id: idx,
+            guia: p.guia ?? p.guide ?? '',
+            procedimento: p.descricao ?? p.description ?? '',
+            data: p.data ?? p.date ?? '',
+            valorApresentado: Number(p.financial?.presented_value ?? p.apresentado) || 0,
+            motivoNaoPagamento: p.motivo_glosa ?? p.motivoNaoPagamento ?? p.motivo ?? 'Glosa',
+            codigo_glosa: p.codigo_glosa ?? '',
+            motivo_glosa: p.motivo_glosa ?? '',
+            beneficiario,
+            hospital: p.hospital ?? p.prestador ?? '',
+            status: 'Pendente',
+          };
+        });
+        setUnpaidProcedures(mapped);
+      } catch (err) {
+        setError('Erro ao carregar procedimentos não pagos.');
+        setUnpaidProcedures([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadUnpaidData();
+    };
+    fetchUnpaidProcedures();
   }, []);
 
-  // Filtrar e ordenar dados
-  const filteredData = React.useMemo(() => {
-    if (!unpaidData?.unpaid_list) return [];
-
-    let filtered = unpaidData.unpaid_list.filter((proc) => {
-      const searchMatch =
-        searchTerm === '' ||
-        proc.beneficiario.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        proc.numero_guia.includes(searchTerm) ||
-        proc.codigo.includes(searchTerm) ||
-        proc.descricao.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const hospitalMatch =
-        selectedHospital === 'all' ||
-        (proc.prestador || '').toLowerCase().includes(selectedHospital.toLowerCase());
-
-      return searchMatch && hospitalMatch;
-    });
-
-    // Ordenação
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'urgency_desc':
-          const urgencyOrder = { high: 3, medium: 2, low: 1 };
-          return (
-            (urgencyOrder[b.urgency || 'low'] || 0) -
-            (urgencyOrder[a.urgency || 'low'] || 0)
-          );
-        case 'date_desc':
-          return new Date(b.data).getTime() - new Date(a.data).getTime();
-        case 'date_asc':
-          return new Date(a.data).getTime() - new Date(b.data).getTime();
-        case 'patient_asc':
-          return a.beneficiario.localeCompare(b.beneficiario);
-        case 'value_desc':
-          return (b.estimated_value || 0) - (a.estimated_value || 0);
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [unpaidData, searchTerm, selectedHospital, sortBy]);
-
-  // Obter lista única de hospitais/prestadores
-  const hospitals = React.useMemo(() => {
-    if (!unpaidData?.unpaid_list) return [];
-    const unique = [
-      ...new Set(unpaidData.unpaid_list.map((p) => p.prestador).filter(Boolean)),
-    ];
-    return unique.sort();
-  }, [unpaidData]);
-
-  const exportToExcel = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/v1/reports/generate?format=excel`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
-        }
-      );
-
-      const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `procedimentos-nao-pagos-${
-        new Date().toISOString().split('T')[0]
-      }.xlsx`;
-      link.click();
-
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Colunas otimizadas para evitar scroll horizontal
-  const columns = [
-    {
-      field: 'numero_guia',
-      headerName: 'Guia',
-      width: 100,
-      renderCell: ({ value }) => (
-        <span className="font-mono text-xs text-gray-800">{value}</span>
-      ),
-    },
+  const unpaidColumns = [
     {
       field: 'data',
       headerName: 'Data',
-      width: 85,
-      renderCell: ({ value }) => {
-        try {
-          const [day, month, year] = value.split('/');
-          const date = new Date(Number(year), Number(month) - 1, Number(day));
-          return (
-            <span className="text-xs text-gray-600">
-              {format(date, 'dd/MM', { locale: ptBR })}
-            </span>
-          );
-        } catch {
-          return <span className="text-xs text-gray-400">{value}</span>;
-        }
-      },
+      width: 90,
+      renderCell: ({ row }: any) => <span className="text-sm">{row.data}</span>
+    },
+    {
+      field: 'guia',
+      headerName: 'Guia',
+      width: 120,
+      renderCell: ({ row }: any) => <span className="text-sm font-mono">{row.guia}</span>
     },
     {
       field: 'beneficiario',
-      headerName: 'Paciente',
-      width: 150,
-      renderCell: ({ value }) => (
-        <span className="text-xs text-gray-800 truncate" title={value}>
-          {value}
-        </span>
-      ),
+      headerName: 'Beneficiário',
+      width: 180,
+      renderCell: ({ row }: any) => <TruncatedCell text={row.beneficiario} />
     },
     {
-      field: 'codigo',
-      headerName: 'Código',
-      width: 90,
-      renderCell: ({ value }) => (
-        <span className="font-mono text-xs text-blue-600">{value}</span>
-      ),
-    },
-    {
-      field: 'descricao',
+      field: 'procedimento',
       headerName: 'Procedimento',
-      width: 200,
-      renderCell: ({ value }) => (
-        <span className="text-xs text-gray-700 truncate" title={value}>
-          {value}
-        </span>
-      ),
+      width: 220,
+      renderCell: ({ row }: any) => <TruncatedCell text={row.procedimento} />
     },
     {
-      field: 'papel',
-      headerName: 'Função',
+      field: 'valorApresentado',
+      headerName: 'Valor',
       width: 100,
-      renderCell: ({ value }) => {
-        const roleColors = {
-          Cirurgião: 'bg-blue-50 text-blue-700 border-blue-200',
-          Cirurgiao: 'bg-blue-50 text-blue-700 border-blue-200',
-          Anestesista: 'bg-green-50 text-green-700 border-green-200',
-          'Primeiro Auxiliar': 'bg-amber-50 text-amber-700 border-amber-200',
-          '1º Auxiliar': 'bg-amber-50 text-amber-700 border-amber-200',
-          Auxiliar: 'bg-amber-50 text-amber-700 border-amber-200',
-        };
-        const color =
-          roleColors[value as keyof typeof roleColors] ||
-          'bg-gray-50 text-gray-700 border-gray-200';
-
-        return <Badge className={`text-xs px-2 py-0.5 ${color}`}>{value}</Badge>;
-      },
+      renderCell: ({ row }: any) => <span className="text-sm font-medium">{formatValor(row.valorApresentado)}</span>
     },
     {
-      field: 'estimated_value',
-      headerName: 'Valor Est.',
-      width: 90,
-      renderCell: ({ value }) => (
-        <span className="font-mono text-xs text-green-700 font-medium">
-          {value ? formatCurrency(value) : '--'}
-        </span>
-      ),
-    },
-    {
-      field: 'days_since',
-      headerName: 'Dias',
-      width: 70,
-      renderCell: ({ value, row }) => {
-        if (!value || value === 0)
-          return (
-            <Badge variant="outline" className="text-xs">
-              --
-            </Badge>
-          );
-
-        let badgeColor = 'bg-gray-50 text-gray-700 border-gray-200';
-        let icon = <Clock className="h-3 w-3" />;
-
-        if (value > 90) {
-          badgeColor = 'bg-red-50 text-red-700 border-red-200';
-          icon = <AlertTriangle className="h-3 w-3" />;
-        } else if (value > 60) {
-          badgeColor = 'bg-orange-50 text-orange-700 border-orange-200';
-          icon = <CalendarClock className="h-3 w-3" />;
-        } else if (value > 30) {
-          badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
-          icon = <Clock className="h-3 w-3" />;
-        }
-
-        return (
-          <Badge
-            className={`text-xs px-2 py-1 gap-1 ${badgeColor}`}
-            title={`Há ${value} dias`}
-          >
-            {icon}
-            {value}d
-          </Badge>
-        );
-      },
-    },
-    {
-      field: 'urgency',
-      headerName: 'Status',
-      width: 90,
-      renderCell: ({ value, row }) => {
-        const days = row.days_since || 0;
-
-        if (days > 90) {
-          return (
-            <Badge variant="destructive" className="gap-1 text-xs">
-              <TrendingDown className="h-3 w-3" />
-              Crítico
-            </Badge>
-          );
-        } else if (days > 60) {
-          return (
-            <Badge className="gap-1 text-xs bg-orange-50 text-orange-700 border-orange-200">
-              <AlertTriangle className="h-3 w-3" />
-              Alto
-            </Badge>
-          );
-        } else if (days > 30) {
-          return (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              <Clock className="h-3 w-3" />
-              Médio
-            </Badge>
-          );
-        } else {
-          return (
-            <Badge variant="outline" className="gap-1 text-xs">
-              <CheckCircle className="h-3 w-3" />
-              Normal
-            </Badge>
-          );
-        }
-      },
-    },
-    {
-      field: 'prestador',
-      headerName: 'Hospital',
+      field: 'motivoNaoPagamento',
+      headerName: 'Motivo',
       width: 120,
-      renderCell: ({ value }) => (
-        <span className="text-xs text-gray-600 truncate" title={value}>
-          {value || '--'}
-        </span>
-      ),
+      renderCell: ({ row }: any) => (
+        <Badge variant="destructive" className="text-xs">
+          {row.motivoNaoPagamento}
+        </Badge>
+      )
     },
+    {
+      field: 'dias_contestar',
+      headerName: 'Prazo',
+      width: 100,
+      renderCell: ({ row }: any) => {
+        const dias = calcularDiasParaContestar(row.data);
+        return <PrazoBadge dias={dias} />;
+      }
+    },
+        {
+      field: 'actions',
+      headerName: 'Contestação',
+      width: 120,
+      renderCell: ({ row }: any) => {
+        const dias = calcularDiasParaContestar(row.data);
+        const isExpired = dias <= 0;
+        
+        return (
+          <Button
+            size="sm"
+            variant={isExpired ? "destructive" : "default"}
+            onClick={() => handleContestation(row)}
+            className={`h-8 px-2 text-xs font-medium gap-1 ${
+              isExpired ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            <Shield className="w-3 h-3" />
+            {isExpired ? 'Expirado' : 'Contestar'}
+          </Button>
+        );
+      }
+    }
   ];
 
-  if (loading) {
-    return (
-      <>
-        <Helmet>
-          <title>Procedimentos Pendentes | MedCheck</title>
-          <meta
-            name="description"
-            content="Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde"
-          />
-        </Helmet>
+  const handleContestation = (procedure: any) => {
+    const dias = calcularDiasParaContestar(procedure.data);
+    setSelectedProcedure({ ...procedure, diasRestantes: dias });
+    setContestationDialog(true);
+    setGenerated(false);
+    setContestationText('');
+    setCopiedText(false);
+  };
 
-        <AuthenticatedLayout
-          title="Procedimentos Pendentes"
-          description="Controle de pagamentos pendentes"
-          isLoading={true}
-          loadingMessage="Analisando procedimentos pendentes..."
-        />
-      </>
+  const generateLegalContestation = (procedure: any) => {
+    const dataFormatada = new Date().toLocaleDateString('pt-BR');
+    const isExpired = procedure.diasRestantes <= 0;
+    
+    return `À Operadora/Convênio
+
+Ref.: Contestação de Glosa – Guia nº ${procedure.guia}, Procedimento ${procedure.procedimento}${
+      procedure.codigo_glosa ? `, Código de Glosa: ${procedure.codigo_glosa}` : ''
+    }
+
+Prezados,
+
+Venho, na qualidade de médico responsável, apresentar contestação à glosa aplicada ao procedimento acima identificado, conforme demonstrativo recebido.
+
+DADOS DO PROCEDIMENTO:
+- Guia: ${procedure.guia}
+- Beneficiário: ${procedure.beneficiario}
+- Procedimento: ${procedure.procedimento}
+- Data de Execução: ${procedure.data || '[data não informada]'}
+- Valor Apresentado: ${formatValor(procedure.valorApresentado)}
+- Hospital/Local: ${procedure.hospital || '[não informado]'}
+
+MOTIVO DA GLOSA INFORMADO PELA OPERADORA:
+${procedure.codigo_glosa ? `${procedure.codigo_glosa} - ` : ''}${
+      procedure.motivo_glosa || procedure.motivoNaoPagamento || '[motivo não informado]'
+    }
+
+FUNDAMENTAÇÃO TÉCNICA E LEGAL:
+Conforme previsto no contrato firmado entre as partes, bem como na legislação vigente (Lei 13.003/2014, Lei 9.656/98, Lei 8.080/90, RN 503/2022, RN 630/2025 e demais normas da ANS), o procedimento foi realizado de acordo com as diretrizes clínicas, administrativas e contratuais, estando devidamente autorizado, documentado e comprovado.
+
+Reforço o direito ao contraditório e à ampla defesa, conforme garantido pela legislação e regulamentação da ANS, solicitando análise criteriosa do recurso.
+
+ARGUMENTAÇÃO ESPECÍFICA:
+O procedimento médico foi executado conforme protocolo clínico estabelecido, com indicação técnica adequada e documentação completa. A glosa aplicada não encontra respaldo nas normas contratuais ou na legislação da saúde suplementar, constituindo-se em negativa indevida de cobertura.
+
+Considerando que o procedimento está previsto no Rol de Procedimentos da ANS e foi realizado por profissional habilitado, dentro das indicações clínicas apropriadas, solicito a revisão imediata da glosa aplicada.
+
+${isExpired ? `
+OBSERVAÇÃO IMPORTANTE:
+Este procedimento foi realizado há mais de 30 dias. Embora mantenha-se o direito à contestação conforme legislação vigente, recomenda-se celeridade na análise devido ao tempo decorrido.
+` : ''}
+
+SOLICITAÇÃO:
+Diante do exposto, solicito a revisão da glosa aplicada e o consequente pagamento integral do valor devido, no montante de ${formatValor(procedure.valorApresentado)}, anexando os documentos comprobatórios necessários.
+
+Atenciosamente,
+
+_____________________________________
+Dr(a). ${userProfile?.name || '[NOME DO MÉDICO]'}
+CRM: ${userProfile?.crm || '[NÚMERO]'} - [UF]
+Data: ${dataFormatada}
+
+Anexos:
+- Cópia da guia de procedimento
+- Documentação médica pertinente
+- Comprovante de execução do procedimento`;
+  };
+
+  const handleGenerateContestation = () => {
+    if (!selectedProcedure) return;
+    
+    const text = generateLegalContestation(selectedProcedure);
+    setContestationText(text);
+    setGenerated(true);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(contestationText);
+      setCopiedText(true);
+      setTimeout(() => setCopiedText(false), 2000);
+      toast.success('Texto copiado para a área de transferência');
+    } catch (error) {
+      toast.error('Erro ao copiar texto');
+      console.error('Erro ao copiar para o clipboard:', error);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      doc.setFont('helvetica');
+      doc.setFontSize(12);
+      
+      // Configurar margens e quebra de linha
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      const maxWidth = pageWidth - 2 * margin;
+      
+      const splitText = doc.splitTextToSize(contestationText, maxWidth);
+      doc.text(splitText, margin, margin);
+      
+      doc.save(
+        `contestacao-glosa-${selectedProcedure.guia}-${new Date().toISOString().split('T')[0]}.pdf`
+      );
+      toast.success('PDF baixado com sucesso');
+    } catch (error) {
+      toast.error('Erro ao gerar PDF');
+      console.error('Erro ao gerar PDF:', error);
+    }
+  };
+
+  const handleDownloadText = () => {
+    try {
+      const element = document.createElement('a');
+      const file = new Blob([contestationText], { type: 'text/plain;charset=utf-8' });
+      element.href = URL.createObjectURL(file);
+      element.download = `contestacao-glosa-${selectedProcedure.guia}-${
+        new Date().toISOString().split('T')[0]
+      }.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      toast.success('Arquivo de texto baixado com sucesso');
+    } catch (error) {
+      toast.error('Erro ao baixar arquivo de texto');
+      console.error('Erro ao baixar arquivo de texto:', error);
+    }
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Contestação de Glosa - ${selectedProcedure.guia}</title>
+            <style>
+              body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; margin: 20px; }
+              pre { white-space: pre-wrap; }
+            </style>
+          </head>
+          <body>
+            <pre>${contestationText}</pre>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  if (loading) {
+  return (
+      <AuthenticatedLayout
+        title="Procedimentos Não Pagos"
+        description="Procedimentos que aguardam confirmação de pagamento"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  </div>
+      </AuthenticatedLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AuthenticatedLayout
+        title="Procedimentos Não Pagos"
+        description="Procedimentos que aguardam confirmação de pagamento"
+      >
+        <div className="flex flex-col items-center justify-center h-64">
+          <FileX className="w-12 h-12 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">{error}</p>
+                  </div>
+      </AuthenticatedLayout>
     );
   }
 
   return (
-    <>
-      <Helmet>
-        <title>Procedimentos Pendentes | MedCheck</title>
-        <meta
-          name="description"
-          content="Acompanhe procedimentos realizados que ainda não foram pagos pelos planos de saúde"
-        />
-        <meta
-          name="keywords"
-          content="procedimentos não pagos, pendências, honorários médicos, glosas, acompanhamento pagamentos"
-        />
+    <AuthenticatedLayout
+      title="Procedimentos Não Pagos"
+      description="Procedimentos que aguardam confirmação de pagamento"
+    >
+      {/* Background com Gradiente Médico Consistente */}
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+        <div className="space-y-8 px-4 sm:px-6 lg:px-8">
+          {/* Header Discreto Seguindo Padrão Dashboard */}
+          <div className="text-center space-y-3 pt-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
+              <AlertTriangle className="h-4 w-4 text-orange-700" />
+              <span className="text-xs font-medium text-orange-800">
+                Auditoria de pagamentos
+              </span>
+            </div>
 
-        {/* Open Graph */}
-        <meta property="og:title" content="Procedimentos Pendentes | MedCheck" />
-        <meta
-          property="og:description"
-          content="Gestão de procedimentos pendentes de pagamento"
-        />
-        <meta property="og:type" content="website" />
-      </Helmet>
+            <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
+              Procedimentos Não Pagos
+            </h1>
 
-      <AuthenticatedLayout
-        title="Procedimentos Pendentes"
-        description="Acompanhe procedimentos que aguardam confirmação de pagamento"
-      >
-        <div className="space-y-6">
-          {/* Card Principal */}
-          <Card className="bg-white shadow-sm border-gray-200">
-            <CardHeader className="pb-4 border-b border-gray-100">
-              <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-                <div>
-                  <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
-                    Procedimentos Pendentes
-                    {unpaidData && (
-                      <Badge variant="secondary" className="ml-2 text-xs">
-                        {unpaidData.unpaid_procedures} pendentes
-                      </Badge>
-                    )}
-                    {unpaidData && unpaidData.oldest_procedure_days > 30 && (
-                      <Badge variant="destructive" className="ml-2 text-xs">
-                        {unpaidData.oldest_procedure_days > 90 ? 'CRÍTICO' : 'EXPIRADO'}
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600">
-                    {filteredData.length} procedimentos encontrados
-                    {unpaidData && unpaidData.total_patients > 0 && (
-                      <span className="ml-2 text-brand-600">
-                        • {unpaidData.total_patients} pacientes
-                      </span>
-                    )}
-                    {unpaidData && unpaidData.total_estimated_value > 0 && (
-                      <span className="ml-2 text-trust-600">
-                        • {formatCurrency(unpaidData.total_estimated_value)} estimado
-                      </span>
-                    )}
-                    {unpaidData && unpaidData.oldest_procedure_days > 30 && (
-                      <span className="ml-2 text-red-600">
-                        • Mais antigo: {unpaidData.oldest_procedure_days} dias
-                      </span>
-                    )}
-                  </CardDescription>
-                </div>
+            <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              Central de monitoramento e contestação de procedimentos pendentes de pagamento
+              com análise jurídica automatizada
+            </p>
+          </div>
 
-                <div className="flex items-center gap-3">
-                  <Button onClick={loadUnpaidData} variant="outline" size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Atualizar
-                  </Button>
-                  <Button
-                    onClick={exportToExcel}
-                    size="sm"
-                    className="bg-medical-600 hover:bg-medical-700 text-white"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
+          <InfoCard
+            icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
+            title="Procedimentos Contestáveis"
+            value={unpaidProcedures.length}
+            description="Conteste em até 30 dias para garantir a análise pelo convênio"
+            variant="warning"
+            className="w-full mb-4"
+          />
+          
+          <div className="flex gap-2 self-end">
+            <Button variant="outline" size="sm">
+              <Filter className="w-4 h-4 mr-2" />
+              Filtrar
+            </Button>
+            <Button variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              Exportar
+            </Button>
+          </div>
 
-            <CardContent className="p-6">
-              {/* Filtros Simplificados */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Paciente, guia, código..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                <div className="pt-2">
+          <DataGrid
+            rows={unpaidProcedures}
+            columns={unpaidColumns}
+            className="w-full"
+            wrapperScrollable={false}
                   />
-                </div>
-
-                <Select value={selectedHospital} onValueChange={setSelectedHospital}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos os hospitais" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os hospitais</SelectItem>
-                    {hospitals.map((hospital) => (
-                      <SelectItem key={hospital} value={hospital}>
-                        {hospital}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Ordenação" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="urgency_desc">Prioridade (alta)</SelectItem>
-                    <SelectItem value="date_desc">Data (mais recente)</SelectItem>
-                    <SelectItem value="date_asc">Data (mais antiga)</SelectItem>
-                    <SelectItem value="patient_asc">Paciente (A-Z)</SelectItem>
-                    <SelectItem value="value_desc">Valor (maior)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Alerta para procedimentos críticos */}
-              {unpaidData && unpaidData.oldest_procedure_days > 90 && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-red-600" />
-                    <span className="font-medium text-red-800">
-                      Atenção: Procedimentos Críticos Detectados
-                    </span>
                   </div>
-                  <p className="text-sm text-red-700 mt-1">
-                    Há procedimentos com mais de 90 dias sem pagamento. Recomenda-se
-                    entrar em contato com os convênios.
-                  </p>
-                </div>
-              )}
 
-              {/* DataGrid Otimizado */}
-              <div className="w-full overflow-hidden border border-gray-200 rounded-lg bg-white">
-                <DataGrid
-                  rows={filteredData.map((item, index) => ({ id: index, ...item }))}
-                  columns={columns}
-                  pageSize={20}
-                  className="border-0"
-                  paginationLabel="Procedimentos por página:"
-                  rowsPerPageOptions={[10, 20, 50]}
-                />
+                {/* Dialog de Contestação Profissional */}
+        <Dialog open={contestationDialog} onOpenChange={setContestationDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                Formulário de Contestação de Glosa
+              </DialogTitle>
+              <DialogDescription>
+                Documento jurídico fundamentado para contestação profissional
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedProcedure && (
+              <div className="space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {/* Informações do Procedimento */}
+                <div className="grid gap-4 border-b pb-4">
+                  <h3 className="text-lg font-semibold">Informações do Procedimento</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Guia</p>
+                      <p className="font-medium">{selectedProcedure.guia}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">CRM Médico</p>
+                      <p className="font-medium">{userProfile?.crm || 'N/A'} - [UF]</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Beneficiário</p>
+                      <p className="font-medium">{selectedProcedure.beneficiario}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground">Procedimento</p>
+                    <p className="font-medium">{selectedProcedure.procedimento}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Valor Apresentado</p>
+                      <p className="font-medium text-lg text-primary">
+                        {formatValor(selectedProcedure.valorApresentado)}
+                      </p>
+            </div>
+                <div>
+                      <p className="text-sm text-muted-foreground">Motivo da Glosa</p>
+                      <Badge variant="destructive" className="mt-1">
+                        {selectedProcedure.motivoNaoPagamento}
+                    </Badge>
+                </div>
+                  </div>
               </div>
 
-              {/* Estado Vazio */}
-              {filteredData.length === 0 && !loading && (
-                <div className="text-center py-12">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Nenhum procedimento pendente
-                  </h3>
-                  <p className="text-gray-600 max-w-sm mx-auto">
-                    Todos os seus procedimentos foram processados e pagos pelos
-                    convênios.
-                  </p>
-                  <Button onClick={loadUnpaidData} variant="outline" className="mt-4">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Verificar novamente
-                  </Button>
+                {/* Alerta de Prazo */}
+                {selectedProcedure.diasRestantes <= 0 ? (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-800">
+                        <div className="font-medium mb-1">⚠️ Prazo Expirado</div>
+                      <div>
+                          Este procedimento foi realizado há mais de 30 dias. A contestação 
+                          permanece válida legalmente, mas recomenda-se celeridade na tramitação 
+                          devido ao tempo decorrido.
+                        </div>
+                      </div>
+                  </div>
+                </div>
+                ) : (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-5 w-5 text-green-600" />
+                      <div className="text-sm text-green-800">
+                        <strong>✅ Dentro do Prazo:</strong> {selectedProcedure.diasRestantes} dias restantes para contestação otimizada
+                      </div>
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+
+                {/* Geração e Edição do Documento */}
+                {!generated ? (
+                  <div className="text-center py-6">
+                    <Button
+                      onClick={handleGenerateContestation}
+                      size="lg"
+                      className="w-full max-w-md"
+                    >
+                      <FileText className="w-5 h-5 mr-2" />
+                      Gerar Contestação Jurídica Automática
+                    </Button>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Documento fundamentado nas normas ANS e legislação vigente
+                    </p>
+                </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">📋 Documento Gerado</h4>
+                      <p className="text-sm text-blue-800">
+                        Contestação fundamentada juridicamente. Revise o texto abaixo e 
+                        personalize conforme necessário antes de enviar à operadora.
+                      </p>
         </div>
-      </AuthenticatedLayout>
-    </>
+                    
+                    <Textarea
+                      className="h-[400px] font-mono text-sm bg-white border-2"
+                      value={contestationText}
+                      onChange={(e) => setContestationText(e.target.value)}
+                      placeholder="Texto da contestação será gerado aqui..."
+                    />
+                    
+                    {/* Botões de Ação */}
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+                      <Button
+                        onClick={handleCopy}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        {copiedText ? (
+                          <>
+                            <Copy className="mr-2 h-4 w-4 text-green-500" />
+                            Copiado!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copiar Texto
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        onClick={handleDownloadText}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Baixar .TXT
+                      </Button>
+                      
+                      <Button
+                        onClick={handleDownloadPDF}
+                        className="flex-1"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Baixar PDF
+                      </Button>
+                      
+                      <Button
+                        onClick={handlePrint}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimir
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+        </div>
+      </div>
+    </AuthenticatedLayout>
   );
 };
 
 export default UnpaidProceduresPage;
+
+export { calcularDiasParaContestar };

@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import axios from 'axios';
+import { ApiService } from '../../services/api';
 import { AuthContextProps } from './types';
 import { toast } from 'sonner';
 

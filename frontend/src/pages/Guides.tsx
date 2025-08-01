@@ -61,6 +61,7 @@ import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
 import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 import { buildApiUrl } from '../config/api';
 import { FeatureCard } from '../components/ui/FeatureCard';
+import { exportSimpleGuidesReport } from '../services/exportService';
 import {
   Pagination,
   PaginationContent,
@@ -788,6 +789,41 @@ const GuidesPage = () => {
     setFilterUpdateTrigger((prev) => prev + 1);
   }, []);
 
+  // Função para exportar relatório em PDF
+  const handleExportPDF = useCallback(() => {
+    try {
+      // Verificar se há dados para exportar
+      if (!filteredGuides || filteredGuides.length === 0) {
+        toast.error('Nenhuma guia disponível para exportar');
+        return;
+      }
+
+      // Preparar dados para export
+      const guidesForExport = rawProcedures.map(procedure => ({
+        numero_guia: procedure.guia || '-',
+        data: procedure.data || '-',
+        paciente: procedure.beneficiario || procedure.paciente || '-',
+        codigo: procedure.codigo || '-',
+        descricao: procedure.descricao || '-',
+        papel: procedure.papel || procedure.funcao || '-',
+        qtd: procedure.qtd || 1,
+        valorEstimado: procedure.valorCBHPM || procedure.valorTabela2015 || 0,
+        prestador: procedure.prestador || '-'
+      }));
+
+      toast.loading('Gerando relatório PDF...', { id: 'pdf-export' });
+      
+      // Exportar usando o serviço
+      exportSimpleGuidesReport(guidesForExport, 'relatorio-guias-medicas');
+      
+      toast.success('Relatório PDF gerado com sucesso!', { id: 'pdf-export' });
+      
+    } catch (error: any) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao gerar relatório PDF. Tente novamente.', { id: 'pdf-export' });
+    }
+  }, [filteredGuides, rawProcedures]);
+
   // Carregamento de guias
   const loadGuides = useCallback(async () => {
     setLoading(true);
@@ -964,6 +1000,44 @@ const GuidesPage = () => {
   useEffect(() => {
     loadGuides();
   }, [loadGuides]);
+
+  // Event listeners para QuickActions (botão flutuante)
+  useEffect(() => {
+    const handleOpenGuideUpload = () => {
+      // Simular clique no input de upload
+      const fileInput = document.querySelector('input[type="file"][accept*=".pdf"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    };
+
+    const handleExportGuidesCSV = () => {
+      // Usar função de export existente
+      if (guides && guides.length > 0) {
+        const guidesForExport = guides.map(guide => ({
+          numero_guia: guide.numero_guia,
+          data: guide.data,
+          beneficiario: guide.beneficiario,
+          qtdProcedimentos: guide.qtdProcedimentos,
+          smart_status: guide.smart_status
+        }));
+        exportSimpleGuidesReport(guidesForExport, 'guias-medicas-completo');
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.info('Nenhuma guia disponível para exportar');
+      }
+    };
+
+    // Adicionar listeners
+    window.addEventListener('openGuideUpload', handleOpenGuideUpload);
+    window.addEventListener('exportGuidesCSV', handleExportGuidesCSV);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('openGuideUpload', handleOpenGuideUpload);
+      window.removeEventListener('exportGuidesCSV', handleExportGuidesCSV);
+    };
+  }, [guides]);
 
   // Filtros aplicados
   useEffect(() => {
@@ -1354,6 +1428,8 @@ const GuidesPage = () => {
                   Sistema TISS Oficial
                 </Badge>
 
+                {/* Botões removidos conforme solicitado */}
+                {/*
                 <Button
                   variant="outline"
                   size="sm"
@@ -1374,6 +1450,7 @@ const GuidesPage = () => {
                   <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                   Atualizar
                 </Button>
+                */}
               </div>
             </div>
 
@@ -1527,9 +1604,7 @@ const GuidesPage = () => {
                       icon={<FileText className="h-full w-full" />}
                       size="compact"
                       priority="medium"
-                      onClick={() => {
-                        toast.success('Relatório sendo gerado...');
-                      }}
+                      onClick={handleExportPDF}
                     />
                     <FeatureCard
                       title="Sincronizar Dados"

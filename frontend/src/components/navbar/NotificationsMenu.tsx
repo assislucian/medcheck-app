@@ -91,7 +91,7 @@ export const NotificationsMenu = () => {
             asChild
             onClick={() => setOpen(false)}
           >
-            <Link to="/notifications">Ver todas as notificações</Link>
+            <span>Notificações do sistema</span> {/* Link temporariamente removido */}
           </Button>
         </div>
       </DropdownMenuContent>

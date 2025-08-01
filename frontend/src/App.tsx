@@ -185,7 +185,12 @@ const App: React.FC = () => {
       <ErrorBoundary>
         <LoadingProvider>
           <TooltipProvider>
-            <Router>
+            <Router
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
               <AuthProvider>
                 <PerformanceMonitor />
 
@@ -366,6 +371,7 @@ const App: React.FC = () => {
                             }
                           />
 
+                          {/* Route temporariamente desabilitada
                           <Route
                             path="/notifications"
                             element={
@@ -374,6 +380,7 @@ const App: React.FC = () => {
                               </RouteWrapper>
                             }
                           />
+                          */}
 
                           <Route
                             path="/upgrade-enterprise"

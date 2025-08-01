@@ -21,11 +21,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://medcheck-backend.onrender.com',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
       '/token': {
-        target: 'https://medcheck-backend.onrender.com',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },

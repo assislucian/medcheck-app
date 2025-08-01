@@ -111,11 +111,7 @@ const LoginForm = () => {
             <SelectCustom
               id="uf"
               value={uf}
-              onChange={handleUfChange}          // <select> nativo
-              // @ts-ignore - algumas libs tipam diferente
-              onValueChange={handleUfChange}     // Radix Select
-              // @ts-ignore
-              onSelectionChange={handleUfChange} // fallback para wrappers
+              onChange={handleUfChange}
               placeholder="Selecione seu estado"
               disabled={isLoading}
             >

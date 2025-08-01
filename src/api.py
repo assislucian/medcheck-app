@@ -3261,6 +3261,62 @@ def get_payment_status(guia_number: str, user: dict = Depends(get_current_user))
         db.close()
 
 
+@app.get("/api/v1/reports/export")
+def export_report(
+    format: str = "excel", period: str = None, user: dict = Depends(get_current_user)
+):
+    """
+    Exporta relatório de procedimentos, pagamentos e glosas em Excel, PDF ou JSON.
+    """
+    return generate_report(format, period, user)
+
+@app.get("/api/v1/reports/dashboard")
+def get_reports_dashboard(user: dict = Depends(get_current_user)):
+    """
+    Endpoint consolidado para a página de relatórios com todos os dados necessários.
+    """
+    crm = user.get("crm")
+    uf = user.get("uf")
+
+    if not crm or not uf:
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    try:
+        # Buscar dados dos endpoints existentes com tratamento de erro
+        try:
+            demonstrativos_data = list_demonstrativos(user)
+        except Exception as e:
+            logger.warning(f"Erro ao buscar demonstrativos: {e}")
+            demonstrativos_data = []
+            
+        try:
+            guias_data = list_guias(page=1, pageSize=1000, user=user)
+        except Exception as e:
+            logger.warning(f"Erro ao buscar guias: {e}")
+            guias_data = {"procedures": [], "payment_analytics": {}, "total": 0}
+            
+        try:
+            unpaid_data = get_unpaid_procedures(user)
+        except Exception as e:
+            logger.warning(f"Erro ao buscar unpaid procedures: {e}")
+            unpaid_data = {"unpaid_list": [], "unpaid_procedures": 0}
+
+        return {
+            "demonstrativos": demonstrativos_data,
+            "procedures": guias_data.get("procedures", []),
+            "unpaid_procedures": unpaid_data.get("unpaid_list", []),
+            "analytics": guias_data.get("payment_analytics", {}),
+            "summary": {
+                "total_demonstrativos": len(demonstrativos_data) if isinstance(demonstrativos_data, list) else 0,
+                "total_procedures": guias_data.get("total", 0),
+                "unpaid_count": unpaid_data.get("unpaid_procedures", 0),
+                "crosscheck_coverage": guias_data.get("payment_analytics", {}).get("crosscheck_coverage", 0)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Erro ao buscar dados do dashboard de relatórios: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno do servidor")
+
 @app.get("/api/v1/reports/generate")
 def generate_report(
     format: str = "excel", period: str = None, user: dict = Depends(get_current_user)

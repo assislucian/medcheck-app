@@ -4,4 +4,7 @@ export {
   exportReportToExcel,
   exportToTissXML,
   exportToFHIR,
+  exportGuidesToPDF,
+  exportSimpleGuidesReport,
+  exportDetailedGuidesReport,
 } from './export';

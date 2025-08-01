@@ -77,6 +77,8 @@ export function useDashboardStats() {
           },
           procedures: mappedProcedures,
           glosas: payload.glosas || [],
+          hasData: payload.hasData,
+          message: payload.message,
         };
       } catch (error: any) {
         console.error('Erro ao carregar dados:', error);

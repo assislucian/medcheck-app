@@ -87,13 +87,17 @@ export interface DashboardStats {
   totals: {
     totalRecebido: number;
     totalGlosado: number;
-    totalRecuperado: number;
-    potencialRecuperacao: number;
-    tempoEconomizado: number;
-    taxaSucesso: number;
+    totalRecuperado?: number;
+    potencialRecuperacao?: number;
+    tempoEconomizado?: number;
+    taxaSucesso?: number;
+    totalProcedimentos?: number;
+    auditoriaPendente?: number;
   };
   procedures: Procedure[];
   glosas: any[];
+  hasData?: boolean;
+  message?: string;
 }
 
 export interface InfoCardProps {

@@ -135,7 +135,38 @@ const ReportsPage = () => {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Carregar dados em paralelo dos endpoints existentes
+      // Tentar usar o endpoint consolidado primeiro, com fallback para múltiplas chamadas
+      try {
+        console.log('🔄 Carregando dados do dashboard de relatórios...');
+        
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/v1/reports/dashboard`, 
+          { headers }
+        );
+
+        if (response.data) {
+          console.log('✅ Dados carregados do endpoint consolidado');
+          setData({
+            demonstrativos: Array.isArray(response.data.demonstrativos) ? response.data.demonstrativos : [],
+            procedures: Array.isArray(response.data.procedures) ? response.data.procedures : [],
+            unpaid_procedures: Array.isArray(response.data.unpaid_procedures) ? response.data.unpaid_procedures : [],
+            analytics: response.data.analytics || {
+              total_demonstrativos: 0,
+              total_paid_procedures: 0,
+              total_glosa_procedures: 0,
+              total_partial_payments: 0,
+              total_glosa_value: 0,
+              total_paid_value: 0,
+              crosscheck_coverage: 0,
+            },
+          });
+          return;
+        }
+      } catch (consolidatedError) {
+        console.warn('⚠️ Endpoint consolidado falhou, usando endpoints individuais:', consolidatedError.message);
+      }
+
+      // Fallback: Carregar dados em paralelo dos endpoints existentes
       const [demonstrativosRes, guidesRes, unpaidRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_URL}/api/v1/demonstrativos`, { headers }),
         axios.get(`${import.meta.env.VITE_API_URL}/api/v1/guias?page=1&pageSize=1000`, {
@@ -146,8 +177,7 @@ const ReportsPage = () => {
         }),
       ]);
 
-      // Verificar formato dos dados retornados para debug se necessário
-      // console.log('🔍 [DEBUG] Demonstrativos response:', demonstrativosRes.data);
+      console.log('✅ Dados carregados via endpoints individuais');
 
       // O endpoint /api/v1/demonstrativos retorna uma lista direta, não um objeto
       const demonstrativosList = Array.isArray(demonstrativosRes.data)
@@ -180,8 +210,24 @@ const ReportsPage = () => {
         },
       });
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
+      console.error('❌ Erro ao carregar dados dos relatórios:', error);
       toast.error('Erro ao carregar dados dos relatórios');
+      
+      // Set dados vazios em caso de erro total
+      setData({
+        demonstrativos: [],
+        procedures: [],
+        unpaid_procedures: [],
+        analytics: {
+          total_demonstrativos: 0,
+          total_paid_procedures: 0,
+          total_glosa_procedures: 0,
+          total_partial_payments: 0,
+          total_glosa_value: 0,
+          total_paid_value: 0,
+          crosscheck_coverage: 0,
+        },
+      });
     } finally {
       setLoading(false);
     }

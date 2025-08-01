@@ -1,65 +1,80 @@
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
-import { DashboardOverview } from '../components/dashboard/DashboardOverview';
-import { DashboardAlert } from '../components/dashboard/DashboardAlert';
-import PageHeader from '../components/layout/PageHeader';
 import { useAuth } from '../contexts/auth/AuthContext';
-
-import {
-  LayoutDashboard,
-  ArrowUpRight,
-  AlertCircle,
-  FileText,
-  ClipboardList,
-  TrendingUp,
-  CheckCircle,
-  Calendar,
-  Target,
-  Clock,
-  DollarSign,
-  Activity,
-  Zap,
-  AlertTriangle,
-  ChevronRight,
-  Brain,
-  Upload,
-  BarChart3,
-  FileBarChart,
-  Search,
-  Plus,
-  Eye,
-  Stethoscope,
-  Shield,
-  TrendingDown,
-} from 'lucide-react';
-import { InfoCard } from '../components/ui/InfoCard';
-import { formatCurrency, formatPercentage } from '../utils/format';
 import { useDashboardStats } from '../hooks/use-dashboard-stats';
-import { usePageTitle } from '../hooks/usePageTitle';
-
-import { Loader2 } from 'lucide-react';
-import { Procedure } from '../types/medical';
-import { RecoveryProgressCard } from '../components/dashboard/RecoveryProgressCard';
+import { usePageSetup } from '../hooks/usePageSetup';
+import { DashboardHeader } from '../components/dashboard/DashboardHeader';
+import { DashboardStats } from '../components/dashboard/DashboardStats';
+import { DashboardActions } from '../components/dashboard/DashboardActions';
 import { Button } from '../components/ui/button';
 import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
-import { RevenuePieChart } from '../components/dashboard/RevenuePieChart';
-import { AnimatedNumber } from '../components/ui/AnimatedNumber';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
+import { AlertCircle, BarChart3, Brain, ChevronRight, Search, Target, Upload, Shield, FileText, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Card, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 const DashboardPage = () => {
-  const { userProfile, signOut } = useAuth();
+  const { userProfile } = useAuth();
   const { data: stats, isLoading, isError } = useDashboardStats();
 
-  // SEO e Título Premium
-  usePageTitle({
-    title: 'Minha Prática Médica',
-    description:
-      'Acompanhe seus honorários, glosas e demonstrativos de forma clara e organizada. Sua gestão médica simplificada.',
-    keywords:
-      'honorários médicos, glosas planos de saúde, demonstrativos pagamento, gestão médica, auditoria médica',
-  });
+  // SEO unificado
+  usePageSetup('dashboard');
+
+  // Event listeners para QuickActions (botão flutuante)
+  useEffect(() => {
+    const handleUploadDocuments = () => {
+      // Redirecionar para página de guias onde o upload pode ser feito
+      window.location.href = '/guides';
+    };
+
+    const handleExportDashboardCSV = () => {
+      // Exportar dados do dashboard
+      if (stats && stats.procedures && stats.procedures.length > 0) {
+        const csvData = stats.procedures.map(proc => ({
+          'Código': proc.codigo,
+          'Descrição': proc.descricao,
+          'Valor CBHPM': proc.valorCBHPM || 0,
+          'Valor Pago': proc.valorPago || 0,
+          'Status': proc.pago ? 'Pago' : 'Pendente',
+          'Data': new Date().toLocaleDateString('pt-BR')
+        }));
+
+        // Converter para CSV
+        const headers = Object.keys(csvData[0]);
+        const csvContent = [
+          headers.join(','),
+          ...csvData.map(row => 
+            headers.map(header => `"${row[header] || ''}"`).join(',')
+          )
+        ].join('\n');
+
+        // Download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dashboard_medcheck_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast.success('Dados do dashboard exportados com sucesso!');
+      } else {
+        toast.info('Nenhum dado disponível para exportar');
+      }
+    };
+
+    // Adicionar listeners
+    window.addEventListener('exportGuidesCSV', handleExportDashboardCSV);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('exportGuidesCSV', handleExportDashboardCSV);
+    };
+  }, [stats]);
 
   const backendTotals = stats?.totals;
   const totals = {
@@ -86,11 +101,14 @@ const DashboardPage = () => {
   const valorMedioRecebido =
     procedimentosPagos > 0 ? totals.totalRecebido / procedimentosPagos : 0;
 
+  // Verificar se há dados para mostrar mensagens adequadas
+  const hasData = stats?.hasData === true; // Só considera que tem dados se explicitamente for true
+  
   // Status e alertas inteligentes - ajustados para realidade brasileira
   const temGlosasCriticas = totals.totalGlosado > totals.totalRecebido * 0.15; // > 15%
   const taxaSucessoBaixa = taxaSucesso < 85;
   const poucosAnalisados = totals.totalProcedimentos < 5;
-  const needsAttention = temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados;
+  const needsAttention = hasData && (temGlosasCriticas || taxaSucessoBaixa || poucosAnalisados);
 
   return (
     <>
@@ -134,25 +152,12 @@ const DashboardPage = () => {
           description="Acompanhe seus honorários, glosas e pendências de forma clara e organizada. Sua gestão médica simplificada."
         >
           <div className="space-y-12 px-4 sm:px-6 lg:px-8">
-            {/* Header Humanizado para Médicos Brasileiros */}
-            <div className="text-center space-y-4 pt-8">
-              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-medical-100 to-brand-100 border border-medical-200/50">
-                <Stethoscope className="h-5 w-5 text-medical-700" />
-                <span className="text-sm font-medium text-medical-800">
-                  Seus honorários sob controle
-                </span>
-              </div>
-
-              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-medical-700 via-brand-600 to-trust-800 bg-clip-text text-transparent">
-                Olá, Dr(a). {userProfile?.nome?.split(' ')[0] || 'Doutor(a)'}!
-              </h1>
-
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                {needsAttention
-                  ? '💰 Encontramos R$ em valores que você pode estar perdendo. Que tal recuperarmos juntos?'
-                  : '✅ Parabéns! Seus honorários estão bem organizados. Continue cuidando do que é seu!'}
-              </p>
-            </div>
+            {/* Header Componentizado */}
+            <DashboardHeader 
+              userName={userProfile?.nome}
+              hasData={hasData}
+              needsAttention={needsAttention}
+            />
 
             {/* Dashboard Content */}
             <div className="space-y-16">
@@ -183,21 +188,20 @@ const DashboardPage = () => {
                     Tentar novamente
                   </Button>
                 </div>
-              ) : !stats ||
-                (Array.isArray(stats.procedures) && stats.procedures.length === 0) ? (
+              ) : !hasData ? (
                 <>
                   {/* Cards Principais - Jornada do Médico (Onboarding) */}
                   <section className="space-y-8 mt-8">
                     <div className="text-center space-y-3">
                       <h2 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-3">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
-                          <DollarSign className="h-6 w-6 text-amber-700" />
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100">
+                          <Target className="h-6 w-6 text-blue-700" />
                         </div>
-                        🚀 Vamos recuperar seus honorários!
+                        🚀 Vamos organizar seus honorários!
                       </h2>
                       <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-                        <strong>Em 3 passos simples</strong>, você vai descobrir quanto dinheiro está perdendo e como recuperar. 
-                        Milhares de médicos já recuperaram <strong>até 35% a mais</strong> em honorários!
+                        <strong>Em 3 passos simples</strong>, você vai organizar suas guias, analisar demonstrativos e ter controle total dos seus honorários. 
+                        Comece agora e tenha <strong>transparência completa</strong> sobre seus recebimentos!
                       </p>
                     </div>
                     <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -391,110 +395,8 @@ const DashboardPage = () => {
                       </p>
                     </div>
 
-                    {/* Grid de Cards com Gradientes Âmbar Perfeitos */}
-                    <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                      {/* Card 1: Valores Recebidos */}
-                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-green-500"></div>
-                        <CardContent className="relative p-8">
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 w-fit">
-                              <ArrowUpRight className="h-7 w-7 text-emerald-700" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">
-                                Já Recebido
-                              </p>
-                              <p className="text-3xl font-bold text-emerald-800 leading-none">
-                                <AnimatedNumber
-                                  value={totals.totalRecebido}
-                                  prefix="R$ "
-                                />
-                              </p>
-                              <p className="text-sm text-emerald-600">
-                                Valores que já estão na sua conta
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Card 2: Glosas */}
-                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 to-rose-500"></div>
-                        <CardContent className="relative p-8">
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-red-100 to-rose-100 w-fit">
-                              <AlertTriangle className="h-7 w-7 text-red-700" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-sm font-semibold text-red-700 uppercase tracking-wide">
-                                Glosas Detectadas
-                              </p>
-                              <p className="text-3xl font-bold text-red-800 leading-none">
-                                <AnimatedNumber
-                                  value={totals.totalGlosado}
-                                  prefix="R$ "
-                                />
-                              </p>
-                              <p className="text-sm text-red-600">
-                                Valores contestados pelos planos
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Card 3: Procedimentos */}
-                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
-                        <CardContent className="relative p-8">
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-sky-100 w-fit">
-                              <FileBarChart className="h-7 w-7 text-blue-700" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">
-                                Procedimentos
-                              </p>
-                              <p className="text-3xl font-bold text-blue-800 leading-none">
-                                <AnimatedNumber value={totals.totalProcedimentos} />
-                              </p>
-                              <p className="text-sm text-blue-600">
-                                Total de atendimentos analisados
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      {/* Card 4: Pendências */}
-                      <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-                        <CardContent className="relative p-8">
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 w-fit">
-                              <Clock className="h-7 w-7 text-amber-700" />
-                            </div>
-                            <div className="space-y-2">
-                              <p className="text-sm font-semibold text-amber-700 uppercase tracking-wide">
-                                Aguardando Análise
-                              </p>
-                              <p className="text-3xl font-bold text-amber-800 leading-none">
-                                <AnimatedNumber value={totals.auditoriaPendente} />
-                              </p>
-                              <p className="text-sm text-amber-600">
-                                Casos que precisam de atenção
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                    {/* Stats Componentizados */}
+                    <DashboardStats totals={totals} />
                   </section>
 
                   {/* Seção de Insights e Ações */}
@@ -512,107 +414,8 @@ const DashboardPage = () => {
                       </p>
                     </div>
 
-                    {/* Cards de Ação - Storytelling */}
-                    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                      {/* Guias Médicas - Prioridade 1 */}
-                      <Link to="/guides">
-                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 group-hover:from-blue-100 group-hover:via-indigo-100 group-hover:to-blue-200 transition-all duration-500"></div>
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
-                          <CardContent className="relative p-8">
-                            <div className="space-y-6">
-                              <div className="flex items-center justify-between">
-                                <div className="p-4 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 group-hover:scale-110 transition-transform duration-300">
-                                  <Upload className="h-8 w-8 text-blue-700" />
-                                </div>
-                                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                                  Essencial
-                                </Badge>
-                              </div>
-                              <div className="space-y-3">
-                                <h3 className="text-xl font-bold text-blue-800">
-                                  📋 Passo 1: Suas Guias
-                                </h3>
-                                <p className="text-blue-600 leading-relaxed">
-                                  <strong>Envie suas guias TISS aqui.</strong> É igual anexar um arquivo no WhatsApp! 
-                                  Em segundos você vai saber se estão corretas e quanto deve receber.
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 text-blue-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>💪 Começar agora (2 min)</span>
-                                <ChevronRight className="h-4 w-4" />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-
-                      {/* Demonstrativos - Prioridade 2 */}
-                      <Link to="/demonstratives">
-                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-                          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 group-hover:from-emerald-100 group-hover:via-green-100 group-hover:to-emerald-200 transition-all duration-500"></div>
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-                          <CardContent className="relative p-8">
-                            <div className="space-y-6">
-                              <div className="flex items-center justify-between">
-                                <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100 group-hover:scale-110 transition-transform duration-300">
-                                  <FileText className="h-8 w-8 text-emerald-700" />
-                                </div>
-                                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">
-                                  Importante
-                                </Badge>
-                              </div>
-                              <div className="space-y-3">
-                                <h3 className="text-xl font-bold text-emerald-800">
-                                  💰 Passo 2: Seus Pagamentos
-                                </h3>
-                                <p className="text-emerald-600 leading-relaxed">
-                                  <strong>Envie o que o plano te pagou.</strong> Nosso robô vai comparar com sua tabela e mostrar 
-                                  na tela se você foi <span className="text-red-600 font-semibold">lesado</span> ou não.
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 text-emerald-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>🔍 Descobrir se me lesaram</span>
-                                <ChevronRight className="h-4 w-4" />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-
-                      {/* Glosas Pendentes - Prioridade 3 */}
-                      <Link to="/unpaid-procedures">
-                        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-                          <div className="absolute inset-0 bg-gradient-to-br from-medical-50 via-brand-50 to-trust-100 group-hover:from-medical-100 group-hover:via-brand-100 group-hover:to-trust-200 transition-all duration-500"></div>
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-medical-500 to-brand-600"></div>
-                          <CardContent className="relative p-8">
-                            <div className="space-y-6">
-                              <div className="flex items-center justify-between">
-                                <div className="p-4 rounded-xl bg-gradient-to-br from-medical-100 to-brand-100 group-hover:scale-110 transition-transform duration-300">
-                                  <Shield className="h-8 w-8 text-medical-700" />
-                                </div>
-                                <Badge className="bg-medical-100 text-medical-700 border-medical-200">
-                                  Urgente
-                                </Badge>
-                              </div>
-                              <div className="space-y-3">
-                                <h3 className="text-xl font-bold text-medical-800">
-                                  ⚖️ Passo 3: Seus Direitos
-                                </h3>
-                                <p className="text-medical-600 leading-relaxed">
-                                  <strong>Vai brigar pelo que é seu?</strong> Te ajudamos a contestar glosas indevidas. 
-                                  É seu dinheiro! <span className="text-green-600 font-semibold">Recupere até 70%</span> do que negaram.
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 text-medical-700 font-medium group-hover:gap-3 transition-all duration-300">
-                                <span>⚡ Recuperar meu dinheiro</span>
-                                <ChevronRight className="h-4 w-4" />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    </div>
+                    {/* Actions Componentizadas */}
+                    <DashboardActions />
                   </section>
 
                   {/* Seção de Ferramentas Adicionais */}

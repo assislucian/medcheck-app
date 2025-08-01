@@ -157,12 +157,14 @@ export function AuthFooter({ variant }: AuthFooterProps) {
                 >
                   Meu Perfil
                 </Link>
+                {/* Temporariamente desabilitado
                 <Link
                   to="/notifications"
                   className="block hover:text-amber-600 transition-colors"
                 >
                   Notificações
                 </Link>
+                */}
               </div>
             </div>
 

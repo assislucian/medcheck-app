@@ -135,7 +135,7 @@ const Navbar = ({
                   variant="ghost"
                   size="icon"
                   className="relative mr-2"
-                  onClick={() => navigate('/notifications')}
+                  onClick={() => {}} // Notifications temporariamente desabilitadas
                 >
                   <Bell size={18} />
                   <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">

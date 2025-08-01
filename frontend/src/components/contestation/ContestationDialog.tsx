@@ -25,6 +25,9 @@ interface ContestationDialogProps {
     diferenca: number;
     papel?: string;
     justificativa?: string;
+    daysSince?: number;
+    patientName?: string;
+    guideNumber?: string;
   };
 }
 
@@ -49,6 +52,9 @@ export function ContestationDialog({
         difference: procedureDetails.diferenca,
         role: procedureDetails.papel,
         reasonGiven: procedureDetails.justificativa,
+        daysSince: procedureDetails.daysSince,
+        patientName: procedureDetails.patientName,
+        guideNumber: procedureDetails.guideNumber,
       });
 
       setContestationText(text);
