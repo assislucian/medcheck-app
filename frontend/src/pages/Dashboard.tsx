@@ -14,6 +14,8 @@ import { Badge } from '../components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { SmartAlertsSystem } from '../components/intelligence/SmartAlertsSystem';
+import { SmartSkeleton, MedicalLoadingState } from '../components/ui/SmartLoadingStates';
 
 const DashboardPage = () => {
   const { userProfile } = useAuth();
