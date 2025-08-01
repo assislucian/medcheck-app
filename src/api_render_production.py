@@ -129,8 +129,8 @@ class UserCreate(BaseModel):
     nome: str
     email: str
     password: str
-    terms_accepted: bool
-    terms_version: str
+    terms_accepted: bool = True
+    terms_version: str = "1.0"
 
 
 class UserResponse(BaseModel):
@@ -343,51 +343,89 @@ async def debug_info():
         "environment": ENVIRONMENT,
         "database_url_prefix": DATABASE_URL[:20] + "..." if DATABASE_URL else "None",
         "cors_origins_count": len(cors_origins),
-        "cors_origins": cors_origins[:3],  # Apenas primeiras 3 para segurança
+        "cors_origins": cors_origins,  # Mostrando todos para debug
         "secret_key_length": len(SECRET_KEY) if SECRET_KEY else 0,
         "python_version": os.environ.get("PYTHON_VERSION", "unknown"),
         "port": os.environ.get("PORT", "not_set"),
+        "cors_env_var": os.getenv("CORS_ORIGINS", "not_set"),
     }
+
+@app.post("/debug/fix-user-uf")
+async def fix_user_uf(crm: str, old_uf: str, new_uf: str, db: Session = Depends(get_db)):
+    """Corrigir UF de usuário existente (endpoint temporário de debug)"""
+    try:
+        user = db.query(User).filter(User.crm == crm, User.uf == old_uf.upper()).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        
+        user.uf = new_uf.upper()
+        db.commit()
+        
+        return {"message": f"UF do usuário {crm} alterada de {old_uf} para {new_uf}", "success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/v1/register", response_model=UserResponse)
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     """Registrar novo usuário"""
-    db_user_by_email = db.query(User).filter(User.email == user.email).first()
-    if db_user_by_email:
-        raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+    try:
+        logger.info(f"🔄 Registration attempt: CRM {user.crm} / UF {user.uf} / Email {user.email}")
+        
+        # Validações
+        if not user.uf or len(user.uf) != 2:
+            raise HTTPException(status_code=422, detail="UF deve ter exatamente 2 caracteres")
+        
+        if not user.crm or len(user.crm) < 3:
+            raise HTTPException(status_code=422, detail="CRM deve ter pelo menos 3 caracteres")
+        
+        if not user.email or "@" not in user.email:
+            raise HTTPException(status_code=422, detail="Email inválido")
+        
+        if not user.password or len(user.password) < 6:
+            raise HTTPException(status_code=422, detail="Senha deve ter pelo menos 6 caracteres")
 
-    db_user_by_crm = (
-        db.query(User).filter(User.crm == user.crm, User.uf == user.uf).first()
-    )
-    if db_user_by_crm:
-        raise HTTPException(
-            status_code=400, detail="CRM já cadastrado para este estado (UF)"
+        db_user_by_email = db.query(User).filter(User.email == user.email).first()
+        if db_user_by_email:
+            raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
+        db_user_by_crm = (
+            db.query(User).filter(User.crm == user.crm, User.uf == user.uf.upper()).first()
         )
+        if db_user_by_crm:
+            raise HTTPException(
+                status_code=400, detail="CRM já cadastrado para este estado (UF)"
+            )
 
-    if not user.terms_accepted:
-        raise HTTPException(
-            status_code=400,
-            detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
+        if not user.terms_accepted:
+            raise HTTPException(
+                status_code=422,
+                detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
+            )
+
+        hashed_password = get_password_hash(user.password)
+        db_user = User(
+            crm=user.crm,
+            uf=user.uf.upper(),
+            nome=user.nome,
+            email=user.email,
+            hashed_password=hashed_password,
+            terms_accepted=user.terms_accepted,
+            terms_version=user.terms_version,
+            created_at=datetime.utcnow(),
         )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
 
-    hashed_password = get_password_hash(user.password)
-    db_user = User(
-        crm=user.crm,
-        uf=user.uf,
-        nome=user.nome,
-        email=user.email,
-        hashed_password=hashed_password,
-        terms_accepted=user.terms_accepted,
-        terms_version=user.terms_version,
-        created_at=datetime.utcnow(),
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-
-    logger.info(f"✅ New user registered: {user.crm} / {user.uf}")
-    return UserResponse(message="Cadastro realizado com sucesso!")
+        logger.info(f"✅ New user registered: {user.crm} / {user.uf}")
+        return UserResponse(message="Cadastro realizado com sucesso!")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro interno no cadastro")
 
 
 @app.post("/token", response_model=Token)
