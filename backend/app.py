@@ -27,10 +27,18 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configuração CORS para desenvolvimento
+# Configuração CORS para desenvolvimento e produção
+cors_origins = [
+    "http://localhost:8080", 
+    "http://localhost:3000", 
+    "http://localhost:5173",
+    "https://medcheck-frontend.onrender.com",
+    "https://medcheck-backend.onrender.com"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "http://localhost:3000", "http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

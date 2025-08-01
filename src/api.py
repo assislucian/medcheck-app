@@ -578,7 +578,8 @@ else:
         "https://medcheck-app.vercel.app",  # Vercel produção (duplicado para garantir)
         "https://medcheck-app.vercel.app/",  # Vercel produção com trailing slash
         "https://www.medcheck-app.vercel.app/",  # Vercel produção com www e trailing slash
-        "https://medcheck-frontend.onrender.com",  # NOVO: Render frontend
+        "https://medcheck-frontend.onrender.com",  # Render frontend
+        "https://medcheck-backend.onrender.com",   # Render backend
     ]
 
 # Adicionar origens do arquivo de configuração CORS_ALLOWED_ORIGINS
