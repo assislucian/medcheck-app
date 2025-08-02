@@ -14,7 +14,21 @@ export default defineConfig({
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks(id) {
+          if (id.includes('jspdf')) {
+            return 'vendor-jspdf';
+          }
+          if (id.includes('html2canvas')) {
+            return 'vendor-html2canvas';
+          }
+          if (id.includes('jspdf-autotable')) {
+            return 'vendor-autotable';
+          }
+          // Agrupar todas as outras dependências de node_modules em um chunk 'vendor'
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
       },
     },
   },
