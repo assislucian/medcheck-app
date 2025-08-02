@@ -45,16 +45,7 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Helmet } from 'react-helmet-async';
-import { formatCurrency } from '../utils/format';
-import { exportDemonstrativeToPDF } from '../utils/pdfExport';
-import { DataGrid } from '../components/ui/data-grid';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { SkeletonInfoCard } from '../components/ui/skeleton';
-import { useAuth } from '../contexts/auth/AuthContext';
-import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { formatValidationError } from '../utils/errorUtils';
 import { ApiService } from '../services/api';
 
 const mockDetailedProcedures = [
@@ -996,7 +987,7 @@ const DemonstrativesPage = () => {
           demonstratives.map(async (d) => {
             const detalhes = await ApiService.getDemonstrativeDetails(d.id);
             console.log('DEBUG detalhes demonstrativo', d.id, detalhes);
-            const pendentes = (Array.isArray(detalhes) ? detalhes : []).filter((p: any) => {
+            const pendentes = detalhes.filter((p: any) => {
               // Usar a mesma lógica do modal: priorizar papel_exercido
               let participacao = '';
 
@@ -1037,34 +1028,7 @@ const DemonstrativesPage = () => {
   // Função para exportar todos os dados dos demonstrativos
   const exportAllDemonstrativesData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Token de acesso não encontrado');
-        return;
-      }
-
-      // Usar o endpoint de reports para exportar dados
-      const response = await axios.get(
-        `/api/v1/reports/export?format=excel`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
-        }
-      );
-
-      // Criar download
-      const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `demonstrativos_completo_${new Date().toISOString().slice(0, 10)}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
+      await ApiService.exportReport('excel');
       toast.success('Dados exportados com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar dados:', error);
@@ -1174,12 +1138,11 @@ const DemonstrativesPage = () => {
         formData.append('files', file);
       });
 
-      const response = await ApiService.uploadDemonstrative(formData);
+      const results = await ApiService.uploadDemonstrative(formData);
 
-      if (response && Array.isArray(response.results)) {
-        const results = response.results;
+      if (results && Array.isArray(results)) {
         const successCount = results.filter((r) => r.success).length;
-
+        
         results.forEach((result) => {
           if (result.success) {
             toast.success(`"${result.filename}" processado com sucesso`);
@@ -1194,9 +1157,7 @@ const DemonstrativesPage = () => {
           toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
           await fetchDemonstratives();
           setUploadFiles([]);
-          const fileInput = document.getElementById(
-            'demo-file-upload'
-          ) as HTMLInputElement;
+          const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
           if (fileInput) fileInput.value = '';
         } else {
           toast.info('Nenhum arquivo novo foi processado');
@@ -1205,17 +1166,12 @@ const DemonstrativesPage = () => {
         toast.success('Upload realizado com sucesso');
         await fetchDemonstratives();
         setUploadFiles([]);
-        const fileInput = document.getElementById(
-          'demo-file-upload'
-        ) as HTMLInputElement;
+        const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       }
     } catch (error: any) {
       console.error('Erro no upload:', error);
-      const formattedError = formatValidationError(
-        error.message || 'Erro desconhecido'
-      );
-      toast.error(`Erro durante o upload: ${formattedError}`);
+      toast.error(`Erro durante o upload: ${error.message}`);
     } finally {
       setUploading(false);
     }
