@@ -23,14 +23,14 @@ services:
     plan: free
     rootDir: .
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: cd /opt/render/project && python -m uvicorn src.api:app --host 0.0.0.0 --port $PORT
+    startCommand: python -m uvicorn src.api:app --host 0.0.0.0 --port $PORT
     # Forçar atualização de cache
     healthCheckPath: /health
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: PYTHONPATH
-        value: .
+        value: /opt/render/project
       - key: DEBUG
         value: false
       - key: PYTHON_VERSION
@@ -49,8 +49,6 @@ services:
           property: connectionString
       - key: FRONTEND_ORIGINS
         value: https://medcheck-frontend.onrender.com,https://medcheck-app.vercel.app,https://medcheck-app-assislucians-projects.vercel.app
-      - key: PYTHONPATH
-        value: .
 
 databases:
   - name: medcheck-db
