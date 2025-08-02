@@ -1819,12 +1819,17 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
     return get_demonstrativo_procedures(demo_id, user)
 
 
-# --- Endpoint para obter procedimentos do demonstrativo ---
-@app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
+# --- Internal cached function using hashable parameters ---
 @lru_cache(maxsize=128)
-def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
+def _get_demonstrativo_procedures_cached(demo_id: int, crm: str, uf: str):
+    """Internal cached function with hashable parameters only."""
+    user = {"crm": crm, "uf": uf}
+    return _get_demonstrativo_procedures(demo_id, user)
+
+
+def _get_demonstrativo_procedures(demo_id: int, user: dict) -> list:
     """
-    Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
+    Internal function that implements the actual demonstrativo procedures logic.
     """
     db = SessionLocal()
     try:
@@ -1926,6 +1931,15 @@ def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_
         raise HTTPException(status_code=500, detail="Erro interno do servidor")
     finally:
         db.close()
+
+
+# --- Endpoint para obter procedimentos do demonstrativo ---
+@app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
+def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
+    """
+    Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
+    """
+    return _get_demonstrativo_procedures_cached(demo_id, user["crm"], user["uf"])
 
 
 def get_cached_participacoes(user_crm: str, user_uf: str) -> dict:
