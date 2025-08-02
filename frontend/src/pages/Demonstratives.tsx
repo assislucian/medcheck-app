@@ -45,8 +45,15 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Helmet } from 'react-helmet-async';
+import { formatCurrency } from '../utils/format';
+import { exportDemonstrativeToPDF } from '../utils/pdfExport';
+import { DataGrid } from '../components/ui/data-grid';
+import { SkeletonInfoCard } from '../components/ui/skeleton';
+import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useFileUpload } from '../hooks/useFileUpload';
+import { useAuth } from '../contexts/auth/AuthContext';
 import { ApiService } from '../services/api';
 
 const mockDetailedProcedures = [
