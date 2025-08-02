@@ -1,8 +1,0 @@
-[parse_guide_pdf] rodrigo bernardo.pdf: 2 blocos de guia detectados, 1 procedimentos para CRM 6091
-[parse_guide_pdf] rodrigo bernardo.pdf: 1 procedimentos para CRM 6091
-[parse_guide_pdf] thayse borges.pdf: 6 blocos de guia detectados, 2 procedimentos para CRM 6091
-[parse_guide_pdf] thayse borges.pdf: 2 procedimentos para CRM 6091
-[parse_guide_pdf] nubia_katia.pdf: 8 blocos de guia detectados, 2 procedimentos para CRM 6091
-[parse_guide_pdf] nubia_katia.pdf: 2 procedimentos para CRM 6091
-[parse_guide_pdf] noivana.pdf: 4 blocos de guia detectados, 1 procedimentos para CRM 6091
-[parse_guide_pdf] noivana.pdf: 1 procedimentos para CRM 6091

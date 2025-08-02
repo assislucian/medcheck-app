@@ -1,0 +1,17 @@
+# ===== MEDCHECK - PRODUCTION DEPENDENCIES =====
+# Production-specific dependencies
+
+# Include all base dependencies
+-r base.txt
+
+# Database Drivers
+psycopg2-binary==2.9.9
+
+# Excel Processing (for pandas)
+openpyxl==3.1.2
+
+# OCR Processing (if needed in production)
+pytesseract==0.3.10
+
+# Production Server (alternative to uvicorn)
+# gunicorn==21.2.0

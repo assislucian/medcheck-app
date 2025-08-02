@@ -1,0 +1,33 @@
+# ===== MEDCHECK - BASE DEPENDENCIES =====
+# Core dependencies required for all environments
+
+# Web Framework
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Authentication & Security
+bcrypt==4.0.1
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# API Enhancement
+slowapi==0.1.9
+python-multipart==0.0.6
+
+# Validation & Schemas
+pydantic==2.4.2
+
+# Data Processing
+pandas==2.1.3
+pandera==0.17.2
+multimethod==1.9.1
+
+# Database ORM
+sqlalchemy==2.0.23
+
+# PDF Processing
+pdfplumber==0.9.0
+PyMuPDF==1.23.8
+
+# Date/Time utilities
+python-dateutil==2.8.2
