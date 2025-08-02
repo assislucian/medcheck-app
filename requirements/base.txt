@@ -15,7 +15,8 @@ slowapi==0.1.9
 python-multipart==0.0.6
 
 # Validation & Schemas
-pydantic==2.4.2
+pydantic[email]==2.4.2
+pydantic-settings==2.0.3
 
 # Data Processing
 pandas==2.1.3

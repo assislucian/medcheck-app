@@ -1713,8 +1713,8 @@ def test_demonstrativo_upload(
         # Limpar arquivo temporário
         try:
             os.remove(file_path)
-                    except OSError as e:
-                logger.warning(f"Erro ao remover arquivo: {e}")
+        except OSError as e:
+            logger.warning(f"Erro ao remover arquivo: {e}")
 
         return {
             "success": True,
@@ -2333,8 +2333,8 @@ def upload_guias(
             finally:
                 try:
                     os.unlink(tmp_path)
-                            except OSError as e:
-                logger.warning(f"Erro ao remover arquivo: {e}")
+                except OSError as e:
+                    logger.warning(f"Erro ao remover arquivo: {e}")
 
     return {"results": results}
 
@@ -2549,8 +2549,9 @@ def get_activity_logs(
                                     end_dt = datetime.fromisoformat(end_date)
                                     if entry_date.date() > end_dt.date():
                                         continue
-                                        except OSError as e:
-                logger.warning(f"Erro ao remover arquivo: {e}")
+                            except (ValueError, TypeError):
+                                # Se não conseguir processar a data, pula este entry
+                                continue
 
                         action = entry.get("action", "")
                         details = entry.get("details", {})
