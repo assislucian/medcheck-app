@@ -386,20 +386,16 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
   useEffect(() => {
     const fetchProcedures = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get(
-          `/api/v1/demonstrativos/${demonstrative.id}/detalhes`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const data = await ApiService.getDemonstrativeDetails(demonstrative.id);
         // Mapear campos para nomes esperados, incluindo papel
         console.log(
-          `[DEBUG] Frontend recebeu ${(res.data || []).length} procedimentos da API`
+          `[DEBUG] Frontend recebeu ${(data || []).length} procedimentos da API`
         );
         console.log(
           `[DEBUG] Amostra dos procedimentos recebidos:`,
-          (res.data || []).slice(0, 3)
+          (data || []).slice(0, 3)
         );
-        const mapped = (res.data || []).map((p, idx) => {
+        const mapped = (data || []).map((p, idx) => {
           let participacao = '';
 
           // Priorizar papel_exercido que vem do backend
@@ -1080,21 +1076,19 @@ const DemonstrativesPage = () => {
     }
   };
 
+import { ApiService } from '../services/api';
+
+// ... (restante do código)
+
   const fetchDemonstratives = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       console.log('🔄 Buscando demonstrativos...');
-      const response = await axios.get(
-        `/api/v1/demonstrativos`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log('✅ Dados recebidos do backend:', response.data);
+      const data = await ApiService.getDemonstratives();
+      console.log('✅ Dados recebidos do backend:', data);
 
       // Log específico para debug dos valores
-      response.data.forEach((demo, index) => {
+      data.forEach((demo, index) => {
         console.log(`📊 Demo ${index + 1}:`, {
           periodo: demo.periodo,
           total_presented: demo.total_presented,
@@ -1106,7 +1100,7 @@ const DemonstrativesPage = () => {
         });
       });
 
-      setDemonstratives(response.data);
+      setDemonstratives(data);
     } catch (error) {
       console.error('❌ Erro ao carregar demonstrativos:', error);
       toast.error('Erro ao carregar demonstrativos');
@@ -1149,11 +1143,7 @@ const DemonstrativesPage = () => {
     if (!window.confirm('Tem certeza que deseja excluir este demonstrativo?')) return;
     setDeleting(true);
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(
-        `/api/v1/demonstrativos/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await ApiService.deleteDemonstrative(id);
       toast.success('Demonstrativo excluído com sucesso', {
         id: `delete-success-${id}`,
       });

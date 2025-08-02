@@ -52,6 +52,13 @@ export class ApiService {
     return ApiService.handleResponse(response);
   }
 
+  static async getDemonstrativeDetails(id: number) {
+    const response = await fetch(`${API_BASE}/api/v1/demonstrativos/${id}/detalhes`, {
+      headers: this.getAuthHeaders(),
+    });
+    return ApiService.handleResponse(response);
+  }
+
   // ===== GUIAS =====
   static async getGuides(params: Record<string, any> = {}) {
     const searchParams = new URLSearchParams();
