@@ -45,7 +45,6 @@ import {
   Download,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { formatCurrency } from '../utils/format';
 import { exportDemonstrativeToPDF } from '../utils/pdfExport';
@@ -995,13 +994,9 @@ const DemonstrativesPage = () => {
       try {
         await Promise.all(
           demonstratives.map(async (d) => {
-            const res = await axios.get(
-              `/api/v1/demonstrativos/${d.id}/detalhes`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            const detalhes = Array.isArray(res.data) ? res.data : [];
+            const detalhes = await ApiService.getDemonstrativeDetails(d.id);
             console.log('DEBUG detalhes demonstrativo', d.id, detalhes);
-            const pendentes = detalhes.filter((p: any) => {
+            const pendentes = (Array.isArray(detalhes) ? detalhes : []).filter((p: any) => {
               // Usar a mesma lógica do modal: priorizar papel_exercido
               let participacao = '';
 
@@ -1174,47 +1169,17 @@ const DemonstrativesPage = () => {
     setUploading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Token de autenticação não encontrado. Faça login novamente.');
-        setUploading(false);
-        return;
-      }
-
       const formData = new FormData();
-
-      // Adicionar todos os arquivos como array
       uploadFiles.forEach((file) => {
         formData.append('files', file);
       });
 
-      console.log(
-        'Enviando arquivos:',
-        uploadFiles.map((f) => f.name)
-      );
+      const response = await ApiService.uploadDemonstrative(formData);
 
-      const response = await axios.post(
-        `${
-          import.meta.env.VITE_API_URL || 'http://localhost:8000'
-        }/api/v1/demonstrativos/upload`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      console.log('Resposta do upload:', response.data);
-
-      if (response.data && Array.isArray(response.data)) {
-        const results = response.data;
+      if (response && Array.isArray(response.results)) {
+        const results = response.results;
         const successCount = results.filter((r) => r.success).length;
-        const duplicateCount = results.filter((r) => r.duplicate).length;
-        const errorCount = results.filter((r) => !r.success && !r.duplicate).length;
 
-        // Feedback detalhado por arquivo
         results.forEach((result) => {
           if (result.success) {
             toast.success(`"${result.filename}" processado com sucesso`);
@@ -1225,13 +1190,10 @@ const DemonstrativesPage = () => {
           }
         });
 
-        // Resumo final
         if (successCount > 0) {
           toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
-          await fetchDemonstratives(); // Recarregar dados
-          setUploadFiles([]); // Limpar arquivos
-
-          // Limpar input
+          await fetchDemonstratives();
+          setUploadFiles([]);
           const fileInput = document.getElementById(
             'demo-file-upload'
           ) as HTMLInputElement;
@@ -1243,7 +1205,6 @@ const DemonstrativesPage = () => {
         toast.success('Upload realizado com sucesso');
         await fetchDemonstratives();
         setUploadFiles([]);
-
         const fileInput = document.getElementById(
           'demo-file-upload'
         ) as HTMLInputElement;
@@ -1251,18 +1212,10 @@ const DemonstrativesPage = () => {
       }
     } catch (error: any) {
       console.error('Erro no upload:', error);
-
-      if (error.response?.status === 422) {
-        console.error('Detalhes do erro 422:', error.response.data);
-        const formattedError = formatValidationError(
-          error.response.data.detail || 'Arquivo inválido'
-        );
-        toast.error(`Erro de validação: ${formattedError}`);
-      } else if (error.response?.status === 401) {
-        toast.error('Token de autenticação inválido. Faça login novamente.');
-      } else {
-        toast.error(`Erro durante o upload: ${error.message}`);
-      }
+      const formattedError = formatValidationError(
+        error.message || 'Erro desconhecido'
+      );
+      toast.error(`Erro durante o upload: ${formattedError}`);
     } finally {
       setUploading(false);
     }
