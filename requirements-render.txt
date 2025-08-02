@@ -31,8 +31,8 @@ pandas==2.0.3
 # Excel Processing
 openpyxl==3.1.2
 
-# Basic PDF Processing (NO HEAVY DEPENDENCIES)
-# PyPDF2==3.0.1  # Comentado - não essencial para deploy inicial
+# PDF Processing (LIGHTWEIGHT VERSION) 
+pdfplumber==0.7.6
 
 # Date/Time utilities
 python-dateutil==2.8.2
