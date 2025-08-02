@@ -1795,7 +1795,7 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
 @app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
 def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
     """Alias para o endpoint de procedimentos, mantendo compatibilidade com o frontend."""
-    return get_demonstrativo_procedures(demo_id, user)
+    return _get_demonstrativo_procedures_cached(demo_id, user["crm"], user["uf"])
 
 
 # --- Endpoint para obter procedimentos do demonstrativo ---
