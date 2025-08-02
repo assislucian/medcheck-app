@@ -1,0 +1,38 @@
+# ===== MEDCHECK API - DEPENDENCIES OPTIMIZED =====
+# Based on actual code analysis and best practices
+# Generated: 2025-08-02 (Quality Improvement Plan)
+
+# Core Web Framework
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Authentication & Security  
+bcrypt==4.0.1
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# Database & Data Processing
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+pandas==2.1.3
+pandera==0.17.2
+
+# Rate Limiting & API Enhancement
+slowapi==0.1.9
+python-multipart==0.0.6
+
+# Validation & Schemas
+pydantic==2.4.2
+
+# PDF & Document Processing
+pdfplumber==0.9.0
+PyMuPDF==1.23.8  # Provides 'fitz' module
+
+# OCR Processing  
+pytesseract==0.3.10
+
+# Excel Processing (used by pandas)
+openpyxl==3.1.2
+
+# Date/Time utilities (used by pandas/sqlalchemy)
+python-dateutil==2.8.2
