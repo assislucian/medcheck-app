@@ -56,6 +56,7 @@ import { useAuth } from '../contexts/auth/AuthContext';
 import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
 import { useFileUpload } from '../hooks/useFileUpload';
 import { formatValidationError } from '../utils/errorUtils';
+import { ApiService } from '../services/api';
 
 const mockDetailedProcedures = [
   {
@@ -1076,9 +1077,7 @@ const DemonstrativesPage = () => {
     }
   };
 
-import { ApiService } from '../services/api';
-
-// ... (restante do código)
+  // ... (restante do código)
 
   const fetchDemonstratives = async () => {
     setLoading(true);
