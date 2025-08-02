@@ -1855,16 +1855,12 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
 
 
 # --- Endpoint para obter detalhes do demonstrativo (alias para procedimentos) ---
-@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
-def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
-    """Alias para o endpoint de procedimentos, mantendo compatibilidade com o frontend."""
-    return get_demonstrativo_procedures(demo_id, user)
 
 
 # --- Endpoint para obter procedimentos do demonstrativo ---
+@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
-@lru_cache(maxsize=128)
-def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
+def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
     """
@@ -4997,7 +4993,9 @@ def get_cbhpm_parser():
 
 
 @app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
-def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
+def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
+    """Retorna os procedimentos de um demonstrativo. Alias para /procedimentos."""
+    return get_demonstrativo_procedures(demo_id=demo_id, user=user)
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
     """
