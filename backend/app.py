@@ -3,7 +3,7 @@ MedCheck Backend API - Versão Simplificada para Render
 Sistema médico simplificado para funcionamento no Render
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
@@ -26,13 +26,21 @@ app = FastAPI(
 )
 
 # Configuração CORS para desenvolvimento e produção
-cors_origins = [
-    "http://localhost:8080", 
-    "http://localhost:3000", 
-    "http://localhost:5173",
-    "https://medcheck-frontend.onrender.com",
-    "https://medcheck-backend.onrender.com"
-]
+# Lê origins do ambiente, com fallback para desenvolvimento
+cors_origins_env = os.getenv("CORS_ORIGINS", "")
+if cors_origins_env:
+    cors_origins = [origin.strip() for origin in cors_origins_env.split(",")]
+else:
+    # Fallback para desenvolvimento
+    cors_origins = [
+        "http://localhost:8080", 
+        "http://localhost:3000", 
+        "http://localhost:5173",
+        "https://medcheck-frontend.onrender.com",
+        "https://medcheck-backend.onrender.com"
+    ]
+
+logger.info(f"🔧 CORS Origins configurado: {cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -233,7 +241,11 @@ async def register_user(user: UserRegister):
         raise HTTPException(status_code=500, detail="Erro interno no cadastro")
 
 @app.post("/token")
-async def login_for_access_token(uf: str, username: str, password: str):
+async def login_for_access_token(
+    username: str = Form(...), 
+    password: str = Form(...), 
+    uf: str = Form(...)
+):
     """Login e geração de token"""
     try:
         logger.info(f"🔄 Login attempt: CRM {username} / UF {uf}")
