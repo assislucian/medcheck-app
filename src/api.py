@@ -307,7 +307,7 @@ class Guia(Base):
 class Consentimento(Base):
     __tablename__ = "consentimentos"
     id = Column(Integer, primary_key=True, index=True)
-    crm = Column(String, ForeignKey("medicos.crm"), nullable=False, index=True)
+    medico_id = Column(Integer, ForeignKey("medicos.id"), nullable=False, index=True)
     terms_version = Column(String, nullable=False)
     accepted_at = Column(DateTime, nullable=False)
     ip = Column(String, nullable=True)
@@ -1061,15 +1061,19 @@ def register_medico(req: RegisterRequest, request: Request):
         )
         db.add(medico)
         db.commit()
+        db.refresh(medico)  # Atualiza o objeto medico com o ID gerado
+
         # Registrar consentimento histórico
-        ip = request.client.host if request and request.client else None
+        ip = get_remote_address(request)
         consent = Consentimento(
-            crm=req.crm,
+            medico_id=medico.id,
             terms_version=req.terms_version,
             accepted_at=datetime.utcnow(),
             ip=ip,
         )
         db.add(consent)
+        db.commit()  # Commit do consentimento
+
         log_audit(
             "register",
             user_crm=req.crm,
