@@ -422,7 +422,7 @@ const Profile = () => {
                           <CardHeader>
                             <div className="flex items-center justify-between">
                               <CardTitle>
-                                Plano {billingInfo.current_period.plan}
+                                Plano {billingInfo?.current_period?.plan || 'N/A'}
                               </CardTitle>
                               <Badge className="bg-green-100 text-green-800">
                                 Ativo
@@ -434,7 +434,7 @@ const Profile = () => {
                               <div className="flex items-center justify-between">
                                 <span className="text-lg font-medium">
                                   {formatCurrency(
-                                    billingInfo.current_period.total_cost
+                                    billingInfo?.current_period?.total_cost || 0
                                   )}
                                 </span>
                                 <span className="text-gray-500">
@@ -444,7 +444,7 @@ const Profile = () => {
 
                               <Progress
                                 value={
-                                  (billingInfo.current_period.total_cost /
+                                  (billingInfo?.current_period?.total_cost /
                                     spendingLimit) *
                                   100
                                 }
@@ -455,15 +455,15 @@ const Profile = () => {
                                 <div>
                                   <p className="text-gray-600">Guias processadas</p>
                                   <p className="font-semibold">
-                                    {billingInfo.current_period.guias_processadas}
+                                    {billingInfo?.current_period?.guias_processadas || 0}
                                   </p>
                                 </div>
                                 <div>
                                   <p className="text-gray-600">Demonstrativos</p>
                                   <p className="font-semibold">
                                     {
-                                      billingInfo.current_period
-                                        .demonstrativos_processados
+                                      billingInfo?.current_period
+                                        ?.demonstrativos_processados || 0
                                     }
                                   </p>
                                 </div>
@@ -512,14 +512,16 @@ const Profile = () => {
                               <div>
                                 <p className="text-2xl font-bold">
                                   {formatCurrency(
-                                    billingInfo.current_period.total_cost
+                                    billingInfo?.current_period?.total_cost || 0
                                   )}
                                 </p>
                                 <p className="text-gray-600">
                                   Vencimento:{' '}
-                                  {new Date(
-                                    billingInfo.next_billing_date
-                                  ).toLocaleDateString('pt-BR')}
+                                  {billingInfo?.next_billing_date
+                                    ? new Date(
+                                        billingInfo.next_billing_date
+                                      ).toLocaleDateString('pt-BR')
+                                    : 'N/A'}
                                 </p>
                               </div>
                               <div className="text-right">
@@ -527,8 +529,8 @@ const Profile = () => {
                                   Método de pagamento
                                 </p>
                                 <p className="font-medium">
-                                  {billingInfo.payment_method.brand} ••••{' '}
-                                  {billingInfo.payment_method.last4}
+                                  {billingInfo?.payment_method?.brand || 'N/A'} ••••{' '}
+                                  {billingInfo?.payment_method?.last4 || '0000'}
                                 </p>
                               </div>
                             </div>
