@@ -286,20 +286,87 @@ async def login_for_access_token(
         logger.error(f"❌ Login error: {str(e)}")
         raise HTTPException(status_code=500, detail="Erro interno no login")
 
-@app.get("/api/v1/user/profile")
+@app.get("/api/v1/profile")
 async def get_user_profile():
-    """Obter perfil do usuário (mockado)"""
+    """Obter perfil do usuário (endpoint esperado pelo frontend)"""
     return {
         "nome": "Dr. Luciano Assis",
-        "email": "luciano@medcheck.com",
+        "email": "luciano@medcheck.com", 
         "crm": "6091",
         "uf": "AC",
-        "especialidade": "Cardiologia"
+        "especialidade": "Cardiologia",
+        "telefone": "+55119999999",
+        "created_at": "2024-01-01T00:00:00",
+        "memberSince": "Janeiro 2024",
+        "profileComplete": True
+    }
+
+@app.get("/api/v1/user/profile")
+async def get_user_profile_legacy():
+    """Endpoint legado (mantido para compatibilidade)"""
+    return await get_user_profile()
+
+@app.get("/api/v1/dashboard")
+async def get_dashboard():
+    """Dashboard completo (endpoint esperado pelo frontend)"""
+    return {
+        "totals": {
+            "totalRecebido": 41500.00,
+            "totalGlosado": 3500.00,
+            "totalProcedimentos": 150,
+            "auditoriaPendente": 8
+        },
+        "procedures": [
+            {
+                "id": "30602076-10696456",
+                "codigo": "30602076",
+                "procedimento": "Anestesia geral",
+                "papel": "Cirurgiao",
+                "valorCBHPM": 480.00,
+                "valorPago": 432.00,
+                "diferenca": -10.0,
+                "pago": True,
+                "guia": "10696456",
+                "beneficiario": "João da Silva",
+                "doctors": []
+            },
+            {
+                "id": "30602203-10696456",
+                "codigo": "30602203",
+                "procedimento": "Cirurgia cardíaca",
+                "papel": "Cirurgiao",
+                "valorCBHPM": 2800.00,
+                "valorPago": 2520.00,
+                "diferenca": -10.0,
+                "pago": True,
+                "guia": "10696456",
+                "beneficiario": "João da Silva",
+                "doctors": []
+            }
+        ],
+        "glosas": [
+            {
+                "id": 1,
+                "procedimento": "Consulta cardiológica",
+                "valorGlosa": 1200.00,
+                "motivo": "Documentação incompleta",
+                "status": "pendente"
+            },
+            {
+                "id": 2,
+                "procedimento": "Exame complementar",
+                "valorGlosa": 2300.00,
+                "motivo": "Não autorizado",
+                "status": "contestado"
+            }
+        ],
+        "hasData": True,
+        "message": "Dados carregados com sucesso"
     }
 
 @app.get("/api/v1/dashboard/stats")
-async def get_dashboard_stats():
-    """Estatísticas do dashboard (mockado)"""
+async def get_dashboard_stats_legacy():
+    """Endpoint legado de estatísticas (mantido para compatibilidade)"""
     return {
         "total_guias": 150,
         "valor_total": 45000.00,
@@ -307,6 +374,80 @@ async def get_dashboard_stats():
         "valor_glosas": 3500.00,
         "procedimentos_nao_pagos": 8,
         "taxa_aprovacao": 92.5
+    }
+
+@app.get("/api/v1/unpaid-procedures")
+async def get_unpaid_procedures():
+    """Procedimentos não pagos (endpoint esperado pelo frontend)"""
+    return {
+        "unpaid_procedures": 8,
+        "procedures": [
+            {
+                "id": 1,
+                "data": "2025-01-15",
+                "guia": "10696456",
+                "beneficiario": "Maria Santos",
+                "procedimento": "Consulta cardiológica",
+                "codigo": "30101010",
+                "valorApresentado": 280.00,
+                "valorPago": 0.00,
+                "motivoNaoPagamento": "Documentação incompleta",
+                "status": "pendente",
+                "diasParaContestar": 25
+            },
+            {
+                "id": 2,
+                "data": "2025-01-20",
+                "guia": "10714706",
+                "beneficiario": "Pedro Oliveira",
+                "procedimento": "Exame eletrocardiograma",
+                "codigo": "40301010",
+                "valorApresentado": 120.00,
+                "valorPago": 0.00,
+                "motivoNaoPagamento": "Não autorizado",
+                "status": "pendente",
+                "diasParaContestar": 20
+            }
+        ],
+        "summary": {
+            "total_value": 400.00,
+            "average_days": 22,
+            "urgent_count": 0
+        }
+    }
+
+@app.get("/api/v1/activity-logs")
+async def get_activity_logs(limit: int = 10):
+    """Logs de atividade (endpoint esperado pelo frontend)"""
+    return {
+        "activities": [
+            {
+                "id": 1,
+                "timestamp": datetime.now().isoformat(),
+                "action": "login",
+                "description": "Usuário fez login no sistema",
+                "type": "auth",
+                "details": {"crm": "6091", "uf": "AC"}
+            },
+            {
+                "id": 2,
+                "timestamp": (datetime.now() - timedelta(minutes=15)).isoformat(),
+                "action": "procedure_analysis",
+                "description": "Análise de procedimentos não pagos realizada",
+                "type": "analysis",
+                "details": {"procedures_count": 8}
+            },
+            {
+                "id": 3,
+                "timestamp": (datetime.now() - timedelta(hours=1)).isoformat(),
+                "action": "dashboard_view",
+                "description": "Dashboard acessado",
+                "type": "navigation",
+                "details": {"page": "dashboard"}
+            }
+        ],
+        "total": 3,
+        "hasMore": False
     }
 
 @app.get("/api/v1/demonstrativos")
