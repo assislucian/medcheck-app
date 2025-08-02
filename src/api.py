@@ -4682,13 +4682,7 @@ def get_cbhpm_parser():
     return _cbhpm_parser if _cbhpm_parser is not False else None
 
 
-@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
-def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
-    """
-    Obtém procedimentos do demonstrativo (endpoint compatível - usa versão otimizada internamente).
-    """
-    # OTIMIZAÇÃO: Delega para a versão otimizada com cache
-    return _get_demonstrativo_procedures_cached(demo_id, user["crm"], user["uf"])
+# REMOVIDO: Endpoint duplicado - já existe na linha 1795
 
 
 
