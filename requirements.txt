@@ -1,21 +1,32 @@
-# ===== MEDCHECK API - DEPENDÊNCIAS PARA SRC/API.PY =====
-# Dependências OBRIGATÓRIAS para src/api.py funcionar
+# ===== MEDCHECK API - DEPENDÊNCIAS COMPLETAS =====
+# Todas as dependências necessárias para src/api.py e parsers
 
 # Core Web Framework
 fastapi==0.104.1
 uvicorn==0.24.0
 
-# Authentication & Security (REQUIRED)
+# Authentication & Security
 bcrypt==4.0.1
 python-jose[cryptography]==3.3.0
 
-# Data Processing (REQUIRED)
+# Data Processing & Analysis
 pandas==2.1.3
 sqlalchemy==2.0.23
+pandera==0.17.2
 
-# Rate Limiting (REQUIRED)
+# Rate Limiting & Security
 slowapi==0.1.9
 
-# File Upload & Validation (REQUIRED)
+# File Upload & Validation
 python-multipart==0.0.6
 pydantic==2.4.2
+
+# PDF Processing (CRITICAL for parsers)
+pdfplumber==0.9.0
+PyMuPDF==1.23.8
+
+# Date/Time utilities
+python-dateutil==2.8.2
+
+# Excel Processing
+openpyxl==3.1.2
