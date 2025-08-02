@@ -800,11 +800,6 @@ async def debug_database():
         }
 
 
-# --- Importa e registra o router de glosas (Knowledge Base) ---
-# Comentado temporariamente para debug do Railway
-# from backend.knowledge_base.glosas_api import router as glosas_router
-# app.include_router(glosas_router, prefix="/api/v1")
-
 # --- Incluir router de health check ---
 from src.health import router as health_router
 
@@ -834,22 +829,6 @@ def log_audit(action, user_crm=None, ip=None, details=None):
             }
         )
     )
-
-
-def sanitize_text(text, max_length=None):
-    import re
-
-    if not text:
-        return text
-    text = re.sub(r"<.*?>", "", text)
-    text = re.sub(r"script", "", text, flags=re.IGNORECASE)
-    text = text.strip()
-
-    if max_length and len(text) > max_length:
-        text = text[:max_length]
-
-    return text
-
 
 # --- Models ---
 class RegisterRequest(BaseModel):
@@ -1819,18 +1798,11 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
     return get_demonstrativo_procedures(demo_id, user)
 
 
-# --- Internal cached function using hashable parameters ---
+# --- Endpoint para obter procedimentos do demonstrativo ---
 @lru_cache(maxsize=128)
-def _get_demonstrativo_procedures_cached(demo_id: int, crm: str, uf: str):
-    """Internal cached function with hashable parameters only."""
-    user = {"crm": crm, "uf": uf}
-    return _get_demonstrativo_procedures(demo_id, user)
-
-
-def _get_demonstrativo_procedures(demo_id: int, user: dict) -> list:
-    """
-    Internal function that implements the actual demonstrativo procedures logic.
-    """
+def _get_demonstrativo_procedures_cached(demo_id: int, user_crm: str, user_uf: str):
+    """Função interna com cache para obter procedimentos do demonstrativo"""
+    user = {"crm": user_crm, "uf": user_uf}  # Reconstrói dict user para compatibilidade
     db = SessionLocal()
     try:
         # Busca demonstrativo
@@ -1919,6 +1891,75 @@ def _get_demonstrativo_procedures(demo_id: int, user: dict) -> list:
 
             p["papel_exercido"] = papel_exercido or ""
 
+            # --- Cálculo de valores CBHPM ---
+            valor_cbhpm = None
+            diferenca = None
+            delta_percent = None
+
+            if codigo and papel_exercido and cbhpm_parser:
+                try:
+                    cbhpm = cbhpm_parser.get_procedure(str(codigo))
+                    if cbhpm:
+                        # Mapeia papel para valor CBHPM com mapeamentos mais robustos
+                        papel_normalizado = papel_exercido.lower().strip()
+
+                        if papel_normalizado in ["cirurgiao", "cirurgião"]:
+                            valor_cbhpm = cbhpm.get("surgeon_value", 0.0)
+                        elif papel_normalizado in ["anestesista"]:
+                            valor_cbhpm = cbhpm.get("anesthesiologist_value", 0.0)
+                        elif papel_normalizado in [
+                            "primeiro auxiliar",
+                            "1º auxiliar",
+                            "auxiliar",
+                        ]:
+                            valor_cbhpm = cbhpm.get("first_assistant_value", 0.0)
+                        elif papel_normalizado in ["segundo auxiliar", "2º auxiliar"]:
+                            # Segundo auxiliar normalmente recebe mesmo valor que primeiro auxiliar
+                            valor_cbhpm = cbhpm.get("first_assistant_value", 0.0)
+                        else:
+                            # Fallback para cirurgião se papel não reconhecido
+                            valor_cbhpm = cbhpm.get("surgeon_value", 0.0)
+                            logger.warning(
+                                f"Papel não reconhecido '{papel_exercido}' para procedimento {codigo}, usando valor de cirurgião"
+                            )
+
+                        # Garantir que valor_cbhpm é numérico
+                        if (
+                            valor_cbhpm
+                            and isinstance(valor_cbhpm, (int, float))
+                            and valor_cbhpm > 0
+                        ):
+                            # Calcula diferença e percentual
+                            approved_value = p.get("financial", {}).get(
+                                "approved_value", 0
+                            )
+                            if approved_value is not None:
+                                diferenca = float(approved_value) - float(valor_cbhpm)
+                                delta_percent = (diferenca / valor_cbhpm) * 100
+
+                            logger.debug(
+                                f"CBHPM calculado: código={codigo}, papel={papel_exercido}, "
+                                f"valor_cbhpm={valor_cbhpm}, aprovado={approved_value}, "
+                                f"diferenca={diferenca}, delta={delta_percent:.2f}%"
+                            )
+                        else:
+                            valor_cbhpm = None
+                            logger.warning(
+                                f"Valor CBHPM inválido para código {codigo} e papel {papel_exercido}"
+                            )
+
+                except Exception as e:
+                    logger.warning(
+                        f"Erro ao calcular CBHPM para procedimento {codigo}: {e}"
+                    )
+
+            # Garantir que valores são serializáveis para JSON
+            p["valor_cbhpm"] = float(valor_cbhpm) if valor_cbhpm else None
+            p["diferenca"] = float(diferenca) if diferenca is not None else None
+            p["delta_percent"] = (
+                float(delta_percent) if delta_percent is not None else None
+            )
+
         logger.info(
             f"Processados {len(payments)} procedimentos do demonstrativo {demo_id}"
         )
@@ -1933,65 +1974,12 @@ def _get_demonstrativo_procedures(demo_id: int, user: dict) -> list:
         db.close()
 
 
-# --- Endpoint para obter procedimentos do demonstrativo ---
-@app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
+@app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")  
 def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
     """
     return _get_demonstrativo_procedures_cached(demo_id, user["crm"], user["uf"])
-
-
-def get_cached_participacoes(user_crm: str, user_uf: str) -> dict:
-    """Função de fachada para o cache de participações"""
-    # Futuramente, pode usar Redis, etc.
-    return _compute_participacoes_optimized(user_crm, user_uf)
-
-
-@lru_cache(maxsize=32)
-def _compute_participacoes_optimized(user_crm: str, user_uf: str) -> dict:
-    """
-    Busca todas as participações de um médico e as organiza em um dicionário
-    """
-    db = SessionLocal()
-    try:
-        # OTIMIZAÇÃO: Query apenas os metadados necessários ao invés de fazer parsing
-        participacoes_map = {}
-
-        # Busca participações já processadas no banco (se existirem)
-        guias_participacoes = (
-            db.query(Guia)
-            .filter_by(crm=user_crm, uf=user_uf)
-            .with_entities(
-                Guia.numero_guia, Guia.codigo, Guia.papel, Guia.nome_medico, Guia.data
-            )
-            .all()
-        )
-
-        # Cria mapa de participações sem parsing de PDF
-        for guia_meta in guias_participacoes:
-            key = (guia_meta.numero_guia, guia_meta.codigo)
-            if key not in participacoes_map:
-                participacoes_map[key] = []
-
-            participacoes_map[key].append(
-                {
-                    "crm": user_crm,
-                    "nome": guia_meta.nome_medico or "",
-                    "papel": guia_meta.papel or "",
-                    "inicio": guia_meta.data or "",
-                    "fim": guia_meta.data or "",
-                    "status": "Fechada",
-                }
-            )
-
-        logger.info(
-            f"[OTIMIZADO] Mapeamento criado sem parsing: {len(participacoes_map)} chaves"
-        )
-        return participacoes_map
-
-    finally:
-        db.close()
 
 
 # --- Endpoint de upload de guia TISS ---
@@ -3048,124 +3036,6 @@ def calculate_file_hash(path):
             sha256.update(chunk)
     return sha256.hexdigest()
 
-
-# redeploy for demonstrativos columns
-
-
-# TEMPORARY ENDPOINT FOR TESTING - Remove after debugging
-@app.get("/api/v1/test-demonstrativo-detalhes")
-def test_demonstrativo_detalhes():
-    """
-    Endpoint temporário para testar se o frontend consegue receber e exibir dados corretos.
-    Retorna dados mockados que sabemos que funcionam.
-    """
-    return [
-        {
-            "guia": "10467538",
-            "data": "19/08/2024",
-            "paciente": "THAYSE BORGES",
-            "codigo": "30602203",
-            "descricao": "Quadrantectomia Ressecção Se",
-            "papel_exercido": "Primeiro Auxiliar",
-            "participacoes": [
-                {
-                    "papel": "Anestesista",
-                    "crm": "4127",
-                    "nome": "LILIANE ANNUZA DA SILVA",
-                },
-                {
-                    "papel": "Cirurgiao",
-                    "crm": "8425",
-                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
-                },
-                {
-                    "papel": "Primeiro Auxiliar",
-                    "crm": "6091",
-                    "nome": "MOISES DE OLIVEIRA SCHOTS",
-                },
-            ],
-            "quantidade": 1,
-            "financial": {
-                "presented_value": 156.57,
-                "approved_value": 156.57,
-                "pro_rata": 0.0,
-                "glosa": 0.0,
-            },
-            "valor_cbhpm": 200.691,
-            "diferenca": -44.121,
-            "delta_percent": -22.0,
-        },
-        {
-            "guia": "10467538",
-            "data": "19/08/2024",
-            "paciente": "THAYSE BORGES",
-            "codigo": "30602246",
-            "descricao": "Reconstrução Mamária Com Retal",
-            "papel_exercido": "Primeiro Auxiliar",
-            "participacoes": [
-                {
-                    "papel": "Anestesista",
-                    "crm": "4127",
-                    "nome": "LILIANE ANNUZA DA SILVA",
-                },
-                {
-                    "papel": "Cirurgiao",
-                    "crm": "8425",
-                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
-                },
-                {
-                    "papel": "Primeiro Auxiliar",
-                    "crm": "6091",
-                    "nome": "MOISES DE OLIVEIRA SCHOTS",
-                },
-            ],
-            "quantidade": 1,
-            "financial": {
-                "presented_value": 228.82,
-                "approved_value": 228.82,
-                "pro_rata": 0.0,
-                "glosa": 0.0,
-            },
-            "valor_cbhpm": 308.592,
-            "diferenca": -79.772,
-            "delta_percent": -25.9,
-        },
-        {
-            "guia": "10714706",
-            "data": "05/09/2024",
-            "paciente": "NUBIA KATIA PEREIRA",
-            "codigo": "30602173",
-            "descricao": "Mastoplastia Em Mama Oposta Ap",
-            "papel_exercido": "Cirurgiao",
-            "participacoes": [
-                {
-                    "papel": "Anestesista",
-                    "crm": "4127",
-                    "nome": "LILIANE ANNUZA DA SILVA",
-                },
-                {
-                    "papel": "Cirurgiao",
-                    "crm": "6091",
-                    "nome": "MOISES DE OLIVEIRA SCHOTS",
-                },
-                {
-                    "papel": "Primeiro Auxiliar",
-                    "crm": "8425",
-                    "nome": "FERNANDA MABEL BATISTA DE AQUINO",
-                },
-            ],
-            "quantidade": 1,
-            "financial": {
-                "presented_value": 558.92,
-                "approved_value": 558.92,
-                "pro_rata": 0.0,
-                "glosa": 0.0,
-            },
-            "valor_cbhpm": 722.16,
-            "diferenca": -163.24,
-            "delta_percent": -22.6,
-        },
-    ]
 
 
 @app.get("/api/v1/unpaid-procedures")
@@ -4718,164 +4588,8 @@ def list_guias(
         db.close()
 
 
-# =============================================================================
-# ENDPOINT TEMPORÁRIO PARA CRIAR DADOS DE TESTE
-# =============================================================================
-
-
-@app.post("/api/v1/guias/create-sample-data")
-def create_sample_data(user: dict = Depends(get_current_user)):
-    """
-    ENDPOINT TEMPORÁRIO: Cria dados de exemplo para testar a página de guias.
-    Remove após confirmar que a integração está funcionando.
-    """
-    crm = user.get("crm")
-    uf = user.get("uf")
-
-    if not crm or not uf:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
-
-    db = SessionLocal()
-    try:
-        # Verificar se já existem dados para este usuário
-        existing_count = db.query(Guia).filter_by(crm=crm, uf=uf).count()
-
-        if existing_count > 0:
-            return {
-                "message": f"Usuário já possui {existing_count} guias. Dados de exemplo não criados.",
-                "existing_count": existing_count,
-            }
-
-        # Criar dados de exemplo
-        sample_guias = [
-            {
-                "numero_guia": "123456789",
-                "data": "15/01/2024",
-                "paciente": "João Silva Santos",
-                "codigo": "31309054",
-                "descricao": "Laparotomia exploradora",
-                "papel": "Cirurgião",
-                "qtd": 1,
-                "status": "Gerado pela execução",
-                "prestador": "Hospital São Lucas",
-                "nome_medico": user.get("nome", "Dr. Médico"),
-                "dt_inicio": "15/01/2024 08:00",
-                "dt_fim": "15/01/2024 10:30",
-                "status_part": "Fechada",
-            },
-            {
-                "numero_guia": "123456790",
-                "data": "16/01/2024",
-                "paciente": "Maria Oliveira Costa",
-                "codigo": "30715016",
-                "descricao": "Angioplastia transluminal",
-                "papel": "Auxiliar",
-                "qtd": 1,
-                "status": "Gerado pela execução",
-                "prestador": "Clínica Cardiologia Avançada",
-                "nome_medico": user.get("nome", "Dr. Médico"),
-                "dt_inicio": "16/01/2024 14:00",
-                "dt_fim": "16/01/2024 16:45",
-                "status_part": "Fechada",
-            },
-            {
-                "numero_guia": "123456791",
-                "data": "17/01/2024",
-                "paciente": "Antonio Pereira Lima",
-                "codigo": "32301065",
-                "descricao": "Cirurgia de catarata",
-                "papel": "Cirurgião",
-                "qtd": 1,
-                "status": "Gerado pela execução",
-                "prestador": "Centro Oftalmológico",
-                "nome_medico": user.get("nome", "Dr. Médico"),
-                "dt_inicio": "17/01/2024 09:30",
-                "dt_fim": "17/01/2024 11:00",
-                "status_part": "Fechada",
-            },
-            {
-                "numero_guia": "123456792",
-                "data": "18/01/2024",
-                "paciente": "Ana Paula Rodrigues",
-                "codigo": "40901025",
-                "descricao": "Consulta médica em cardiologia",
-                "papel": "Cirurgião",
-                "qtd": 1,
-                "status": "Gerado pela execução",
-                "prestador": "Consultório Dr. Cardio",
-                "nome_medico": user.get("nome", "Dr. Médico"),
-                "dt_inicio": "18/01/2024 15:00",
-                "dt_fim": "18/01/2024 15:30",
-                "status_part": "Fechada",
-            },
-            {
-                "numero_guia": "123456793",
-                "data": "19/01/2024",
-                "paciente": "Carlos Eduardo Mendes",
-                "codigo": "30611016",
-                "descricao": "Artroscopia de joelho",
-                "papel": "Cirurgião",
-                "qtd": 1,
-                "status": "Gerado pela execução",
-                "prestador": "Hospital Ortopédico",
-                "nome_medico": user.get("nome", "Dr. Médico"),
-                "dt_inicio": "19/01/2024 07:00",
-                "dt_fim": "19/01/2024 09:30",
-                "status_part": "Fechada",
-            },
-        ]
-
-        guias_criadas = 0
-        for sample in sample_guias:
-            guia = Guia(
-                numero_guia=sample["numero_guia"],
-                data=sample["data"],
-                paciente=sample["paciente"],
-                codigo=sample["codigo"],
-                descricao=sample["descricao"],
-                papel=sample["papel"],
-                crm=crm,
-                uf=uf,
-                qtd=sample["qtd"],
-                status=sample["status"],
-                prestador=sample["prestador"],
-                user_id=crm,
-                nome_medico=sample["nome_medico"],
-                dt_inicio=sample["dt_inicio"],
-                dt_fim=sample["dt_fim"],
-                status_part=sample["status_part"],
-                file_hash=f"sample_hash_{guias_criadas}",
-                filename=f"sample_guide_{guias_criadas}.pdf",
-            )
-            db.add(guia)
-            guias_criadas += 1
-
-        db.commit()
-
-        logger.info(
-            f"Criados dados de exemplo para {crm} ({uf}): {guias_criadas} guias"
-        )
-
-        return {
-            "message": f"Dados de exemplo criados com sucesso!",
-            "guias_criadas": guias_criadas,
-            "user": {"crm": crm, "uf": uf, "nome": user.get("nome")},
-        }
-
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Erro ao criar dados de exemplo para {crm}: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao criar dados de exemplo: {str(e)}"
-        )
-    finally:
-        db.close()
-
 
 # === CACHE GLOBAL PARA PARTICIPAÇÕES ===
-import functools
-import time
-from typing import Dict, List, Tuple
 
 # Cache de participações em memória (para produção, usar Redis)
 _participacoes_cache: Dict[str, Tuple[dict, float]] = {}
@@ -4966,6 +4680,16 @@ def get_cbhpm_parser():
             _cbhpm_parser = False  # Marca como falha para não tentar novamente
 
     return _cbhpm_parser if _cbhpm_parser is not False else None
+
+
+@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
+def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
+    """
+    Obtém procedimentos do demonstrativo (endpoint compatível - usa versão otimizada internamente).
+    """
+    # OTIMIZAÇÃO: Delega para a versão otimizada com cache
+    return _get_demonstrativo_procedures_cached(demo_id, user["crm"], user["uf"])
+
 
 
 # === ENDPOINTS DE MONITORAMENTO E PERFORMANCE ===

@@ -166,41 +166,41 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'guia',
     headerName: 'Guia',
-    width: 80,
+    width: 90,
   },
   {
     field: 'data',
     headerName: 'Data',
-    width: 85,
+    width: 90,
   },
   {
     field: 'paciente',
     headerName: 'Paciente',
-    width: 140,
+    width: 150,
   },
   {
     field: 'codigo',
     headerName: 'Código',
-    width: 80,
+    width: 85,
   },
   {
     field: 'descricao',
     headerName: 'Descrição',
     flex: 1,
-    minWidth: 200,
+    minWidth: 180,
   },
   {
     field: 'quantidade',
     headerName: 'Qtd',
-    width: 45,
+    width: 50,
   },
   {
     field: 'apresentado',
     headerName: 'Apresentado',
-    width: 110,
+    width: 100,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-slate-700 whitespace-nowrap">
+      <span className="font-medium text-slate-700 whitespace-nowrap text-sm">
         {formatCurrency(value)}
       </span>
     ),
@@ -208,10 +208,10 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'liberado',
     headerName: 'Liberado',
-    width: 110,
+    width: 100,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-emerald-700 whitespace-nowrap">
+      <span className="font-medium text-emerald-700 whitespace-nowrap text-sm">
         {formatCurrency(value)}
       </span>
     ),
@@ -229,7 +229,7 @@ const getProceduresColumns = (navigate) => [
           )}
           <Badge
             variant={hasGlosa ? 'destructive' : 'default'}
-            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${
+            className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${
               hasGlosa
                 ? 'bg-red-50 text-red-700 border-red-200'
                 : 'bg-slate-50 text-slate-600 border-slate-200'
@@ -244,13 +244,13 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'cbhpm',
     headerName: 'CBHPM',
-    width: 100,
+    width: 95,
     valueGetter: (params) => params.row.cbhpm,
     valueFormatter: (params) =>
       params.value && params.value > 0 ? formatCurrency(params.value) : '--',
     renderCell: ({ value }) =>
       value && value > 0 ? (
-        <span className="font-medium text-slate-700 whitespace-nowrap">
+        <span className="font-medium text-slate-700 whitespace-nowrap text-sm">
           {formatCurrency(value)}
         </span>
       ) : (
@@ -260,7 +260,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'diferenca',
     headerName: 'Diferença',
-    width: 120,
+    width: 100,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? params.row.liberado - params.row.cbhpm
@@ -281,7 +281,7 @@ const getProceduresColumns = (navigate) => [
         <div className="flex items-center gap-1">
           {Icon}
           <Badge
-            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
+            className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${bgClass}`}
           >
             {formatCurrency(value)}
           </Badge>
@@ -292,7 +292,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'delta_percent',
     headerName: 'Delta %',
-    width: 80,
+    width: 75,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? ((params.row.liberado - params.row.cbhpm) / params.row.cbhpm) * 100
@@ -308,7 +308,7 @@ const getProceduresColumns = (navigate) => [
       }
       return (
         <Badge
-          className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
+          className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${bgClass}`}
         >
           {value !== null && value !== undefined ? `${value.toFixed(1)}%` : '--'}
         </Badge>
@@ -331,7 +331,7 @@ const getProceduresColumns = (navigate) => [
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
             <Badge
-              className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+              className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-1.5 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate('/guides?tab=upload');
@@ -347,7 +347,7 @@ const getProceduresColumns = (navigate) => [
       return (
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-2 py-0.5 whitespace-nowrap">
+          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-1.5 py-0.5 whitespace-nowrap">
             {papelDisplay(value)}
           </Badge>
         </div>
@@ -571,9 +571,9 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         className="p-0 overflow-hidden shadow-xl"
         style={{
           boxSizing: 'border-box',
-          width: 'min(1550px, 96vw)',
+          width: 'min(1800px, 98vw)',
           height: 'min(920px, 92vh)',
-          maxWidth: '96vw',
+          maxWidth: '98vw',
           maxHeight: '92vh',
         }}
       >
@@ -767,8 +767,8 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     </span>
                   </div>
                 ) : (
-                  <div className="h-full w-full overflow-hidden">
-                    <div className="h-full w-full overflow-auto">
+                                  <div className="h-full w-full overflow-hidden">
+                  <div className="h-full w-full overflow-y-auto overflow-x-hidden">
                       <DataGrid
                         rows={procedures
                           .map((p, idx) => ({ id: idx, ...p }))
@@ -800,8 +800,14 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                           setPageSize(newSize);
                           setCurrentPage(0); // Reset para primeira página
                         }}
-                        className="w-full border-0 [&_table]:w-full [&_table]:table-auto"
+                        className="w-full border-0 [&_table]:w-full [&_table]:table-fixed [&_.MuiDataGrid-cell]:px-1.5 [&_.MuiDataGrid-columnHeader]:px-1.5 [&_.MuiDataGrid-cell]:py-0.5 [&_.MuiDataGrid-columnHeader]:py-2"
                         wrapperScrollable={false}
+                        autoHeight={false}
+                        density="compact"
+                        disableColumnResize={true}
+                        disableColumnMenu={true}
+                        rowHeight={38}
+                        columnHeaderHeight={42}
                         paginationLabel="Procedimentos por página:"
                         rowsPerPageOptions={[10, 20, 50, 100]}
                       />
