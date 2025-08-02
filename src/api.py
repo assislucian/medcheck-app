@@ -900,10 +900,14 @@ def register_medico(req: RegisterRequest, request: Request):
 # --- Endpoint de login/token (persistente) ---
 @app.post("/token", response_model=TokenResponse)
 @limiter.limit("3/minute")  # Limite mais restritivo para login
-def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
-    crm = form_data.username
-    senha = form_data.password
-    uf = form_data.scopes[0] if form_data.scopes else None
+def login(
+    request: Request, 
+    username: str = Form(...),
+    password: str = Form(...),
+    uf: str = Form(...)
+):
+    crm = username
+    senha = password
     ip = request.client.host if request and request.client else "unknown"
 
     # Validação de entrada
