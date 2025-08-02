@@ -388,9 +388,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
       try {
         const token = localStorage.getItem('token');
         const res = await axios.get(
-          `${
-            import.meta.env.VITE_API_URL || 'http://localhost:8000'
-          }/api/v1/demonstrativos/${demonstrative.id}/detalhes`,
+          `/api/v1/demonstrativos/${demonstrative.id}/detalhes`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         // Mapear campos para nomes esperados, incluindo papel
@@ -1001,9 +999,7 @@ const DemonstrativesPage = () => {
         await Promise.all(
           demonstratives.map(async (d) => {
             const res = await axios.get(
-              `${
-                import.meta.env.VITE_API_URL || 'http://localhost:8000'
-              }/api/v1/demonstrativos/${d.id}/detalhes`,
+              `/api/v1/demonstrativos/${d.id}/detalhes`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             const detalhes = Array.isArray(res.data) ? res.data : [];
@@ -1057,7 +1053,7 @@ const DemonstrativesPage = () => {
 
       // Usar o endpoint de reports para exportar dados
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/reports/export?format=excel`,
+        `/api/v1/reports/export?format=excel`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: 'blob',
@@ -1090,9 +1086,7 @@ const DemonstrativesPage = () => {
       const token = localStorage.getItem('token');
       console.log('🔄 Buscando demonstrativos...');
       const response = await axios.get(
-        `${
-          import.meta.env.VITE_API_URL || 'http://localhost:8000'
-        }/api/v1/demonstrativos`,
+        `/api/v1/demonstrativos`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -1157,9 +1151,7 @@ const DemonstrativesPage = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `${
-          import.meta.env.VITE_API_URL || 'http://localhost:8000'
-        }/api/v1/demonstrativos/${id}`,
+        `/api/v1/demonstrativos/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Demonstrativo excluído com sucesso', {
