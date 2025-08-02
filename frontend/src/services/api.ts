@@ -3,7 +3,12 @@
  * Elimina 14+ implementações duplicadas de construção de URL
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// SOLUÇÃO: URL hardcoded para garantir funcionamento em produção 
+// Baseado na pesquisa: problemas comuns com VITE_API_URL no Render
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && window.location.origin.includes('onrender.com') 
+    ? 'https://medcheck-backend.onrender.com' 
+    : 'http://localhost:8000');
 
 export class ApiService {
   private static getAuthHeaders() {
