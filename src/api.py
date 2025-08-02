@@ -708,18 +708,28 @@ def root():
 
 
 # --- CORS seguro ---
-# Em produção, confia apenas na variável de ambiente.
-# Para desenvolvimento, permite localhost.
-CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS")
+# SOLUÇÃO: Hardcode origins em produção conforme melhores práticas do Render
+# Isso resolve problemas de env vars não sendo lidas corretamente no Render
+FRONTEND_ORIGINS_ENV = os.environ.get("FRONTEND_ORIGINS")
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS") 
 
-if CORS_ALLOWED_ORIGINS:
+if FRONTEND_ORIGINS_ENV:
+    allowed_origins = [origin.strip() for origin in FRONTEND_ORIGINS_ENV.split(",")]
+elif CORS_ALLOWED_ORIGINS:
     allowed_origins = [origin.strip() for origin in CORS_ALLOWED_ORIGINS.split(",")]
 else:
-    # Fallback apenas para ambiente de desenvolvimento
+    # HARDCODED: Solução recomendada pela comunidade Render para evitar 404s
     allowed_origins = [
+        # Desenvolvimento
         "http://localhost:8080",
-        "http://localhost:5173",
+        "http://localhost:5173", 
         "http://localhost:3000",
+        # Produção Render
+        "https://medcheck-frontend.onrender.com",
+        "https://medcheck-backend.onrender.com",
+        # Produção Vercel
+        "https://medcheck-app.vercel.app",
+        "https://medcheck-app-assislucians-projects.vercel.app",
     ]
 
 # O regex é uma configuração mais avançada e opcional
