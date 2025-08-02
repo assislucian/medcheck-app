@@ -708,67 +708,25 @@ def root():
 
 
 # --- CORS seguro ---
-# Lê a variável FRONTEND_ORIGINS (separada por vírgula) e aplica no middleware CORS.
-# Isso garante que apenas os domínios autorizados possam acessar a API.
-FRONTEND_ORIGINS = os.environ.get("FRONTEND_ORIGINS")
-# Novo: padrão regex para permitir subdomínios dinâmicos do Vercel (ex.: *.vercel.app)
-FRONTEND_ORIGIN_REGEX = os.environ.get("FRONTEND_ORIGIN_REGEX")
+# Em produção, confia apenas na variável de ambiente.
+# Para desenvolvimento, permite localhost.
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS")
 
-if FRONTEND_ORIGINS:
-    allowed_origins = [o.strip() for o in FRONTEND_ORIGINS.split(",") if o.strip()]
+if CORS_ALLOWED_ORIGINS:
+    allowed_origins = [origin.strip() for origin in CORS_ALLOWED_ORIGINS.split(",")]
 else:
+    # Fallback apenas para ambiente de desenvolvimento
     allowed_origins = [
-        "http://localhost:8080",  # Frontend local
-        "http://localhost:8081",
-        "http://localhost:8082",  # Porta adicional para desenvolvimento
-        "http://localhost:8083",  # Porta adicional para desenvolvimento
-        "http://localhost:8084",  # Porta adicional para desenvolvimento
-        "http://localhost:8085",  # Porta adicional para desenvolvimento
-        "http://localhost:3000",  # Create React App padrão
-        "http://localhost:3001",  # Porta adicional React
-        "http://localhost:5173",  # Vite padrão
-        "http://localhost:5174",  # Vite porta adicional
-        "https://medcheck.app",  # Produção (ajuste para seu domínio real)
-        "https://medcheck-app.vercel.app",  # Vercel produção
-        "https://www.medcheck-app.vercel.app",  # Vercel produção com www
-        "https://medcheck-app-assislucians-projects.vercel.app",
-        "https://medcheck-app.vercel.app",  # Vercel produção (duplicado para garantir)
-        "https://medcheck-app.vercel.app/",  # Vercel produção com trailing slash
-        "https://www.medcheck-app.vercel.app/",  # Vercel produção com www e trailing slash
-        "https://medcheck-frontend.onrender.com",  # Render frontend
-        "https://medcheck-backend.onrender.com",   # Render backend
+        "http://localhost:8080",
+        "http://localhost:5173",
+        "http://localhost:3000",
     ]
 
-# Adicionar origens do arquivo de configuração CORS_ALLOWED_ORIGINS
-cors_env = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-if cors_env:
-    # Separar por vírgula e adicionar às origens permitidas
-    env_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
-    allowed_origins.extend(env_origins)
-    logging.info(f"CORS: Adicionadas origens do ambiente: {env_origins}")
-
-# Remover duplicatas mantendo ordem
-allowed_origins = list(dict.fromkeys(allowed_origins))
-
-# Garantir que endereços locais comuns estejam sempre presentes
-for local_origin in [
-    "http://localhost:8080",
-    "http://localhost:5173",
-    "http://localhost:3000",
-]:
-    if local_origin not in allowed_origins:
-        allowed_origins.append(local_origin)
-
-# Se nenhum regex for definido mas queremos permitir *.vercel.app por padrão
-if not FRONTEND_ORIGIN_REGEX:
-    # Permite qualquer subdomínio do Vercel no seu namespace (preview deployments)
-    # Ex.: https://medcheck-app-xxxxx-assislucians-projects.vercel.app
-    # Ex.: https://medcheck-prddbw64p-assislucians-projects.vercel.app
-    # Também permite o domínio principal do Vercel
-    FRONTEND_ORIGIN_REGEX = r"https://(www\.)?medcheck-app(-[a-z0-9-]+)?(-assislucians-projects)?\.vercel\.app"
+# O regex é uma configuração mais avançada e opcional
+FRONTEND_ORIGIN_REGEX = os.environ.get("FRONTEND_ORIGIN_REGEX")
 
 logging.info(
-    f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX}"
+    f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX or 'Not set'}"
 )
 
 app.add_middleware(
@@ -1855,13 +1813,16 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
 
 
 # --- Endpoint para obter detalhes do demonstrativo (alias para procedimentos) ---
+@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
+def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
+    """Alias para o endpoint de procedimentos, mantendo compatibilidade com o frontend."""
+    return get_demonstrativo_procedures(demo_id, user)
 
 
 # --- Endpoint para obter procedimentos do demonstrativo ---
-@app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
 @lru_cache(maxsize=128)
-def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
+def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
     """
@@ -1904,64 +1865,55 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
             return []
 
         # --- OTIMIZAÇÃO: Associação de participações médicas CACHEADA ---
+
+        # Usa cache ao invés de reprocessar PDFs
         participacoes_map = get_cached_participacoes(user["crm"], user["uf"])
+
         logger.info(
             f"[PERFORMANCE] Participações carregadas: {len(participacoes_map)} chaves (via cache)"
         )
 
+        # Log reduzido para performance
+        if len(participacoes_map) > 10:
+            logger.info(
+                f"[PERFORMANCE] Amostra de chaves: {list(participacoes_map.keys())[:10]}..."
+            )
+        else:
+            logger.info(
+                f"[PERFORMANCE] Chaves encontradas: {list(participacoes_map.keys())}"
+            )
+
         # --- Cruzamento com CBHPM ---
         from src.parsers.cbhpm_parser import CBHPMParser
+
         try:
             cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
         except Exception as e:
             logger.error(f"Erro ao carregar CBHPM: {e}")
             cbhpm_parser = None
-            
+
         # Para cada procedimento do demonstrativo, associa participações e CBHPM
         for p in payments:
             codigo = p.get("code") or p.get("codigo")
             guia = p.get("guia")
             key = (guia, codigo)
 
+            # Busca participações - CORREÇÃO: Garantir que a busca funcione
             participacoes = participacoes_map.get(key, [])
             p["participacoes"] = participacoes
+
+            # CORREÇÃO: Garantir que guia_encontrada seja definida corretamente
             p["guia_encontrada"] = len(participacoes) > 0
 
+            # Se houver participações do usuário, define papel_exercido
             papel_exercido = None
             for part in participacoes:
                 if str(part.get("crm")) == str(user["crm"]):
                     papel_exercido = part.get("papel")
                     break
+
             p["papel_exercido"] = papel_exercido or ""
-            
-            # Lógica CBHPM
-            if cbhpm_parser and codigo:
-                try:
-                    cbhpm_data = cbhpm_parser.get_procedure(str(codigo))
-                    if cbhpm_data:
-                        p["cbhpm_valor"] = cbhpm_data.get("valor_total", 0)
-                        # Calcula a diferença
-                        liberado = float(str(p.get("liberado_float", "0")).replace(",", "."))
-                        diferenca = liberado - p["cbhpm_valor"]
-                        p["diferenca"] = diferenca
-                        if p["cbhpm_valor"] > 0:
-                            p["delta_percentual"] = (diferenca / p["cbhpm_valor"]) * 100
-                        else:
-                            p["delta_percentual"] = 0
-                    else:
-                        p["cbhpm_valor"] = 0
-                        p["diferenca"] = 0
-                        p["delta_percentual"] = 0
-                except Exception as e:
-                    logger.warning(f"Erro ao processar CBHPM para código {codigo}: {e}")
-                    p["cbhpm_valor"] = 0
-                    p["diferenca"] = 0
-                    p["delta_percentual"] = 0
-            else:
-                p["cbhpm_valor"] = 0
-                p["diferenca"] = 0
-                p["delta_percentual"] = 0
-        
+
         logger.info(
             f"Processados {len(payments)} procedimentos do demonstrativo {demo_id}"
         )
@@ -5003,9 +4955,7 @@ def get_cbhpm_parser():
 
 
 @app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
-def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
-    """Retorna os procedimentos de um demonstrativo. Alias para /procedimentos."""
-    return get_demonstrativo_procedures(demo_id=demo_id, user=user)
+def get_demonstrativo_procedures(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
     """
