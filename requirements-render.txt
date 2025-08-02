@@ -24,7 +24,8 @@ sqlalchemy==2.0.23
 # Database Drivers
 psycopg2-binary==2.9.9
 
-# Basic Data Processing (PRE-COMPILED WHEELS)
+# Basic Data Processing (COMPATIBLE VERSIONS)
+numpy==1.24.4
 pandas==2.0.3
 
 # Excel Processing
