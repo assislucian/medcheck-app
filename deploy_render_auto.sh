@@ -26,7 +26,7 @@ cat > render_deploy_info.json << 'EOL'
       "type": "web",
       "runtime": "python",
       "buildCommand": "pip install -r requirements.txt",
-      "startCommand": "uvicorn src.api_render_production:app --host 0.0.0.0 --port $PORT",
+      "startCommand": "uvicorn src.api:app --host 0.0.0.0 --port $PORT",
       "plan": "free",
       "region": "frankfurt"
     },
