@@ -1860,6 +1860,7 @@ def download_demonstrativo(demo_id: int, user: dict = Depends(get_current_user))
 # --- Endpoint para obter procedimentos do demonstrativo ---
 @app.get("/api/v1/demonstrativos/{demo_id}/detalhes")
 @app.get("/api/v1/demonstrativos/{demo_id}/procedimentos")
+@lru_cache(maxsize=128)
 def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_user)):
     """
     Obtém procedimentos do demonstrativo com cross-referencing para guias médicas e cálculo CBHPM.
@@ -1903,55 +1904,64 @@ def get_demonstrativo_detalhes(demo_id: int, user: dict = Depends(get_current_us
             return []
 
         # --- OTIMIZAÇÃO: Associação de participações médicas CACHEADA ---
-
-        # Usa cache ao invés de reprocessar PDFs
         participacoes_map = get_cached_participacoes(user["crm"], user["uf"])
-
         logger.info(
             f"[PERFORMANCE] Participações carregadas: {len(participacoes_map)} chaves (via cache)"
         )
 
-        # Log reduzido para performance
-        if len(participacoes_map) > 10:
-            logger.info(
-                f"[PERFORMANCE] Amostra de chaves: {list(participacoes_map.keys())[:10]}..."
-            )
-        else:
-            logger.info(
-                f"[PERFORMANCE] Chaves encontradas: {list(participacoes_map.keys())}"
-            )
-
         # --- Cruzamento com CBHPM ---
         from src.parsers.cbhpm_parser import CBHPMParser
-
         try:
             cbhpm_parser = CBHPMParser("data/cbhpm/CBHPM2015_v1.xlsx")
         except Exception as e:
             logger.error(f"Erro ao carregar CBHPM: {e}")
             cbhpm_parser = None
-
+            
         # Para cada procedimento do demonstrativo, associa participações e CBHPM
         for p in payments:
             codigo = p.get("code") or p.get("codigo")
             guia = p.get("guia")
             key = (guia, codigo)
 
-            # Busca participações - CORREÇÃO: Garantir que a busca funcione
             participacoes = participacoes_map.get(key, [])
             p["participacoes"] = participacoes
-
-            # CORREÇÃO: Garantir que guia_encontrada seja definida corretamente
             p["guia_encontrada"] = len(participacoes) > 0
 
-            # Se houver participações do usuário, define papel_exercido
             papel_exercido = None
             for part in participacoes:
                 if str(part.get("crm")) == str(user["crm"]):
                     papel_exercido = part.get("papel")
                     break
-
             p["papel_exercido"] = papel_exercido or ""
-
+            
+            # Lógica CBHPM
+            if cbhpm_parser and codigo:
+                try:
+                    cbhpm_data = cbhpm_parser.get_procedure(str(codigo))
+                    if cbhpm_data:
+                        p["cbhpm_valor"] = cbhpm_data.get("valor_total", 0)
+                        # Calcula a diferença
+                        liberado = float(str(p.get("liberado_float", "0")).replace(",", "."))
+                        diferenca = liberado - p["cbhpm_valor"]
+                        p["diferenca"] = diferenca
+                        if p["cbhpm_valor"] > 0:
+                            p["delta_percentual"] = (diferenca / p["cbhpm_valor"]) * 100
+                        else:
+                            p["delta_percentual"] = 0
+                    else:
+                        p["cbhpm_valor"] = 0
+                        p["diferenca"] = 0
+                        p["delta_percentual"] = 0
+                except Exception as e:
+                    logger.warning(f"Erro ao processar CBHPM para código {codigo}: {e}")
+                    p["cbhpm_valor"] = 0
+                    p["diferenca"] = 0
+                    p["delta_percentual"] = 0
+            else:
+                p["cbhpm_valor"] = 0
+                p["diferenca"] = 0
+                p["delta_percentual"] = 0
+        
         logger.info(
             f"Processados {len(payments)} procedimentos do demonstrativo {demo_id}"
         )
