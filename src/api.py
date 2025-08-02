@@ -700,6 +700,52 @@ async def health_check():
     }
 
 
+@app.get("/debug/database", tags=["Debug"])
+async def debug_database():
+    """Endpoint de diagnóstico do banco de dados"""
+    try:
+        import sqlalchemy
+        insp = sqlalchemy.inspect(engine)
+        
+        # Verificar conexão
+        with engine.connect() as conn:
+            conn.execute(sqlalchemy.text("SELECT 1"))
+        
+        # Listar tabelas
+        tables = insp.get_table_names()
+        
+        # Verificar estrutura da tabela medicos
+        medicos_info = {}
+        if "medicos" in tables:
+            columns = [c["name"] for c in insp.get_columns("medicos")]
+            with engine.connect() as conn:
+                count_result = conn.execute(sqlalchemy.text("SELECT COUNT(*) FROM medicos")).fetchone()
+                count = count_result[0] if count_result else 0
+            medicos_info = {
+                "exists": True,
+                "columns": columns,
+                "count": count
+            }
+        else:
+            medicos_info = {"exists": False}
+        
+        return {
+            "status": "success",
+            "database_type": str(engine.url.drivername),
+            "database_url_prefix": str(engine.url).split("://")[0] + "://",
+            "tables": tables,
+            "medicos_table": medicos_info,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
 # --- Importa e registra o router de glosas (Knowledge Base) ---
 # Comentado temporariamente para debug do Railway
 # from backend.knowledge_base.glosas_api import router as glosas_router
