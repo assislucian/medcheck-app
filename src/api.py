@@ -278,7 +278,16 @@ def _ensure_medicos_table_structure():
         # Verificar se a tabela medicos existe
         if not insp.has_table("medicos"):
             logger.info("Table medicos does not exist, creating...")
-            Base.metadata.create_all(bind=engine)
+            try:
+                Base.metadata.create_all(bind=engine)
+                logger.info("Tables created successfully")
+            except Exception as e:
+                # Tratar especificamente erro de constraint duplicada
+                if "already exists" in str(e) or "DuplicateTable" in str(e):
+                    logger.info(f"Table constraints already exist (expected on redeploy): {e}")
+                else:
+                    logger.error(f"Failed to create tables: {e}")
+                    raise
             return
 
         # Verificar colunas da tabela medicos
@@ -306,8 +315,14 @@ def _ensure_medicos_table_structure():
                     conn.execute(
                         sqlalchemy.text("DROP TABLE IF EXISTS medicos CASCADE")
                     )
-                    Base.metadata.create_all(bind=engine)
-                    logger.info("Medicos table recreated successfully")
+                    try:
+                        Base.metadata.create_all(bind=engine)
+                        logger.info("Medicos table recreated successfully")
+                    except Exception as create_error:
+                        if "already exists" in str(create_error):
+                            logger.info("Table constraints already exist after recreation")
+                        else:
+                            raise
 
         # Verificar outras colunas essenciais
         required_columns = ["crm", "uf", "nome", "email", "senha_hash"]
@@ -318,8 +333,14 @@ def _ensure_medicos_table_structure():
             # Recriar a tabela se faltam colunas essenciais
             with engine.connect() as conn:
                 conn.execute(sqlalchemy.text("DROP TABLE IF EXISTS medicos CASCADE"))
-                Base.metadata.create_all(bind=engine)
-                logger.info("Medicos table recreated with correct structure")
+                try:
+                    Base.metadata.create_all(bind=engine)
+                    logger.info("Medicos table recreated with correct structure")
+                except Exception as create_error:
+                    if "already exists" in str(create_error):
+                        logger.info("Table constraints already exist after recreation")
+                    else:
+                        raise
 
     except Exception as exc:
         logger.error(f"Failed to ensure medicos table structure: {exc}")
@@ -329,7 +350,10 @@ def _ensure_medicos_table_structure():
             Base.metadata.create_all(bind=engine)
             logger.info("All tables recreated successfully")
         except Exception as e:
-            logger.error(f"Failed to recreate tables: {e}")
+            if "already exists" in str(e) or "DuplicateTable" in str(e):
+                logger.info(f"Some constraints already exist (expected): {e}")
+            else:
+                logger.error(f"Failed to recreate tables: {e}")
 
 
 # Migração leve: garantir colunas uf e file_hash nas tabelas
@@ -337,70 +361,107 @@ def _ensure_uf_and_file_hash_columns():
     try:
         insp = sqlalchemy.inspect(engine)
 
+        # Verificar se a tabela demonstrativos existe antes de tentar modificá-la
+        if not insp.has_table("demonstrativos"):
+            logger.info("Table demonstrativos does not exist yet, skipping column migration")
+            return
+
         # Verificar e adicionar coluna uf na tabela demonstrativos
-        demo_cols = [c["name"] for c in insp.get_columns("demonstrativos")]
-        if "uf" not in demo_cols:
-            with engine.connect() as conn:
-                conn.execute(
-                    sqlalchemy.text(
-                        "ALTER TABLE demonstrativos ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+        try:
+            demo_cols = [c["name"] for c in insp.get_columns("demonstrativos")]
+            if "uf" not in demo_cols:
+                with engine.connect() as conn:
+                    conn.execute(
+                        sqlalchemy.text(
+                            "ALTER TABLE demonstrativos ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+                        )
                     )
-                )
-                conn.execute(
-                    sqlalchemy.text(
-                        "CREATE INDEX IF NOT EXISTS ix_demonstrativos_uf ON demonstrativos(uf)"
+                    conn.execute(
+                        sqlalchemy.text(
+                            "CREATE INDEX IF NOT EXISTS ix_demonstrativos_uf ON demonstrativos(uf)"
+                        )
                     )
-                )
-            logger.info("Column uf added to demonstrativos table")
+                logger.info("Column uf added to demonstrativos table")
+        except Exception as e:
+            if "already exists" in str(e) or "duplicate" in str(e).lower():
+                logger.info(f"Column uf already exists in demonstrativos: {e}")
+            else:
+                logger.error(f"Failed to add uf column to demonstrativos: {e}")
 
         # Verificar e adicionar coluna file_hash na tabela demonstrativos
-        if "file_hash" not in demo_cols:
-            with engine.connect() as conn:
-                conn.execute(
-                    sqlalchemy.text(
-                        "ALTER TABLE demonstrativos ADD COLUMN file_hash VARCHAR(64)"
+        try:
+            demo_cols = [c["name"] for c in insp.get_columns("demonstrativos")]
+            if "file_hash" not in demo_cols:
+                with engine.connect() as conn:
+                    conn.execute(
+                        sqlalchemy.text(
+                            "ALTER TABLE demonstrativos ADD COLUMN file_hash VARCHAR(64)"
+                        )
                     )
-                )
-                conn.execute(
-                    sqlalchemy.text(
-                        "CREATE INDEX IF NOT EXISTS ix_demonstrativos_file_hash ON demonstrativos(file_hash)"
+                    conn.execute(
+                        sqlalchemy.text(
+                            "CREATE INDEX IF NOT EXISTS ix_demonstrativos_file_hash ON demonstrativos(file_hash)"
+                        )
                     )
-                )
-            logger.info("Column file_hash added to demonstrativos table")
+                logger.info("Column file_hash added to demonstrativos table")
+        except Exception as e:
+            if "already exists" in str(e) or "duplicate" in str(e).lower():
+                logger.info(f"Column file_hash already exists in demonstrativos: {e}")
+            else:
+                logger.error(f"Failed to add file_hash column to demonstrativos: {e}")
+
+        # Verificar se a tabela guias existe antes de tentar modificá-la
+        if not insp.has_table("guias"):
+            logger.info("Table guias does not exist yet, skipping guias column migration")
+            return
 
         # Verificar e adicionar coluna uf na tabela guias
-        guia_cols = [c["name"] for c in insp.get_columns("guias")]
-        if "uf" not in guia_cols:
-            with engine.connect() as conn:
-                conn.execute(
-                    sqlalchemy.text(
-                        "ALTER TABLE guias ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+        try:
+            guia_cols = [c["name"] for c in insp.get_columns("guias")]
+            if "uf" not in guia_cols:
+                with engine.connect() as conn:
+                    conn.execute(
+                        sqlalchemy.text(
+                            "ALTER TABLE guias ADD COLUMN uf VARCHAR(10) DEFAULT 'AC'"
+                        )
                     )
-                )
-                conn.execute(
-                    sqlalchemy.text(
-                        "CREATE INDEX IF NOT EXISTS ix_guias_uf ON guias(uf)"
+                    conn.execute(
+                        sqlalchemy.text(
+                            "CREATE INDEX IF NOT EXISTS ix_guias_uf ON guias(uf)"
+                        )
                     )
-                )
-            logger.info("Column uf added to guias table")
+                logger.info("Column uf added to guias table")
+        except Exception as e:
+            if "already exists" in str(e) or "duplicate" in str(e).lower():
+                logger.info(f"Column uf already exists in guias: {e}")
+            else:
+                logger.error(f"Failed to add uf column to guias: {e}")
 
         # Verificar e adicionar coluna file_hash na tabela guias
-        if "file_hash" not in guia_cols:
-            with engine.connect() as conn:
-                conn.execute(
-                    sqlalchemy.text(
-                        "ALTER TABLE guias ADD COLUMN file_hash VARCHAR(64)"
+        try:
+            guia_cols = [c["name"] for c in insp.get_columns("guias")]
+            if "file_hash" not in guia_cols:
+                with engine.connect() as conn:
+                    conn.execute(
+                        sqlalchemy.text(
+                            "ALTER TABLE guias ADD COLUMN file_hash VARCHAR(64)"
+                        )
                     )
-                )
-                conn.execute(
-                    sqlalchemy.text(
-                        "CREATE INDEX IF NOT EXISTS ix_guias_file_hash ON guias(file_hash)"
+                    conn.execute(
+                        sqlalchemy.text(
+                            "CREATE INDEX IF NOT EXISTS ix_guias_file_hash ON guias(file_hash)"
+                        )
                     )
-                )
-            logger.info("Column file_hash added to guias table")
+                logger.info("Column file_hash added to guias table")
+        except Exception as e:
+            if "already exists" in str(e) or "duplicate" in str(e).lower():
+                logger.info(f"Column file_hash already exists in guias: {e}")
+            else:
+                logger.error(f"Failed to add file_hash column to guias: {e}")
 
     except Exception as exc:
-        logger.error(f"Failed to ensure uf and file_hash columns: {exc}")
+        # Log específico mas não falha o aplicativo
+        logger.warning(f"Failed to ensure uf and file_hash columns (non-critical): {exc}")
 
 
 _ensure_medicos_table_structure()
