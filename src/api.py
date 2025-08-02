@@ -1,10 +1,13 @@
-# flake8: noqa
+# -*- coding: utf-8 -*-
+"""
+MedCheck API - Sistema de análise de demonstrativos médicos
+Auditoria aplicada: melhorias de código, segurança e performance
+"""
 import hashlib
 import io
 import json
 import logging
 import os
-import pdb
 import re
 import shutil
 import sqlite3
@@ -15,7 +18,7 @@ import zipfile
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from functools import lru_cache
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Generator
 from uuid import uuid4
 
 import bcrypt
@@ -87,6 +90,99 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("api")
+
+# --- Funções de Validação ---
+def senha_forte(senha: str) -> tuple[bool, str]:
+    """
+    Valida se uma senha atende aos critérios de segurança.
+    
+    Args:
+        senha: A senha a ser validada
+        
+    Returns:
+        Tupla (é_forte, mensagem_erro)
+    """
+    if len(senha) < 8:
+        return False, "A senha deve ter pelo menos 8 caracteres"
+    if not re.search(r"[A-Z]", senha):
+        return False, "A senha deve conter pelo menos uma letra maiúscula"
+    if not re.search(r"[a-z]", senha):
+        return False, "A senha deve conter pelo menos uma letra minúscula"
+    if not re.search(r"[0-9]", senha):
+        return False, "A senha deve conter pelo menos um número"
+    if not re.search(r"[^A-Za-z0-9]", senha):
+        return False, "A senha deve conter pelo menos um caractere especial"
+    # Verificar sequências comuns
+    if any(seq in senha.lower() for seq in ["123", "abc", "qwe", "asd"]):
+        return False, "A senha não pode conter sequências comuns"
+    return True, ""
+
+
+def sanitize_text(text: str, max_length: int = 255) -> str:
+    """
+    Sanitiza texto removendo caracteres perigosos e limitando tamanho.
+    
+    Args:
+        text: Texto a ser sanitizado
+        max_length: Tamanho máximo permitido
+        
+    Returns:
+        Texto sanitizado
+    """
+    if not text:
+        return ""
+    
+    # Remove caracteres de controle e limita tamanho
+    sanitized = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text.strip())
+    return sanitized[:max_length]
+
+
+def get_db_session() -> Generator[Session, None, None]:
+    """
+    Dependency para obter sessão do banco de dados.
+    Garante que a conexão seja fechada adequadamente.
+    """
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def log_performance(func_name: str):
+    """
+    Decorator para log de performance de endpoints críticos.
+    """
+    def decorator(func):
+        async def async_wrapper(*args, **kwargs):
+            start_time = time.time()
+            try:
+                result = await func(*args, **kwargs)
+                duration = time.time() - start_time
+                logger.info(f"Performance [{func_name}]: {duration:.3f}s")
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                logger.error(f"Performance [{func_name}]: {duration:.3f}s - ERROR: {e}")
+                raise
+        
+        def sync_wrapper(*args, **kwargs):
+            start_time = time.time()
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                logger.info(f"Performance [{func_name}]: {duration:.3f}s")
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                logger.error(f"Performance [{func_name}]: {duration:.3f}s - ERROR: {e}")
+                raise
+        
+        # Retorna wrapper apropriado baseado se a função é async
+        if hasattr(func, '__code__') and func.__code__.co_flags & 0x80:
+            return async_wrapper
+        return sync_wrapper
+    return decorator
 
 # Configurações de segurança aprimoradas
 ADMIN_SECRET = os.environ.get("ADMIN_SECRET")
@@ -934,22 +1030,6 @@ def register_medico(req: RegisterRequest, request: Request):
     req.uf = req.uf.upper().strip()
 
     # Validação de senha forte
-    def senha_forte(s):
-        if len(s) < 8:
-            return False, "A senha deve ter pelo menos 8 caracteres"
-        if not re.search(r"[A-Z]", s):
-            return False, "A senha deve conter pelo menos uma letra maiúscula"
-        if not re.search(r"[a-z]", s):
-            return False, "A senha deve conter pelo menos uma letra minúscula"
-        if not re.search(r"[0-9]", s):
-            return False, "A senha deve conter pelo menos um número"
-        if not re.search(r"[^A-Za-z0-9]", s):
-            return False, "A senha deve conter pelo menos um caractere especial"
-        # Verificar sequências comuns
-        if any(seq in s.lower() for seq in ["123", "abc", "qwe", "asd"]):
-            return False, "A senha não pode conter sequências comuns"
-        return True, ""
-
     is_strong, msg = senha_forte(req.senha)
     if not is_strong:
         raise HTTPException(status_code=400, detail=msg)
@@ -1439,8 +1519,8 @@ def upload_demonstrativos(
                     # Remove arquivo temporário e reporta duplicata
                     try:
                         os.remove(file_path)
-                    except:
-                        pass
+                    except OSError as e:
+                        logger.warning(f"Erro ao remover arquivo temporário {file_path}: {e}")
                     results.append(
                         {
                             "filename": file.filename,
@@ -1468,8 +1548,8 @@ def upload_demonstrativos(
                     # Remove arquivo temporário em caso de erro
                     try:
                         os.remove(file_path)
-                    except:
-                        pass
+                    except OSError as e:
+                        logger.warning(f"Erro ao remover arquivo temporário {file_path}: {e}")
                     logger.error(
                         f"Erro ao processar demonstrativo {file.filename}: {e}"
                     )
@@ -1486,8 +1566,8 @@ def upload_demonstrativos(
                     # Remove arquivo se não há procedimentos
                     try:
                         os.remove(file_path)
-                    except:
-                        pass
+                    except OSError as e:
+                        logger.warning(f"Erro ao remover arquivo temporário {file_path}: {e}")
                     results.append(
                         {
                             "filename": file.filename,
@@ -1539,8 +1619,8 @@ def upload_demonstrativos(
                     # Remove arquivo em caso de erro no banco
                     try:
                         os.remove(file_path)
-                    except:
-                        pass
+                    except OSError as e:
+                        logger.warning(f"Erro ao remover arquivo temporário {file_path}: {e}")
                     raise db_error
 
                 # Log de auditoria
@@ -1633,8 +1713,8 @@ def test_demonstrativo_upload(
         # Limpar arquivo temporário
         try:
             os.remove(file_path)
-        except:
-            pass
+                    except OSError as e:
+                logger.warning(f"Erro ao remover arquivo: {e}")
 
         return {
             "success": True,
@@ -1714,7 +1794,7 @@ def list_demonstrativos(user: dict = Depends(get_current_user)):
         try:
             return float(clean_value)
         except ValueError:
-            print(f"⚠️ Erro ao converter valor: {value_str}")
+            logger.warning(f"Erro ao converter valor monetário: {value_str}")
             return 0.0
 
     try:
@@ -2253,8 +2333,8 @@ def upload_guias(
             finally:
                 try:
                     os.unlink(tmp_path)
-                except:
-                    pass
+                            except OSError as e:
+                logger.warning(f"Erro ao remover arquivo: {e}")
 
     return {"results": results}
 
@@ -2469,8 +2549,8 @@ def get_activity_logs(
                                     end_dt = datetime.fromisoformat(end_date)
                                     if entry_date.date() > end_dt.date():
                                         continue
-                            except:
-                                pass
+                                        except OSError as e:
+                logger.warning(f"Erro ao remover arquivo: {e}")
 
                         action = entry.get("action", "")
                         details = entry.get("details", {})
