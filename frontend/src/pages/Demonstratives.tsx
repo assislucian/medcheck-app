@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useFileUpload } from '../hooks/useFileUpload';
 import { ApiService } from '../services/api';
 
 const mockDetailedProcedures = [
