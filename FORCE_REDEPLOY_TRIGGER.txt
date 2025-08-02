@@ -1,0 +1,14 @@
+# FORCE REDEPLOY TRIGGER
+
+**Timestamp:** 2025-08-02 16:05
+**Purpose:** Force Render to redeploy with correct backend configuration
+
+This file exists solely to trigger a new deployment on Render.
+The previous commit should have fixed the render.yaml configuration,
+but Render appears to be using cached or manual configurations.
+
+**Expected Result:** 
+- Render should deploy src.api:app (correct backend)
+- Message should change from "Simplificada para Render" to "Sistema Médico Premium"
+
+If this doesn't work, manual intervention in Render dashboard may be required.
