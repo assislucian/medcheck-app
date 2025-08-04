@@ -3,7 +3,8 @@ FROM python:3.11-slim
 
 # Evita .pyc e garante logs imediatos
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 
@@ -22,4 +23,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando de start (Railway injects PORT automatically)
-CMD python -m uvicorn src.api:app --host 0.0.0.0 --port $PORT
+# Usar main.py que já tem toda a inicialização necessária
+CMD python src/main.py
