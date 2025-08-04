@@ -23,5 +23,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando de start (Railway injects PORT automatically)
-# Usar main.py que já tem toda a inicialização necessária
-CMD python src/main.py
+# Executa a aplicação como um módulo para garantir imports corretos
+CMD ["python", "-m", "src.main"]

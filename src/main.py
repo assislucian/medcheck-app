@@ -8,9 +8,6 @@ import time
 from src.api import app
 from src.database import create_database_engine, init_database
 
-# Adiciona o diretório raiz ao path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 # Configurar logging
 logging.basicConfig(
     level=logging.INFO,
