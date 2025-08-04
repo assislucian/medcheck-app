@@ -1,5 +1,46 @@
-# ===== MEDCHECK - MAIN REQUIREMENTS =====
-# For production deployment (Render, etc.)
-# Uses structured requirements in requirements/ directory
+# ===== MEDCHECK - RAILWAY REQUIREMENTS =====
+# Consolidated dependencies for Railway deployment
 
--r requirements/production.txt
+# Web Framework
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Authentication & Security
+bcrypt==4.0.1
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+
+# API Enhancement
+slowapi==0.1.9
+python-multipart==0.0.6
+
+# Validation & Schemas
+pydantic[email]==2.4.2
+pydantic-settings==2.0.3
+
+# Data Processing  
+numpy==1.26.4
+pandas==2.1.4
+pandera==0.17.2
+multimethod==1.9.1
+
+# Database ORM & Driver
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# PDF Processing
+pdfplumber==0.9.0
+PyMuPDF==1.23.8
+
+# Excel Processing
+openpyxl==3.1.2
+
+# OCR Processing
+pytesseract==0.3.10
+
+# Date/Time utilities
+python-dateutil==2.8.2
+python-json-logger==2.0.7
+
+# HTTP Client (for health checks)
+requests==2.31.0
