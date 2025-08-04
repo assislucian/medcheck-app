@@ -28,7 +28,7 @@ safety==2.3.5
 
 # Development Tools
 ipython==8.18.1
-jupyter==1.0.0
+jupyter==1.1.1
 
 # Dependency management
 pip-audit==2.6.1
