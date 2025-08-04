@@ -31,5 +31,5 @@ ipython==8.18.1
 jupyter==1.0.0
 
 # Dependency management
-pip-audit==2.6.1
+pip-audit==2.9.0
 pipreqs==0.4.13
