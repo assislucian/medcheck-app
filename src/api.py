@@ -718,18 +718,21 @@ if FRONTEND_ORIGINS_ENV:
 elif CORS_ALLOWED_ORIGINS:
     allowed_origins = [origin.strip() for origin in CORS_ALLOWED_ORIGINS.split(",")]
 else:
-    # HARDCODED: Solução recomendada pela comunidade Render para evitar 404s
+    # RAILWAY + VERCEL: Origins automáticos para produção
     allowed_origins = [
         # Desenvolvimento
         "http://localhost:8080",
         "http://localhost:5173", 
         "http://localhost:3000",
-        # Produção Render
-        "https://medcheck-frontend.onrender.com",
-        "https://medcheck-backend.onrender.com",
-        # Produção Vercel
+        # Produção Railway
+        "https://medcheck-backend-production.up.railway.app",
+        # Produção Vercel 
         "https://medcheck-app.vercel.app",
         "https://medcheck-app-assislucians-projects.vercel.app",
+        "https://medcheck-bliapoxsv-assislucians-projects.vercel.app",
+        # Fallback Render (manter compatibilidade)
+        "https://medcheck-frontend.onrender.com",
+        "https://medcheck-backend.onrender.com",
     ]
 
 # O regex é uma configuração mais avançada e opcional
@@ -2259,6 +2262,11 @@ def upload_guias(
                     logger.info(
                         f"Guia processada: {len(procedures)} procedimentos encontrados, {guias_adicionadas} novos adicionados"
                     )
+                    
+                    # ✅ CORREÇÃO CRÍTICA: Invalidar cache após upload bem-sucedido de guias
+                    if guias_adicionadas > 0:
+                        invalidate_participacoes_cache(crm, uf)
+                        logger.info(f"Cache invalidado após adicionar {guias_adicionadas} novas guias")
 
                     results.append(
                         {
@@ -2347,6 +2355,12 @@ def save_guias(procedimentos: list = Body(...), user: dict = Depends(get_current
             )
             db.add(guia)
         db.commit()
+        
+        # ✅ CORREÇÃO CRÍTICA: Invalidar cache após salvar guias
+        if len(procedimentos) > 0:
+            invalidate_participacoes_cache(user["crm"], user["uf"])
+            logger.info(f"Cache invalidado após salvar {len(procedimentos)} guias")
+            
         return {"message": f"{len(procedimentos)} guias salvas com sucesso"}
     finally:
         db.close()
@@ -2389,6 +2403,9 @@ def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
         )
         db.commit()
 
+        # ✅ CORREÇÃO CRÍTICA: Invalidar cache de participações após deletar guia
+        invalidate_participacoes_cache(user["crm"], user["uf"])
+        
         # Log de remoção
         log_audit(
             "delete_guia",
@@ -2401,7 +2418,7 @@ def delete_guia(numero_guia: str, user: dict = Depends(get_current_user)):
         )
 
         logger.info(
-            f"Guia {numero_guia} removida com sucesso. Arquivo: {arquivo_removido}"
+            f"Guia {numero_guia} removida com sucesso. Arquivo: {arquivo_removido}. Cache invalidado."
         )
         return
 
@@ -2435,6 +2452,11 @@ def batch_delete_guias(
             .delete(synchronize_session=False)
         )
         db.commit()
+        
+        # ✅ CORREÇÃO CRÍTICA: Invalidar cache de participações após batch delete
+        if deleted_count > 0:
+            invalidate_participacoes_cache(user["crm"], user["uf"])
+            logger.info(f"Cache invalidado após deletar {deleted_count} guias em lote")
 
         return {"message": f"{deleted_count} guias deletadas com sucesso"}
     except Exception as e:
@@ -4604,6 +4626,18 @@ def list_guias(
 # Cache de participações em memória (para produção, usar Redis)
 _participacoes_cache: Dict[str, Tuple[dict, float]] = {}
 _cache_ttl = 300  # 5 minutos
+
+
+def invalidate_participacoes_cache(user_crm: str, user_uf: str):
+    """Invalida o cache de participações para um usuário específico"""
+    cache_key = f"participacoes_{user_crm}_{user_uf}"
+    if cache_key in _participacoes_cache:
+        del _participacoes_cache[cache_key]
+        logger.info(f"[CACHE INVALIDATED] Cache de participações limpo para {user_crm}_{user_uf}")
+    
+    # Também invalida cache da função cached (LRU)
+    _get_demonstrativo_procedures_cached.cache_clear()
+    logger.info(f"[CACHE INVALIDATED] Cache LRU de procedimentos limpo")
 
 
 def get_cached_participacoes(user_crm: str, user_uf: str) -> dict:

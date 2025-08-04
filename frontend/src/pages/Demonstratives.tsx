@@ -1,15 +1,45 @@
-import { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  AlertCircle,
+  ArrowDownRight,
+  ArrowUpRight,
+  CheckCircle,
+  ClipboardList,
+  Download,
+  Eye,
+  FileBarChart,
+  FileText,
+  Loader2,
+  RefreshCw,
+  Search,
+  Trash2,
+  TrendingUp,
+  Upload,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { CrosscheckStatusIndicator } from '../components/common/CrosscheckStatusIndicator';
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
+import { DataGrid } from '../components/ui/data-grid';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../components/ui/dialog';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
@@ -19,93 +49,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../components/ui/dialog';
-import {
-  FileText,
-  Upload,
-  Eye,
-  Trash2,
-  Search,
-  RefreshCw,
-  FileBarChart,
-  CheckCircle,
-  AlertCircle,
-  ClipboardList,
-  TrendingUp,
-  Loader2,
-  ArrowUpRight,
-  ArrowDownRight,
-  Download,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { Helmet } from 'react-helmet-async';
+import { SkeletonInfoCard } from '../components/ui/skeleton';
+
+import { usePageTitle } from '../hooks/usePageTitle';
+import { ApiService } from '../services/api';
+import { formatValidationError } from '../utils/errorUtils';
 import { formatCurrency } from '../utils/format';
 import { exportDemonstrativeToPDF } from '../utils/pdfExport';
-import { DataGrid } from '../components/ui/data-grid';
-import { SkeletonInfoCard } from '../components/ui/skeleton';
-import { findProcedureByCodigo, calculateTotalCBHPM } from '../data/cbhpmData';
-import { usePageTitle } from '../hooks/usePageTitle';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { useAuth } from '../contexts/auth/AuthContext';
-import { ApiService } from '../services/api';
 
-const mockDetailedProcedures = [
-  {
-    id: 'p1',
-    guia: '10467538',
-    data: '19/08/2024',
-    carteira: '00620040000604690',
-    paciente: 'THAYSE BORGES',
-    codigo: '30602246',
-    descricao: 'Reconstrução Mamária Com Retalhos Cutâneos Regionais',
-    quantidade: 1,
-    apresentado: 457.64,
-    liberado: 457.64,
-    glosa: 0.0,
-  },
-  {
-    id: 'p2',
-    guia: '10467538',
-    data: '19/08/2024',
-    carteira: '00620040000604690',
-    paciente: 'THAYSE BORGES',
-    codigo: '30602203',
-    descricao: 'Quadrantectomia Ressecção Segmentar',
-    quantidade: 1,
-    apresentado: 156.57,
-    liberado: 156.57,
-    glosa: 0.0,
-  },
-  {
-    id: 'p3',
-    guia: '10714706',
-    data: '05/09/2024',
-    carteira: '00620030013924381',
-    paciente: 'NUBIA KATIA PEREIRA',
-    codigo: '30602289',
-    descricao: 'Ressecção Do Linfonodo Sentinela Torácica Lateral',
-    quantidade: 1,
-    apresentado: 167.68,
-    liberado: 0.0,
-    glosa: 167.68,
-  },
-];
-
-function normalizePapel(papel) {
+function normalizePapel(papel: string | null | undefined): string {
   return String(papel || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '');
 }
 
-const papelDisplay = (papel) => {
+const papelDisplay = (papel: string | null | undefined): string => {
   const norm = normalizePapel(papel);
   if (norm === 'primeiro auxiliar') return '1º Auxiliar';
   if (norm === 'segundo auxiliar') return '2º Auxiliar';
@@ -114,21 +73,8 @@ const papelDisplay = (papel) => {
   return papel || '--';
 };
 
-// Mapeia papel para o valor esperado pela CBHPM
-function mapPapelToCBHPM(papel: string): string {
-  const norm = String(papel || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '');
-  if (/(1|primeiro|1º)[^a-zA-Z0-9]*aux/.test(norm)) return 'primeiro auxiliar';
-  if (/(2|segundo|2º)[^a-zA-Z0-9]*aux/.test(norm)) return 'segundo auxiliar';
-  if (/anest/.test(norm)) return 'anestesista';
-  if (/cirurg/.test(norm)) return 'cirurgiao';
-  return norm;
-}
-
 // Converte string BRL para número
-function parseBRL(str) {
+function parseBRL(str: string | number | null | undefined): number {
   if (typeof str === 'number') return str;
   if (!str) return 0;
   let cleaned = String(str).replace('R$', '').replace(/\s/g, '');
@@ -145,62 +91,51 @@ function parseBRL(str) {
 }
 
 // Limpa string BRL para conter apenas números, vírgula e ponto
-function cleanBRL(str) {
+function cleanBRL(str: string | number | null | undefined): string {
   if (typeof str === 'number') return str.toString();
   if (!str) return '0';
-  return str.replace(/[^0-9.,-]/g, '');
+  return String(str).replace(/[^0-9.,-]/g, '');
 }
 
-// Função utilitária para parse seguro de BRL para número
-function parseBRLToNumber(val) {
-  if (typeof val === 'number') return val;
-  if (!val) return 0;
-  let cleaned = String(val)
-    .replace(/[R$\s]/g, '')
-    .replace(/\./g, '')
-    .replace(',', '.');
-  return Number(cleaned) || 0;
-}
-
-const getProceduresColumns = (navigate) => [
+const getProceduresColumns = (navigate: any) => [
   {
     field: 'guia',
     headerName: 'Guia',
-    width: 90,
+    width: 80,
   },
   {
     field: 'data',
     headerName: 'Data',
-    width: 90,
+    width: 85,
   },
   {
     field: 'paciente',
     headerName: 'Paciente',
-    width: 150,
+    width: 140,
   },
   {
     field: 'codigo',
     headerName: 'Código',
-    width: 85,
+    width: 80,
   },
   {
     field: 'descricao',
     headerName: 'Descrição',
     flex: 1,
-    minWidth: 180,
+    minWidth: 200,
   },
   {
     field: 'quantidade',
     headerName: 'Qtd',
-    width: 50,
+    width: 45,
   },
   {
     field: 'apresentado',
     headerName: 'Apresentado',
-    width: 100,
+    width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-slate-700 whitespace-nowrap text-sm">
+      <span className="font-medium text-slate-700 whitespace-nowrap">
         {formatCurrency(value)}
       </span>
     ),
@@ -208,10 +143,10 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'liberado',
     headerName: 'Liberado',
-    width: 100,
+    width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-emerald-700 whitespace-nowrap text-sm">
+      <span className="font-medium text-emerald-700 whitespace-nowrap">
         {formatCurrency(value)}
       </span>
     ),
@@ -229,11 +164,10 @@ const getProceduresColumns = (navigate) => [
           )}
           <Badge
             variant={hasGlosa ? 'destructive' : 'default'}
-            className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${
-              hasGlosa
-                ? 'bg-red-50 text-red-700 border-red-200'
-                : 'bg-slate-50 text-slate-600 border-slate-200'
-            }`}
+            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${hasGlosa
+              ? 'bg-red-50 text-red-700 border-red-200'
+              : 'bg-slate-50 text-slate-600 border-slate-200'
+              }`}
           >
             {formatCurrency(value)}
           </Badge>
@@ -244,13 +178,13 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'cbhpm',
     headerName: 'CBHPM',
-    width: 95,
+    width: 100,
     valueGetter: (params) => params.row.cbhpm,
     valueFormatter: (params) =>
       params.value && params.value > 0 ? formatCurrency(params.value) : '--',
     renderCell: ({ value }) =>
       value && value > 0 ? (
-        <span className="font-medium text-slate-700 whitespace-nowrap text-sm">
+        <span className="font-medium text-slate-700 whitespace-nowrap">
           {formatCurrency(value)}
         </span>
       ) : (
@@ -260,7 +194,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'diferenca',
     headerName: 'Diferença',
-    width: 100,
+    width: 120,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? params.row.liberado - params.row.cbhpm
@@ -281,7 +215,7 @@ const getProceduresColumns = (navigate) => [
         <div className="flex items-center gap-1">
           {Icon}
           <Badge
-            className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${bgClass}`}
+            className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
           >
             {formatCurrency(value)}
           </Badge>
@@ -292,7 +226,7 @@ const getProceduresColumns = (navigate) => [
   {
     field: 'delta_percent',
     headerName: 'Delta %',
-    width: 75,
+    width: 80,
     valueGetter: (params) =>
       params.row.cbhpm && params.row.cbhpm > 0
         ? ((params.row.liberado - params.row.cbhpm) / params.row.cbhpm) * 100
@@ -308,7 +242,7 @@ const getProceduresColumns = (navigate) => [
       }
       return (
         <Badge
-          className={`text-xs font-medium px-1.5 py-0.5 whitespace-nowrap ${bgClass}`}
+          className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${bgClass}`}
         >
           {value !== null && value !== undefined ? `${value.toFixed(1)}%` : '--'}
         </Badge>
@@ -319,7 +253,7 @@ const getProceduresColumns = (navigate) => [
     field: 'participacao',
     headerName: 'Participação',
     width: 120,
-    renderCell: ({ value, row }) => {
+    renderCell: ({ value }) => {
       const participacao = String(value || '')
         .trim()
         .toLowerCase();
@@ -331,7 +265,7 @@ const getProceduresColumns = (navigate) => [
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse flex-shrink-0" />
             <Badge
-              className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-1.5 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
+              className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 px-2 py-0.5 whitespace-nowrap cursor-pointer hover:bg-blue-100 transition-colors duration-200"
               onClick={(e) => {
                 e.stopPropagation();
                 navigate('/guides?tab=upload');
@@ -347,7 +281,7 @@ const getProceduresColumns = (navigate) => [
       return (
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-1.5 py-0.5 whitespace-nowrap">
+          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-2 py-0.5 whitespace-nowrap">
             {papelDisplay(value)}
           </Badge>
         </div>
@@ -356,7 +290,14 @@ const getProceduresColumns = (navigate) => [
   },
 ];
 
-const DemonstrativeDetailDialog = ({ demonstrative }) => {
+interface DemonstrativeDetailDialogProps {
+  demonstrative: {
+    id: string | number;
+    periodo: string;
+  };
+}
+
+const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogProps) => {
   const [procedures, setProcedures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showGlosas, setShowGlosas] = useState(false);
@@ -385,16 +326,11 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
   useEffect(() => {
     const fetchProcedures = async () => {
       try {
-        const data = await ApiService.getDemonstrativeDetails(demonstrative.id);
+        const data = await ApiService.getDemonstrativeDetails(Number(demonstrative.id));
         // Mapear campos para nomes esperados, incluindo papel
-        console.log(
-          `[DEBUG] Frontend recebeu ${(data || []).length} procedimentos da API`
-        );
-        console.log(
-          `[DEBUG] Amostra dos procedimentos recebidos:`,
-          (data || []).slice(0, 3)
-        );
-        const mapped = (data || []).map((p, idx) => {
+        const dataArray = Array.isArray(data) ? data : [];
+
+        const mapped = dataArray.map((p, idx) => {
           let participacao = '';
 
           // Priorizar papel_exercido que vem do backend
@@ -453,10 +389,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
             financial: p.financial ?? undefined,
           };
         });
-        console.log(
-          `[DEBUG] Após mapeamento: ${mapped.length} procedimentos processados`
-        );
-        console.log(`[DEBUG] Amostra dos procedimentos mapeados:`, mapped.slice(0, 3));
+
         setProcedures(mapped);
       } catch (error) {
         console.error('Erro ao carregar procedimentos:', error);
@@ -471,8 +404,6 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
     }
   }, [demonstrative.id]);
 
-  console.log('DEBUG: Renderizando DemonstrativeDetailDialog', demonstrative);
-
   const handleExportPDF = async () => {
     try {
       await exportDemonstrativeToPDF(demonstrative.periodo || '', procedures);
@@ -484,80 +415,6 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
   const glosas = procedures.filter(
     (p) => (Number(p.financial?.glosa ?? p.glosa) || 0) > 0
   );
-
-  // Insights CBHPM
-  const cbhpmComparisons = procedures.map((p) => {
-    const proc = findProcedureByCodigo(p.codigo);
-    const papelCBHPM = mapPapelToCBHPM(p.participacao);
-    const cbhpm = proc ? calculateTotalCBHPM(proc, papelCBHPM) : null;
-    const liberado = Number(p.financial?.approved_value ?? p.liberado) || 0;
-    return {
-      codigo: p.codigo,
-      descricao: p.descricao,
-      cbhpm,
-      liberado,
-      diferenca: cbhpm !== null ? liberado - cbhpm : null,
-      participacao: p.participacao, // garantir campo
-    };
-  });
-  // DEBUG: logar cada item de cbhpmComparisons com motivo
-  cbhpmComparisons.forEach((c, i) => {
-    const cbhpmNum = parseBRLToNumber(c.cbhpm);
-    const isPend =
-      !c.participacao || String(c.participacao).trim().toLowerCase() === 'upload guia';
-    const entrou =
-      typeof cbhpmNum === 'number' &&
-      cbhpmNum > 0 &&
-      typeof c.diferenca === 'number' &&
-      c.diferenca < 0 &&
-      !isPend;
-    console.log(`[DEBUG] Item ${i}:`, {
-      codigo: c.codigo,
-      cbhpm: c.cbhpm,
-      cbhpmNum,
-      liberado: c.liberado,
-      diferenca: c.diferenca,
-      participacao: c.participacao,
-      entrou,
-      motivo: entrou
-        ? 'OK'
-        : isPend
-          ? 'PENDENTE'
-          : cbhpmNum <= 0
-            ? 'CBHPM <= 0'
-            : c.diferenca === null
-              ? 'DIFERENCA NULL'
-              : c.diferenca >= 0
-                ? 'DIFERENCA >= 0'
-                : 'OUTRO',
-    });
-  });
-  // Filtro para procedimentos válidos (CBHPM > 0 e participação válida)
-  const procedimentosValidos = cbhpmComparisons.filter((c) => {
-    const cbhpmNum = parseBRLToNumber(c.cbhpm);
-    const isPend =
-      !c.participacao || String(c.participacao).trim().toLowerCase() === 'upload guia';
-    return typeof cbhpmNum === 'number' && cbhpmNum > 0 && !isPend;
-  });
-  // Filtro para procedimentos abaixo da CBHPM
-  const abaixoCBHPM = procedimentosValidos.filter(
-    (c) => typeof c.diferenca === 'number' && c.diferenca < 0
-  );
-  const hasCBHPM = abaixoCBHPM.length > 0;
-  const totalAbaixoCBHPM = hasCBHPM
-    ? abaixoCBHPM.reduce((sum, c) => sum + c.diferenca, 0)
-    : null;
-  // % abaixo da tabela (corrigido)
-  const percentAbaixoCBHPM =
-    procedimentosValidos.length > 0
-      ? Math.round((abaixoCBHPM.length / procedimentosValidos.length) * 100)
-      : 0;
-  // Maior diferença individual (corrigido)
-  const maiorPrejuizo = abaixoCBHPM.reduce(
-    (min, c) => (c.diferenca !== null && c.diferenca < min ? c.diferenca : min),
-    0
-  );
-  const maiorPrejuizoProc = abaixoCBHPM.find((c) => c.diferenca === maiorPrejuizo);
 
   return (
     <Dialog>
@@ -571,9 +428,9 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
         className="p-0 overflow-hidden shadow-xl"
         style={{
           boxSizing: 'border-box',
-          width: 'min(1800px, 98vw)',
+          width: 'min(1550px, 96vw)',
           height: 'min(920px, 92vh)',
-          maxWidth: '98vw',
+          maxWidth: '96vw',
           maxHeight: '92vh',
         }}
       >
@@ -619,9 +476,9 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                   <span className="font-semibold text-blue-700">
                     {totals.totalApresentado > 0
                       ? `${(
-                          (totals.totalLiberado / totals.totalApresentado) *
-                          100
-                        ).toFixed(0)}%`
+                        (totals.totalLiberado / totals.totalApresentado) *
+                        100
+                      ).toFixed(0)}%`
                       : '0%'}
                   </span>
                 </div>
@@ -680,11 +537,10 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     return novo;
                   });
                 }}
-                className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
-                  showOnlyPendentes
-                    ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-sm'
-                    : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white/70'
-                }`}
+                className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${showOnlyPendentes
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-sm'
+                  : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white/70'
+                  }`}
               >
                 {showOnlyPendentes ? 'Todos' : 'Pendentes'}
               </Button>
@@ -719,11 +575,10 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                       return novo;
                     });
                   }}
-                  className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${
-                    showOnlyGlosas
-                      ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-sm'
-                      : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white/70'
-                  }`}
+                  className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${showOnlyGlosas
+                    ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-sm'
+                    : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white/70'
+                    }`}
                 >
                   <AlertCircle className="h-3 w-3 mr-1" />
                   {showOnlyGlosas ? 'Todas' : `Glosas (${glosas.length})`}
@@ -767,8 +622,8 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                     </span>
                   </div>
                 ) : (
-                                  <div className="h-full w-full overflow-hidden">
-                  <div className="h-full w-full overflow-y-auto overflow-x-hidden">
+                  <div className="h-full w-full">
+                    <div className="h-full w-full overflow-x-auto overflow-y-auto">
                       <DataGrid
                         rows={procedures
                           .map((p, idx) => ({ id: idx, ...p }))
@@ -800,14 +655,8 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
                           setPageSize(newSize);
                           setCurrentPage(0); // Reset para primeira página
                         }}
-                        className="w-full border-0 [&_table]:w-full [&_table]:table-fixed [&_.MuiDataGrid-cell]:px-1.5 [&_.MuiDataGrid-columnHeader]:px-1.5 [&_.MuiDataGrid-cell]:py-0.5 [&_.MuiDataGrid-columnHeader]:py-2"
-                        wrapperScrollable={false}
-                        autoHeight={false}
-                        density="compact"
-                        disableColumnResize={true}
-                        disableColumnMenu={true}
-                        rowHeight={38}
-                        columnHeaderHeight={42}
+                        className="w-full border-0"
+                        wrapperScrollable={true}
                         paginationLabel="Procedimentos por página:"
                         rowsPerPageOptions={[10, 20, 50, 100]}
                       />
@@ -856,8 +705,6 @@ const DemonstrativeDetailDialog = ({ demonstrative }) => {
 };
 
 const DemonstrativesPage = () => {
-  console.log('DEBUG: Renderizando DemonstrativesPage');
-
   // SEO e Título Premium
   usePageTitle({
     title: 'Gestão de Demonstrativos',
@@ -874,22 +721,14 @@ const DemonstrativesPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [deleting, setDeleting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [pendingAudits, setPendingAudits] = useState(0);
   const [pendingAuditsLoading, setPendingAuditsLoading] = useState(false);
   const [pendingAuditsError, setPendingAuditsError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Usar apenas as funcionalidades necessárias do hook
-  const {
-    handleFileChangeByType, // Manter para compatibilidade se necessário
-  } = useFileUpload();
 
   // Estados para upload simplificado
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-
-  const { userProfile } = useAuth();
 
   useEffect(() => {
     fetchDemonstratives();
@@ -984,6 +823,7 @@ const DemonstrativesPage = () => {
     setFilteredDemonstratives(filtered);
   }, [demonstratives, searchTerm, selectedPeriod, selectedStatus, startDate, endDate]);
 
+  // ✅ Restaurar funcionalidade de auditorias pendentes 
   useEffect(() => {
     async function fetchPendingAudits() {
       if (!demonstratives.length) {
@@ -992,15 +832,21 @@ const DemonstrativesPage = () => {
         setPendingAuditsError(null);
         return;
       }
+
       setPendingAuditsLoading(true);
       setPendingAuditsError(null);
       const token = localStorage.getItem('token');
       let totalPendentes = 0;
+
       try {
         await Promise.all(
           demonstratives.map(async (d) => {
-            const detalhes = await ApiService.getDemonstrativeDetails(d.id);
-            console.log('DEBUG detalhes demonstrativo', d.id, detalhes);
+            const res = await axios.get(
+              `/api/v1/demonstrativos/${d.id}/detalhes`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const detalhes = Array.isArray(res.data) ? res.data : [];
+
             const pendentes = detalhes.filter((p: any) => {
               // Usar a mesma lógica do modal: priorizar papel_exercido
               let participacao = '';
@@ -1025,7 +871,7 @@ const DemonstrativesPage = () => {
               if (!participacao || participacao === '--') participacao = 'upload guia';
               return String(participacao).trim().toLowerCase() === 'upload guia';
             });
-            console.log('DEBUG pendentes encontrados', pendentes.length, pendentes);
+
             totalPendentes += pendentes.length;
           })
         );
@@ -1042,7 +888,34 @@ const DemonstrativesPage = () => {
   // Função para exportar todos os dados dos demonstrativos
   const exportAllDemonstrativesData = async () => {
     try {
-      await ApiService.exportReport('excel');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Token de acesso não encontrado');
+        return;
+      }
+
+      // Usar o endpoint de reports para exportar dados
+      const response = await axios.get(
+        `/api/v1/reports/export?format=excel`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+
+      // Criar download
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `demonstrativos_completo_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
       toast.success('Dados exportados com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar dados:', error);
@@ -1050,29 +923,13 @@ const DemonstrativesPage = () => {
     }
   };
 
-  // ... (restante do código)
-
   const fetchDemonstratives = async () => {
     setLoading(true);
     try {
-      console.log('🔄 Buscando demonstrativos...');
       const data = await ApiService.getDemonstratives();
-      console.log('✅ Dados recebidos do backend:', data);
 
-      // Log específico para debug dos valores
-      data.forEach((demo, index) => {
-        console.log(`📊 Demo ${index + 1}:`, {
-          periodo: demo.periodo,
-          total_presented: demo.total_presented,
-          total_approved: demo.total_approved,
-          total_glosa: demo.total_glosa,
-          apresentado_string: demo.apresentado,
-          liberado_string: demo.liberado,
-          glosa_string: demo.glosa,
-        });
-      });
-
-      setDemonstratives(data);
+      const dataArray = Array.isArray(data) ? data : [];
+      setDemonstratives(dataArray);
     } catch (error) {
       console.error('❌ Erro ao carregar demonstrativos:', error);
       toast.error('Erro ao carregar demonstrativos');
@@ -1081,39 +938,12 @@ const DemonstrativesPage = () => {
     }
   };
 
-  // Função para recarregar dados (compatibilidade)
-  const loadDemonstratives = () => {
-    fetchDemonstratives();
-  };
 
-  // Função para detectar duplicados baseada no conteúdo
-  // const checkForDuplicates = async (file: File): Promise<boolean> => {
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     const formData = new FormData();
-  //     formData.append('file', file);
 
-  //     const response = await axios.post(
-  //       `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/check-duplicate`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           'Content-Type': 'multipart/form-data'
-  //         },
-  //       }
-  //     );
 
-  //     return response.data.is_duplicate || false;
-  //   } catch (error) {
-  //     console.warn('Erro ao verificar duplicatas:', error);
-  //     return false; // Em caso de erro, permitir upload
-  //   }
-  // };
 
   const handleDeleteDemonstrativo = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja excluir este demonstrativo?')) return;
-    setDeleting(true);
     try {
       await ApiService.deleteDemonstrative(id);
       toast.success('Demonstrativo excluído com sucesso', {
@@ -1123,8 +953,6 @@ const DemonstrativesPage = () => {
     } catch (error) {
       console.error('Erro ao excluir demonstrativo:', error);
       toast.error('Erro ao excluir demonstrativo');
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -1147,16 +975,41 @@ const DemonstrativesPage = () => {
     setUploading(true);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Token de autenticação não encontrado. Faça login novamente.');
+        setUploading(false);
+        return;
+      }
+
       const formData = new FormData();
+
+      // Adicionar todos os arquivos como array
       uploadFiles.forEach((file) => {
         formData.append('files', file);
       });
 
-      const results = await ApiService.uploadDemonstrative(formData);
 
-      if (results && Array.isArray(results)) {
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        }/api/v1/demonstrativos/upload`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+
+
+      if (response.data && Array.isArray(response.data)) {
+        const results = response.data;
         const successCount = results.filter((r) => r.success).length;
-        
+
+        // Feedback detalhado por arquivo
         results.forEach((result) => {
           if (result.success) {
             toast.success(`"${result.filename}" processado com sucesso`);
@@ -1167,11 +1020,16 @@ const DemonstrativesPage = () => {
           }
         });
 
+        // Resumo final
         if (successCount > 0) {
           toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
-          await fetchDemonstratives();
-          setUploadFiles([]);
-          const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+          await fetchDemonstratives(); // Recarregar dados
+          setUploadFiles([]); // Limpar arquivos
+
+          // Limpar input
+          const fileInput = document.getElementById(
+            'demo-file-upload'
+          ) as HTMLInputElement;
           if (fileInput) fileInput.value = '';
         } else {
           toast.info('Nenhum arquivo novo foi processado');
@@ -1180,71 +1038,52 @@ const DemonstrativesPage = () => {
         toast.success('Upload realizado com sucesso');
         await fetchDemonstratives();
         setUploadFiles([]);
-        const fileInput = document.getElementById('demo-file-upload') as HTMLInputElement;
+
+        const fileInput = document.getElementById(
+          'demo-file-upload'
+        ) as HTMLInputElement;
         if (fileInput) fileInput.value = '';
       }
     } catch (error: any) {
       console.error('Erro no upload:', error);
-      toast.error(`Erro durante o upload: ${error.message}`);
+
+      if (error.response?.status === 422) {
+        console.error('Detalhes do erro 422:', error.response.data);
+        const formattedError = formatValidationError(
+          error.response.data.detail || 'Arquivo inválido'
+        );
+        toast.error(`Erro de validação: ${formattedError}`);
+      } else if (error.response?.status === 401) {
+        toast.error('Token de autenticação inválido. Faça login novamente.');
+      } else {
+        toast.error(`Erro durante o upload: ${error.message}`);
+      }
     } finally {
       setUploading(false);
     }
   };
 
-  // Funções de export e manipulação não utilizadas atualmente
-  // const handleFileDrop = async (type: FileType, fileList: FileList) => {
-  //   try {
-  //     await handleFileChangeByType(type, fileList);
-  //   } catch (error) {
-  //     console.error('Erro ao processar arquivo:', error);
-  //     toast.error('Erro ao processar arquivo');
-  //   }
-  // };
-
-  // const handleExportCSV = () => {
-  //   // Implementação comentada para evitar warning
-  // };
-
-  // const handleExportProcedures = async () => {
-  //   // Implementação comentada para evitar warning
-  // };
-
-  // const clearFilters = () => {
-  //   setSearchTerm('');
-  //   setSelectedPeriod('all');
-  //   setSelectedStatus('all');
-  // };
-
   // Estatísticas globais (sempre usar todos os demonstrativos, não filtrados)
   const summaryStats = {
     totalProcessado: demonstratives.reduce((sum, d) => {
       const value = d.total_approved || 0;
-      console.log(`💰 Demo "${d.periodo}": total_approved = ${value}`);
       return sum + value;
     }, 0),
     totalGlosa: demonstratives.reduce((sum, d) => {
       const value = d.total_glosa || 0;
-      console.log(`🚫 Demo "${d.periodo}": total_glosa = ${value}`);
       return sum + value;
     }, 0),
     totalProcedimentos: demonstratives.reduce((sum, d) => {
       const value = d.total_procedures || 0;
-      console.log(`📋 Demo "${d.periodo}": total_procedures = ${value}`);
       return sum + value;
     }, 0),
-    // Novos cálculos inteligentes
     demonstrativosComGlosa: demonstratives.filter((d) => d.total_glosa > 0).length,
     demonstrativosSemGlosa: demonstratives.filter((d) => d.total_glosa === 0).length,
     totalApresentado: demonstratives.reduce((sum, d) => {
       const value = d.total_presented || 0;
-      console.log(`📄 Demo "${d.periodo}": total_presented = ${value}`);
       return sum + value;
     }, 0),
   };
-
-  // Debug dos cálculos
-  console.log('📊 Demonstratives array:', demonstratives);
-  console.log('📊 SummaryStats calculado:', summaryStats);
 
   const columns = [
     {
@@ -1333,7 +1172,6 @@ const DemonstrativesPage = () => {
             className="ml-2 h-9 px-4 font-medium bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow transition-all duration-200"
             onClick={async () => {
               await handleDeleteDemonstrativo(row.id);
-              // Toast é disparado por handleDeleteDemonstrativo; não repetir aqui
             }}
             title="Excluir demonstrativo"
           >
@@ -1397,21 +1235,7 @@ const DemonstrativesPage = () => {
                   Análise Avançada
                 </Badge>
 
-                {/* Botão "Atualizar" removido conforme solicitado */}
-                {/*
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={loadDemonstratives}
-                  disabled={loading}
-                  className="gap-1 text-xs px-3 py-1"
-                >
-                  <FileBarChart
-                    className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`}
-                  />
-                  {loading ? 'Atualizando...' : 'Atualizar'}
-                </Button>
-                */}
+
               </div>
             </div>
 
@@ -1495,13 +1319,13 @@ const DemonstrativesPage = () => {
                 </div>
 
                 {loading ? (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {Array.from({ length: 5 }).map((_, i) => (
                       <SkeletonInfoCard key={i} />
                     ))}
                   </div>
                 ) : (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                     {/* Card Valores Liberados - Verde */}
                     <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
@@ -1605,8 +1429,58 @@ const DemonstrativesPage = () => {
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* ✅ Card Auditorias Pendentes - Roxo */}
+                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-violet-50 to-purple-100"></div>
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-violet-600"></div>
+                      <CardContent className="relative p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100">
+                              {pendingAuditsLoading ? (
+                                <Loader2 className="h-4 w-4 text-purple-700 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 text-purple-700" />
+                              )}
+                            </div>
+                            <Badge className={`text-xs ${pendingAudits > 0
+                              ? 'bg-purple-100 text-purple-700 border-purple-200'
+                              : 'bg-green-100 text-green-700 border-green-200'
+                              }`}>
+                              {pendingAudits > 0 ? 'Pendente' : 'OK'}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
+                              Procedimentos sem Guia
+                            </p>
+                            <p className="text-xl font-bold text-purple-800 leading-none">
+                              {pendingAuditsLoading ? '...' : pendingAudits}
+                            </p>
+                            {pendingAuditsError && (
+                              <p className="text-xs text-red-600 mt-1">
+                                {pendingAuditsError}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
+              </section>
+
+              {/* ✅ Indicador de Status do Crosscheck */}
+              <section aria-label="Status do Crosscheck" className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
+                  <h3 className="text-base font-medium text-gray-700">
+                    Status do Crosscheck
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                </div>
+                <CrosscheckStatusIndicator />
               </section>
 
               {/* 3. FERRAMENTAS: Filtros e Busca */}
@@ -1759,21 +1633,21 @@ const DemonstrativesPage = () => {
                           selectedPeriod !== 'all' ||
                           selectedStatus !== 'all' ||
                           searchTerm) && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setStartDate('');
-                              setEndDate('');
-                              setSelectedPeriod('all');
-                              setSelectedStatus('all');
-                              setSearchTerm('');
-                            }}
-                            className="h-9 text-xs px-3 text-gray-600 hover:text-gray-800"
-                          >
-                            Limpar Filtros
-                          </Button>
-                        )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setStartDate('');
+                                setEndDate('');
+                                setSelectedPeriod('all');
+                                setSelectedStatus('all');
+                                setSearchTerm('');
+                              }}
+                              className="h-9 text-xs px-3 text-gray-600 hover:text-gray-800"
+                            >
+                              Limpar Filtros
+                            </Button>
+                          )}
                       </div>
                     </div>
 

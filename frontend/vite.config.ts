@@ -1,47 +1,40 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { defineConfig } from 'vite';
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  base: '/', // assets absolutos: /assets/...
   plugins: [react()],
-  resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
-  },
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
-    assetsDir: 'assets',
+    sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('jspdf')) {
-            return 'vendor-jspdf';
-          }
-          if (id.includes('html2canvas')) {
-            return 'vendor-html2canvas';
-          }
-          if (id.includes('jspdf-autotable')) {
-            return 'vendor-autotable';
-          }
-          // Agrupar todas as outras dependências de node_modules em um chunk 'vendor'
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
-      },
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        }
+      }
+    }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
     },
   },
   server: {
+    port: 5173,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-      },
-      '/token': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-      },
-    },
+        secure: false,
+      }
+    }
   },
+  // Configuração para Vercel
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+  }
 });

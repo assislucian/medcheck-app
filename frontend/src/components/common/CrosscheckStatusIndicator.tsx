@@ -7,13 +7,13 @@
  * entender quando o sistema está funcionando 100%.
  */
 
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, Clock, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+import { AlertCircle, CheckCircle, Clock, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CrosscheckStatus {
   totalDemonstrativos: number;
@@ -80,16 +80,21 @@ export function CrosscheckStatusIndicator({
 
           const detalhes = detalhesResponse.data || [];
           if (Array.isArray(detalhes) && detalhes.length > 0) {
-            const comParticipacao = detalhes.filter(
-              (p) => p.participacoes && p.participacoes.length > 0
-            );
-            if (comParticipacao.length > 0) {
+            // ✅ CORREÇÃO: Verificar papel_exercido ao invés de participacoes
+            const comGuiaAssociada = detalhes.filter((p) => {
+              const papel = p.papel_exercido || '';
+              return papel && papel.trim() !== '' && papel.toLowerCase() !== 'upload guia';
+            });
+
+            const semGuia = detalhes.length - comGuiaAssociada.length;
+
+            if (comGuiaAssociada.length > 0) {
               demonstrativosComCrosscheck++;
-            } else {
+            }
+
+            if (semGuia > 0) {
               problemas.push(
-                `Demonstrativo ${
-                  demo.periodo || demo.id
-                }: Sem participações encontradas`
+                `Demonstrativo ${demo.periodo || demo.id}: ${semGuia} procedimento(s) sem guia associada`
               );
             }
           } else {
@@ -106,12 +111,12 @@ export function CrosscheckStatusIndicator({
 
       // Verificar problemas comuns
       if (demonstrativos.length > 0 && guias.length === 0) {
-        problemas.push('Nenhuma guia encontrada. Faça upload das guias médicas.');
+        problemas.push('Nenhuma guia médica encontrada. Faça upload das guias para associar procedimentos.');
       }
 
       if (demonstrativos.length === 0) {
         problemas.push(
-          'Nenhum demonstrativo encontrado. Faça upload dos demonstrativos.'
+          'Nenhum demonstrativo encontrado. Faça upload dos demonstrativos para análise.'
         );
       }
 
@@ -221,11 +226,10 @@ export function CrosscheckStatusIndicator({
     <Alert
       className={`
       ${status.taxaCrosscheck >= 80 ? 'border-green-200 bg-green-50' : ''}
-      ${
-        status.taxaCrosscheck >= 50 && status.taxaCrosscheck < 80
+      ${status.taxaCrosscheck >= 50 && status.taxaCrosscheck < 80
           ? 'border-yellow-200 bg-yellow-50'
           : ''
-      }
+        }
       ${status.taxaCrosscheck < 50 ? 'border-red-200 bg-red-50' : ''}
     `}
     >
@@ -236,8 +240,7 @@ export function CrosscheckStatusIndicator({
             <div className="font-medium">{getStatusMessage()}</div>
             <div className="text-sm text-muted-foreground">
               {status.demonstrativosComCrosscheck} de {status.totalDemonstrativos}{' '}
-              demonstrativos com crosscheck ativo • {status.totalGuias} guias
-              registradas
+              demonstrativos com procedimentos associados • {status.totalGuias} procedimentos em guias
             </div>
             <div className="text-xs text-muted-foreground">
               Última verificação: {status.ultimaAtualizacao}
@@ -280,7 +283,7 @@ export function CrosscheckStatusIndicator({
               className="mt-2"
             >
               <Upload className="h-4 w-4 mr-2" />
-              Fazer Upload de Guias
+              Fazer Upload de Guias Médicas
             </Button>
           )}
         </div>

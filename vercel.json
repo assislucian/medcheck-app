@@ -1,23 +1,21 @@
 {
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "cd frontend && npm ci",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://medcheck-backend.onrender.com/api/$1"
-    },
-    {
-      "source": "/token",
-      "destination": "https://medcheck-backend.onrender.com/token"
-    },
-    {
-      "source": "/health",
-      "destination": "https://medcheck-backend.onrender.com/health"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://medcheck-backend-production.up.railway.app"
+  }
 }

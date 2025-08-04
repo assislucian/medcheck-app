@@ -283,28 +283,31 @@ class DemonstrativoParser:
 
     def get_summary(self):
         """Retorna o resumo do demonstrativo: período, totais e quantidade de procedimentos extraídos da seção de honorários."""
-        # Se temos totais capturados do PDF, usamos eles
+        # ✅ CORREÇÃO CRÍTICA: Sempre usar contagem real de procedimentos processados
+        total_procedures = len(self.payments)
+        period = self.payments[0]["period"] if self.payments else None
+        
+        # Se temos totais capturados do PDF, usamos eles (mas com contagem real de procedimentos)
         if self.totals:
             return {
-                "period": self.payments[0]["period"] if self.payments else None,
+                "period": period,
                 "total_presented": self.totals["apresentado"],
                 "total_approved": self.totals["liberado"],
                 "total_glosa": self.totals["glosa"],
-                "total_procedures": self.totals["total_procedimentos"],
+                "total_procedures": total_procedures,  # ✅ SEMPRE usar contagem real
             }
 
         # Caso contrário, calculamos dos procedimentos
         total_presented = sum(p["financial"]["presented_value"] for p in self.payments)
         total_approved = sum(p["financial"]["approved_value"] for p in self.payments)
         total_glosa = sum(p["financial"]["glosa"] for p in self.payments)
-        total_procedures = len(self.payments)
-        period = self.payments[0]["period"] if self.payments else None
+        
         return {
             "period": period,
             "total_presented": total_presented,
             "total_approved": total_approved,
             "total_glosa": total_glosa,
-            "total_procedures": total_procedures,
+            "total_procedures": total_procedures,  # ✅ SEMPRE usar contagem real
         }
 
     def debug_honorarios_lines(self):
