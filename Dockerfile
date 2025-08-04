@@ -10,7 +10,7 @@ WORKDIR /app
 # Dependências de sistema p/ pacotes Python comuns (psycopg2 etc.)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential gcc libpq-dev \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements da raiz
 COPY requirements.txt .
@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando de start (o Railway injeta $PORT)
-CMD ["python", "-m", "uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "python -m uvicorn src.api:app --host 0.0.0.0 --port ${PORT:-8000}"]
