@@ -428,9 +428,9 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
         className="p-0 overflow-hidden shadow-xl"
         style={{
           boxSizing: 'border-box',
-          width: 'min(1550px, 96vw)',
+          width: 'min(1800px, 98vw)',
           height: 'min(920px, 92vh)',
-          maxWidth: '96vw',
+          maxWidth: '98vw',
           maxHeight: '92vh',
         }}
       >
@@ -623,7 +623,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                   </div>
                 ) : (
                   <div className="h-full w-full">
-                    <div className="h-full w-full overflow-x-auto overflow-y-auto">
+                    <div className="h-full w-full overflow-y-auto">
                       <DataGrid
                         rows={procedures
                           .map((p, idx) => ({ id: idx, ...p }))
