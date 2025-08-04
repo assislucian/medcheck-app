@@ -623,7 +623,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                   </div>
                 ) : (
                   <div className="h-full w-full">
-                    <div className="h-full w-full overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto">
                       <DataGrid
                         rows={procedures
                           .map((p, idx) => ({ id: idx, ...p }))
@@ -656,7 +656,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                           setCurrentPage(0); // Reset para primeira página
                         }}
                         className="w-full border-0"
-                        wrapperScrollable={true}
+                       
                         paginationLabel="Procedimentos por página:"
                         rowsPerPageOptions={[10, 20, 50, 100]}
                       />
