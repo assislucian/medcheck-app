@@ -3,12 +3,43 @@
  * Elimina 14+ implementações duplicadas de construção de URL
  */
 
-// SOLUÇÃO: URL hardcoded para garantir funcionamento em produção 
-// Baseado na pesquisa: problemas comuns com VITE_API_URL no Render
-const API_BASE = import.meta.env.VITE_API_URL || 
-  (typeof window !== 'undefined' && window.location.origin.includes('onrender.com') 
-    ? 'https://medcheck-backend.onrender.com' 
-    : 'http://localhost:8000');
+// RAILWAY + VERCEL SOLUTION: Auto-detect backend
+const API_BASE = (() => {
+  // Priority 1: Environment variable (for custom setups)
+  if (import.meta.env.VITE_API_URL) {
+    console.log('🔧 API_BASE: Using VITE_API_URL =', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // Priority 2: Runtime detection
+  if (typeof window !== 'undefined') {
+    const origin = window.location.origin;
+    console.log('🔧 API_BASE: Detecting from origin =', origin);
+
+    if (origin.includes('vercel.app')) {
+      // RAILWAY INTEGRATION: Use Railway backend for Vercel frontend
+      const apiUrl = 'https://medcheck-app-medcheck.up.railway.app';
+      console.log('🔧 API_BASE: Vercel detected, using Railway backend =', apiUrl);
+      return apiUrl;
+    }
+
+    if (origin.includes('railway.app')) {
+      const apiUrl = 'https://medcheck-app-medcheck.up.railway.app';
+      console.log('🔧 API_BASE: Railway detected, using =', apiUrl);
+      return apiUrl;
+    }
+
+    if (origin.includes('onrender.com')) {
+      const apiUrl = 'https://medcheck-backend.onrender.com';
+      console.log('🔧 API_BASE: Render detected (fallback), using =', apiUrl);
+      return apiUrl;
+    }
+  }
+
+  // Priority 3: Development fallback
+  console.log('🔧 API_BASE: Using development fallback = http://localhost:8000');
+  return 'http://localhost:8000';
+})();
 
 export class ApiService {
   private static getAuthHeaders() {
@@ -26,6 +57,12 @@ export class ApiService {
       }
       throw new Error(`Erro ${response.status}: ${response.statusText}`);
     }
+
+    // ✅ CORREÇÃO: Status 204 (NO_CONTENT) não tem corpo na resposta
+    if (response.status === 204) {
+      return null as T;
+    }
+
     return response.json();
   }
 
@@ -75,7 +112,7 @@ export class ApiService {
 
     const queryString = searchParams.toString();
     const url = `${API_BASE}/api/v1/guias${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await fetch(url, {
       headers: this.getAuthHeaders(),
     });
@@ -181,7 +218,7 @@ export class ApiService {
       senha: userData.password
     };
     delete backendData.password;
-    
+
     const response = await fetch(`${API_BASE}/api/v1/register`, {
       method: 'POST',
       headers: {
