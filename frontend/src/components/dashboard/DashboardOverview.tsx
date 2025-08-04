@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatPercentage } from '@/utils/format';
 import {
-  TrendingUp,
-  FileText,
   AlertCircle,
-  FileBarChart,
-  DollarSign,
-  BarChart3,
-  Clock,
-  CheckCircle,
-  Loader2,
-  ArrowUpRight,
   AlertTriangle,
+  Clock,
+  DollarSign,
+  FileBarChart,
+  FileText
 } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '@/utils/format';
+import { useEffect, useState } from 'react';
 import { AnimatedNumber } from '../ui/AnimatedNumber';
 
 interface DashboardData {
@@ -42,7 +37,7 @@ export function DashboardOverview() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/dashboard', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/dashboard`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',

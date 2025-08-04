@@ -21,6 +21,10 @@ from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, Generator
 from uuid import uuid4
 
+# Importações do projeto
+from src.database import init_database, Base, engine, SessionLocal
+from src.health import router as health_router
+
 import bcrypt
 import pandas as pd
 import sqlalchemy
@@ -203,20 +207,7 @@ if not ADMIN_SECRET:
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# --- Banco de dados SQLAlchemy (SQLite) ---
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///medicos.db")
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    # Ajuste: pool_pre_ping=True evita erros de conexão morta, pool_size e max_overflow controlam o pool
-    engine = create_engine(
-        DATABASE_URL,
-        pool_pre_ping=True,  # Evita erros de conexão morta
-        pool_size=10,  # Ajuste conforme limite do Railway
-        max_overflow=20,  # Ajuste conforme necessidade
-    )
-Base = declarative_base()
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Database engine and session are imported from src.database
 
 
 class Medico(Base):
@@ -352,19 +343,39 @@ class LGPDRequestResponse(BaseModel):
     message: str
 
 
-# Inicializar tabelas com tratamento de erro
-try:
-    # Usar a função de migração do database.py
-    from src.database import init_database
+import asyncio
 
-    if not init_database(engine):
-        logger.error("Failed to initialize database with migration")
-    else:
-        logger.info("Database initialized successfully with migration")
-except Exception as e:
-    logger.error(f"Error creating database tables: {e}")
-    # Continua mesmo com erro de DB para permitir health checks
+# --- FastAPI app ---
+app = FastAPI(
+    title="MedCheck - Validador de Demonstrativos e Guias Médicas",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
+# Healthcheck endpoint (sem tocar no banco)
+@app.get("/health")
+def health():
+    return {"ok": True}
+
+@app.on_event("startup")
+async def on_startup():
+    """Agenda a inicialização do banco em uma tarefa de fundo."""
+    logger.info("Application startup: Scheduling DB initialization.")
+    asyncio.create_task(_init_db_async())
+
+async def _init_db_async():
+    """Tarefa de fundo para inicializar o banco de dados sem bloquear."""
+    try:
+        logger.info("Starting background database initialization...")
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, init_database, engine)
+        logger.info("Background database initialization completed.")
+    except Exception as e:
+        logger.exception(f"Fatal error during DB init: {e}")
+
+# --- Include Routers ---
+app.include_router(health_router, tags=["health"])
 
 def _ensure_medicos_table_structure():
     """Garante que a tabela medicos tenha a estrutura correta"""
@@ -559,9 +570,6 @@ def _ensure_uf_and_file_hash_columns():
         # Log específico mas não falha o aplicativo
         logger.warning(f"Failed to ensure uf and file_hash columns (non-critical): {exc}")
 
-
-_ensure_medicos_table_structure()
-_ensure_uf_and_file_hash_columns()
 
 # --- Autenticação JWT real (MVP) ---
 # Quando SKIP_AUTH é true, precisamos deixar o token opcional
@@ -2743,6 +2751,109 @@ def update_profile(
 
         return UpdateProfileResponse(message="Perfil atualizado com sucesso")
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Endpoint para exportar dados do usuário (LGPD) ---
+@app.get("/api/v1/export-data")
+def export_user_data(user: dict = Depends(get_current_user)):
+    """Exporta todos os dados do usuário em formato JSON (LGPD)."""
+    try:
+        db = SessionLocal()
+        
+        # Buscar dados do médico
+        medico = db.query(Medico).filter_by(crm=user["crm"], uf=user["uf"]).first()
+        
+        # Buscar demonstrativos
+        demonstrativos = db.query(Demonstrativo).filter_by(crm=user["crm"], uf=user["uf"]).all()
+        
+        # Buscar guias
+        guias = db.query(Guia).filter_by(crm=user["crm"], uf=user["uf"]).all()
+        
+        export_data = {
+            "user_info": {
+                "crm": user["crm"],
+                "uf": user["uf"],
+                "nome": medico.nome if medico else user.get("nome"),
+                "email": medico.email if medico else "",
+                "data_cadastro": medico.data_cadastro.isoformat() if medico and medico.data_cadastro else None
+            },
+            "demonstrativos": [
+                {
+                    "id": d.id,
+                    "filename": d.filename,
+                    "periodo": d.periodo,
+                    "data_upload": d.data_upload.isoformat() if d.data_upload else None
+                } for d in demonstrativos
+            ],
+            "guias": [
+                {
+                    "id": g.id,
+                    "numero_guia": g.numero_guia,
+                    "filename": g.filename,
+                    "data_upload": g.data_upload.isoformat() if g.data_upload else None
+                } for g in guias
+            ],
+            "export_date": datetime.now().isoformat()
+        }
+        
+        db.close()
+        
+        # Retornar como download
+        json_data = json.dumps(export_data, indent=2, ensure_ascii=False)
+        
+        return StreamingResponse(
+            io.StringIO(json_data),
+            media_type="application/json",
+            headers={"Content-Disposition": f"attachment; filename=dados_medcheck_{user['crm']}_{user['uf']}.json"}
+        )
+        
+    except Exception as e:
+        logger.error(f"Erro ao exportar dados: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Endpoint para deletar conta do usuário (LGPD) ---
+@app.delete("/api/v1/delete-account")
+def delete_user_account(user: dict = Depends(get_current_user)):
+    """Deleta a conta do usuário e todos os dados associados (LGPD)."""
+    try:
+        db = SessionLocal()
+        
+        # Log de auditoria antes da exclusão
+        log_audit(
+            action="account_deletion",
+            user_crm=user["crm"],
+            details=f"Iniciando exclusão da conta CRM {user['crm']}/{user['uf']}"
+        )
+        
+        # Deletar guias
+        guias_count = db.query(Guia).filter_by(crm=user["crm"], uf=user["uf"]).count()
+        db.query(Guia).filter_by(crm=user["crm"], uf=user["uf"]).delete()
+        
+        # Deletar demonstrativos
+        demos_count = db.query(Demonstrativo).filter_by(crm=user["crm"], uf=user["uf"]).count()
+        db.query(Demonstrativo).filter_by(crm=user["crm"], uf=user["uf"]).delete()
+        
+        # Deletar médico
+        medico = db.query(Medico).filter_by(crm=user["crm"], uf=user["uf"]).first()
+        if medico:
+            db.delete(medico)
+        
+        db.commit()
+        db.close()
+        
+        # Log final
+        log_audit(
+            action="account_deleted",
+            user_crm=user["crm"],
+            details=f"Conta excluída: {guias_count} guias, {demos_count} demonstrativos"
+        )
+        
+        return {"message": "Conta excluída com sucesso"}
+        
+    except Exception as e:
+        logger.error(f"Erro ao deletar conta: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

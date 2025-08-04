@@ -7,7 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter
 from sqlalchemy import inspect, text
 
-from src.api import engine
+from src.database import engine
 
 router = APIRouter()
 

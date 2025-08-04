@@ -1,39 +1,31 @@
-import { useState, useEffect } from 'react';
-import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
 import {
-  Brain,
-  TrendingUp,
-  AlertTriangle,
-  Target,
-  DollarSign,
-  BarChart3,
   Activity,
-  Zap,
-  FileText,
-  Download,
-  Sparkles,
-  Calculator,
+  AlertTriangle,
+  BarChart3,
+  Brain,
+  Building,
   CheckCircle,
   Clock,
-  Building,
-  Stethoscope,
-  Shield,
-  ArrowUpRight,
-  TrendingDown,
+  DollarSign,
+  Download,
+  FileText,
   RefreshCw,
-  Eye,
+  Stethoscope,
+  Target,
+  TrendingUp,
+  Zap
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { InfoCard } from '../components/ui/InfoCard';
-import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
-import { AnimatedNumber } from '../components/ui/AnimatedNumber';
-import { formatCurrency } from '../utils/format';
-import { usePageTitle } from '../hooks/usePageTitle';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { InfoCard } from '../components/ui/InfoCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 interface AnalyticsData {
   summary?: {
@@ -111,7 +103,7 @@ export default function IntelligenceHub() {
       }
 
       console.log('Fazendo fetch para /api/v1/analytics...');
-      const response = await fetch('/api/v1/analytics', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/analytics`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -158,7 +150,7 @@ export default function IntelligenceHub() {
           <title>Central de Inteligência | MedCheck</title>
           <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
         </Helmet>
-        
+
         {/* Background com Gradiente Médico */}
         <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
           <AuthenticatedLayout
@@ -179,7 +171,7 @@ export default function IntelligenceHub() {
           <title>Central de Inteligência | MedCheck</title>
           <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
         </Helmet>
-        
+
         {/* Background com Gradiente Médico */}
         <div className="min-h-screen bg-gradient-to-br from-medical-50/30 via-brand-50/20 to-mint-50/30">
           <AuthenticatedLayout
@@ -220,7 +212,7 @@ export default function IntelligenceHub() {
         <title>Central de Inteligência | MedCheck</title>
         <meta name="description" content="Insights inteligentes e análises avançadas dos seus dados médicos com IA" />
         <meta name="keywords" content="inteligência artificial médica, analytics médicos, insights, análise dados médicos, IA saúde" />
-        
+
         {/* Open Graph */}
         <meta property="og:title" content="Central de Inteligência | MedCheck" />
         <meta property="og:description" content="IA avançada para análise de dados médicos" />
@@ -262,7 +254,7 @@ export default function IntelligenceHub() {
                 trend={{ value: 0, isPositive: true }}
                 className="bg-gradient-to-br from-trust-50 to-trust-100 border-trust-200"
               />
-              
+
               <InfoCard
                 title="Taxa de Recuperação"
                 value={`${taxaRecuperacao.toFixed(1)}%`}
@@ -271,7 +263,7 @@ export default function IntelligenceHub() {
                 trend={{ value: 0, isPositive: true }}
                 className="bg-gradient-to-br from-medical-50 to-medical-100 border-medical-200"
               />
-              
+
               <InfoCard
                 title="Procedimentos Analisados"
                 value={<AnimatedNumber value={summary?.total_procedimentos_historico || 0} />}
@@ -280,7 +272,7 @@ export default function IntelligenceHub() {
                 trend={{ value: 0, isPositive: true }}
                 className="bg-gradient-to-br from-brand-50 to-brand-100 border-brand-200"
               />
-              
+
               <InfoCard
                 title="Projeção Anual"
                 value={formatCurrencyLocal(summary?.projecao_anual || 0)}
@@ -568,7 +560,7 @@ export default function IntelligenceHub() {
                     </CardHeader>
                     <CardContent>
                       {analyticsData?.performance_analytics?.top_procedures &&
-                      analyticsData.performance_analytics.top_procedures.length > 0 ? (
+                        analyticsData.performance_analytics.top_procedures.length > 0 ? (
                         <div className="space-y-4">
                           {analyticsData.performance_analytics.top_procedures.map(
                             (proc, index) => (
@@ -615,7 +607,7 @@ export default function IntelligenceHub() {
                                       {formatPercentage(
                                         (proc.recebido_total /
                                           (proc.recebido_total + proc.glosado_total)) *
-                                          100
+                                        100
                                       )}
                                     </p>
                                   </div>
@@ -677,7 +669,7 @@ export default function IntelligenceHub() {
                     </CardHeader>
                     <CardContent>
                       {analyticsData?.temporal_analytics?.monthly_performance &&
-                      analyticsData.temporal_analytics.monthly_performance.length > 0 ? (
+                        analyticsData.temporal_analytics.monthly_performance.length > 0 ? (
                         <div className="space-y-4">
                           <h3 className="font-semibold text-gray-800">
                             Performance Mensal
@@ -748,7 +740,7 @@ export default function IntelligenceHub() {
                 <TabsContent value="insights">
                   <div className="space-y-6">
                     {analyticsData?.recommendations &&
-                    analyticsData.recommendations.length > 0 ? (
+                      analyticsData.recommendations.length > 0 ? (
                       <div className="space-y-4">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                           <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">

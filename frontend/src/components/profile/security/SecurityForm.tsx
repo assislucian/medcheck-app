@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { LogOut, Eye, EyeOff, Shield, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthContext';
+import { AlertTriangle, Eye, EyeOff, LogOut, Shield } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { toast } from 'sonner';
 
 interface PasswordStrength {
   score: number;
@@ -118,7 +118,7 @@ export const SecurityForm = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/profile`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -273,13 +273,12 @@ export const SecurityForm = () => {
               </div>
               <div className="w-full bg-muted rounded-full h-2">
                 <div
-                  className={`h-2 rounded-full transition-all ${
-                    passwordStrength.score < 2
+                  className={`h-2 rounded-full transition-all ${passwordStrength.score < 2
                       ? 'bg-red-500'
                       : passwordStrength.score < 4
                         ? 'bg-orange-500'
                         : 'bg-green-500'
-                  }`}
+                    }`}
                   style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
                 />
               </div>

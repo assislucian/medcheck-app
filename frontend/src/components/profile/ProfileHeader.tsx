@@ -1,11 +1,11 @@
-import { Card } from '../ui/card';
-import { useProfile } from '../../hooks/use-profile';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
-import { Badge } from '../ui/badge';
-import { ProfileAvatar } from './avatar/ProfileAvatar';
-import { Button } from '../ui/button';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '../../contexts/AuthContext';
+import { useProfile } from '../../hooks/use-profile';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card } from '../ui/card';
+import { ProfileAvatar } from './avatar/ProfileAvatar';
 
 export const ProfileHeader = () => {
   const { fetchProfile } = useProfile();
@@ -25,8 +25,8 @@ export const ProfileHeader = () => {
       if (profileData) {
         const avatarUrl = profileData.notification_preferences
           ? (profileData.notification_preferences as Record<string, any>)[
-              'avatar_url'
-            ] || ''
+          'avatar_url'
+          ] || ''
           : '';
 
         setProfile({
@@ -86,7 +86,7 @@ export const ProfileHeader = () => {
             variant="outline"
             onClick={async () => {
               try {
-                const res = await fetch('/api/v1/export-data', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/export-data`, {
                   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 });
                 if (!res.ok) throw new Error('Erro ao exportar dados');
@@ -115,7 +115,7 @@ export const ProfileHeader = () => {
               )
                 return;
               try {
-                const res = await fetch('/api/v1/delete-account', {
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/delete-account`, {
                   method: 'DELETE',
                   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 });

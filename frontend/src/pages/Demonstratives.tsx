@@ -842,7 +842,7 @@ const DemonstrativesPage = () => {
         await Promise.all(
           demonstratives.map(async (d) => {
             const res = await axios.get(
-              `/api/v1/demonstrativos/${d.id}/detalhes`,
+              `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/demonstrativos/${d.id}/detalhes`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
             const detalhes = Array.isArray(res.data) ? res.data : [];
