@@ -21,5 +21,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar app
 COPY . .
 
-# Comando de start (o Railway injeta $PORT)
-CMD ["sh", "-c", "python -m uvicorn src.api:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Comando de start (Railway injects PORT automatically)
+CMD python -m uvicorn src.api:app --host 0.0.0.0 --port $PORT
