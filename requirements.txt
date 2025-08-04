@@ -44,3 +44,4 @@ python-json-logger==2.0.7
 
 # HTTP Client (for health checks)
 requests==2.31.0
+# Railway rebuild trigger - Mon Aug  4 15:38:25 CEST 2025
