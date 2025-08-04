@@ -69,7 +69,10 @@ from src.parsers.cbhpm_parser import CBHPMParser
 from src.services.parse import parse_demonstrativo, parse_guide_pdf
 
 # --- Configurações de Segurança ---
-UPLOAD_DIR = "uploads"
+# Diretório onde os uploads de usuários serão armazenados.
+# Por padrão usamos a pasta "uploads" dentro do container (filesystem efêmero em serviços como Render).
+# Porém, para permitir persistência entre deploys, o diretório pode ser sobrescrito via variável de ambiente.
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
 RESULTS_DIR = "results"
 CBHPM_VERSION = "2015"
 MAX_UPLOAD_SIZE_MB = 50  # Aumentado de 10MB para suportar arquivos maiores
@@ -665,8 +668,8 @@ async def security_headers_middleware(request: Request, call_next):
     # Content Security Policy
     csp = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "img-src 'self' data: https:; "
         "font-src 'self' https:; "
         "connect-src 'self' https:; "
@@ -1841,10 +1844,16 @@ def _get_demonstrativo_procedures_cached(demo_id: int, user_crm: str, user_uf: s
             raise HTTPException(status_code=404, detail="Demonstrativo não encontrado")
 
         file_path = os.path.join(UPLOAD_DIR, demo.filename)
+        # Se o arquivo não existir (ex: deploy recente com filesystem limpo),
+        # não retornamos erro 404 para não quebrar o frontend.
+        # Em vez disso, registramos o problema e retornamos lista vazia.
         if not os.path.exists(file_path):
-            raise HTTPException(
-                status_code=404, detail="Arquivo do demonstrativo não encontrado"
+            logger.warning(
+                "Arquivo do demonstrativo %s não encontrado em %s. Retornando lista vazia.",
+                demo_id,
+                file_path,
             )
+            return []
 
         # Parse do demonstrativo
         from src.parsers.demonstrativo_parser import DemonstrativoParser
