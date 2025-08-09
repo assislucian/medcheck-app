@@ -623,7 +623,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                   </div>
                 ) : (
                   <div className="h-full w-full">
-                    <div className="h-full w-full overflow-y-auto overflow-x-hidden space-y-1 px-1">
+                    <div className="h-full w-full overflow-y-auto">
                       <DataGrid
                         rows={procedures
                           .map((p, idx) => ({ id: idx, ...p }))
