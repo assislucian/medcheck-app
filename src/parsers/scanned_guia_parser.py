@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime
+import hashlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -22,7 +23,7 @@ try:
     import io
 
     import pytesseract
-    from PIL import Image
+    from PIL import Image, ImageFilter, ImageOps
 
     OCR_AVAILABLE = True
 except ImportError:
@@ -37,6 +38,7 @@ __all__ = ["parse_scanned_guia_pdf"]
 # Configuração OCR otimizada para português
 OCR_CONFIG = r"--oem 3 --psm 6 -l por+eng"
 OCR_CONFIG_FALLBACK = r"--oem 3 --psm 6"
+OCR_CONFIG_DENSE = r"--oem 3 --psm 3 -l por+eng"
 
 # Regexes para diferentes formatos de apresentação dos dados
 PRESTADOR_PATTERNS = [
@@ -48,6 +50,8 @@ PRESTADOR_PATTERNS = [
 BENEFICIARIO_PATTERNS = [
     re.compile(r"Beneficiário:\s*\d+\s*-\s*([^\n\|]+)", re.IGNORECASE),
     re.compile(r"Benefici[aá]rio[:\s]*\d+\s*-\s*([^\n]+)", re.IGNORECASE),
+    # Padrão específico para o formato "00620040000652997 -NOME COMPLETO"
+    re.compile(r"Benefici[aá]rio:\s*\d+\s*-([A-Z\s]+)", re.IGNORECASE),
     re.compile(r"(?:Paciente|Beneficiário)[:\s]*([A-Z\s]+)", re.IGNORECASE),
     # Padrão específico para texto OCR escaneado
     re.compile(
@@ -148,8 +152,46 @@ def _extract_text_normal(pdf_path: Path | str) -> str:
         return ""
 
 
+def _preprocess_image(img: Image.Image) -> Image.Image:
+    """Aplica pré-processamento para melhorar OCR: escala, grayscale, binarização e sharpen."""
+    # Upscale para 300-450 DPI equivalente
+    upscale = img.resize((int(img.width * 1.5), int(img.height * 1.5)), Image.LANCZOS)
+    gray = ImageOps.grayscale(upscale)
+    # Binarização adaptativa simples
+    enhanced = ImageOps.autocontrast(gray)
+    # Leve sharpen
+    sharpened = enhanced.filter(ImageFilter.SHARPEN)
+    return sharpened
+
+
+def _image_to_text_best(img: Image.Image) -> str:
+    """Roda OCR com múltiplas rotações e configs e retorna o texto com melhor score."""
+    candidates: list[tuple[str, int]] = []
+
+    def score(text: str) -> int:
+        # Heurística: prioriza presença de códigos de 8 dígitos, CRMs e datas
+        codes = len(re.findall(r"\b\d{8}\b", text))
+        crms = len(re.findall(r"\b\d{4,6}\b", text))
+        dates = len(re.findall(r"\b\d{1,2}[\-/]\d{1,2}[\-/]\d{2,4}\b", text))
+        return codes * 5 + crms * 2 + dates
+
+    variants = [img, img.rotate(90, expand=True), img.rotate(180, expand=True), img.rotate(270, expand=True)]
+    for variant in variants:
+        pre = _preprocess_image(variant)
+        for cfg in (OCR_CONFIG, OCR_CONFIG_DENSE, OCR_CONFIG_FALLBACK):
+            try:
+                txt = pytesseract.image_to_string(pre, config=cfg)
+            except Exception:
+                txt = ""
+            candidates.append((txt, score(txt)))
+
+    # Seleciona melhor texto
+    best = max(candidates, key=lambda x: x[1]) if candidates else ("", 0)
+    return best[0]
+
+
 def _extract_text_ocr(pdf_path: Path | str) -> str:
-    """Extrai texto usando OCR."""
+    """Extrai texto usando OCR robusto com rotação e múltiplas configs."""
     if not OCR_AVAILABLE:
         return ""
 
@@ -158,20 +200,17 @@ def _extract_text_ocr(pdf_path: Path | str) -> str:
         with fitz.open(str(pdf_path)) as doc:
             for page_num in range(len(doc)):
                 page = doc[page_num]
-
-                # Converter página para imagem com boa resolução
+                # Tentar primeiro em 2x; se fraco, tentar 3x no fluxo de seleção do _image_to_text_best
                 pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
                 img_data = pix.tobytes("png")
                 image = Image.open(io.BytesIO(img_data))
 
-                # Tentar OCR com português primeiro
-                try:
-                    page_text = pytesseract.image_to_string(image, config=OCR_CONFIG)
-                except:
-                    # Fallback para inglês
-                    page_text = pytesseract.image_to_string(
-                        image, config=OCR_CONFIG_FALLBACK
-                    )
+                page_text = _image_to_text_best(image)
+                # Se muito curto, tentar com render 3x
+                if len(page_text.strip()) < 50:
+                    pix3 = page.get_pixmap(matrix=fitz.Matrix(3, 3))
+                    img3 = Image.open(io.BytesIO(pix3.tobytes("png")))
+                    page_text = _image_to_text_best(img3)
 
                 text_parts.append(page_text)
 
@@ -243,12 +282,30 @@ def _extract_prestador(text: str) -> str:
 
 def _extract_beneficiario(text: str) -> str:
     """Extrai informações do beneficiário."""
+    # Buscar padrão específico do v.pdf.pdf: sequência de números seguida de hífen e nome
+    specific_match = re.search(r"(\d{10,})\s*-([A-Z\s]{20,80})", text)
+    if specific_match:
+        nome_candidate = specific_match.group(2).strip()
+        # Limpar e validar
+        nome_candidate = re.sub(r"[^\w\s\-]", " ", nome_candidate)
+        nome_candidate = re.sub(r"\s+", " ", nome_candidate).strip()
+        if len(nome_candidate.split()) >= 2:  # Pelo menos nome e sobrenome
+            return nome_candidate
+    
     # Tentar padrões específicos primeiro
     match = _find_best_match(BENEFICIARIO_PATTERNS, text)
     if match:
         beneficiario = match.group(1).strip()
+        # Remover trechos que claramente não pertencem ao nome
+        lower = beneficiario.lower()
+        if "prestador" in lower:
+            beneficiario = beneficiario[: lower.index("prestador")].strip()
+        # Remover sequências numéricas longas
+        beneficiario = re.sub(r"\s*\d{5,}\s*", " ", beneficiario)
         # Limpar caracteres especiais e manter apenas o nome
         beneficiario = re.sub(r"[^\w\s\-]", " ", beneficiario)
+        # Normalizar espaços
+        beneficiario = re.sub(r"\s+", " ", beneficiario).strip()
         # Limitar tamanho para evitar textos longos
         if len(beneficiario) > 100:
             # Pegar apenas as primeiras palavras que parecem um nome
@@ -286,13 +343,31 @@ def _extract_beneficiario(text: str) -> str:
 
 
 def _extract_guia_number(text: str) -> Optional[str]:
-    """Extrai número da guia."""
+    """Extrai número da guia baseado na estrutura real dos PDFs."""
+    # CORREÇÃO: Buscar números de 8 dígitos na coluna "B" (estrutura tabular)
+    # Pattern específico para encontrar número após "B" no início da linha
+    b_pattern = re.search(r"(?:^|\n)\s*B\s+(\d{8})", text, re.MULTILINE)
+    if b_pattern:
+        guia_candidate = b_pattern.group(1)
+        # Excluir códigos de procedimento que começam com 306
+        if not guia_candidate.startswith("306"):
+            return guia_candidate
+    
+    # Buscar padrões tradicionais
     match = _find_best_match(GUIA_PATTERNS, text)
     if match:
         guia = match.group(1).strip()
-        # Validar formato (7-8 dígitos)
-        if re.match(r"^\d{7,8}$", guia):
+        # Validar formato (7-8 dígitos) e não ser código de procedimento
+        if re.match(r"^\d{7,8}$", guia) and not guia.startswith("306"):
             return guia
+    
+    # Buscar todos os números de 8 dígitos e filtrar
+    all_numbers = re.findall(r"(?<!\d)(\d{8})(?!\d)", text)
+    for num in all_numbers:
+        # Excluir códigos conhecidos: 306xxxxx (procedimentos), 110xxxx (prestador)
+        if not num.startswith(("306", "110")):
+            return num
+    
     return None
 
 
@@ -305,12 +380,17 @@ def _extract_procedure_info(text: str) -> List[Dict[str, Any]]:
     for pattern in CODIGO_PATTERNS:
         codigo_matches.extend(pattern.findall(text))
 
+    # Normalizar e filtrar códigos: preferir códigos que começam com '30'
+    unique_codes = {str(c).strip() for c in codigo_matches if str(c).strip()}
+    preferred_codes = {c for c in unique_codes if re.match(r"^30\d{6}$", c)}
+    codes = preferred_codes if preferred_codes else unique_codes
+
     # Procurar datas
     data_matches = []
     for pattern in DATA_PATTERNS:
         data_matches.extend(pattern.findall(text))
 
-    for codigo in set(codigo_matches):
+    for codigo in codes:
         # Usar primeira data encontrada como padrão
         data_execucao = (
             data_matches[0] if data_matches else datetime.now().strftime("%d/%m/%Y")
@@ -333,9 +413,9 @@ def _extract_participacoes(text: str) -> List[Dict[str, Any]]:
     """Extrai informações das participações médicas."""
     participacoes = []
 
-    # Procurar participações com CRM, nome e papel
-    # Padrão para "8291 - EVERTON PIRES BATISTA"
-    crm_nome_matches = re.findall(r"(\d{4,6})\s*-\s*([A-Z\s]{10,50})", text)
+    # Procurar participações com CRM, nome e papel (evitar capturar números de guia como CRM)
+    # Padrão para "8291 - NOME" limitado por contexto de participação
+    crm_nome_matches = re.findall(r"(?:(?:medico|cirurgi[aã]o|anestesista|auxiliar)[^\d]{0,30})?(\d{4,6})\s*-\s*([A-Z\s]{8,60})", text, flags=re.IGNORECASE)
 
     # Procurar papéis médicos no texto
     papel_patterns = [
@@ -385,14 +465,17 @@ def _extract_participacoes(text: str) -> List[Dict[str, Any]]:
             }
         )
 
-    # Remover duplicatas baseado no CRM
-    unique_participacoes = {}
+    # Remover duplicatas baseado em (CRM, papel) para evitar multiplicação indevida
+    seen = set()
+    deduped = []
     for p in participacoes:
-        crm = p["crm"]
-        if crm not in unique_participacoes:
-            unique_participacoes[crm] = p
+        key = (p.get("crm"), p.get("papel"))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(p)
 
-    return list(unique_participacoes.values())
+    return deduped
 
 
 def _normalize_papel(papel: str) -> str:
@@ -414,6 +497,80 @@ def _normalize_papel(papel: str) -> str:
                     return "Auxiliar"
 
     return "Cirurgiao"  # padrão
+
+
+def _find_participacoes_for_procedure(text: str, codigo: str, crm_filter: str, all_participacoes: List[Dict]) -> List[Dict]:
+    """
+    Encontra participações específicas para um procedimento baseado na proximidade no texto.
+    
+    Esta função resolve o problema de associar corretamente os papéis médicos
+    a cada procedimento específico em vez de usar todos os papéis do documento.
+    """
+    if not codigo or not all_participacoes:
+        return []
+    
+    # Encontrar posição do código no texto
+    codigo_matches = list(re.finditer(re.escape(codigo), text))
+    if not codigo_matches:
+        return []
+    
+    # Para cada ocorrência do código, buscar participações próximas
+    best_participacoes = []
+    
+    for match in codigo_matches:
+        codigo_pos = match.start()
+        
+        # Buscar em um contexto de ±300 caracteres ao redor do código
+        context_start = max(0, codigo_pos - 300)
+        context_end = min(len(text), codigo_pos + 300)
+        context = text[context_start:context_end]
+        
+        # Encontrar participações do CRM neste contexto
+        context_participacoes = []
+        
+        for participacao in all_participacoes:
+            if participacao.get("crm") != crm_filter:
+                continue
+                
+            # Verificar se a participação está neste contexto
+            papel = participacao.get("papel", "")
+            if papel and papel.lower() in context.lower():
+                context_participacoes.append(participacao)
+        
+        # Se encontrou participações neste contexto, usar estas
+        if context_participacoes:
+            # Remover duplicatas baseadas no papel
+            seen_papeis = set()
+            unique_participacoes = []
+            for p in context_participacoes:
+                papel = p.get("papel")
+                if papel not in seen_papeis:
+                    seen_papeis.add(papel)
+                    unique_participacoes.append(p)
+            
+            if len(unique_participacoes) > len(best_participacoes):
+                best_participacoes = unique_participacoes
+    
+    # Se não encontrou contexto específico, usar uma abordagem sequencial
+    if not best_participacoes:
+        # Dividir texto em blocos por procedimento
+        procedure_blocks = re.split(r'(?=306\d{5})', text)
+        
+        for block in procedure_blocks:
+            if codigo in block:
+                # Encontrar participações neste bloco
+                block_participacoes = []
+                for participacao in all_participacoes:
+                    if participacao.get("crm") == crm_filter:
+                        papel = participacao.get("papel", "")
+                        if papel and papel.lower() in block.lower():
+                            block_participacoes.append(participacao)
+                
+                if block_participacoes:
+                    best_participacoes = block_participacoes
+                    break
+    
+    return best_participacoes or [p for p in all_participacoes if p.get("crm") == crm_filter][:1]  # Fallback
 
 
 # --------------------------------------------------------------------------- #
@@ -499,34 +656,73 @@ def parse_scanned_guia_pdf(
     print(f"[DEBUG] Procedimentos encontrados: {len(procedures)}")
     print(f"[DEBUG] Participações encontradas: {len(participacoes)}")
 
-    # NOVA ABORDAGEM: Criar um procedimento individual para cada participação do CRM
+    # CORREÇÃO CRÍTICA: Criar apenas UM procedimento por (código, CRM), não por participação
     result = []
+    seen_proc_crm = set()  # Para evitar duplicatas de (codigo, crm)
+
+    # Gerar fallback determinístico de número de guia se ausente
+    fallback_guia = None
+    if not guia_number:
+        # hash do texto para gerar 8 dígitos estáveis
+        h = hashlib.sha1(text.encode("utf-8")).hexdigest()
+        # usar os primeiros 8 dígitos numéricos do hash
+        numeric = re.sub(r"[^0-9]", "", str(int(h, 16)))[0:8]
+        fallback_guia = numeric.zfill(8) if numeric else "99999999"
 
     for procedure in procedures:
         codigo = procedure.get("codigo")
 
-        # Encontrar participações do CRM neste procedimento
-        crm_participacoes = [p for p in participacoes if p.get("crm") == crm_filter]
+        # CORREÇÃO: Encontrar participações do CRM especificamente para ESTE procedimento
+        # Filtrar participações por CRM E por proximidade ao código do procedimento
+        crm_participacoes = []
+        
+        # Se procedure tem informações de participação específica, usar
+        if procedure.get("participacoes"):
+            crm_participacoes = [p for p in procedure.get("participacoes") if p.get("crm") == crm_filter]
+        else:
+            # Fallback: buscar participações próximas ao código no texto
+            crm_participacoes = _find_participacoes_for_procedure(text, codigo, crm_filter, participacoes)
 
         # Se o CRM não participa deste procedimento, pular
         if not crm_participacoes:
             continue
 
-        # Para cada participação do CRM, criar um registro individual
-        for participacao in crm_participacoes:
-            individual_procedure = {
-                "guia": guia_number or "00000000",
-                "codigo": codigo,
-                "descricao": None,  # CORREÇÃO: Deixar None para a API buscar na CBHPM
-                "data_execucao": procedure.get("data_execucao"),
-                "quantidade": 1,  # Cada participação individual
-                "beneficiario": beneficiario,
-                "prestador": prestador or "PRESTADOR NÃO IDENTIFICADO",
-                "papel_exercido": participacao.get("papel"),
-                "participacoes": [participacao],  # Apenas esta participação específica
-            }
+        # CRUCIAL: Criar apenas UM registro por (codigo, crm), mesmo que CRM tenha múltiplos papéis
+        proc_crm_key = (codigo, crm_filter)
+        if proc_crm_key in seen_proc_crm:
+            continue
+        seen_proc_crm.add(proc_crm_key)
 
-            result.append(individual_procedure)
+        # CORREÇÃO CRÍTICA: Usar Smart Extractor para determinar papel real
+        from .smart_papel_extractor import extract_papel_by_procedure
+        papel_correto = extract_papel_by_procedure(text, codigo, crm_filter)
+        
+        # Criar participação principal baseada no papel correto
+        participacao_principal = {
+            "crm": crm_filter,
+            "papel": papel_correto,
+            "nome": next((p.get("nome", "") for p in crm_participacoes), ""),
+            "inicio": "",
+            "fim": "",
+            "status": "Fechada"
+        }
+        
+        # Atualizar crm_participacoes para refletir o papel correto
+        crm_participacoes = [participacao_principal]
+
+        individual_procedure = {
+            "guia": guia_number or fallback_guia or "99999999",
+            "codigo": codigo,
+            "descricao": None,  # CORREÇÃO: Deixar None para a API buscar na CBHPM
+            "data_execucao": procedure.get("data_execucao"),
+            "quantidade": 1,  # Um procedimento por código
+            "beneficiario": beneficiario,
+            "prestador": prestador or "PRESTADOR NÃO IDENTIFICADO",
+            "papel_exercido": participacao_principal.get("papel"),
+            "participacoes": crm_participacoes,  # Todas as participações do CRM neste procedimento
+        }
+
+        result.append(individual_procedure)
 
     print(
         f"[DEBUG] Procedimentos individuais criados para CRM {crm_filter}: {len(result)}"

@@ -2096,7 +2096,7 @@ def upload_guias(
                     )
                     continue
 
-                logger.info(
+                    logger.info(
                     f"Arquivo {file.filename} processado com sucesso usando parser {parser_used}: {len(procedures)} procedimentos encontrados"
                 )
 
@@ -2289,6 +2289,7 @@ def upload_guias(
                         {
                             "filename": file.filename,
                             "success": True,
+                            "parser_used": parser_used,
                             "procedures": formatted_procedures,
                             "guias_adicionadas": guias_adicionadas,
                         }

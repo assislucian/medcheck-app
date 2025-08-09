@@ -1,17 +1,22 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ResponsiveLayout, DeviceRender } from '@/components/layout/ResponsiveLayout';
-import { MobileDataCard, MobileDataList } from '@/components/mobile/MobileDataCard';
-import { useDevice } from '@/hooks/use-device';
-import { useMobileHero } from '@/hooks/use-mobile-hero';
+import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
+import { MobileDataList } from '@/components/mobile/MobileDataCard';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,45 +26,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { buildApiUrl } from '@/config/api';
+import { useDevice } from '@/hooks/use-device';
+import { useMobileHero } from '@/hooks/use-mobile-hero';
+import { usePageTitle } from '@/hooks/usePageTitle';
+import axios from 'axios';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  FileText,
-  Upload,
-  Eye,
-  Trash2,
-  Search,
-  RefreshCw,
-  Plus,
-  X,
-  Clock,
-  Calendar,
-  User,
   Activity,
   BarChart3,
-  Crown,
-  DollarSign,
-  Shield,
+  Calendar,
   CheckCircle,
-  ChevronRight,
-  AlertCircle,
-  ArrowRight,
+  Eye,
+  FileText,
+  RefreshCw,
+  Search,
+  Trash2,
+  Upload,
+  User
 } from 'lucide-react';
-import { toast } from 'sonner';
-import axios from 'axios';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { formatCurrency } from '@/utils/format';
-import { useAuth } from '@/contexts/auth/AuthContext';
-import { usePageTitle } from '@/hooks/usePageTitle';
-import { InfoCard } from '@/components/ui/InfoCard';
-import { SkeletonInfoCard } from '@/components/ui/SkeletonInfoCard';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
-import { buildApiUrl } from '@/config/api';
+import { toast } from 'sonner';
 
 // Types imports from original Guides.tsx
 interface Guide {
@@ -100,7 +87,7 @@ interface GuideProcedure {
 const GuidesMobile: React.FC = () => {
   const { isMobile, platform } = useDevice();
   const { triggerHaptic } = useMobileHero();
-  
+
   usePageTitle({
     title: 'Guias Médicas',
     description: 'Gestão de guias TISS mobile-friendly',
@@ -136,29 +123,33 @@ const GuidesMobile: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       const apiUrl = buildApiUrl('/api/v1/guias?page=1&pageSize=1000');
-      
+
       const response = await axios.get(apiUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       const procedures = response.data.procedures || [];
-      
-      // Processar dados simplificado para mobile
+
+      // CORREÇÃO: Agrupar por numero_guia + beneficiario para evitar misturar pacientes diferentes
       const grouped = procedures.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
-        acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-        acc[proc.numero_guia].push(proc);
+        const groupKey = `${proc.numero_guia}|${proc.beneficiario || 'sem_beneficiario'}`;
+        acc[groupKey] = acc[groupKey] || [];
+        acc[groupKey].push(proc);
         return acc;
       }, {});
 
-      const macroRows = Object.entries(grouped).map(([numero_guia, procs]) => ({
-        numero_guia,
-        data: procs[0]?.data || '',
-        beneficiario: procs[0]?.beneficiario || '',
-        prestador: procs[0]?.prestador || '',
-        qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 1), 0),
-        status: procs[0]?.status || 'Processado',
-        detalhes: procs,
-      }));
+      const macroRows = Object.entries(grouped).map(([groupKey, procs]) => {
+        const numero_guia = procs[0]?.numero_guia || groupKey.split('|')[0];
+        return {
+          numero_guia,
+          data: procs[0]?.data || '',
+          beneficiario: procs[0]?.beneficiario || '',
+          prestador: procs[0]?.prestador || '',
+          qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 1), 0),
+          status: procs[0]?.status || 'Processado',
+          detalhes: procs,
+        };
+      });
 
       // Ordenar por data
       macroRows.sort((a, b) => {
@@ -166,7 +157,7 @@ const GuidesMobile: React.FC = () => {
         const dateB = formatDateToISO(b.data);
         return dateB.localeCompare(dateA);
       });
-      
+
       setGuides(macroRows);
       setFilteredGuides(macroRows);
     } catch (error: any) {
@@ -197,11 +188,11 @@ const GuidesMobile: React.FC = () => {
 
     setUploading(true);
     triggerHaptic('medium');
-    
+
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      
+
       Array.from(selectedFiles).forEach((file) => {
         formData.append('files', file);
       });
@@ -324,7 +315,7 @@ const GuidesMobile: React.FC = () => {
 
   const handleGuideAction = (action: string, guide: Guide) => {
     triggerHaptic('light');
-    
+
     if (action === 'view') {
       setSelectedGuide(guide);
     } else if (action === 'delete') {
@@ -365,7 +356,7 @@ const GuidesMobile: React.FC = () => {
           {/* Upload Section - Mobile Optimized */}
           <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600" />
-            
+
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3 text-blue-900 text-lg">
                 <div className="p-2 rounded-lg bg-blue-100">
@@ -377,7 +368,7 @@ const GuidesMobile: React.FC = () => {
                 <strong>Simples:</strong> Selecione suas guias (PDF/XML) e toque em "Enviar"
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <Label htmlFor="file-upload-mobile" className="sr-only">
@@ -392,7 +383,7 @@ const GuidesMobile: React.FC = () => {
                   disabled={uploading}
                   className="cursor-pointer bg-white border-blue-200 h-12 text-blue-800 file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded-lg file:mr-3 file:py-2 file:px-4"
                 />
-                
+
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFiles || uploading}
@@ -412,7 +403,7 @@ const GuidesMobile: React.FC = () => {
                   )}
                 </Button>
               </div>
-              
+
               {selectedFiles && selectedFiles.length > 0 && (
                 <div className="p-3 bg-blue-100 border border-blue-200 rounded-lg">
                   <div className="flex items-center gap-2 text-sm text-blue-700">
@@ -550,15 +541,15 @@ const GuidesMobile: React.FC = () => {
                   Nenhuma guia encontrada
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  {guides.length === 0 
+                  {guides.length === 0
                     ? 'Envie sua primeira guia para começar'
                     : 'Tente ajustar os filtros de busca'
                   }
                 </p>
-                <Button 
-                  variant="outline" 
-                  onClick={guides.length === 0 ? 
-                    () => document.getElementById('file-upload-mobile')?.click() : 
+                <Button
+                  variant="outline"
+                  onClick={guides.length === 0 ?
+                    () => document.getElementById('file-upload-mobile')?.click() :
                     loadGuides
                   }
                 >
@@ -602,7 +593,7 @@ const GuidesMobile: React.FC = () => {
                 Detalhes completos da guia médica
               </DialogDescription>
             </DialogHeader>
-            
+
             {selectedGuide && (
               <div className="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
                 <div className="grid grid-cols-1 gap-4">
@@ -610,25 +601,25 @@ const GuidesMobile: React.FC = () => {
                     <div className="text-xs text-gray-500 mb-1">Paciente</div>
                     <div className="font-medium text-gray-900">{selectedGuide.beneficiario}</div>
                   </div>
-                  
+
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="text-xs text-gray-500 mb-1">Data</div>
                     <div className="font-medium text-gray-900">{selectedGuide.data}</div>
                   </div>
-                  
+
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="text-xs text-gray-500 mb-1">Prestador</div>
                     <div className="font-medium text-gray-900">{selectedGuide.prestador}</div>
                   </div>
-                  
+
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="text-xs text-gray-500 mb-1">Procedimentos</div>
                     <div className="font-medium text-gray-900">{selectedGuide.qtdProcedimentos} itens</div>
                   </div>
-                  
+
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <div className="text-xs text-gray-500 mb-1">Status</div>
-                    <Badge 
+                    <Badge
                       variant={analyzeGuideFinancialStatus(selectedGuide) === 'Liberado' ? 'default' : 'secondary'}
                       className="text-xs"
                     >

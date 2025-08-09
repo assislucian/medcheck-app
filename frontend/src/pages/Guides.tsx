@@ -4,64 +4,7 @@
  * =============================================================================
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog';
-import {
-  FileText,
-  Upload,
-  Eye,
-  Trash2,
-  Search,
-  RefreshCw,
-  Plus,
-  X,
-  Clock,
-  Calendar,
-  User,
-  Activity,
-  BarChart3,
-  Crown,
-  DollarSign,
-  Shield,
-  CheckCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import axios from 'axios';
-import { Helmet } from 'react-helmet-async';
-import { formatCurrency } from '../utils/format';
-import { useAuth } from '../contexts/auth/AuthContext';
-import { usePageTitle } from '../hooks/usePageTitle';
-import { InfoCard } from '../components/ui/InfoCard';
-import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
-import { AnimatedNumber } from '../components/ui/AnimatedNumber';
-import { buildApiUrl } from '../config/api';
-import { FeatureCard } from '../components/ui/FeatureCard';
-import { exportSimpleGuidesReport } from '../services/exportService';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Pagination,
   PaginationContent,
@@ -71,7 +14,61 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Checkbox } from '@/components/ui/checkbox';
+import axios from 'axios';
+import {
+  Activity,
+  BarChart3,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Crown,
+  DollarSign,
+  Eye,
+  FileText,
+  RefreshCw,
+  Search,
+  Shield,
+  Trash2,
+  Upload,
+  User,
+  X
+} from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '../components/ui/dialog';
+import { FeatureCard } from '../components/ui/FeatureCard';
+import { InfoCard } from '../components/ui/InfoCard';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { SkeletonInfoCard } from '../components/ui/SkeletonInfoCard';
+import { buildApiUrl } from '../config/api';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { exportSimpleGuidesReport } from '../services/exportService';
 
 // =============================================================================
 // TIPAGENS
@@ -127,21 +124,26 @@ const processGuidesData = (
   page: number,
   pageSize: number
 ) => {
+  // CORREÇÃO: Agrupar por numero_guia + beneficiario para evitar misturar pacientes diferentes
   const grouped = procedures.reduce<Record<string, GuideProcedure[]>>((acc, proc) => {
-    acc[proc.numero_guia] = acc[proc.numero_guia] || [];
-    acc[proc.numero_guia].push(proc);
+    const groupKey = `${proc.numero_guia}|${proc.beneficiario || 'sem_beneficiario'}`;
+    acc[groupKey] = acc[groupKey] || [];
+    acc[groupKey].push(proc);
     return acc;
   }, {});
 
-  const macroRows = Object.entries(grouped).map(([numero_guia, procs]) => ({
-    numero_guia,
-    data: procs[0]?.data || '',
-    beneficiario: procs[0]?.beneficiario || '',
-    prestador: procs[0]?.prestador || '',
-    qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 1), 0),
-    status: procs[0]?.status || 'Processado',
-    detalhes: procs,
-  }));
+  const macroRows = Object.entries(grouped).map(([groupKey, procs]) => {
+    const numero_guia = procs[0]?.numero_guia || groupKey.split('|')[0];
+    return {
+      numero_guia,
+      data: procs[0]?.data || '',
+      beneficiario: procs[0]?.beneficiario || '',
+      prestador: procs[0]?.prestador || '',
+      qtdProcedimentos: procs.reduce((sum, p) => sum + (p.qtd || 1), 0),
+      status: procs[0]?.status || 'Processado',
+      detalhes: procs,
+    };
+  });
 
   macroRows.sort((a, b) => {
     const dateA = formatDateToISO(a.data);
@@ -812,12 +814,12 @@ const GuidesPage = () => {
       }));
 
       toast.loading('Gerando relatório PDF...', { id: 'pdf-export' });
-      
+
       // Exportar usando o serviço
       exportSimpleGuidesReport(guidesForExport, 'relatorio-guias-medicas');
-      
+
       toast.success('Relatório PDF gerado com sucesso!', { id: 'pdf-export' });
-      
+
     } catch (error: any) {
       console.error('Erro ao exportar PDF:', error);
       toast.error('Erro ao gerar relatório PDF. Tente novamente.', { id: 'pdf-export' });
@@ -884,18 +886,39 @@ const GuidesPage = () => {
         formData.append('files', file);
       });
 
-      await axios.post(buildApiUrl('/api/v1/guias/upload'), formData, {
+      const response = await axios.post(buildApiUrl('/api/v1/guias/upload'), formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      toast.success('Arquivos enviados com sucesso');
+      const data = response.data as { results?: Array<{ filename: string; success: boolean; error?: string; parser_used?: string; guias_adicionadas?: number }> };
+      const results = data?.results || [];
+
+      if (results.length === 0) {
+        toast.error('Nenhuma guia válida foi processada.');
+      } else {
+        const successes = results.filter(r => r.success);
+        const failures = results.filter(r => !r.success);
+
+        if (successes.length > 0) {
+          const addedSum = successes.reduce((sum, r) => sum + (r.guias_adicionadas || 0), 0);
+          const parsers = Array.from(new Set(successes.map(r => r.parser_used).filter(Boolean)));
+          toast.success(`${successes.length} arquivo(s) processado(s) com sucesso. ${addedSum} procedimento(s) novo(s) salvo(s). ${parsers.length ? `Parser: ${parsers.join(', ')}` : ''}`.trim());
+        }
+        if (failures.length > 0) {
+          const files = failures.slice(0, 3).map(f => f.filename).join(', ');
+          toast.error(`Falha ao processar ${failures.length} arquivo(s): ${files}${failures.length > 3 ? '…' : ''}`);
+        }
+      }
       setSelectedFiles(null);
       loadGuides();
     } catch (error) {
-      toast.error('Erro no upload dos arquivos');
+      // Tentar detalhar o erro retornado pelo backend
+      const err = error as any;
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Erro no upload dos arquivos';
+      toast.error(typeof msg === 'string' ? msg : 'Erro no upload dos arquivos');
     } finally {
       setUploading(false);
     }
@@ -1233,32 +1256,32 @@ const GuidesPage = () => {
                                 )}
                                 {procedimento.smart_payment_status.demonstrativo_info
                                   .glosa_percentage > 0 && (
-                                  <span className="ml-1 text-xs">
-                                    (
-                                    {procedimento.smart_payment_status.demonstrativo_info.glosa_percentage.toFixed(
-                                      1
-                                    )}
-                                    %)
-                                  </span>
-                                )}
+                                    <span className="ml-1 text-xs">
+                                      (
+                                      {procedimento.smart_payment_status.demonstrativo_info.glosa_percentage.toFixed(
+                                        1
+                                      )}
+                                      %)
+                                    </span>
+                                  )}
                               </p>
                             </div>
                           </div>
 
                           {procedimento.smart_payment_status.demonstrativo_info
                             .payment_date && (
-                            <div className="mt-2 pt-2 border-t">
-                              <Label className="text-gray-600">
-                                Período de Pagamento
-                              </Label>
-                              <p className="text-sm font-medium">
-                                {
-                                  procedimento.smart_payment_status.demonstrativo_info
-                                    .payment_date
-                                }
-                              </p>
-                            </div>
-                          )}
+                              <div className="mt-2 pt-2 border-t">
+                                <Label className="text-gray-600">
+                                  Período de Pagamento
+                                </Label>
+                                <p className="text-sm font-medium">
+                                  {
+                                    procedimento.smart_payment_status.demonstrativo_info
+                                      .payment_date
+                                  }
+                                </p>
+                              </div>
+                            )}
                         </div>
                       )}
 
@@ -1295,73 +1318,73 @@ const GuidesPage = () => {
             {guide.detalhes?.some(
               (p) => p.smart_payment_status?.demonstrativo_info
             ) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Resumo Financeiro da Guia
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4">
-                    {(() => {
-                      const totalApresentado =
-                        guide.detalhes?.reduce(
-                          (sum, p) =>
-                            sum +
-                            (p.smart_payment_status?.demonstrativo_info
-                              ?.presented_value || 0),
-                          0
-                        ) || 0;
-                      const totalLiberado =
-                        guide.detalhes?.reduce(
-                          (sum, p) =>
-                            sum +
-                            (p.smart_payment_status?.demonstrativo_info
-                              ?.approved_value || 0),
-                          0
-                        ) || 0;
-                      const totalGlosa =
-                        guide.detalhes?.reduce(
-                          (sum, p) =>
-                            sum +
-                            (p.smart_payment_status?.demonstrativo_info?.glosa || 0),
-                          0
-                        ) || 0;
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Resumo Financeiro da Guia
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      {(() => {
+                        const totalApresentado =
+                          guide.detalhes?.reduce(
+                            (sum, p) =>
+                              sum +
+                              (p.smart_payment_status?.demonstrativo_info
+                                ?.presented_value || 0),
+                            0
+                          ) || 0;
+                        const totalLiberado =
+                          guide.detalhes?.reduce(
+                            (sum, p) =>
+                              sum +
+                              (p.smart_payment_status?.demonstrativo_info
+                                ?.approved_value || 0),
+                            0
+                          ) || 0;
+                        const totalGlosa =
+                          guide.detalhes?.reduce(
+                            (sum, p) =>
+                              sum +
+                              (p.smart_payment_status?.demonstrativo_info?.glosa || 0),
+                            0
+                          ) || 0;
 
-                      return (
-                        <>
-                          <div className="text-center p-4 bg-blue-50 rounded-lg">
-                            <Label className="text-blue-600 font-medium">
-                              Total Apresentado
-                            </Label>
-                            <p className="text-xl font-bold text-blue-700 font-mono">
-                              {formatCurrency(totalApresentado)}
-                            </p>
-                          </div>
-                          <div className="text-center p-4 bg-green-50 rounded-lg">
-                            <Label className="text-green-600 font-medium">
-                              Total Liberado
-                            </Label>
-                            <p className="text-xl font-bold text-green-700 font-mono">
-                              {formatCurrency(totalLiberado)}
-                            </p>
-                          </div>
-                          <div className="text-center p-4 bg-red-50 rounded-lg">
-                            <Label className="text-red-600 font-medium">
-                              Total Glosa
-                            </Label>
-                            <p className="text-xl font-bold text-red-700 font-mono">
-                              {formatCurrency(totalGlosa)}
-                            </p>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                        return (
+                          <>
+                            <div className="text-center p-4 bg-blue-50 rounded-lg">
+                              <Label className="text-blue-600 font-medium">
+                                Total Apresentado
+                              </Label>
+                              <p className="text-xl font-bold text-blue-700 font-mono">
+                                {formatCurrency(totalApresentado)}
+                              </p>
+                            </div>
+                            <div className="text-center p-4 bg-green-50 rounded-lg">
+                              <Label className="text-green-600 font-medium">
+                                Total Liberado
+                              </Label>
+                              <p className="text-xl font-bold text-green-700 font-mono">
+                                {formatCurrency(totalLiberado)}
+                              </p>
+                            </div>
+                            <div className="text-center p-4 bg-red-50 rounded-lg">
+                              <Label className="text-red-600 font-medium">
+                                Total Glosa
+                              </Label>
+                              <p className="text-xl font-bold text-red-700 font-mono">
+                                {formatCurrency(totalGlosa)}
+                              </p>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
 
           <div className="flex justify-end pt-4 border-t">
@@ -1573,11 +1596,10 @@ const GuidesPage = () => {
 
                     <InfoCard
                       title="Valor Total"
-                      value={`${
-                        guides.length > 0
-                          ? 'R$ ' + (guides.length * 1500).toLocaleString('pt-BR')
-                          : 'R$ 0'
-                      }`}
+                      value={`${guides.length > 0
+                        ? 'R$ ' + (guides.length * 1500).toLocaleString('pt-BR')
+                        : 'R$ 0'
+                        }`}
                       description="Seus honorários enviados"
                       icon={<DollarSign className="h-4 w-4 text-amber-600" />}
                       className="border-amber-200/60 bg-gradient-to-br from-amber-50/60 to-yellow-50/30"

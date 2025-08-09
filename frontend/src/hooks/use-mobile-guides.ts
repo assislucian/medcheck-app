@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useDevice } from './use-device';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useDevice } from './use-device';
 
 /**
  * Hook específico para funcionalidades mobile da página de Guias
@@ -43,13 +43,13 @@ export function useMobileGuides() {
     try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
-      
+
       // Adicionar arquivos com validação
       Array.from(files).forEach((file) => {
         // Validar tipo de arquivo
         const validTypes = ['.pdf', '.xml'];
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-        
+
         if (!validTypes.includes(fileExtension)) {
           throw new Error(`Arquivo ${file.name} não é válido. Use apenas PDF ou XML.`);
         }
@@ -86,12 +86,23 @@ export function useMobileGuides() {
         throw new Error('Erro no upload');
       }
 
-      const results = await response.json();
-      
-      // Feedback de sucesso
-      toast.success(`${files.length} arquivo(s) processado(s) com sucesso!`);
+      const json = await response.json();
+      const results = (json?.results || []) as Array<{ filename: string; success: boolean; error?: string; parser_used?: string; guias_adicionadas?: number }>;
+
+      const successes = results.filter(r => r.success);
+      const failures = results.filter(r => !r.success);
+
+      if (successes.length > 0) {
+        const addedSum = successes.reduce((sum, r) => sum + (r.guias_adicionadas || 0), 0);
+        const parsers = Array.from(new Set(successes.map(r => r.parser_used).filter(Boolean)));
+        toast.success(`${successes.length} arquivo(s) OK. ${addedSum} procedimento(s) novo(s). ${parsers.length ? `Parser: ${parsers.join(', ')}` : ''}`.trim());
+      }
+      if (failures.length > 0) {
+        const filesFail = failures.slice(0, 2).map(f => f.filename).join(', ');
+        toast.error(`Falha em ${failures.length}: ${filesFail}${failures.length > 2 ? '…' : ''}`);
+      }
       triggerHaptic('heavy');
-      
+
       onComplete?.(results);
 
       // Limpar input
@@ -125,7 +136,7 @@ export function useMobileGuides() {
   const scrollToSection = useCallback((sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
+      element.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -197,7 +208,7 @@ export function useMobileGuides() {
     if (window.scrollY === 0 && startY > 0) {
       const currentY = e.touches[0].clientY;
       const pullDistance = currentY - startY;
-      
+
       if (pullDistance > 100) {
         setPullToRefreshActive(true);
       }
@@ -264,7 +275,7 @@ export function useMobileGuides() {
         event.preventDefault();
         openFileSelector();
       }
-      
+
       // Ctrl/Cmd + F para busca
       if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
         event.preventDefault();
