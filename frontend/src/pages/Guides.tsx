@@ -4,6 +4,7 @@
  * =============================================================================
  */
 
+import { OCRQualityIndicator, useOCRQualityData } from '@/components/ocr-edit/OCRQualityIndicator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Pagination,
@@ -87,6 +88,7 @@ interface Guide {
   codigo?: string;
   descricao?: string;
   papel?: string;
+  smart_status?: any; // Adicionado para compatibilidade
 }
 
 interface GuideProcedure {
@@ -99,6 +101,12 @@ interface GuideProcedure {
   codigo?: string;
   descricao?: string;
   papel?: string;
+  // Campos alternativos para compatibilidade com backend
+  guia?: string; // alias para numero_guia
+  paciente?: string; // alias para beneficiario
+  funcao?: string; // alias para papel
+  valorCBHPM?: number;
+  valorTabela2015?: number;
   smart_payment_status?: {
     status: string;
     reason: string;
@@ -175,14 +183,7 @@ function formatDateToISO(dateStr: string): string {
   return dateStr;
 }
 
-function getCurrentCrm() {
-  try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    return user && user.crm ? user.crm : '';
-  } catch {
-    return '';
-  }
-}
+// Função removida - não utilizada
 
 // =============================================================================
 // COMPONENTE DE STATUS FINANCEIRO DISCRETO (ESTILO DEMONSTRATIVOS)
@@ -967,31 +968,7 @@ const GuidesPage = () => {
     }
   }, [loadGuides, guidesToDelete]);
 
-  // Função para criar dados de teste (temporária)
-  const createSampleData = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-
-      const response = await axios.post(
-        buildApiUrl('/api/v1/guias/create-sample-data'),
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      toast.success(response.data.message);
-
-      // Recarregar guias após criar dados
-      loadGuides();
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        toast.info(error.response.data.message);
-      } else {
-        toast.error('Erro ao criar dados de exemplo');
-      }
-    }
-  }, [loadGuides]);
+  // Função removida - não utilizada
 
   // Dados paginados
   const paginatedData = useMemo(() => {
@@ -1041,8 +1018,10 @@ const GuidesPage = () => {
           numero_guia: guide.numero_guia,
           data: guide.data,
           beneficiario: guide.beneficiario,
-          qtdProcedimentos: guide.qtdProcedimentos,
-          smart_status: guide.smart_status
+          codigo: guide.codigo || '-',
+          descricao: guide.descricao || '-',
+          papel: guide.papel || '-',
+          qtd: guide.qtd || 1
         }));
         exportSimpleGuidesReport(guidesForExport, 'guias-medicas-completo');
         toast.success('Relatório exportado com sucesso!');
@@ -1134,17 +1113,38 @@ const GuidesPage = () => {
       }).format(value);
     };
 
+    // Buscar dados de qualidade OCR
+    const ocrQualityData = useOCRQualityData(guide.id ? Number(guide.id) : 0);
+
     return (
       <Dialog open={!!guide} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <FileText className="h-5 w-5 text-blue-600" />
-              Detalhes da Guia {guide.numero_guia}
-            </DialogTitle>
-            <DialogDescription>
-              Informações completas dos procedimentos e status de pagamento
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  Detalhes da Guia {guide.numero_guia}
+                </DialogTitle>
+                <DialogDescription>
+                  Informações completas dos procedimentos e status de pagamento
+                </DialogDescription>
+              </div>
+
+              {/* Indicador inteligente de qualidade OCR */}
+              {guide.id && (
+                <div className="flex items-center gap-2">
+                  <OCRQualityIndicator
+                    qualityData={ocrQualityData}
+                    onOpenReview={() => {
+                      // TODO: Implementar abertura de revisão
+                      console.log('Abrir revisão OCR');
+                    }}
+                    mode="when_needed"
+                  />
+                </div>
+              )}
+            </div>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto space-y-6">
@@ -1332,23 +1332,23 @@ const GuidesPage = () => {
                           guide.detalhes?.reduce(
                             (sum, p) =>
                               sum +
-                              (p.smart_payment_status?.demonstrativo_info
-                                ?.presented_value || 0),
+                              (Number(p.smart_payment_status?.demonstrativo_info
+                                ?.presented_value) || 0),
                             0
                           ) || 0;
                         const totalLiberado =
                           guide.detalhes?.reduce(
                             (sum, p) =>
                               sum +
-                              (p.smart_payment_status?.demonstrativo_info
-                                ?.approved_value || 0),
+                              (Number(p.smart_payment_status?.demonstrativo_info
+                                ?.approved_value) || 0),
                             0
                           ) || 0;
                         const totalGlosa =
                           guide.detalhes?.reduce(
                             (sum, p) =>
                               sum +
-                              (p.smart_payment_status?.demonstrativo_info?.glosa || 0),
+                              (Number(p.smart_payment_status?.demonstrativo_info?.glosa) || 0),
                             0
                           ) || 0;
 
