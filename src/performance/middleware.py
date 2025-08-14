@@ -9,8 +9,15 @@ import asyncio
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-import psutil
 import os
+
+# Try to import psutil, but make it optional
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    logging.warning("psutil not available - performance monitoring will be limited")
 
 logger = logging.getLogger("performance.middleware")
 
@@ -34,9 +41,17 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.time()
         
-        # Collect system metrics
-        process = psutil.Process(os.getpid())
-        memory_before = process.memory_info().rss / 1024 / 1024  # MB
+        # Collect system metrics if psutil is available
+        memory_before = 0
+        memory_after = 0
+        memory_delta = 0
+        
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process(os.getpid())
+                memory_before = process.memory_info().rss / 1024 / 1024  # MB
+            except Exception as e:
+                logger.debug(f"Failed to collect memory metrics: {e}")
         
         # Add performance headers
         request.state.start_time = start_time
@@ -47,8 +62,14 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
         
         # Calculate metrics
         process_time = time.time() - start_time
-        memory_after = process.memory_info().rss / 1024 / 1024  # MB
-        memory_delta = memory_after - memory_before
+        
+        if PSUTIL_AVAILABLE:
+            try:
+                process = psutil.Process(os.getpid())
+                memory_after = process.memory_info().rss / 1024 / 1024  # MB
+                memory_delta = memory_after - memory_before
+            except Exception as e:
+                logger.debug(f"Failed to collect memory metrics: {e}")
         
         # Update counters
         self.request_count += 1

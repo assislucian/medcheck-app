@@ -935,14 +935,26 @@ async def performance_metrics():
     Endpoint para métricas de performance em tempo real.
     Usado para monitoramento no Render e ferramentas de observabilidade.
     """
-    import psutil
     import os
     from src.performance.middleware import performance_metrics
     
-    # System metrics
-    process = psutil.Process(os.getpid())
-    memory_info = process.memory_info()
-    cpu_percent = process.cpu_percent()
+    # Try to get system metrics if psutil is available
+    memory_rss_mb = 0
+    memory_vms_mb = 0
+    cpu_percent = 0
+    
+    try:
+        import psutil
+        process = psutil.Process(os.getpid())
+        memory_info = process.memory_info()
+        memory_rss_mb = memory_info.rss / 1024 / 1024
+        memory_vms_mb = memory_info.vms / 1024 / 1024
+        cpu_percent = process.cpu_percent()
+    except ImportError:
+        # psutil not available, use default values
+        pass
+    except Exception as e:
+        logger.warning(f"Failed to collect system metrics: {e}")
     
     # Database connection pool metrics
     pool_status = "unknown"
@@ -961,13 +973,24 @@ async def performance_metrics():
     # Cache metrics
     cache_stats = app_cache.get_stats()
     
+    # Calculate memory percentage if psutil is available
+    memory_percent = 0
+    try:
+        import psutil
+        total_memory = psutil.virtual_memory().total
+        if total_memory > 0 and memory_rss_mb > 0:
+            memory_percent = round((memory_rss_mb * 1024 * 1024) / total_memory * 100, 1)
+    except:
+        pass
+    
     return {
         "timestamp": datetime.utcnow().isoformat(),
         "system": {
-            "memory_mb": round(memory_info.rss / 1024 / 1024, 1),
-            "memory_percent": round(memory_info.rss / psutil.virtual_memory().total * 100, 1),
+            "memory_mb": round(memory_rss_mb, 1),
+            "memory_percent": memory_percent,
             "cpu_percent": cpu_percent,
-            "process_id": os.getpid()
+            "process_id": os.getpid(),
+            "psutil_available": 'psutil' in globals()
         },
         "database": {
             "pool_status": pool_status,
