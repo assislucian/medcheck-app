@@ -1,7 +1,7 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
 import { ResponsiveDataGrid } from "../components/ui/ResponsiveDataGrid";
 import { Button } from "../components/ui/button";
-import { AlertCircle, Download, FileX, Filter, Loader2, Shield, AlertTriangle, Copy, FileText, Printer } from "lucide-react";
+import { AlertCircle, Download, FileX, Filter, Loader2, Shield, AlertTriangle, Copy, FileText, Printer, Scale } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/auth/AuthContext";
