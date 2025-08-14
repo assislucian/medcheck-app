@@ -784,13 +784,11 @@ if os.environ.get("ENV", "production") == "development":
     limiter = Limiter(
         key_func=get_remote_address,
         default_limits=["100 per minute"],
-        exempt_methods=["OPTIONS"],
     )
 else:
     limiter = Limiter(
         key_func=get_remote_address,
         default_limits=["10 per minute"],
-        exempt_methods=["OPTIONS"],
     )
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
