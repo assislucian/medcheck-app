@@ -945,11 +945,10 @@ def log_audit(action, user_crm=None, ip=None, details=None):
 # --- Models ---
 class RegisterRequest(BaseModel):
     email: str
-    password: Optional[str] = None  # New frontend format
-    senha: Optional[str] = None     # Legacy format
+    password: str  # Standard field name
     nome: str
     crm: str
-    uf: Optional[str] = None  # Made optional for compatibility
+    uf: Optional[str] = "SP"  # Default to São Paulo
     terms_accepted: Optional[bool] = True  # Default to True
     terms_version: Optional[str] = "2025-05-05"  # Default version
 
@@ -1146,23 +1145,14 @@ def register_unified(req: RegisterRequest, request: Request):
     Unified registration endpoint compatible with new frontend.
     Supports both old and new request formats.
     """
-    # Convert 'password' to 'senha' for compatibility with existing logic
-    if hasattr(req, 'password') and req.password:
-        req.senha = req.password
-    elif not hasattr(req, 'senha'):
+    # Ensure required fields have values
+    if not req.password:
         raise HTTPException(status_code=400, detail="Password is required")
     
-    # Set default UF if not provided
-    if not req.uf:
-        req.uf = "SP"  # Default to São Paulo
-    
-    # Ensure terms_accepted defaults to True for new format
-    if not hasattr(req, 'terms_accepted') or req.terms_accepted is None:
-        req.terms_accepted = True
-    
-    # Set default terms_version if not provided
-    if not hasattr(req, 'terms_version') or not req.terms_version:
-        req.terms_version = "2025-05-05"
+    # Apply defaults
+    req.uf = req.uf or "SP"
+    req.terms_accepted = req.terms_accepted if req.terms_accepted is not None else True
+    req.terms_version = req.terms_version or "2025-05-05"
     
     # Validação de entrada
     if not validate_crm(req.crm):
@@ -1179,7 +1169,7 @@ def register_unified(req: RegisterRequest, request: Request):
     req.uf = req.uf.upper().strip()
 
     # Validação de senha forte
-    is_strong, msg = senha_forte(req.senha)
+    is_strong, msg = senha_forte(req.password)
     if not is_strong:
         raise HTTPException(status_code=400, detail=msg)
 
@@ -1197,7 +1187,7 @@ def register_unified(req: RegisterRequest, request: Request):
                 status_code=400,
                 detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
             )
-        senha_hash = bcrypt.hashpw(req.senha.encode(), bcrypt.gensalt()).decode()
+        senha_hash = bcrypt.hashpw(req.password.encode(), bcrypt.gensalt()).decode()
         medico = Medico(
             crm=req.crm,
             uf=req.uf,

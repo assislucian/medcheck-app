@@ -2,8 +2,8 @@
 # Core dependencies required for all environments
 
 # Web Framework
-fastapi==0.104.1
-uvicorn==0.24.0
+fastapi==0.112.2
+uvicorn[standard]==0.30.6
 
 # Authentication & Security
 bcrypt==4.0.1
@@ -15,8 +15,8 @@ slowapi==0.1.9
 python-multipart==0.0.6
 
 # Validation & Schemas
-pydantic[email]==2.4.2
-pydantic-settings==2.0.3
+pydantic==2.9.0
+pydantic-settings==2.4.0
 
 # Data Processing  
 numpy==1.26.4
@@ -25,7 +25,7 @@ pandera==0.17.2
 multimethod==1.9.1
 
 # Database ORM
-sqlalchemy==2.0.23
+sqlalchemy==2.0.32
 
 # PDF Processing
 pdfplumber==0.9.0
@@ -34,3 +34,13 @@ PyMuPDF==1.23.8
 # Date/Time utilities
 python-dateutil==2.8.2
 python-json-logger==2.0.7
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# HTTP Client
+requests==2.31.0
+
+# Performance optimizations for Uvicorn
+uvloop==0.19.0
+httptools==0.6.1
