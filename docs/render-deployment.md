@@ -44,7 +44,7 @@ LOG_LEVEL=INFO
 ### 1. Web Service
 
 - **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn src.api:app --host 0.0.0.0 --port $PORT`
+- **Start Command**: `python -m uvicorn src.api:app --host 0.0.0.0 --port $PORT --workers 2 --loop uvloop --http httptools --log-level warning --access-log --no-use-colors`
 - **Environment**: `Python 3.11+`
 
 ### 2. PostgreSQL Database
