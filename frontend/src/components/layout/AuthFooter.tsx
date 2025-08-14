@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useLegalModals } from '@/contexts/LegalContext';
 import {
   Shield,
   Phone,
@@ -17,6 +18,7 @@ interface AuthFooterProps {
 
 export function AuthFooter({ variant }: AuthFooterProps) {
   const location = useLocation();
+  const { showTerms, showPrivacy } = useLegalModals();
 
   // Auto-detect variant based on current route if not provided
   const getVariantFromPath = (
@@ -312,12 +314,12 @@ export function AuthFooter({ variant }: AuthFooterProps) {
             © 2025 MedCheck. Todos os direitos reservados.
           </div>
           <div className="flex gap-6 text-sm text-gray-400">
-            <Link to="/terms" className="hover:text-amber-400 transition-colors">
+            <button onClick={showTerms} className="hover:text-amber-400 transition-colors">
               Termos de Uso
-            </Link>
-            <Link to="/privacy" className="hover:text-amber-400 transition-colors">
+            </button>
+            <button onClick={showPrivacy} className="hover:text-amber-400 transition-colors">
               Política de Privacidade
-            </Link>
+            </button>
             <span>CNPJ: 00.000.000/0001-00</span>
           </div>
         </div>

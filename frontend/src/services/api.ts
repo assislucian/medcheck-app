@@ -204,20 +204,23 @@ export class ApiService {
 
   // ===== AUTHENTICATION =====
   static async registerUser(userData: {
-    uf: string;
+    uf?: string;
     crm: string;
     nome: string;
     email: string;
     password: string;
-    terms_accepted: boolean;
-    terms_version: string;
+    terms_accepted?: boolean;
+    terms_version?: string;
   }) {
-    // Mapear password para senha conforme esperado pelo backend
+    // Manter password como está (backend espera password, não senha)
     const backendData = {
       crm: userData.crm,
       nome: userData.nome,
       email: userData.email,
-      senha: userData.password,
+      password: userData.password,
+      uf: userData.uf || "SP",
+      terms_accepted: userData.terms_accepted !== false,
+      terms_version: userData.terms_version || "2025-05-05",
     };
 
     const response = await fetch(`${API_BASE}/register`, {

@@ -23,7 +23,11 @@ import {
 
 // Context and Auth
 import { AuthProvider } from '@/contexts/AuthContext';
+import { LegalProvider } from '@/contexts/LegalContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
+
+// Legal Components
+import { LegalModals } from '@/components/legal/LegalModals';
 
 // Layout Components
 import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
@@ -193,7 +197,8 @@ const App: React.FC = () => {
               }}
             >
               <AuthProvider>
-                <PerformanceMonitor />
+                <LegalProvider>
+                  <PerformanceMonitor />
 
                 <RoutePreloader>
                   <motion.div
@@ -448,6 +453,8 @@ const App: React.FC = () => {
                     },
                   }}
                 />
+                  <LegalModals />
+                </LegalProvider>
               </AuthProvider>
             </Router>
           </TooltipProvider>

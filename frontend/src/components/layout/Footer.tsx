@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useLegalModals } from '@/contexts/LegalContext';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const location = useLocation();
+  const { showTerms, showPrivacy } = useLegalModals();
 
   const handleAboutClick = (e: React.MouseEvent) => {
     if (location.pathname === '/about') {
@@ -165,20 +167,20 @@ export function Footer() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link
-                  to="/privacy"
+                <button
+                  onClick={showPrivacy}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Privacidade
-                </Link>
+                </button>
               </li>
               <li>
-                <Link
-                  to="/terms"
+                <button
+                  onClick={showTerms}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   Termos de Uso
-                </Link>
+                </button>
               </li>
               <li>
                 <Link

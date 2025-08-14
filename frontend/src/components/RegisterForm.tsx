@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLegalModals } from '@/contexts/LegalContext';
 import { Button } from './ui/button';
 import {
   Card,
@@ -30,6 +31,8 @@ const registerSchema = z
       .regex(/[0-9]/, 'A senha deve conter número')
       .regex(/[^A-Za-z0-9]/, 'A senha deve conter símbolo'),
     confirmPassword: z.string(),
+    uf: z.string().min(2, 'Selecione o estado'),
+    termsAccepted: z.boolean().refine(val => val === true, 'Você deve aceitar os termos'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',
@@ -42,12 +45,15 @@ const RegisterForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [uf, setUf] = useState('SP');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { showTerms, showPrivacy } = useLegalModals();
 
   const validateForm = () => {
     const result = registerSchema.safeParse({
@@ -56,6 +62,8 @@ const RegisterForm = () => {
       email,
       password,
       confirmPassword,
+      uf,
+      termsAccepted,
     });
     if (result.success) {
       setErrors({});
@@ -83,6 +91,9 @@ const RegisterForm = () => {
         nome,
         email,
         password,
+        uf,
+        terms_accepted: termsAccepted,
+        terms_version: "2025-05-05",
       });
 
       toast.success(resp?.message ?? 'Cadastro realizado com sucesso!');
@@ -245,13 +256,96 @@ const RegisterForm = () => {
             </div>
           </div>
 
+          <div>
+            <label
+              htmlFor="uf"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-200"
+            >
+              Estado (UF)
+            </label>
+            <select
+              id="uf"
+              value={uf}
+              onChange={(e) => setUf(e.target.value)}
+              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition appearance-none cursor-pointer text-slate-900 dark:text-slate-100"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.5rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.5em 1.5em',
+                paddingRight: '2.5rem'
+              }}
+            >
+              <option value="SP" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">São Paulo (SP)</option>
+              <option value="RJ" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Rio de Janeiro (RJ)</option>
+              <option value="MG" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Minas Gerais (MG)</option>
+              <option value="RS" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Rio Grande do Sul (RS)</option>
+              <option value="PR" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Paraná (PR)</option>
+              <option value="SC" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Santa Catarina (SC)</option>
+              <option value="BA" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Bahia (BA)</option>
+              <option value="GO" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Goiás (GO)</option>
+              <option value="DF" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Distrito Federal (DF)</option>
+              <option value="PE" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Pernambuco (PE)</option>
+              <option value="CE" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Ceará (CE)</option>
+              <option value="ES" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Espírito Santo (ES)</option>
+              <option value="MT" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Mato Grosso (MT)</option>
+              <option value="MS" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Mato Grosso do Sul (MS)</option>
+              <option value="PB" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Paraíba (PB)</option>
+              <option value="AL" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Alagoas (AL)</option>
+              <option value="RN" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Rio Grande do Norte (RN)</option>
+              <option value="SE" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Sergipe (SE)</option>
+              <option value="PI" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Piauí (PI)</option>
+              <option value="MA" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Maranhão (MA)</option>
+              <option value="TO" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Tocantins (TO)</option>
+              <option value="PA" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Pará (PA)</option>
+              <option value="AM" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Amazonas (AM)</option>
+              <option value="RO" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Rondônia (RO)</option>
+              <option value="AC" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Acre (AC)</option>
+              <option value="RR" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Roraima (RR)</option>
+              <option value="AP" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Amapá (AP)</option>
+            </select>
+            {errors.uf && (
+              <p className="mt-1 text-xs text-red-500">{errors.uf}</p>
+            )}
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <input
+              id="terms"
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+            />
+            <label htmlFor="terms" className="text-sm text-slate-700 dark:text-slate-200">
+              Eu aceito os{' '}
+              <button
+                type="button"
+                onClick={showTerms}
+                className="text-amber-600 hover:text-amber-700 underline font-medium"
+              >
+                Termos de Uso
+              </button>
+              {' '}e a{' '}
+              <button
+                type="button"
+                onClick={showPrivacy}
+                className="text-amber-600 hover:text-amber-700 underline font-medium"
+              >
+                Política de Privacidade
+              </button>
+            </label>
+          </div>
+          {errors.termsAccepted && (
+            <p className="mt-1 text-xs text-red-500">{errors.termsAccepted}</p>
+          )}
+
           {registerError && (
             <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
               <strong className="font-bold">Erro no cadastro:</strong>
               <span className="block sm:inline ml-2">{registerError}</span>
             </div>
           )}
-
         </CardContent>
         <CardFooter className="flex flex-col items-center justify-center px-8 pb-8">
           <Button
