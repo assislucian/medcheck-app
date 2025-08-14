@@ -24,6 +24,7 @@ from uuid import uuid4
 # Importações do projeto
 from src.database import init_database, Base, engine, SessionLocal
 from src.health import router as health_router
+from src.performance.cache_manager import cached, app_cache, get_user_permissions_cached
 
 import bcrypt
 import pandas as pd
@@ -43,6 +44,7 @@ from fastapi import (
     status,
 )
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -841,6 +843,7 @@ logging.info(
     f"CORS: allowed_origins = {allowed_origins} | allowed_origin_regex = {FRONTEND_ORIGIN_REGEX or 'Not set'}"
 )
 
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -849,6 +852,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# RENDER PERFORMANCE OPTIMIZATIONS
+# GZip compression for responses > 1KB (Render best practice)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# Performance monitoring middleware
+from src.performance.middleware import setup_performance_middleware
+setup_performance_middleware(app)
 
 
 # --- Endpoint de Health Check ---
@@ -916,6 +927,59 @@ async def debug_database():
 from src.health import router as health_router
 
 app.include_router(health_router)
+
+# --- Performance Metrics Endpoint ---
+@app.get("/metrics", tags=["Performance"])
+async def performance_metrics():
+    """
+    Endpoint para métricas de performance em tempo real.
+    Usado para monitoramento no Render e ferramentas de observabilidade.
+    """
+    import psutil
+    import os
+    from src.performance.middleware import performance_metrics
+    
+    # System metrics
+    process = psutil.Process(os.getpid())
+    memory_info = process.memory_info()
+    cpu_percent = process.cpu_percent()
+    
+    # Database connection pool metrics
+    pool_status = "unknown"
+    pool_size = 0
+    pool_checked_out = 0
+    
+    try:
+        if hasattr(engine.pool, 'size'):
+            pool_size = engine.pool.size()
+        if hasattr(engine.pool, 'checkedout'):
+            pool_checked_out = engine.pool.checkedout()
+        pool_status = "healthy"
+    except Exception:
+        pool_status = "degraded"
+    
+    # Cache metrics
+    cache_stats = app_cache.get_stats()
+    
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "system": {
+            "memory_mb": round(memory_info.rss / 1024 / 1024, 1),
+            "memory_percent": round(memory_info.rss / psutil.virtual_memory().total * 100, 1),
+            "cpu_percent": cpu_percent,
+            "process_id": os.getpid()
+        },
+        "database": {
+            "pool_status": pool_status,
+            "pool_size": pool_size,
+            "connections_checked_out": pool_checked_out,
+            "engine_url": str(engine.url).split('@')[0] + "@***"  # Hide credentials
+        },
+        "cache": cache_stats,
+        "application": performance_metrics.get_stats(),
+        "version": "1.0.0",
+        "environment": os.environ.get("ENVIRONMENT", "development")
+    }
 
 # --- Logging estruturado ---
 # --- Logging estruturado para auditoria ---
@@ -1140,7 +1204,7 @@ def register_medico(req: RegisterRequest, request: Request):
 # --- New unified registration endpoint (compatible with frontend) ---
 @app.post("/register", response_model=RegisterResponse)
 @limiter.limit("3/minute")
-def register_unified(req: RegisterRequest, request: Request):
+async def register_unified(req: RegisterRequest, request: Request):
     """
     Unified registration endpoint compatible with new frontend.
     Supports both old and new request formats.

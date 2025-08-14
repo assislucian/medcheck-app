@@ -94,29 +94,29 @@ export function CrosscheckStatusIndicator({
 
             if (semGuia > 0) {
               problemas.push(
-                `Demonstrativo ${demo.periodo || demo.id}: ${semGuia} procedimento(s) sem guia associada`
+                `Período ${demo.periodo || demo.id}: ${semGuia} procedimento(s) aguardando guia médica`
               );
             }
           } else {
             problemas.push(
-              `Demonstrativo ${demo.periodo || demo.id}: Nenhum procedimento encontrado`
+              `Período ${demo.periodo || demo.id}: Aguardando procedimentos`
             );
           }
         } catch (err) {
           problemas.push(
-            `Demonstrativo ${demo.periodo || demo.id}: Erro ao carregar detalhes`
+            `Período ${demo.periodo || demo.id}: Verificação em andamento`
           );
         }
       }
 
       // Verificar problemas comuns
       if (demonstrativos.length > 0 && guias.length === 0) {
-        problemas.push('Nenhuma guia médica encontrada. Faça upload das guias para associar procedimentos.');
+        problemas.push('Adicione suas guias médicas para uma análise completa dos procedimentos.');
       }
 
       if (demonstrativos.length === 0) {
         problemas.push(
-          'Nenhum demonstrativo encontrado. Faça upload dos demonstrativos para análise.'
+          'Adicione seus demonstrativos para começar a análise.'
         );
       }
 
@@ -188,8 +188,8 @@ export function CrosscheckStatusIndicator({
 
   const getStatusColor = () => {
     if (status.taxaCrosscheck >= 80) return 'success';
-    if (status.taxaCrosscheck >= 50) return 'warning';
-    return 'destructive';
+    if (status.taxaCrosscheck >= 50) return 'default';
+    return 'secondary';
   };
 
   const getStatusIcon = () => {
@@ -200,12 +200,12 @@ export function CrosscheckStatusIndicator({
 
   const getStatusMessage = () => {
     if (status.taxaCrosscheck >= 80) {
-      return 'Crosscheck funcionando perfeitamente';
+      return 'Seus dados estão organizados e protegidos';
     }
     if (status.taxaCrosscheck >= 50) {
-      return 'Crosscheck parcialmente funcionando';
+      return 'Estamos organizando seus dados';
     }
-    return 'Crosscheck precisa de atenção';
+    return 'Vamos organizar seus dados juntos';
   };
 
   if (compact) {
@@ -213,7 +213,7 @@ export function CrosscheckStatusIndicator({
       <div className="flex items-center gap-2">
         <Badge variant={getStatusColor() as any} className="flex items-center gap-1">
           {getStatusIcon()}
-          {status.taxaCrosscheck.toFixed(0)}% Crosscheck
+          {status.taxaCrosscheck.toFixed(0)}% Organizado
         </Badge>
         <span className="text-xs text-muted-foreground">
           {status.ultimaAtualizacao}
@@ -227,10 +227,10 @@ export function CrosscheckStatusIndicator({
       className={`
       ${status.taxaCrosscheck >= 80 ? 'border-green-200 bg-green-50' : ''}
       ${status.taxaCrosscheck >= 50 && status.taxaCrosscheck < 80
-          ? 'border-yellow-200 bg-yellow-50'
+          ? 'border-blue-200 bg-blue-50'
           : ''
         }
-      ${status.taxaCrosscheck < 50 ? 'border-red-200 bg-red-50' : ''}
+      ${status.taxaCrosscheck < 50 ? 'border-orange-200 bg-orange-50' : ''}
     `}
     >
       <div className="flex items-start justify-between">
@@ -240,7 +240,7 @@ export function CrosscheckStatusIndicator({
             <div className="font-medium">{getStatusMessage()}</div>
             <div className="text-sm text-muted-foreground">
               {status.demonstrativosComCrosscheck} de {status.totalDemonstrativos}{' '}
-              demonstrativos com procedimentos associados • {status.totalGuias} procedimentos em guias
+              demonstrativos analisados • {status.totalGuias} procedimentos identificados
             </div>
             <div className="text-xs text-muted-foreground">
               Última verificação: {status.ultimaAtualizacao}
@@ -258,32 +258,32 @@ export function CrosscheckStatusIndicator({
             onClick={fetchCrosscheckStatus}
             className="h-8"
           >
-            Atualizar
+            Verificar novamente
           </Button>
         </div>
       </div>
 
       {status.problemas.length > 0 && (
         <div className="mt-3 space-y-2">
-          <div className="text-sm font-medium">Problemas detectados:</div>
+          <div className="text-sm font-medium">Próximos passos para otimizar sua análise:</div>
           <ul className="text-sm space-y-1">
             {status.problemas.map((problema, index) => (
               <li key={index} className="flex items-start gap-2">
-                <span className="text-muted-foreground">•</span>
-                <span>{problema}</span>
+                <span className="text-blue-500">📋</span>
+                <span>{problema.replace('Demonstrativo', 'Período').replace('procedimento(s) sem guia associada', 'procedimentos aguardando análise completa')}</span>
               </li>
             ))}
           </ul>
 
           {status.totalGuias === 0 && onUploadGuias && (
             <Button
-              variant="outline"
+              variant="default"
               size="sm"
               onClick={onUploadGuias}
-              className="mt-2"
+              className="mt-2 bg-blue-600 hover:bg-blue-700"
             >
               <Upload className="h-4 w-4 mr-2" />
-              Fazer Upload de Guias Médicas
+              Adicionar Guias Médicas
             </Button>
           )}
         </div>
