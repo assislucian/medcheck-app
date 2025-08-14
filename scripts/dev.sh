@@ -1,76 +1,96 @@
 #!/bin/bash
+# ==============================================================================
+# MEDCHECK DEVELOPMENT SCRIPT (SINGLE SOURCE OF TRUTH)
+# ==============================================================================
+#
+# Objetivo: Unificar o ambiente de desenvolvimento local com as configurações
+#           do Render para garantir consistência e evitar o erro "module not found".
+#
+# O que este script faz:
+# 1. Ativa o ambiente virtual Python do projeto.
+# 2. Cria um arquivo .env se não existir, replicando as variáveis do Render.
+# 3. Garante que diretórios essenciais (uploads, results, logs) existam.
+# 4. Inicia o backend com Uvicorn, com reload automático.
+#
+# Como usar:
+#   - Do diretório raiz, execute: bash scripts/dev.sh
+#
+# ==============================================================================
 
-# Script para desenvolvimento local do MedCheck
-# Usa configurações IDÊNTICAS ao Render para garantir compatibilidade
+echo "🚀 Iniciando MedCheck em modo de desenvolvimento unificado..."
 
-echo "🚀 Iniciando MedCheck em modo desenvolvimento..."
-echo "📋 Usando configurações IDÊNTICAS ao Render..."
-
-# Carregar variáveis de ambiente do .env
-if [ -f .env ]; then
-    echo "📋 Carregando configurações do .env..."
-    export $(cat .env | grep -v '^#' | xargs)
+# 1. Ativar o ambiente virtual
+VENV_PATH="medcheck_env_py311/bin/activate"
+if [ -f "$VENV_PATH" ]; then
+    echo "🐍 Ativando ambiente virtual Python..."
+    source "$VENV_PATH"
 else
-    echo "❌ Arquivo .env não encontrado!"
-    echo "📝 Criando .env com configurações do Render..."
-    
-    cat > .env << EOF
-# Configurações IDÊNTICAS ao Render para desenvolvimento local
-# Este arquivo replica exatamente as configurações de produção
-
-# Ambiente
-ENV=production
-
-# Autenticação JWT (mesmo secret do Render)
-JWT_SECRET=bQ7nP4yZrS1wV8kC5mT2xA9dL3fH6gJ0
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-
-# Admin Secret (mesmo do Render)
-ADMIN_SECRET=bQ7nP4yZrS1wV8kC5mT2xA9dL3fH6gJ0
-
-# CORS (mesmo do Render)
-FRONTEND_ORIGINS=https://medcheck-app.vercel.app,https://medcheck-app-assislucians-projects.vercel.app
-FRONTEND_ORIGIN_REGEX=https://medcheck-app-[a-z0-9-]+-assislucians-projects\.vercel\.app
-
-# Banco de dados local (SQLite para desenvolvimento)
-DATABASE_URL=sqlite:///./medicos.db
-
-# Configurações de desenvolvimento
-SKIP_AUTH=false
-CRM_LOGADO=6091
-UF_LOGADO=AC
-
-# Diretórios
-UPLOAD_DIR=uploads
-RESULTS_DIR=results
-EOF
-    
-    export $(cat .env | grep -v '^#' | xargs)
-fi
-
-# Verificar se as variáveis críticas estão definidas
-if [ -z "$JWT_SECRET" ]; then
-    echo "❌ JWT_SECRET não está definido!"
+    echo "❌ Erro Crítico: Ambiente virtual não encontrado em '$VENV_PATH'."
+    echo "   Por favor, execute o script de setup para criar o ambiente."
     exit 1
 fi
 
-echo "✅ JWT_SECRET configurado: ${JWT_SECRET:0:10}..."
-echo "✅ JWT_ALGORITHM: $JWT_ALGORITHM"
-echo "✅ ACCESS_TOKEN_EXPIRE_MINUTES: $ACCESS_TOKEN_EXPIRE_MINUTES"
-echo "✅ ENV: $ENV"
-echo "✅ ADMIN_SECRET: ${ADMIN_SECRET:0:10}..."
+# 2. Gerenciar arquivo .env
+if [ ! -f .env ]; then
+    echo "📝 Arquivo .env não encontrado. Criando um novo com base nas configurações do Render..."
+    cat > .env << EOF
+# ==============================================================================
+# MEDCHECK .ENV - CONFIGURAÇÕES PARA DESENVOLVIMENTO LOCAL
+# ==============================================================================
+# Este arquivo é a fonte da verdade para variáveis de ambiente locais.
+# Ele é projetado para replicar o ambiente de produção do Render.
+# NÃO ADICIONE SEGREDOS DIRETAMENTE AQUI. Use placeholders se necessário.
+# ==============================================================================
 
-# Criar diretórios necessários
-mkdir -p uploads results logs
+# -- Ambiente --
+ENV="development"
 
-echo "🎯 Iniciando backend na porta 8000..."
-echo "📱 Frontend deve estar rodando em http://localhost:5173"
-echo "🔗 API disponível em http://localhost:8000"
-echo "📚 Docs em http://localhost:8000/docs"
+# -- Autenticação JWT --
+# Substitua por um segredo forte ou carregue de um cofre de segredos.
+JWT_SECRET="dummy-secret-for-local-dev-change-me"
+JWT_ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES="60"
+
+# -- Admin Secret --
+# Usado para operações administrativas protegidas.
+ADMIN_SECRET="dummy-admin-secret-for-local-dev-change-me"
+
+# -- Configurações de CORS --
+# Lista de origens permitidas. Inclui portas comuns de desenvolvimento frontend.
+FRONTEND_ORIGINS="http://localhost:5173,http://localhost:3000,https://medcheck-app.vercel.app"
+
+# -- Banco de Dados --
+# Usamos SQLite para simplicidade no desenvolvimento local.
+DATABASE_URL="sqlite:///./medcheck.db"
+
+# -- Diretórios --
+# Caminhos para armazenamento de arquivos.
+UPLOAD_DIR="uploads"
+RESULTS_DIR="results"
+LOG_DIR="logs"
+
+EOF
+    echo "✅ Arquivo .env criado com sucesso."
+fi
+
+# Carregar variáveis do .env para o ambiente atual
+echo "📋 Carregando variáveis de ambiente do .env..."
+export $(grep -v '^#' .env | xargs)
+
+# 3. Verificar e criar diretórios essenciais
+echo "📁 Verificando a existência dos diretórios necessários..."
+mkdir -p "$UPLOAD_DIR" "$RESULTS_DIR" "$LOG_DIR"
+echo "✅ Diretórios 'uploads', 'results' e 'logs' garantidos."
+
+# 4. Iniciar o backend com Uvicorn
+echo "🎯 Iniciando o servidor backend FastAPI..."
+echo "   - Host: 0.0.0.0 (acessível na rede local)"
+echo "   - Porta: 8000"
+echo "   - Reload: Ativado (o servidor reiniciará ao salvar alterações)"
 echo ""
-echo "💡 Para parar: Ctrl+C"
+echo "🔗 API disponível em: http://localhost:8000"
+echo "📚 Documentação interativa (Swagger): http://localhost:8000/docs"
+echo "💡 Para parar o servidor, pressione Ctrl+C."
 echo ""
 
-# Iniciar o backend
 python -m uvicorn src.api:app --host 0.0.0.0 --port 8000 --reload 

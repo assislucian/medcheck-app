@@ -31,6 +31,9 @@ frontend/out/
 frontend/build/
 frontend/dist/
 
+# Ambiente Virtual Pessoal
+medcheck_env_py311/
+
 # === CONFIGURAÇÕES E SEGREDOS ===
 .env
 .env.*
