@@ -14,7 +14,7 @@ import { Badge } from '../components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import { SmartAlertsSystem } from '../components/intelligence/SmartAlertsSystem';
+
 import { SmartSkeleton, MedicalLoadingState } from '../components/ui/SmartLoadingStates';
 
 const DashboardPage = () => {
@@ -63,9 +63,9 @@ const DashboardPage = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        toast.success('Dados do dashboard exportados com sucesso!');
+        toast.success('Seus dados foram exportados com sucesso!');
       } else {
-        toast.info('Nenhum dado disponível para exportar');
+        toast.info('Adicione guias e demonstrativos para exportar dados');
       }
     };
 
@@ -154,9 +154,6 @@ const DashboardPage = () => {
           description="Acompanhe seus honorários, glosas e pendências de forma clara e organizada. Sua gestão médica simplificada."
         >
           <div className="space-y-12 px-4 sm:px-6 lg:px-8">
-            {/* Sistema de Alertas Inteligentes */}
-            <SmartAlertsSystem />
-
             {/* Header Componentizado */}
             <DashboardHeader 
               userName={userProfile?.nome}
@@ -179,10 +176,10 @@ const DashboardPage = () => {
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-2xl font-bold text-red-700">
-                      Ops! Conexão instável
+                      Não conseguimos carregar seus dados
                     </h3>
                     <p className="text-gray-600 max-w-md">
-                      Não conseguimos carregar seus dados no momento. Pode ser a internet ou nossos servidores. Vamos tentar de novo?
+                      Verificação temporariamente indisponível. Por favor, tente novamente em alguns instantes.
                     </p>
                   </div>
                   <Button
@@ -318,7 +315,7 @@ const DashboardPage = () => {
                         Depois que recuperar seus honorários, use essas ferramentas para <strong>nunca mais perder dinheiro</strong>
                       </p>
                     </div>
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {/* Relatórios */}
                       <Link to="/reports">
                         <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-gray-50 to-slate-50">
@@ -329,10 +326,10 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-gray-800">
-                                  Relatórios
+                                  Relatórios Detalhados
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  Análises detalhadas
+                                  Análises mensais e anuais
                                 </p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors" />
@@ -340,27 +337,7 @@ const DashboardPage = () => {
                           </CardContent>
                         </Card>
                       </Link>
-                      {/* Central de Inteligência */}
-                      <Link to="/intelligence">
-                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
-                                <Brain className="h-6 w-6 text-purple-700" />
-                              </div>
-                              <div className="space-y-1">
-                                <h3 className="font-semibold text-purple-800">
-                                  🧠 Robô Inteligente
-                                </h3>
-                                <p className="text-sm text-purple-600">
-                                  Dicas para ganhar mais
-                                </p>
-                              </div>
-                              <ChevronRight className="h-4 w-4 text-purple-400 ml-auto group-hover:text-purple-600 transition-colors" />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
+
                       {/* Análise Comparativa */}
                       <Link to="/comparison">
                         <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-teal-50 to-cyan-50">
@@ -371,11 +348,50 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-teal-800">
-                                  🔍 Comparar Tabelas
+                                  Comparador de Tabelas
                                 </h3>
-                                <p className="text-sm text-teal-600">CBHPM vs. Planos</p>
+                                <p className="text-sm text-teal-600">CBHPM vs. valores dos planos</p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-teal-400 ml-auto group-hover:text-teal-600 transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </div>
+                  </section>
+
+                  {/* Seção de Inteligência Médica - Para usuários sem dados */}
+                  <section className="space-y-8 border-t border-gray-200 pt-12">
+                    <div className="text-center space-y-3">
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
+                          <Brain className="h-6 w-6 text-purple-700" />
+                        </div>
+                        💡 Quer dicas extras?
+                      </h2>
+                      <p className="text-gray-600 max-w-2xl mx-auto">
+                        Depois de organizar seus dados, explore nossa inteligência artificial 
+                        para descobrir <strong>estratégias avançadas</strong> de otimização
+                      </p>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Link to="/intelligence" className="w-full max-w-md">
+                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
+                                <Brain className="h-6 w-6 text-purple-700" />
+                              </div>
+                              <div className="space-y-1 flex-1">
+                                <h3 className="font-semibold text-purple-800">
+                                  Assistente Inteligente
+                                </h3>
+                                <p className="text-sm text-purple-600">
+                                  Insights personalizados para sua prática
+                                </p>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-purple-400 ml-auto group-hover:text-purple-600 transition-colors" />
                             </div>
                           </CardContent>
                         </Card>
@@ -434,7 +450,7 @@ const DashboardPage = () => {
                       </p>
                     </div>
 
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                       {/* Relatórios */}
                       <Link to="/reports">
                         <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-gray-50 to-slate-50">
@@ -445,35 +461,13 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-gray-800">
-                                  📊 Seus Relatórios
+                                  Relatórios Detalhados
                                 </h3>
                                 <p className="text-sm text-gray-600">
-                                  Quanto ganhou esse mês?
+                                  Análises mensais e anuais
                                 </p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-gray-400 ml-auto group-hover:text-gray-600 transition-colors" />
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-
-                      {/* Central de Inteligência */}
-                      <Link to="/intelligence">
-                        <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer bg-gradient-to-br from-purple-50 to-indigo-50">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
-                                <Brain className="h-6 w-6 text-purple-700" />
-                              </div>
-                              <div className="space-y-1">
-                                <h3 className="font-semibold text-purple-800">
-                                  Central de Inteligência
-                                </h3>
-                                <p className="text-sm text-purple-600">
-                                  Insights avançados
-                                </p>
-                              </div>
-                              <ChevronRight className="h-4 w-4 text-purple-400 ml-auto group-hover:text-purple-600 transition-colors" />
                             </div>
                           </CardContent>
                         </Card>
@@ -489,11 +483,51 @@ const DashboardPage = () => {
                               </div>
                               <div className="space-y-1">
                                 <h3 className="font-semibold text-teal-800">
-                                  Análise Comparativa
+                                  Comparador de Tabelas
                                 </h3>
-                                <p className="text-sm text-teal-600">Compare tabelas</p>
+                                <p className="text-sm text-teal-600">CBHPM vs. valores dos planos</p>
                               </div>
                               <ChevronRight className="h-4 w-4 text-teal-400 ml-auto group-hover:text-teal-600 transition-colors" />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    </div>
+                  </section>
+
+                  {/* Seção de Inteligência Médica - Posicionada no final */}
+                  <section className="space-y-8 border-t border-gray-200 pt-12">
+                    <div className="text-center space-y-3">
+                      <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100">
+                          <Brain className="h-6 w-6 text-purple-700" />
+                        </div>
+                        Assistente Inteligente
+                      </h2>
+                      <p className="text-gray-600 max-w-2xl mx-auto">
+                        Agora que você já organizou seus dados, que tal usar inteligência artificial 
+                        para descobrir <strong>como ganhar ainda mais</strong>?
+                      </p>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <Link to="/intelligence" className="w-full max-w-md">
+                        <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-1 group cursor-pointer bg-gradient-to-br from-purple-50 via-indigo-50 to-purple-100">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
+                          <CardContent className="p-8">
+                            <div className="flex items-center gap-6">
+                              <div className="p-4 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 group-hover:scale-110 transition-transform duration-300">
+                                <Brain className="h-8 w-8 text-purple-700" />
+                              </div>
+                              <div className="space-y-2 flex-1">
+                                <h3 className="text-xl font-bold text-purple-800">
+                                  Central de Inteligência
+                                </h3>
+                                <p className="text-purple-600">
+                                  Descobra padrões ocultos e oportunidades de otimização nos seus honorários
+                                </p>
+                              </div>
+                              <ChevronRight className="h-6 w-6 text-purple-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-300" />
                             </div>
                           </CardContent>
                         </Card>

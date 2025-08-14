@@ -289,26 +289,26 @@ export function MedicalLoadingState({ type }: { type: 'processing' | 'analyzing'
       case 'processing':
         return {
           icon: <FileText className="h-8 w-8 text-blue-600 animate-bounce" />,
-          title: 'Processando Guias Médicas',
-          description: 'Analisando documentos TISS e cruzando com CBHPM...',
+          title: 'Organizando suas Guias',
+          description: 'Verificando procedimentos e valores CBHPM...',
         };
       case 'analyzing':
         return {
           icon: <Brain className="h-8 w-8 text-purple-600 animate-pulse" />,
-          title: 'Análise Inteligente',
-          description: 'Detectando glosas e calculando oportunidades de recuperação...',
+          title: 'Analisando Honorários',
+          description: 'Identificando glosas e oportunidades de recuperação...',
         };
       case 'calculating':
         return {
           icon: <BarChart3 className="h-8 w-8 text-green-600 animate-bounce" />,
-          title: 'Calculando Métricas',
-          description: 'Processando performance financeira e indicadores...',
+          title: 'Calculando Resultados',
+          description: 'Processando seus honorários e indicadores...',
         };
       case 'uploading':
         return {
           icon: <Target className="h-8 w-8 text-orange-600 animate-spin" />,
-          title: 'Upload em Progresso',
-          description: 'Enviando documentos para análise automatizada...',
+          title: 'Recebendo Arquivos',
+          description: 'Preparando seus documentos para análise...',
         };
     }
   };
@@ -359,23 +359,23 @@ export function SmartEmptyState({
       case 'demonstrativos':
         return {
           icon: <FileText className="h-16 w-16 text-blue-500" />,
-          title: 'Nenhum Demonstrativo',
-          description: 'Faça upload dos seus demonstrativos para começar a análise.',
-          actionText: 'Fazer Upload',
+          title: 'Adicione seus Demonstrativos',
+          description: 'Envie seus demonstrativos de pagamento para análise automática de glosas.',
+          actionText: 'Começar Análise',
         };
       case 'guias':
         return {
           icon: <Target className="h-16 w-16 text-purple-500" />,
-          title: 'Nenhuma Guia Carregada',
-          description: 'Envie suas guias TISS para análise automática CBHPM.',
-          actionText: 'Enviar Guias',
+          title: 'Adicione suas Guias Médicas',
+          description: 'Envie suas guias TISS para verificação automática de procedimentos.',
+          actionText: 'Analisar Guias',
         };
       case 'alerts':
         return {
           icon: <Brain className="h-16 w-16 text-green-500" />,
-          title: 'Sistema Estável',
-          description: 'Nenhum alerta crítico. Tudo funcionando perfeitamente!',
-          actionText: 'Ver Dashboard',
+          title: 'Tudo em Ordem!',
+          description: 'Nenhum alerta importante. Seus dados estão organizados e protegidos.',
+          actionText: 'Ver Painel',
         };
     }
   };

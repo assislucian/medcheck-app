@@ -136,8 +136,8 @@ const CBHPMComparisonTable: React.FC<CBHPMComparisonTableProps> = ({
     // Apply sorting
     if (sortField) {
       result.sort((a, b) => {
-        let aValue = a[sortField as keyof ComparisonDetail];
-        let bValue = b[sortField as keyof ComparisonDetail];
+        const aValue = a[sortField as keyof ComparisonDetail];
+        const bValue = b[sortField as keyof ComparisonDetail];
 
         // Handle string comparison
         if (typeof aValue === 'string' && typeof bValue === 'string') {

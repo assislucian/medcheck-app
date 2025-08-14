@@ -74,7 +74,7 @@ export function DataGrid({
   renderExpandedRow,
   wrapperScrollable = true,
   loading = false,
-  emptyMessage = 'Nenhum registro encontrado',
+  emptyMessage = 'Nenhum dado disponível',
   paginationLabel = 'Linhas por página:',
   selectable = false,
   selectedRows = [],
@@ -188,7 +188,7 @@ export function DataGrid({
         >
           <Table
             scrollable={false}
-            className="table-auto w-full min-w-[800px] sm:min-w-[900px] lg:min-w-full"
+            className="table-auto w-full"
           >
             <TableHeader>
               <TableRow className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
@@ -253,7 +253,7 @@ export function DataGrid({
                     <TableHead
                       key={column.field}
                       style={{ width: column.width, flex: column.flex }}
-                      className="text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50 min-w-[100px] sm:min-w-[120px]"
+                      className="text-center align-middle py-3 sm:py-4 px-2 sm:px-3 md:px-4 bg-gray-50 dark:bg-gray-800/50"
                     >
                       {headerContent}
                     </TableHead>
@@ -332,7 +332,7 @@ export function DataGrid({
                               isNumeric
                                 ? 'text-right font-mono tabular-nums whitespace-nowrap'
                                 : 'text-left',
-                              'text-gray-800 dark:text-gray-200 min-w-[80px] sm:min-w-[100px]'
+                              'text-gray-800 dark:text-gray-200'
                             )}
                           >
                             {column.renderCell ? (

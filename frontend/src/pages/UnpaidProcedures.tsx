@@ -1,5 +1,5 @@
 import { AuthenticatedLayout } from "../components/layout/AuthenticatedLayout";
-import { DataGrid } from "../components/ui/data-grid";
+import { ResponsiveDataGrid } from "../components/ui/ResponsiveDataGrid";
 import { Button } from "../components/ui/button";
 import { AlertCircle, Download, FileX, Filter, Loader2, Shield, AlertTriangle, Copy, FileText, Printer } from "lucide-react";
 import { Badge } from "../components/ui/badge";
@@ -41,7 +41,7 @@ function getPrazoStatus(dias: number) {
 
 function PrazoBadge({ dias }: { dias: number }) {
   const status = getPrazoStatus(dias);
-  let label = dias > 1 ? `${dias} dias` : dias === 1 ? "1 dia" : "Expirado";
+  const label = dias > 1 ? `${dias} dias` : dias === 1 ? "1 dia" : "Expirado";
   return (
     <Badge
       variant={status}
@@ -96,6 +96,7 @@ const UnpaidProceduresPage = () => {
   const [contestationText, setContestationText] = useState('');
   const [generated, setGenerated] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
+  const [glosaAnalysis, setGlosaAnalysis] = useState<any>(null);
   
   const { userProfile } = useAuth();
 
@@ -243,7 +244,7 @@ const UnpaidProceduresPage = () => {
     {
       field: 'data',
       headerName: 'Data',
-      width: 90,
+      width: 100,
       renderCell: ({ row }: any) => <span className="text-sm">{row.data}</span>
     },
     {
@@ -261,19 +262,19 @@ const UnpaidProceduresPage = () => {
     {
       field: 'procedimento',
       headerName: 'Procedimento',
-      width: 220,
+      width: 250,
       renderCell: ({ row }: any) => <TruncatedCell text={row.procedimento} />
     },
     {
       field: 'valorApresentado',
       headerName: 'Valor',
-      width: 100,
+      width: 120,
       renderCell: ({ row }: any) => <span className="text-sm font-medium">{formatValor(row.valorApresentado)}</span>
     },
     {
       field: 'motivoNaoPagamento',
       headerName: 'Motivo',
-      width: 120,
+      width: 140,
       renderCell: ({ row }: any) => (
         <Badge variant="destructive" className="text-xs">
           {row.motivoNaoPagamento}
@@ -289,9 +290,9 @@ const UnpaidProceduresPage = () => {
         return <PrazoBadge dias={dias} />;
       }
     },
-        {
+    {
       field: 'actions',
-      headerName: 'Contestação',
+      headerName: 'Ações',
       width: 120,
       renderCell: ({ row }: any) => {
         const dias = calcularDiasParaContestar(row.data);
@@ -316,7 +317,16 @@ const UnpaidProceduresPage = () => {
 
   const handleContestation = (procedure: any) => {
     const dias = calcularDiasParaContestar(procedure.data);
-    setSelectedProcedure({ ...procedure, diasRestantes: dias });
+    const procedureWithDays = { ...procedure, diasRestantes: dias };
+    
+    // Análise automática da glosa
+    const analysis = analisarGlosa(
+      procedure.codigo_glosa || '', 
+      procedure.motivo_glosa || procedure.motivoNaoPagamento || ''
+    );
+    
+    setSelectedProcedure(procedureWithDays);
+    setGlosaAnalysis(analysis);
     setContestationDialog(true);
     setGenerated(false);
     setContestationText('');
@@ -324,61 +334,37 @@ const UnpaidProceduresPage = () => {
   };
 
   const generateLegalContestation = (procedure: any) => {
-    const dataFormatada = new Date().toLocaleDateString('pt-BR');
-    const isExpired = procedure.diasRestantes <= 0;
-    
-    return `À Operadora/Convênio
+    // Preparar dados para o sistema jurídico
+    const contestationData: ContestationData = {
+      procedimento: {
+        guia: procedure.guia || '',
+        codigo_cbhpm: procedure.codigoCBHPM || procedure.codigo || '',
+        descricao: procedure.procedimento || '',
+        data_execucao: procedure.data || '',
+        beneficiario: procedure.beneficiario || '',
+        crm: userProfile?.crm || '',
+        nome_medico: userProfile?.name || '',
+        valor_apresentado: parseFloat(procedure.valorApresentado?.toString().replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+        valor_pago: parseFloat(procedure.valorPago?.toString().replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+        hospital: procedure.hospital || '',
+      },
+      glosa: {
+        codigo: procedure.codigo_glosa || '',
+        motivo: procedure.motivo_glosa || procedure.motivoNaoPagamento || '',
+        valor: parseFloat(procedure.valorApresentado?.toString().replace(/[^\d,]/g, '').replace(',', '.')) || 0,
+        categoria: 'administrativa', // Será determinado automaticamente
+      },
+      medico: {
+        nome: userProfile?.name || '',
+        crm: userProfile?.crm || '',
+        uf: userProfile?.uf || '',
+        especialidade: userProfile?.especialidade || undefined,
+      },
+      dias_desde_execucao: procedure.diasRestantes ? (30 - procedure.diasRestantes) : 0,
+      prazo_legal: procedure.diasRestantes > 0 ? 'dentro' : 'expirado',
+    };
 
-Ref.: Contestação de Glosa – Guia nº ${procedure.guia}, Procedimento ${procedure.procedimento}${
-      procedure.codigo_glosa ? `, Código de Glosa: ${procedure.codigo_glosa}` : ''
-    }
-
-Prezados,
-
-Venho, na qualidade de médico responsável, apresentar contestação à glosa aplicada ao procedimento acima identificado, conforme demonstrativo recebido.
-
-DADOS DO PROCEDIMENTO:
-- Guia: ${procedure.guia}
-- Beneficiário: ${procedure.beneficiario}
-- Procedimento: ${procedure.procedimento}
-- Data de Execução: ${procedure.data || '[data não informada]'}
-- Valor Apresentado: ${formatValor(procedure.valorApresentado)}
-- Hospital/Local: ${procedure.hospital || '[não informado]'}
-
-MOTIVO DA GLOSA INFORMADO PELA OPERADORA:
-${procedure.codigo_glosa ? `${procedure.codigo_glosa} - ` : ''}${
-      procedure.motivo_glosa || procedure.motivoNaoPagamento || '[motivo não informado]'
-    }
-
-FUNDAMENTAÇÃO TÉCNICA E LEGAL:
-Conforme previsto no contrato firmado entre as partes, bem como na legislação vigente (Lei 13.003/2014, Lei 9.656/98, Lei 8.080/90, RN 503/2022, RN 630/2025 e demais normas da ANS), o procedimento foi realizado de acordo com as diretrizes clínicas, administrativas e contratuais, estando devidamente autorizado, documentado e comprovado.
-
-Reforço o direito ao contraditório e à ampla defesa, conforme garantido pela legislação e regulamentação da ANS, solicitando análise criteriosa do recurso.
-
-ARGUMENTAÇÃO ESPECÍFICA:
-O procedimento médico foi executado conforme protocolo clínico estabelecido, com indicação técnica adequada e documentação completa. A glosa aplicada não encontra respaldo nas normas contratuais ou na legislação da saúde suplementar, constituindo-se em negativa indevida de cobertura.
-
-Considerando que o procedimento está previsto no Rol de Procedimentos da ANS e foi realizado por profissional habilitado, dentro das indicações clínicas apropriadas, solicito a revisão imediata da glosa aplicada.
-
-${isExpired ? `
-OBSERVAÇÃO IMPORTANTE:
-Este procedimento foi realizado há mais de 30 dias. Embora mantenha-se o direito à contestação conforme legislação vigente, recomenda-se celeridade na análise devido ao tempo decorrido.
-` : ''}
-
-SOLICITAÇÃO:
-Diante do exposto, solicito a revisão da glosa aplicada e o consequente pagamento integral do valor devido, no montante de ${formatValor(procedure.valorApresentado)}, anexando os documentos comprobatórios necessários.
-
-Atenciosamente,
-
-_____________________________________
-Dr(a). ${userProfile?.name || '[NOME DO MÉDICO]'}
-CRM: ${userProfile?.crm || '[NÚMERO]'} - [UF]
-Data: ${dataFormatada}
-
-Anexos:
-- Cópia da guia de procedimento
-- Documentação médica pertinente
-- Comprovante de execução do procedimento`;
+    return gerarContestacaoLegal(contestationData);
   };
 
   const handleGenerateContestation = () => {
@@ -493,78 +479,153 @@ Anexos:
   }
 
   return (
-    <AuthenticatedLayout
-      title="Procedimentos Não Pagos"
-      description="Procedimentos que aguardam confirmação de pagamento"
-    >
+    <>
       {/* Background com Gradiente Médico Consistente */}
       <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
-        <div className="space-y-8 px-4 sm:px-6 lg:px-8">
-          {/* Header Discreto Seguindo Padrão Dashboard */}
-          <div className="text-center space-y-3 pt-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
-              <AlertTriangle className="h-4 w-4 text-orange-700" />
-              <span className="text-xs font-medium text-orange-800">
-                Auditoria de pagamentos
-              </span>
-            </div>
+        <AuthenticatedLayout
+          title="Procedimentos Não Pagos"
+          description="Procedimentos que aguardam confirmação de pagamento"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+            {/* Header Discreto Seguindo Padrão Dashboard */}
+            <section className="text-center space-y-3 pt-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
+                <AlertTriangle className="h-4 w-4 text-orange-700" />
+                <span className="text-xs font-medium text-orange-800">
+                  Auditoria de pagamentos
+                </span>
+              </div>
 
-            <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
-              Procedimentos Não Pagos
-            </h1>
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
+                Procedimentos Não Pagos
+              </h1>
 
-            <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-              Central de monitoramento e contestação de procedimentos pendentes de pagamento
-              com análise jurídica automatizada
-            </p>
+              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+                Central de monitoramento e contestação de procedimentos pendentes de pagamento
+                com análise jurídica automatizada
+              </p>
+            </section>
+
+            {/* Seção de Resumo e Ações */}
+            <section className="space-y-6">
+              <InfoCard
+                icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
+                title="Procedimentos Contestáveis"
+                value={unpaidProcedures.length}
+                description="Conteste em até 30 dias para garantir a análise pelo convênio"
+                variant="warning"
+                className="w-full"
+              />
+              
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" size="sm">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filtrar
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar
+                </Button>
+              </div>
+            </section>
+
+            {/* Seção da Tabela */}
+            <section className="w-full">
+              <div className="w-full max-w-full overflow-x-auto">
+                <ResponsiveDataGrid
+                  rows={unpaidProcedures}
+                  columns={unpaidColumns}
+                  className="w-full"
+                  loading={loading}
+                  emptyMessage="Nenhum procedimento não pago encontrado"
+                  mobileConfig={{
+                    titleField: 'procedimento',
+                    subtitleField: 'beneficiario',
+                    statusField: 'motivoNaoPagamento',
+                    primaryFields: ['valorApresentado', 'dias_contestar'],
+                    secondaryFields: ['data', 'guia'],
+                    actions: [
+                      {
+                        label: 'Contestar',
+                        action: 'contest',
+                        icon: <Shield className="h-4 w-4" />,
+                        variant: 'default',
+                      },
+                    ],
+                  }}
+                  onAction={(action, row) => {
+                    if (action === 'contest') {
+                      handleContestation(row);
+                    }
+                  }}
+                  onRowClick={(row) => handleContestation(row)}
+                />
+              </div>
+            </section>
           </div>
 
-          <InfoCard
-            icon={<AlertCircle className="h-6 w-6 text-amber-500" />}
-            title="Procedimentos Contestáveis"
-            value={unpaidProcedures.length}
-            description="Conteste em até 30 dias para garantir a análise pelo convênio"
-            variant="warning"
-            className="w-full mb-4"
-          />
-          
-          <div className="flex gap-2 self-end">
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtrar
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
-            </Button>
-          </div>
-
-                <div className="pt-2">
-          <DataGrid
-            rows={unpaidProcedures}
-            columns={unpaidColumns}
-            className="w-full"
-            wrapperScrollable={false}
-                  />
-                  </div>
-
-                {/* Dialog de Contestação Profissional */}
-        <Dialog open={contestationDialog} onOpenChange={setContestationDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                Formulário de Contestação de Glosa
-              </DialogTitle>
-              <DialogDescription>
-                Documento jurídico fundamentado para contestação profissional
-              </DialogDescription>
-            </DialogHeader>
+          {/* Dialog de Contestação Profissional */}
+          <Dialog open={contestationDialog} onOpenChange={setContestationDialog}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Scale className="h-5 w-5 text-blue-600" />
+                  Sistema Jurídico de Contestação - ANS/Lei 13.003/2014
+                </DialogTitle>
+                <DialogDescription>
+                  Geração automatizada de contestação com fundamentação legal específica por tipo de glosa
+                </DialogDescription>
+              </DialogHeader>
             
-            {selectedProcedure && (
-              <div className="space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                {/* Informações do Procedimento */}
-                <div className="grid gap-4 border-b pb-4">
+              
+              {selectedProcedure && (
+                <div className="space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                  {/* Análise Automática da Glosa */}
+                  {glosaAnalysis && (
+                    <div className={`border-2 rounded-lg p-4 ${
+                      glosaAnalysis.urgencia === 'alta' 
+                        ? 'border-green-300 bg-green-50' 
+                        : glosaAnalysis.urgencia === 'media' 
+                          ? 'border-yellow-300 bg-yellow-50'
+                          : 'border-red-300 bg-red-50'
+                    }`}>
+                      <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
+                        <AlertCircle className={`h-5 w-5 ${
+                          glosaAnalysis.urgencia === 'alta' ? 'text-green-600' : 
+                          glosaAnalysis.urgencia === 'media' ? 'text-yellow-600' : 'text-red-600'
+                        }`} />
+                        🎯 Análise Jurídica da Glosa
+                      </h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs text-gray-600 mb-1">Código</div>
+                          <div className="font-bold text-lg">{glosaAnalysis.analise.codigo}</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs text-gray-600 mb-1">Categoria</div>
+                          <div className="font-bold text-lg capitalize">{glosaAnalysis.analise.categoria}</div>
+                        </div>
+                        <div className="text-center p-3 bg-white rounded border">
+                          <div className="text-xs text-gray-600 mb-1">Chance de Sucesso</div>
+                          <div className={`font-bold text-lg ${
+                            glosaAnalysis.analise.chance_sucesso === 'alta' ? 'text-green-600' :
+                            glosaAnalysis.analise.chance_sucesso === 'media' ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {glosaAnalysis.analise.chance_sucesso.toUpperCase()}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded">
+                        <div className="font-medium text-blue-900 mb-2">💡 Recomendação:</div>
+                        <div className="text-sm text-blue-800">{glosaAnalysis.recomendacao}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Informações do Procedimento */}
+                  <div className="grid gap-4 border-b pb-4">
                   <h3 className="text-lg font-semibold">Informações do Procedimento</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
@@ -705,14 +766,14 @@ Anexos:
                       </Button>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-        </div>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </AuthenticatedLayout>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 };
 

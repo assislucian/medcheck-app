@@ -176,125 +176,93 @@ const Profile = () => {
   };
 
   return (
-    <AuthenticatedLayout
-      title="Meu Perfil Médico"
-      description="Gerencie seus dados profissionais e configurações pessoais"
-    >
-      <Helmet>
-        <title>Meu Perfil Médico | MedCheck</title>
-        <meta
-          name="description"
-          content="Gerencie seu perfil profissional, configurações e estatísticas de uso"
-        />
-        <meta
-          name="keywords"
-          content="perfil médico, configurações médicas, dados profissionais, estatísticas uso"
-        />
-
-        {/* Open Graph */}
-        <meta property="og:title" content="Meu Perfil Médico | MedCheck" />
-        <meta
-          property="og:description"
-          content="Gestão completa do perfil profissional médico"
-        />
-        <meta property="og:type" content="website" />
-      </Helmet>
-
-      {/* Background com Gradiente Médico */}
+    <>
+      {/* Background com Gradiente Médico Consistente */}
       <div className="min-h-screen bg-gradient-to-br from-slate-50/30 via-gray-50/20 to-blue-50/30">
-        <div className="space-y-8 px-4 sm:px-6 lg:px-8">
-          {/* Header Discreto Seguindo Padrão Dashboard */}
-          <div className="text-center space-y-3 pt-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-slate-100 to-blue-100 border border-slate-200/50">
-              <User className="h-4 w-4 text-slate-700" />
-              <span className="text-xs font-medium text-slate-800">
-                Perfil profissional
-              </span>
-            </div>
-
-            <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-700 via-blue-600 to-gray-800 bg-clip-text text-transparent">
-              Meu Perfil Médico
-            </h1>
-
-            <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
-              Gerencie seus dados profissionais, configurações e estatísticas de uso
-              da plataforma
-            </p>
-          </div>
-
-          {/* Card Principal com Avatar e Tabs */}
-          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-xl">
-            <CardHeader className="pb-6 border-b border-gray-100">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-blue-100 rounded-full flex items-center justify-center border border-slate-200">
-                    <User className="w-10 h-10 text-slate-700" />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="absolute -bottom-1 -right-1 rounded-full w-8 h-8 bg-slate-600 hover:bg-slate-700"
-                    onClick={() => toast.info('Função de upload de avatar em breve')}
-                  >
-                    <Camera className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="flex-1">
-                  <CardTitle className="text-2xl font-bold text-gray-900 mb-1">
-                    Dr(a). {profileData.nome || user?.name || 'Nome não informado'}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      CRM {user?.crm}/{user?.uf}
-                    </Badge>
-                    {profileData.specialty && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Stethoscope className="w-3 h-3 mr-1" />
-                        {profileData.specialty}
-                      </Badge>
-                    )}
-                    {profileData.hospital && (
-                      <Badge variant="outline" className="text-xs">
-                        <Building className="w-3 h-3 mr-1" />
-                        {profileData.hospital}
-                      </Badge>
-                    )}
-                  </CardDescription>
-                </div>
+        <AuthenticatedLayout
+          title="Meu Perfil"
+          description="Dados profissionais e configurações"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+            {/* Header Discreto Seguindo Padrão Dashboard */}
+            <section className="text-center space-y-3 pt-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-slate-100 to-blue-100 border border-slate-200/50">
+                <User className="h-4 w-4 text-slate-700" />
+                <span className="text-xs font-medium text-slate-800">
+                  Configurações da conta
+                </span>
               </div>
-            </CardHeader>
 
-            <CardContent className="p-6">
-              {/* Tabs Simplificadas */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 bg-gray-100/60">
-                  <TabsTrigger value="profile" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Perfil
-                  </TabsTrigger>
-                  <TabsTrigger value="billing" className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" />
-                    Billing
-                  </TabsTrigger>
-                  <TabsTrigger value="analytics" className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Analytics
-                  </TabsTrigger>
-                  <TabsTrigger value="settings" className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
-                    Configurações
-                  </TabsTrigger>
-                </TabsList>
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-700 via-blue-600 to-gray-800 bg-clip-text text-transparent">
+                Meu Perfil
+              </h1>
 
-                {/* Tab: Perfil */}
-                <TabsContent value="profile" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Informações Profissionais</CardTitle>
-                      <CardDescription>
-                        Mantenha seus dados profissionais atualizados
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+                Gerencie seus dados profissionais e configurações da plataforma
+              </p>
+            </section>
+
+            {/* Card de Informações do Usuário - Simplificado */}
+            <section className="max-w-7xl mx-auto">
+              <Card className="border-0 shadow-sm bg-white/90">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
+                      <User className="w-8 h-8 text-slate-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Dr(a). {profileData.nome || user?.name || 'Nome não informado'}
+                      </h2>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-sm text-gray-600">
+                          CRM {user?.crm}/{user?.uf}
+                        </span>
+                        {profileData.specialty && (
+                          <span className="text-sm text-gray-600">
+                            • {profileData.specialty}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-0">
+                  {/* Tabs Simplificadas */}
+                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 rounded-none border-b bg-gray-50/50">
+                      <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                        <User className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Perfil</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="billing" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Billing</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="analytics" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                        <BarChart3 className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Analytics</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                        <Settings className="w-4 h-4 mr-2" />
+                        <span className="hidden sm:inline">Ajustes</span>
+                      </TabsTrigger>
+                    </TabsList>
+
+                    {/* Tab: Perfil */}
+                    <TabsContent value="profile" className="p-6 space-y-6">
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-1">
+                            Informações Profissionais
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Mantenha seus dados atualizados
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="nome">Nome Completo</Label>
@@ -384,380 +352,392 @@ const Profile = () => {
                         />
                       </div>
 
-                      <Separator />
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">
-                            Dados de Registro
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            Informações imutáveis por regulamentação médica
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <Badge variant="outline">CRM {user?.crm}</Badge>
-                          <Badge variant="outline">UF {user?.uf}</Badge>
-                          <Badge variant="secondary">Membro desde 2024</Badge>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <Button onClick={handleProfileUpdate} disabled={loading}>
-                          <Save className="w-4 h-4 mr-2" />
-                          {loading ? 'Salvando...' : 'Salvar Alterações'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                {/* Tab: Billing */}
-                <TabsContent value="billing" className="space-y-6">
-                  {billingInfo && (
-                    <>
-                      {/* Plano Atual */}
-                      <Card>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle>
-                              Plano {billingInfo?.current_period?.plan || 'N/A'}
-                            </CardTitle>
-                            <Badge className="bg-green-100 text-green-800">
-                              Ativo
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-lg font-medium">
-                                {formatCurrency(
-                                  billingInfo?.current_period?.total_cost || 0
-                                )}
-                              </span>
-                              <span className="text-gray-500">
-                                / {formatCurrency(spendingLimit)} limite mensal
-                              </span>
+                        
+                        <div className="pt-6 border-t">
+                          <div className="flex items-center justify-between mb-6">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-900">
+                                Dados de Registro
+                              </h4>
+                              <p className="text-sm text-gray-500">
+                                Informações do conselho profissional
+                              </p>
                             </div>
-
-                            <Progress
-                              value={
-                                (billingInfo?.current_period?.total_cost /
-                                  spendingLimit) *
-                                100
-                              }
-                              className="w-full"
-                            />
-
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <p className="text-gray-600">Guias processadas</p>
-                                <p className="font-semibold">
-                                  {billingInfo?.current_period?.guias_processadas || 0}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-gray-600">Demonstrativos</p>
-                                <p className="font-semibold">
-                                  {
-                                    billingInfo?.current_period
-                                      ?.demonstrativos_processados || 0
-                                  }
-                                </p>
-                              </div>
+                            <div className="flex items-center gap-3 text-sm text-gray-600">
+                              <span>CRM {user?.crm}/{user?.uf}</span>
+                              <span>•</span>
+                              <span>Membro desde 2024</span>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
 
-                      {/* Limite de Gastos */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Limite de Gastos Mensal</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="flex items-center gap-4">
-                            <Label htmlFor="spending-limit">R$</Label>
-                            <Input
-                              id="spending-limit"
-                              type="number"
-                              value={spendingLimit}
-                              onChange={(e) =>
-                                setSpendingLimit(Number(e.target.value))
-                              }
-                              className="w-32"
-                              min="10"
-                              max="10000"
-                            />
-                            <Button onClick={handleSpendingLimitUpdate} size="sm">
-                              Atualizar
+                          <div className="flex justify-end">
+                            <Button onClick={handleProfileUpdate} disabled={loading} size="sm">
+                              <Save className="w-4 h-4 mr-2" />
+                              {loading ? 'Salvando...' : 'Salvar Alterações'}
                             </Button>
                           </div>
-                          <p className="text-sm text-gray-600">
-                            Defina um limite mensal para controlar seus gastos com
-                            processamento.
-                          </p>
-                        </CardContent>
-                      </Card>
-
-                      {/* Próxima Fatura */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Próxima Fatura</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-2xl font-bold">
-                                {formatCurrency(
-                                  billingInfo?.current_period?.total_cost || 0
-                                )}
-                              </p>
-                              <p className="text-gray-600">
-                                Vencimento:{' '}
-                                {billingInfo?.next_billing_date
-                                  ? new Date(
-                                    billingInfo.next_billing_date
-                                  ).toLocaleDateString('pt-BR')
-                                  : 'N/A'}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-600">
-                                Método de pagamento
-                              </p>
-                              <p className="font-medium">
-                                {billingInfo?.payment_method?.brand || 'N/A'} ••••{' '}
-                                {billingInfo?.payment_method?.last4 || '0000'}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-                </TabsContent>
-
-                {/* Tab: Analytics */}
-                <TabsContent value="analytics" className="space-y-6">
-                  {usageAnalytics && (
-                    <>
-                      {/* Estatísticas Gerais */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card>
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-blue-100 rounded-lg">
-                                <BarChart3 className="w-6 h-6 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="text-2xl font-bold">
-                                  {usageAnalytics.total_procedures_processed}
-                                </p>
-                                <p className="text-gray-600">Total processado</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-green-100 rounded-lg">
-                                <TrendingUp className="w-6 h-6 text-green-600" />
-                              </div>
-                              <div>
-                                <p className="text-2xl font-bold">
-                                  {usageAnalytics.this_month_procedures}
-                                </p>
-                                <p className="text-gray-600">Este mês</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 bg-purple-100 rounded-lg">
-                                <Calendar className="w-6 h-6 text-purple-600" />
-                              </div>
-                              <div>
-                                <p className="text-2xl font-bold">
-                                  {usageAnalytics.average_procedures_per_day}
-                                </p>
-                                <p className="text-gray-600">Média/dia</p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        </div>
                       </div>
+                      </div>
+                    </TabsContent>
 
-                      {/* Score de Eficiência */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Score de Eficiência</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className="text-lg font-medium">
-                                {usageAnalytics.efficiency_score}%
-                              </span>
-                              <Badge
-                                variant={
-                                  usageAnalytics.efficiency_score >= 80
-                                    ? 'default'
-                                    : 'secondary'
-                                }
-                              >
-                                {usageAnalytics.efficiency_score >= 80
-                                  ? 'Excelente'
-                                  : 'Bom'}
+                    {/* Tab: Billing */}
+                    <TabsContent value="billing" className="p-6 space-y-6">
+                      {billingInfo ? (
+                        <div className="space-y-6">
+                          {/* Plano Atual */}
+                          <div>
+                            <div className="flex items-center justify-between mb-4">
+                              <div>
+                                <h3 className="text-lg font-medium text-gray-900">
+                                  Plano {billingInfo?.current_period?.plan || 'N/A'}
+                                </h3>
+                                <p className="text-sm text-gray-600">Período atual de faturamento</p>
+                              </div>
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                Ativo
                               </Badge>
                             </div>
-                            <Progress
-                              value={usageAnalytics.efficiency_score}
-                              className="w-full"
-                            />
-                            <p className="text-sm text-gray-600">
-                              Baseado no volume de processamento e consistência de
-                              uso.
+                            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+                              <div className="flex items-center justify-between">
+                                <span className="text-2xl font-semibold text-gray-900">
+                                  {formatCurrency(
+                                    billingInfo?.current_period?.total_cost || 0
+                                  )}
+                                </span>
+                                <span className="text-sm text-gray-600">
+                                  de {formatCurrency(spendingLimit)} limite
+                                </span>
+                              </div>
+
+                              <Progress
+                                value={
+                                  (billingInfo?.current_period?.total_cost /
+                                    spendingLimit) *
+                                  100
+                                }
+                                className="h-2"
+                              />
+
+                              <div className="grid grid-cols-2 gap-4 pt-2">
+                                <div>
+                                  <p className="text-sm text-gray-600">Guias processadas</p>
+                                  <p className="text-lg font-medium">
+                                    {billingInfo?.current_period?.guias_processadas || 0}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">Demonstrativos</p>
+                                  <p className="text-lg font-medium">
+                                    {
+                                      billingInfo?.current_period
+                                        ?.demonstrativos_processados || 0
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Limite de Gastos */}
+                          <div className="border-t pt-6">
+                            <h4 className="text-base font-medium text-gray-900 mb-4">
+                              Limite de Gastos Mensal
+                            </h4>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-gray-600">R$</span>
+                              <Input
+                                id="spending-limit"
+                                type="number"
+                                value={spendingLimit}
+                                onChange={(e) =>
+                                  setSpendingLimit(Number(e.target.value))
+                                }
+                                className="w-32"
+                                min="10"
+                                max="10000"
+                              />
+                              <Button onClick={handleSpendingLimitUpdate} size="sm" variant="outline">
+                                Atualizar limite
+                              </Button>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-2">
+                              Receba alertas ao atingir 80% do limite
                             </p>
                           </div>
-                        </CardContent>
-                      </Card>
 
-                      {/* Atividade Recente */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Atividade dos Últimos 30 Dias</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            {usageAnalytics.daily_activity
-                              .slice(-7)
-                              .map((day, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center justify-between p-2 hover:bg-gray-50 rounded"
-                                >
-                                  <span className="text-sm font-medium">
-                                    {day.date}
-                                  </span>
-                                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                                    <span>{day.uploads} uploads</span>
-                                    <span>{day.procedures} procedimentos</span>
+                          {/* Próxima Fatura */}
+                          <div className="border-t pt-6">
+                            <h4 className="text-base font-medium text-gray-900 mb-4">
+                              Próxima Fatura
+                            </h4>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-2xl font-semibold text-gray-900">
+                                  {formatCurrency(
+                                    billingInfo?.current_period?.total_cost || 0
+                                  )}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Vencimento:{' '}
+                                  {billingInfo?.next_billing_date
+                                    ? new Date(
+                                      billingInfo.next_billing_date
+                                    ).toLocaleDateString('pt-BR')
+                                    : 'N/A'}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm text-gray-600">
+                                  {billingInfo?.payment_method?.brand || 'Cartão'} •••• {billingInfo?.payment_method?.last4 || '0000'}
+                                </p>
+                                <Button variant="link" size="sm" className="p-0 h-auto text-blue-600">
+                                  Alterar método
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                          <p>Informações de billing não disponíveis</p>
+                        </div>
+                      )}
+                    </TabsContent>
+
+                    {/* Tab: Analytics */}
+                    <TabsContent value="analytics" className="p-6 space-y-6">
+                      {usageAnalytics ? (
+                        <div className="space-y-6">
+                          {/* Estatísticas Gerais */}
+                          <div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">
+                              Estatísticas de Uso
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-blue-100 rounded">
+                                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <p className="text-2xl font-semibold">
+                                      {usageAnalytics.total_procedures_processed}
+                                    </p>
+                                    <p className="text-sm text-gray-600">Total processado</p>
                                   </div>
                                 </div>
-                              ))}
+                              </div>
+
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-green-100 rounded">
+                                    <TrendingUp className="w-5 h-5 text-green-600" />
+                                  </div>
+                                  <div>
+                                    <p className="text-2xl font-semibold">
+                                      {usageAnalytics.this_month_procedures}
+                                    </p>
+                                    <p className="text-sm text-gray-600">Este mês</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-gray-50 rounded-lg p-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-purple-100 rounded">
+                                    <Calendar className="w-5 h-5 text-purple-600" />
+                                  </div>
+                                  <div>
+                                    <p className="text-2xl font-semibold">
+                                      {usageAnalytics.average_procedures_per_day}
+                                    </p>
+                                    <p className="text-sm text-gray-600">Média/dia</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-                </TabsContent>
 
-                {/* Tab: Configurações */}
-                <TabsContent value="settings" className="space-y-6">
-                  {/* Segurança */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Segurança</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="new-password">Nova Senha</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="new-password"
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Digite uma nova senha"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                      <Button variant="outline">
-                        <Shield className="w-4 h-4 mr-2" />
-                        Atualizar Senha
-                      </Button>
-                    </CardContent>
-                  </Card>
+                          {/* Score de Eficiência */}
+                          <div className="border-t pt-6">
+                            <h4 className="text-base font-medium text-gray-900 mb-4">
+                              Score de Eficiência
+                            </h4>
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-2xl font-semibold">
+                                  {usageAnalytics.efficiency_score}%
+                                </span>
+                                <span className={`text-sm font-medium ${
+                                  usageAnalytics.efficiency_score >= 80
+                                    ? 'text-green-700'
+                                    : 'text-gray-700'
+                                }`}>
+                                  {usageAnalytics.efficiency_score >= 80
+                                    ? 'Excelente'
+                                    : 'Bom'}
+                                </span>
+                              </div>
+                              <Progress
+                                value={usageAnalytics.efficiency_score}
+                                className="h-2 mb-2"
+                              />
+                              <p className="text-sm text-gray-600">
+                                Baseado no volume e consistência de uso
+                              </p>
+                            </div>
+                          </div>
 
-                  {/* Notificações */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Notificações</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Notificações por E-mail</p>
-                          <p className="text-sm text-gray-600">
-                            Receber updates sobre processamento
-                          </p>
+                          {/* Atividade Recente */}
+                          <div className="border-t pt-6">
+                            <h4 className="text-base font-medium text-gray-900 mb-4">
+                              Atividade Recente
+                            </h4>
+                            <div className="space-y-2">
+                              {usageAnalytics.daily_activity
+                                .slice(-7)
+                                .map((day, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center justify-between py-2 px-3 hover:bg-gray-50 rounded-lg transition-colors"
+                                  >
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {day.date}
+                                    </span>
+                                    <div className="flex items-center gap-6 text-sm text-gray-600">
+                                      <span>{day.uploads} uploads</span>
+                                      <span>{day.procedures} procedimentos</span>
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
                         </div>
-                        <Switch defaultChecked />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Alertas de Limite</p>
-                          <p className="text-sm text-gray-600">
-                            Avisar quando atingir 80% do limite mensal
-                          </p>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                          <p>Dados de analytics não disponíveis</p>
                         </div>
-                        <Switch defaultChecked />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Relatórios Mensais</p>
-                          <p className="text-sm text-gray-600">
-                            Resumo mensal da atividade
-                          </p>
-                        </div>
-                        <Switch />
-                      </div>
-                    </CardContent>
-                  </Card>
+                      )}
+                    </TabsContent>
 
-                  {/* LGPD */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Privacidade e Dados</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-gray-600">
-                        Seus dados estão protegidos conforme a LGPD. Você pode
-                        solicitar relatórios ou exclusão a qualquer momento.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button variant="outline">
-                          <Eye className="w-4 h-4 mr-2" />
-                          Baixar Meus Dados
-                        </Button>
-                        <Button variant="outline">Excluir Conta</Button>
+                    {/* Tab: Configurações */}
+                    <TabsContent value="settings" className="p-6 space-y-6">
+                      <div className="space-y-6">
+                        {/* Segurança */}
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900 mb-4">
+                            Segurança
+                          </h3>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="new-password" className="text-sm">
+                                Alterar senha
+                              </Label>
+                              <div className="flex gap-2 mt-1">
+                                <Input
+                                  id="new-password"
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder="Nova senha"
+                                  className="max-w-xs"
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="shrink-0"
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="w-4 h-4" />
+                                  ) : (
+                                    <Eye className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Shield className="w-4 h-4 mr-2" />
+                              Atualizar Senha
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Notificações */}
+                        <div className="border-t pt-6">
+                          <h4 className="text-base font-medium text-gray-900 mb-4">
+                            Notificações
+                          </h4>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  Notificações por E-mail
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Updates sobre processamento
+                                </p>
+                              </div>
+                              <Switch defaultChecked />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  Alertas de Limite
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Avisar ao atingir 80% do limite
+                                </p>
+                              </div>
+                              <Switch defaultChecked />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  Relatórios Mensais
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  Resumo da atividade mensal
+                                </p>
+                              </div>
+                              <Switch />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* LGPD */}
+                        <div className="border-t pt-6">
+                          <h4 className="text-base font-medium text-gray-900 mb-4">
+                            Privacidade e Dados
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Seus dados estão protegidos conforme a LGPD. Você pode
+                            solicitar relatórios ou exclusão a qualquer momento.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4 mr-2" />
+                              Baixar Meus Dados
+                            </Button>
+                            <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                              Excluir Conta
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
+        </AuthenticatedLayout>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 };
 
 export default Profile;
+
+

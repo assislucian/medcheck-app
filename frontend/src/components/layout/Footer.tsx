@@ -23,8 +23,8 @@ export function Footer() {
               </h3>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Automatizando a auditoria médica para maximizar seus resultados e
-              recuperar valores glosados.
+              Ajudamos médicos a recuperar honorários e reduzir glosas de forma
+              simples e automatizada.
             </p>
             <div className="flex space-x-4 pt-2">
               <a
@@ -137,7 +137,7 @@ export function Footer() {
                   to="/help"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Central de Ajuda
+                  Ajuda e Suporte
                 </Link>
               </li>
               <li>
@@ -153,7 +153,7 @@ export function Footer() {
                   to="/support"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Suporte Técnico
+                  Atendimento Especializado
                 </Link>
               </li>
             </ul>

@@ -124,10 +124,25 @@ const ReportsPage = () => {
   const [activeTab, setActiveTab] = useState('rentabilidade');
   const [filterPeriod, setFilterPeriod] = useState('last_3_months');
   const [searchTerm, setSearchTerm] = useState('');
+  const [dataIntegrity, setDataIntegrity] = useState(null);
 
   useEffect(() => {
     loadReportData();
+    checkDataIntegrity();
   }, [filterPeriod]);
+
+  const checkDataIntegrity = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/reports/data-integrity`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setDataIntegrity(response.data);
+    } catch (error) {
+      console.warn('Erro ao verificar integridade dos dados:', error);
+    }
+  };
 
   const loadReportData = async () => {
     setLoading(true);
@@ -262,33 +277,32 @@ const ReportsPage = () => {
     }
   };
 
-  // Cálculos para análise de rentabilidade
+  // Cálculos para análise de rentabilidade usando dados reais do backend
   const calculateRentabilityMetrics = () => {
-    if (!data) return null;
+    if (!data?.analytics) return null;
 
-    const totalCBHPM = Array.isArray(data.procedures)
-      ? data.procedures.reduce((sum, proc) => sum + (proc.cbhpm_value || 0), 0)
-      : 0;
-
-    const totalPaid = Array.isArray(data.procedures)
-      ? data.procedures.reduce((sum, proc) => sum + (proc.paid_value || 0), 0)
-      : 0;
-
-    const totalGlosa = data.analytics?.total_glosa_value || 0;
-
-    const eficienciaPagamento = totalCBHPM > 0 ? (totalPaid / totalCBHPM) * 100 : 0;
-    const perdasGlosas = totalCBHPM > 0 ? (totalGlosa / totalCBHPM) * 100 : 0;
-    const margemRealizada = totalPaid - totalGlosa;
+    // Usar dados calculados no backend com dados reais das guias/demonstrativos
+    const analytics = data.analytics;
+    
+    const totalCBHPM = analytics.total_cbhpm_value || 0;
+    const totalPaid = analytics.total_paid_value || 0;
+    const totalGlosa = analytics.total_glosa_value || 0;
+    const paymentEfficiency = analytics.payment_efficiency || 0;
+    const potencialRecuperacao = analytics.potencial_recuperacao || 0;
 
     return {
       totalCBHPM,
       totalPaid,
       totalGlosa,
-      eficienciaPagamento,
-      perdasGlosas,
-      margemRealizada,
-      procedimentosPagos: data.analytics?.total_paid_procedures || 0,
-      procedimentosGlosados: data.analytics?.total_glosa_procedures || 0,
+      eficienciaPagamento: paymentEfficiency,
+      perdasGlosas: totalCBHPM > 0 ? (totalGlosa / totalCBHPM) * 100 : 0,
+      margemRealizada: totalPaid - totalGlosa,
+      procedimentosPagos: analytics.total_paid_procedures || 0,
+      procedimentosGlosados: analytics.total_glosa_procedures || 0,
+      procedimentosComCBHPM: analytics.procedimentos_com_cbhpm || 0,
+      potencialRecuperacao,
+      valorEmRisco: analytics.valor_em_risco || 0,
+      tempoMedioRecebimento: analytics.tempo_medio_recebimento_dias || 0,
     };
   };
 
@@ -327,175 +341,396 @@ const ReportsPage = () => {
     };
   };
 
-  // Análise de urgência dos procedimentos não pagos
+  // Análise de urgência dos procedimentos não pagos usando dados calculados no backend
   const categorizeUnpaidByUrgency = () => {
-    if (!data?.unpaid_procedures || !Array.isArray(data.unpaid_procedures)) {
+    if (!data?.analytics?.urgency_breakdown) {
       return { critica: 0, alta: 0, media: 0, baixa: 0 };
     }
 
-    return data.unpaid_procedures.reduce(
-      (acc, proc) => {
-        const urgencia = proc.urgencia || 'baixa'; // default para baixa se não definido
-        if (acc[urgencia] !== undefined) {
-          acc[urgencia] += 1;
-        }
-        return acc;
-      },
-      { critica: 0, alta: 0, media: 0, baixa: 0 }
-    );
+    // Usar dados já calculados no backend com lógica médica específica
+    return data.analytics.urgency_breakdown;
+  };
+
+  // Análise de insights médicos específicos
+  const getMedicalInsights = () => {
+    if (!data?.medical_insights) return null;
+
+    const insights = data.medical_insights;
+    return {
+      contestationAlerts: insights.contestation_deadline_alerts || [],
+      topGlosaProcedures: insights.top_glosa_procedures || [],
+      paymentTrends: insights.payment_trends || {},
+      hasUrgentContestation: (insights.contestation_deadline_alerts || []).length > 0,
+      avgMonthlyRevenue: insights.payment_trends?.last_3_months_avg || 0,
+      efficiencyTrend: insights.payment_trends?.efficiency_trend || 'stable'
+    };
   };
 
   if (loading) {
     return (
-      <AuthenticatedLayout
-        title="Central de Relatórios"
-        description="Carregando análise financeira..."
-        isLoading={true}
-        loadingMessage="Processando dados financeiros..."
-      />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+        <AuthenticatedLayout
+          title="Central de Relatórios"
+          description="Carregando análise financeira..."
+          isLoading={true}
+          loadingMessage="Processando dados financeiros..."
+        />
+      </div>
     );
   }
 
   if (!data) {
     return (
-      <AuthenticatedLayout>
-        <div className="space-y-6">
-          <div className="text-center py-12">
-            <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Dados Insuficientes para Análise
-            </h2>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Para gerar relatórios inteligentes, é necessário ter guias e
-              demonstrativos processados.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Button asChild>
-                <a href="/guides">Gerenciar Guias</a>
-              </Button>
-              <Button asChild variant="outline">
-                <a href="/demonstratives">Gerenciar Demonstrativos</a>
-              </Button>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+        <AuthenticatedLayout
+          title="Central de Relatórios"
+          description="Análise financeira completa de honorários médicos"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+            <div className="text-center py-12">
+              <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Dados Insuficientes para Análise
+              </h2>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Para gerar relatórios inteligentes, é necessário ter guias e
+                demonstrativos processados.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <Button asChild>
+                  <a href="/guides">Gerenciar Guias</a>
+                </Button>
+                <Button asChild variant="outline">
+                  <a href="/demonstratives">Gerenciar Demonstrativos</a>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </AuthenticatedLayout>
+        </AuthenticatedLayout>
+      </div>
     );
   }
 
   const rentabilityMetrics = calculateRentabilityMetrics();
   const cashFlowMetrics = calculateCashFlowMetrics();
   const urgencyBreakdown = categorizeUnpaidByUrgency();
+  const medicalInsights = getMedicalInsights();
 
   return (
-    <AuthenticatedLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Central de Relatórios Inteligentes
-            </h1>
-            <p className="text-muted-foreground">
-              Análise financeira completa focada na gestão de honorários médicos
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="last_month">Último mês</SelectItem>
-                <SelectItem value="last_3_months">Últimos 3 meses</SelectItem>
-                <SelectItem value="last_6_months">Últimos 6 meses</SelectItem>
-                <SelectItem value="last_year">Último ano</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={loadReportData} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
-            <Button onClick={exportToExcel} className="bg-green-600 hover:bg-green-700">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar Excel
-            </Button>
-          </div>
-        </div>
+    <>
+      {/* Background com Gradiente Médico Consistente */}
+      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+        <AuthenticatedLayout
+          title="Central de Relatórios"
+          description="Análise financeira completa de honorários médicos"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+            {/* Header Discreto Seguindo Padrão Dashboard */}
+            <section className="text-center space-y-3 pt-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
+                <BarChart3 className="h-4 w-4 text-orange-700" />
+                <span className="text-xs font-medium text-orange-800">
+                  Central de inteligência financeira
+                </span>
+              </div>
 
-        {/* Dashboard de Indicadores Principais */}
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
+                Central de Relatórios Inteligentes
+              </h1>
+
+              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+                Análise financeira completa focada na gestão de honorários médicos
+                com indicadores de rentabilidade e auditoria
+              </p>
+            </section>
+
+            {/* Seção de Filtros e Ações */}
+            <section className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="last_month">Último mês</SelectItem>
+                    <SelectItem value="last_3_months">Últimos 3 meses</SelectItem>
+                    <SelectItem value="last_6_months">Últimos 6 meses</SelectItem>
+                    <SelectItem value="last_year">Último ano</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button onClick={loadReportData} variant="outline" size="sm">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Atualizar
+                </Button>
+                <Button onClick={exportToExcel} variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar Excel
+                </Button>
+              </div>
+            </section>
+
+            {/* Dashboard de Indicadores Principais - Focados nas Dores Médicas */}
+            <section className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           <InfoCard
             icon={<Calculator className="h-6 w-6" />}
-            title="Eficiência de Pagamento"
+            title="Eficiência CBHPM"
             value={formatPercentage(rentabilityMetrics?.eficienciaPagamento || 0)}
-            description="Recebido vs CBHPM"
+            description={`${rentabilityMetrics?.procedimentosComCBHPM || 0} procedimentos analisados`}
             variant={
-              (rentabilityMetrics?.eficienciaPagamento || 0) > 80
+              (rentabilityMetrics?.eficienciaPagamento || 0) > 85
                 ? 'success'
-                : (rentabilityMetrics?.eficienciaPagamento || 0) > 60
+                : (rentabilityMetrics?.eficienciaPagamento || 0) > 75
                   ? 'warning'
                   : 'destructive'
             }
           />
 
           <InfoCard
-            icon={<DollarSign className="h-6 w-6" />}
-            title="Receita Realizada"
-            value={formatCurrency(cashFlowMetrics?.mediaRecebimento || 0)}
-            description="Média mensal dos últimos 3 meses"
-            variant="success"
+            icon={<AlertTriangle className="h-6 w-6" />}
+            title="Valor em Glosa"
+            value={formatCurrency(rentabilityMetrics?.totalGlosa || 0)}
+            description={`Recuperável: ${formatCurrency(rentabilityMetrics?.potencialRecuperacao || 0)}`}
+            variant="destructive"
             trend={
-              (cashFlowMetrics?.tendencia || 0) > 0
-                ? { direction: 'up', percentage: 'Crescendo' }
-                : { direction: 'down', percentage: 'Estável' }
+              (rentabilityMetrics?.potencialRecuperacao || 0) > 1000
+                ? { direction: 'up', percentage: 'Alto potencial' }
+                : { direction: 'down', percentage: 'Baixo potencial' }
             }
           />
 
           <InfoCard
-            icon={<AlertTriangle className="h-6 w-6" />}
-            title="Pendentes Críticos"
+            icon={<Clock className="h-6 w-6" />}
+            title="Contestação Urgente"
             value={urgencyBreakdown.critica + urgencyBreakdown.alta}
-            description="Procedimentos > 90 dias vencidos"
+            description={`${urgencyBreakdown.critica} críticos (>90 dias)`}
             variant="destructive"
           />
 
           <InfoCard
-            icon={<TrendingUp className="h-6 w-6" />}
-            title="Potencial Recuperação"
-            value={formatCurrency(cashFlowMetrics?.pendentesValor || 0)}
-            description="Valor estimado não pago"
-            variant="info"
+            icon={<Banknote className="h-6 w-6" />}
+            title="Valor em Risco"
+            value={formatCurrency(rentabilityMetrics?.valorEmRisco || 0)}
+            description={`${data?.unpaid_procedures?.length || 0} procedimentos pendentes`}
+            variant={
+              (rentabilityMetrics?.valorEmRisco || 0) > 10000 
+                ? 'destructive' 
+                : (rentabilityMetrics?.valorEmRisco || 0) > 5000 
+                  ? 'warning' 
+                  : 'success'
+            }
           />
-        </div>
+            </section>
 
-        {/* Tabs de Relatórios Especializados */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="rentabilidade">
-              <Calculator className="h-4 w-4 mr-2" />
-              Rentabilidade
-            </TabsTrigger>
-            <TabsTrigger value="glosas">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Glosas
-            </TabsTrigger>
-            <TabsTrigger value="fluxo_caixa">
-              <CreditCard className="h-4 w-4 mr-2" />
-              Fluxo de Caixa
-            </TabsTrigger>
-            <TabsTrigger value="convenios">
-              <Building className="h-4 w-4 mr-2" />
-              Por Convênio
-            </TabsTrigger>
-            <TabsTrigger value="auditoria">
-              <Eye className="h-4 w-4 mr-2" />
-              Auditoria
-            </TabsTrigger>
-          </TabsList>
+            {/* Alertas Médicos Críticos */}
+            {medicalInsights?.hasUrgentContestation && (
+              <section className="bg-red-50 border border-red-200 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <AlertTriangle className="h-6 w-6 text-red-600 mt-1" />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-red-900 mb-2">
+                      ⚠️ Ação Urgente Necessária - Prazo de Contestação
+                    </h3>
+                    <p className="text-red-800 mb-4">
+                      {medicalInsights.contestationAlerts.length} procedimentos estão próximos ou passaram do prazo de contestação (60+ dias).
+                      <strong> Risco de perda definitiva de receita.</strong>
+                    </p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {medicalInsights.contestationAlerts.slice(0, 4).map((proc, index) => (
+                        <div key={index} className="bg-white rounded border border-red-200 p-3">
+                          <div className="font-medium text-red-900">
+                            {proc.codigo} - Guia {proc.numero_guia}
+                          </div>
+                          <div className="text-sm text-red-700">
+                            {proc.days_since} dias vencido | {formatCurrency(proc.estimated_value)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {medicalInsights.contestationAlerts.length > 4 && (
+                      <p className="text-sm text-red-700 mt-2">
+                        + {medicalInsights.contestationAlerts.length - 4} outros procedimentos requerem atenção
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
-          {/* Tab: Análise de Rentabilidade */}
-          <TabsContent value="rentabilidade" className="space-y-6">
+            {/* Indicador de Qualidade dos Dados */}
+            {dataIntegrity && (
+              <section className={`border rounded-lg p-6 ${
+                dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
+                  ? 'bg-green-50 border-green-200' 
+                  : dataIntegrity.status === 'fair' 
+                    ? 'bg-yellow-50 border-yellow-200'
+                    : 'bg-red-50 border-red-200'
+              }`}>
+                <div className="flex items-start gap-4">
+                  <CheckCircle className={`h-6 w-6 mt-1 ${
+                    dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
+                      ? 'text-green-600' 
+                      : dataIntegrity.status === 'fair' 
+                        ? 'text-yellow-600'
+                        : 'text-red-600'
+                  }`} />
+                  <div className="flex-1">
+                    <h3 className={`text-lg font-semibold mb-2 ${
+                      dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
+                        ? 'text-green-900' 
+                        : dataIntegrity.status === 'fair' 
+                          ? 'text-yellow-900'
+                          : 'text-red-900'
+                    }`}>
+                      🔍 Qualidade dos Dados: {dataIntegrity.data_quality.quality_score}% 
+                    </h3>
+                    <p className={`mb-4 ${
+                      dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
+                        ? 'text-green-800' 
+                        : dataIntegrity.status === 'fair' 
+                          ? 'text-yellow-800'
+                          : 'text-red-800'
+                    }`}>
+                      {dataIntegrity.message}
+                    </p>
+                    
+                    <div className="grid gap-3 md:grid-cols-3 mb-4">
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-sm font-medium">Cobertura Crosscheck</div>
+                        <div className="text-lg font-bold">{dataIntegrity.data_quality.crosscheck_coverage}%</div>
+                        <div className="text-xs text-gray-600">
+                          {dataIntegrity.data_quality.procedimentos_com_match} de {dataIntegrity.data_quality.total_guias} guias
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-sm font-medium">Códigos CBHPM</div>
+                        <div className="text-lg font-bold">{dataIntegrity.data_quality.cbhpm_coverage}%</div>
+                        <div className="text-xs text-gray-600">
+                          {dataIntegrity.data_quality.guias_com_cbhpm} códigos válidos
+                        </div>
+                      </div>
+                      
+                      <div className="bg-white rounded border p-3">
+                        <div className="text-sm font-medium">Demonstrativos</div>
+                        <div className="text-lg font-bold">{dataIntegrity.data_quality.demonstrativos_processaveis}</div>
+                        <div className="text-xs text-gray-600">
+                          de {dataIntegrity.data_quality.total_demonstrativos} carregados
+                        </div>
+                      </div>
+                    </div>
+
+                    {dataIntegrity.issues && dataIntegrity.issues.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-medium mb-2">⚠️ Problemas Detectados:</h4>
+                        <ul className="text-sm space-y-1">
+                          {dataIntegrity.issues.map((issue, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className={issue.type === 'error' ? 'text-red-600' : 'text-yellow-600'}>
+                                {issue.type === 'error' ? '❌' : '⚠️'}
+                              </span>
+                              {issue.message}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {dataIntegrity.recommendations && dataIntegrity.recommendations.length > 0 && (
+                      <div>
+                        <h4 className="font-medium mb-2">💡 Recomendações:</h4>
+                        <ul className="text-sm space-y-1">
+                          {dataIntegrity.recommendations.map((rec, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-blue-600">📋</span>
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Insights de Performance Médica */}
+            <section className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="flex items-start gap-4">
+                <Activity className="h-6 w-6 text-blue-600 mt-1" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4">
+                    📊 Análise de Performance Financeira
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="bg-white rounded border border-blue-200 p-4">
+                      <div className="text-sm text-blue-700 mb-1">Eficiência de Recebimento</div>
+                      <div className="text-2xl font-bold text-blue-900">
+                        {formatPercentage(rentabilityMetrics?.eficienciaPagamento || 0)}
+                      </div>
+                      <div className="text-xs text-blue-600">
+                        {rentabilityMetrics?.eficienciaPagamento > 85 
+                          ? '✅ Excelente performance' 
+                          : rentabilityMetrics?.eficienciaPagamento > 75 
+                            ? '⚠️ Performance boa' 
+                            : '🚨 Requer atenção'
+                        }
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded border border-blue-200 p-4">
+                      <div className="text-sm text-blue-700 mb-1">Potencial de Recuperação</div>
+                      <div className="text-2xl font-bold text-blue-900">
+                        {formatCurrency(rentabilityMetrics?.potencialRecuperacao || 0)}
+                      </div>
+                      <div className="text-xs text-blue-600">
+                        70% das glosas são contestáveis
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded border border-blue-200 p-4">
+                      <div className="text-sm text-blue-700 mb-1">Tempo Médio Recebimento</div>
+                      <div className="text-2xl font-bold text-blue-900">
+                        {rentabilityMetrics?.tempoMedioRecebimento || 0} dias
+                      </div>
+                      <div className="text-xs text-blue-600">
+                        Baseado nos demonstrativos recebidos
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Tabs de Relatórios Especializados */}
+            <section>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="rentabilidade">
+                    <Calculator className="h-4 w-4 mr-2" />
+                    Rentabilidade
+                  </TabsTrigger>
+                  <TabsTrigger value="glosas">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Glosas
+                  </TabsTrigger>
+                  <TabsTrigger value="fluxo_caixa">
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    Fluxo de Caixa
+                  </TabsTrigger>
+                  <TabsTrigger value="convenios">
+                    <Building className="h-4 w-4 mr-2" />
+                    Por Convênio
+                  </TabsTrigger>
+                  <TabsTrigger value="auditoria">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Auditoria
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Tab: Análise de Rentabilidade */}
+                <TabsContent value="rentabilidade" className="space-y-6">
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
               <Card>
                 <CardHeader>
@@ -625,26 +860,64 @@ const ReportsPage = () => {
 
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">
-                    💡 Insights para Melhoria
+                    💡 Insights Baseados nos Seus Dados Reais
                   </h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     {(rentabilityMetrics?.eficienciaPagamento || 0) < 75 && (
                       <li>
-                        • Taxa de aprovação abaixo do benchmark - revisar contratos com
-                        convênios
+                        • Eficiência de {formatPercentage(rentabilityMetrics?.eficienciaPagamento || 0)} está abaixo do benchmark de 75% - revisar contratos
                       </li>
                     )}
-                    {(rentabilityMetrics?.perdasGlosas || 0) > 10 && (
+                    {(rentabilityMetrics?.totalGlosa || 0) > 1000 && (
                       <li>
-                        • Alto índice de glosas - implementar processo de contestação
-                        sistemática
+                        • {formatCurrency(rentabilityMetrics?.totalGlosa || 0)} em glosas detectadas - potencial de recuperação de {formatCurrency(rentabilityMetrics?.potencialRecuperacao || 0)}
                       </li>
                     )}
-                    {(rentabilityMetrics?.procedimentosGlosados || 0) > 5 && (
-                      <li>• Procedimentos glosados requerem auditoria e contestação</li>
+                    {(urgencyBreakdown.critica + urgencyBreakdown.alta) > 0 && (
+                      <li>
+                        • {urgencyBreakdown.critica + urgencyBreakdown.alta} procedimentos críticos requerem contestação imediata
+                      </li>
+                    )}
+                    {rentabilityMetrics?.tempoMedioRecebimento > 45 && (
+                      <li>
+                        • Tempo médio de recebimento de {rentabilityMetrics?.tempoMedioRecebimento} dias - acima do ideal (30 dias)
+                      </li>
                     )}
                   </ul>
                 </div>
+
+                {/* Top Procedimentos com Glosa - Dados Reais */}
+                {medicalInsights?.topGlosaProcedures && medicalInsights.topGlosaProcedures.length > 0 && (
+                  <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h4 className="font-medium text-red-900 mb-3">
+                      🎯 Procedimentos com Maior Impacto de Glosa
+                    </h4>
+                    <div className="space-y-2">
+                      {medicalInsights.topGlosaProcedures.slice(0, 5).map((proc, index) => (
+                        <div key={index} className="bg-white rounded border p-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {proc.codigo} - {proc.descricao}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Guia: {proc.numero_guia} | {proc.participacao}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium text-red-600">
+                                Perda: {formatCurrency((proc.cbhpm_value || 0) - (proc.paid_value || 0))}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                CBHPM: {formatCurrency(proc.cbhpm_value || 0)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1063,9 +1336,12 @@ const ReportsPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+              </Tabs>
+            </section>
+          </div>
+        </AuthenticatedLayout>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 };
 

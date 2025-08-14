@@ -50,6 +50,7 @@ const PricingPage = React.lazy(() => import('@/pages/Pricing'));
 const CheckoutPage = React.lazy(() => import('@/pages/Checkout'));
 const ForgotPasswordPage = React.lazy(() => import('@/pages/ForgotPassword'));
 const ResetPasswordPage = React.lazy(() => import('@/pages/ResetPassword'));
+const Comparison = React.lazy(() => import('@/pages/Comparison'));
 
 /* ========================================================================
    PERFORMANCE MONITORING COMPONENT
@@ -331,6 +332,15 @@ const App: React.FC = () => {
                             element={
                               <RouteWrapper>
                                 <Reports />
+                              </RouteWrapper>
+                            }
+                          />
+
+                          <Route
+                            path="/comparison"
+                            element={
+                              <RouteWrapper>
+                                <Comparison />
                               </RouteWrapper>
                             }
                           />

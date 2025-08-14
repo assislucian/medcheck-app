@@ -51,7 +51,7 @@ export function useDashboardStats() {
           };
         });
 
-        let totals = payload.totals || {};
+        const totals = payload.totals || {};
         if (!totals.totalRecebido && mappedProcedures.length) {
           totals.totalRecebido = mappedProcedures.reduce(
             (acc, p) => acc + (p.valorPago || 0),

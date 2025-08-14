@@ -39,7 +39,7 @@ export const proceduresColumns = [
     type: 'number',
     renderCell: (params: ColumnParams) => {
       const value = params.value;
-      let className =
+      const className =
         value >= 0
           ? 'text-green-600'
           : value > -10

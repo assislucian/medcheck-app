@@ -6,11 +6,9 @@ import {
   FileText,
   FileBarChart,
   AlertTriangle,
-  Bell,
   User,
-  Settings,
-  TrendingUp,
   BarChart3,
+  Scale,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/auth/AuthContext';
 import { useRealTimeSync } from '../../hooks/useRealTimeSync';
@@ -34,7 +32,7 @@ export function AppSidebar() {
   const [loading, setLoading] = useState(true);
 
   // Tempo real: atualizações automáticas da sidebar
-  const {} = useRealTimeSync({
+  useRealTimeSync({
     onActivityUpdate: () => {
       console.log('🔄 Sidebar: atualizando contadores...');
       fetchData();
@@ -160,6 +158,13 @@ export function AppSidebar() {
           href: '/reports',
           description: 'Análise financeira avançada',
           color: 'purple',
+        },
+        {
+          icon: Scale,
+          label: 'Centro Jurídico',
+          href: '/comparison',
+          description: 'CBHPM e orientação jurídica',
+          color: 'indigo',
         },
       ],
     },

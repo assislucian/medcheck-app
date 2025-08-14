@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { InfoCard } from '../components/ui/InfoCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { SmartAlertsSystem } from '../components/intelligence/SmartAlertsSystem';
 
 interface AnalyticsData {
   summary?: {
@@ -243,6 +244,9 @@ export default function IntelligenceHub() {
                 Transforme seus dados médicos em insights acionáveis com análises avançadas e inteligência artificial
               </p>
             </div>
+
+            {/* Sistema de Alertas Inteligentes */}
+            <SmartAlertsSystem />
 
             {/* Cards de Métricas Principais */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

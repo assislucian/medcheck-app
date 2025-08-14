@@ -120,7 +120,7 @@ const UnpaidProceduresPage = () => {
   const filteredData = React.useMemo(() => {
     if (!unpaidData?.unpaid_list) return [];
 
-    let filtered = unpaidData.unpaid_list.filter((proc) => {
+    const filtered = unpaidData.unpaid_list.filter((proc) => {
       const searchMatch =
         searchTerm === '' ||
         proc.beneficiario.toLowerCase().includes(searchTerm.toLowerCase()) ||

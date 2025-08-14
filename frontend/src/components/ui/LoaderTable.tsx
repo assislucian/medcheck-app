@@ -7,7 +7,7 @@ interface LoaderTableProps {
 
 export default function LoaderTable({
   rows = 10,
-  message = 'Carregando dados...',
+  message = 'Carregando informações...',
 }: LoaderTableProps) {
   return (
     <div className="space-y-4">

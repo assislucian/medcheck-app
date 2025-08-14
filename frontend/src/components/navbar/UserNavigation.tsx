@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 
 export const UserNavigation = () => {
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard' },
-    { name: 'Guias', path: '/guides' },
+    { name: 'Início', path: '/dashboard' },
+    { name: 'Guias Médicas', path: '/guides' },
     { name: 'Demonstrativos', path: '/demonstratives' },
-    { name: 'Não Pagos', path: '/unpaid-procedures' },
+    { name: 'Glosas Pendentes', path: '/unpaid-procedures' },
     // { name: 'Activity Log', path: '/notifications' }, // Temporariamente removido
     { name: 'Relatórios', path: '/reports' },
-    { name: 'Suporte', path: '/help' },
+    { name: 'Ajuda', path: '/help' },
   ];
 
   return (

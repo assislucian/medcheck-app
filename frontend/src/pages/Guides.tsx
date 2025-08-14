@@ -244,7 +244,7 @@ const FinancialStatusChip = ({
         };
       case 'glosado':
         return {
-          label: 'GLOSADA',
+          label: 'COM GLOSA',
           value: formatCurrency(glosaValue),
           bgColor: 'bg-red-50 text-red-700 border-red-200',
           dotColor: 'bg-red-500',
@@ -253,7 +253,7 @@ const FinancialStatusChip = ({
       case 'sem_demonstrativo':
       default:
         return {
-          label: 'SEM DEMONSTRATIVO',
+          label: 'AGUARDANDO DEMONSTRATIVO',
           value: '',
           bgColor: 'bg-orange-50 text-orange-700 border-orange-200',
           dotColor: 'bg-orange-500',
@@ -394,14 +394,14 @@ const RefinedDataGrid = ({
     const lastPageIndex = totalPageCount;
 
     if (!shouldShowLeftDots && shouldShowRightDots) {
-      let leftItemCount = 3 + 2 * siblingCount;
-      let leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+      const leftItemCount = 3 + 2 * siblingCount;
+      const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
       return [...leftRange, '...', totalPageCount];
     }
 
     if (shouldShowLeftDots && !shouldShowRightDots) {
-      let rightItemCount = 3 + 2 * siblingCount;
-      let rightRange = Array.from(
+      const rightItemCount = 3 + 2 * siblingCount;
+      const rightRange = Array.from(
         { length: rightItemCount },
         (_, i) => totalPageCount - rightItemCount + i + 1
       );
@@ -409,7 +409,7 @@ const RefinedDataGrid = ({
     }
 
     if (shouldShowLeftDots && shouldShowRightDots) {
-      let middleRange = Array.from(
+      const middleRange = Array.from(
         { length: rightSiblingIndex - leftSiblingIndex + 1 },
         (_, i) => leftSiblingIndex + i
       );
@@ -486,7 +486,7 @@ const RefinedDataGrid = ({
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Recarregar dados
+            Atualizar guias
           </Button>
         </div>
       </div>
@@ -797,7 +797,7 @@ const GuidesPage = () => {
     try {
       // Verificar se há dados para exportar
       if (!filteredGuides || filteredGuides.length === 0) {
-        toast.error('Nenhuma guia disponível para exportar');
+        toast.error('Adicione guias médicas para gerar o relatório');
         return;
       }
 
@@ -814,16 +814,16 @@ const GuidesPage = () => {
         prestador: procedure.prestador || '-'
       }));
 
-      toast.loading('Gerando relatório PDF...', { id: 'pdf-export' });
+      toast.loading('Preparando seu relatório...', { id: 'pdf-export' });
 
       // Exportar usando o serviço
       exportSimpleGuidesReport(guidesForExport, 'relatorio-guias-medicas');
 
-      toast.success('Relatório PDF gerado com sucesso!', { id: 'pdf-export' });
+      toast.success('Seu relatório foi gerado com sucesso!', { id: 'pdf-export' });
 
     } catch (error: any) {
       console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao gerar relatório PDF. Tente novamente.', { id: 'pdf-export' });
+      toast.error('Não conseguimos gerar o relatório. Tente novamente.', { id: 'pdf-export' });
     }
   }, [filteredGuides, rawProcedures]);
 
@@ -857,7 +857,7 @@ const GuidesPage = () => {
       } else if (error.response?.status === 404) {
         toast.error('Serviço temporariamente indisponível');
       } else {
-        toast.error('Erro ao carregar guias');
+        toast.error('Não foi possível carregar suas guias médicas. Tente novamente.');
       }
     } finally {
       setLoading(false);
@@ -874,7 +874,7 @@ const GuidesPage = () => {
 
   const handleUpload = useCallback(async () => {
     if (!selectedFiles || selectedFiles.length === 0) {
-      toast.error('Selecione pelo menos um arquivo');
+      toast.error('Por favor, selecione pelo menos uma guia médica para enviar');
       return;
     }
 
@@ -898,7 +898,7 @@ const GuidesPage = () => {
       const results = data?.results || [];
 
       if (results.length === 0) {
-        toast.error('Nenhuma guia válida foi processada.');
+        toast.error('Não conseguimos processar suas guias. Verifique se os arquivos são válidos.');
       } else {
         const successes = results.filter(r => r.success);
         const failures = results.filter(r => !r.success);
@@ -906,11 +906,11 @@ const GuidesPage = () => {
         if (successes.length > 0) {
           const addedSum = successes.reduce((sum, r) => sum + (r.guias_adicionadas || 0), 0);
           const parsers = Array.from(new Set(successes.map(r => r.parser_used).filter(Boolean)));
-          toast.success(`${successes.length} arquivo(s) processado(s) com sucesso. ${addedSum} procedimento(s) novo(s) salvo(s). ${parsers.length ? `Parser: ${parsers.join(', ')}` : ''}`.trim());
+          toast.success(`${successes.length} guia(s) processada(s) com sucesso. ${addedSum} procedimento(s) identificado(s).`);
         }
         if (failures.length > 0) {
           const files = failures.slice(0, 3).map(f => f.filename).join(', ');
-          toast.error(`Falha ao processar ${failures.length} arquivo(s): ${files}${failures.length > 3 ? '…' : ''}`);
+          toast.error(`Não conseguimos processar ${failures.length} arquivo(s): ${files}${failures.length > 3 ? '…' : ''}`);
         }
       }
       setSelectedFiles(null);
@@ -918,8 +918,8 @@ const GuidesPage = () => {
     } catch (error) {
       // Tentar detalhar o erro retornado pelo backend
       const err = error as any;
-      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Erro no upload dos arquivos';
-      toast.error(typeof msg === 'string' ? msg : 'Erro no upload dos arquivos');
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Não foi possível enviar os arquivos';
+      toast.error(typeof msg === 'string' ? msg : 'Não foi possível enviar os arquivos');
     } finally {
       setUploading(false);
     }
@@ -935,12 +935,12 @@ const GuidesPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        toast.success('Guia excluída com sucesso');
+        toast.success('Guia médica removida com sucesso');
         setDeleteDialogOpen(false);
         setGuideToDelete(null);
         loadGuides();
       } catch (error) {
-        toast.error('Erro ao excluir guia');
+        toast.error('Não foi possível remover a guia médica. Tente novamente.');
       }
     },
     [loadGuides]
@@ -958,13 +958,13 @@ const GuidesPage = () => {
         }
       );
 
-      toast.success(`${guidesToDelete.length} guias excluídas com sucesso`);
+      toast.success(`${guidesToDelete.length} guias médicas removidas com sucesso`);
       setDeleteSelectedOpen(false);
       setGuidesToDelete([]);
       setSelectedGuides([]);
       loadGuides();
     } catch (error) {
-      toast.error('Erro ao excluir guias selecionadas');
+              toast.error('Não foi possível remover as guias selecionadas. Tente novamente.');
     }
   }, [loadGuides, guidesToDelete]);
 
@@ -1489,12 +1489,11 @@ const GuidesPage = () => {
                       <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100">
                         <Upload className="h-6 w-6 text-blue-700" />
                       </div>
-                      Enviar Suas Guias TISS
+                      Análise de Guias TISS
                     </CardTitle>
                     <CardDescription className="text-blue-700">
-                      <strong>Simples assim:</strong> Selecione suas guias TISS (PDF ou
-                      XML) e clique em "Enviar". Em segundos você vai saber se estão
-                      corretas!
+                      <strong>Analise suas guias médicas:</strong> Envie suas guias TISS (PDF ou
+                      XML) para verificar procedimentos e valores automaticamente
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -1528,7 +1527,7 @@ const GuidesPage = () => {
                         ) : (
                           <>
                             <Upload className="mr-2 h-5 w-5" />
-                            Enviar & Analisar
+                            Analisar Guias
                           </>
                         )}
                       </Button>

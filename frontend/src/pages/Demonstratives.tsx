@@ -393,7 +393,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
         setProcedures(mapped);
       } catch (error) {
         console.error('Erro ao carregar procedimentos:', error);
-        toast.error('Erro ao carregar procedimentos', { id: 'load-procedures-error' });
+        toast.error('Não foi possível carregar os detalhes do demonstrativo', { id: 'load-procedures-error' });
       } finally {
         setLoading(false);
       }
@@ -408,7 +408,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
     try {
       await exportDemonstrativeToPDF(demonstrative.periodo || '', procedures);
     } catch (error) {
-      toast.error('Erro ao exportar PDF. Tente novamente.');
+      toast.error('Não conseguimos gerar o relatório PDF. Tente novamente.');
     }
   };
 
@@ -877,7 +877,7 @@ const DemonstrativesPage = () => {
         );
         setPendingAudits(totalPendentes);
       } catch (err: any) {
-        setPendingAuditsError('Erro ao carregar auditorias pendentes');
+        setPendingAuditsError('Verificação temporariamente indisponível');
       } finally {
         setPendingAuditsLoading(false);
       }
@@ -890,7 +890,7 @@ const DemonstrativesPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Token de acesso não encontrado');
+        toast.error('Sessão expirada. Faça login novamente.');
         return;
       }
 
@@ -916,10 +916,10 @@ const DemonstrativesPage = () => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success('Dados exportados com sucesso!');
+      toast.success('Seus dados foram exportados com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar dados:', error);
-      toast.error('Erro ao exportar dados dos demonstrativos');
+      toast.error('Não conseguimos exportar seus dados. Tente novamente.');
     }
   };
 
@@ -932,7 +932,7 @@ const DemonstrativesPage = () => {
       setDemonstratives(dataArray);
     } catch (error) {
       console.error('❌ Erro ao carregar demonstrativos:', error);
-      toast.error('Erro ao carregar demonstrativos');
+      toast.error('Não foi possível carregar seus demonstrativos. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -943,16 +943,16 @@ const DemonstrativesPage = () => {
 
 
   const handleDeleteDemonstrativo = async (id: number) => {
-    if (!window.confirm('Tem certeza que deseja excluir este demonstrativo?')) return;
+    if (!window.confirm('Tem certeza que deseja remover este demonstrativo da análise?')) return;
     try {
       await ApiService.deleteDemonstrative(id);
-      toast.success('Demonstrativo excluído com sucesso', {
+      toast.success('Demonstrativo removido com sucesso', {
         id: `delete-success-${id}`,
       });
       fetchDemonstratives();
     } catch (error) {
       console.error('Erro ao excluir demonstrativo:', error);
-      toast.error('Erro ao excluir demonstrativo');
+      toast.error('Não foi possível excluir o demonstrativo. Tente novamente.');
     }
   };
 
@@ -968,7 +968,7 @@ const DemonstrativesPage = () => {
   // Upload simplificado e funcional
   const handleSimpleUpload = async () => {
     if (!uploadFiles.length) {
-      toast.error('Selecione pelo menos um arquivo para upload');
+      toast.error('Por favor, selecione pelo menos um arquivo para enviar');
       return;
     }
 
@@ -977,7 +977,7 @@ const DemonstrativesPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Token de autenticação não encontrado. Faça login novamente.');
+        toast.error('Sua sessão expirou. Faça login novamente.');
         setUploading(false);
         return;
       }
@@ -1022,7 +1022,7 @@ const DemonstrativesPage = () => {
 
         // Resumo final
         if (successCount > 0) {
-          toast.success(`Upload concluído: ${successCount} arquivo(s) processado(s)`);
+          toast.success(`Análise concluída: ${successCount} demonstrativo(s) processado(s)`);
           await fetchDemonstratives(); // Recarregar dados
           setUploadFiles([]); // Limpar arquivos
 
@@ -1052,11 +1052,11 @@ const DemonstrativesPage = () => {
         const formattedError = formatValidationError(
           error.response.data.detail || 'Arquivo inválido'
         );
-        toast.error(`Erro de validação: ${formattedError}`);
+        toast.error(`Arquivo inválido: ${formattedError}`);
       } else if (error.response?.status === 401) {
-        toast.error('Token de autenticação inválido. Faça login novamente.');
+        toast.error('Sua sessão expirou. Faça login novamente.');
       } else {
-        toast.error(`Erro durante o upload: ${error.message}`);
+        toast.error('Não foi possível enviar o arquivo. Tente novamente.');
       }
     } finally {
       setUploading(false);
@@ -1254,8 +1254,8 @@ const DemonstrativesPage = () => {
                       Upload de Demonstrativos
                     </CardTitle>
                     <CardDescription className="text-emerald-700">
-                      <strong>Analise seus pagamentos:</strong> Faça upload dos seus
-                      demonstrativos de pagamento para análise financeira automatizada
+                      <strong>Analise seus honorários:</strong> Envie seus demonstrativos para
+                      análise automática de pagamentos e identificação de glosas
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -1282,12 +1282,12 @@ const DemonstrativesPage = () => {
                         {uploading ? (
                           <>
                             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                            Enviando...
+                            Processando...
                           </>
                         ) : (
                           <>
                             <Upload className="mr-2 h-4 w-4" />
-                            Enviar
+                            Analisar
                           </>
                         )}
                       </Button>
@@ -1453,7 +1453,7 @@ const DemonstrativesPage = () => {
                           </div>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-                              Procedimentos sem Guia
+                              Aguardando Guias
                             </p>
                             <p className="text-xl font-bold text-purple-800 leading-none">
                               {pendingAuditsLoading ? '...' : pendingAudits}
@@ -1471,12 +1471,12 @@ const DemonstrativesPage = () => {
                 )}
               </section>
 
-              {/* ✅ Indicador de Status do Crosscheck */}
-              <section aria-label="Status do Crosscheck" className="space-y-4">
+              {/* ✅ Indicador de Status da Análise */}
+              <section aria-label="Status da Análise" className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
                   <h3 className="text-base font-medium text-gray-700">
-                    Status do Crosscheck
+                    Status da Análise
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>

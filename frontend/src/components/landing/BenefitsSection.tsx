@@ -6,33 +6,37 @@ import { Link } from 'react-router-dom';
 const benefits = [
   {
     icon: Microscope,
-    title: 'Análise Inteligente',
+    title: 'Auditoria CBHPM Automatizada',
     description:
-      'Nossa tecnologia proprietária analisa automaticamente seus pagamentos e identifica inconsistências com precisão.',
+      'Comparação automática entre seus honorários e a tabela CBHPM 2015 oficial. Identifica divergências de valores em segundos, ajudando você a cobrar o valor correto.',
+    benefit: 'Honorários mais precisos',
     color: 'bg-blue-50 dark:bg-blue-950/30',
     textColor: 'text-blue-600 dark:text-blue-400',
   },
   {
     icon: CheckCircle,
-    title: 'Validação CBHPM',
+    title: 'Contestação com Base Legal',
     description:
-      'Comparação automática entre valores cobrados e tabelas de referência atualizadas, garantindo que você seja pago corretamente.',
+      'Geração de documentos de contestação fundamentados na legislação ANS (Lei 13.003/2014, RN 503/2022). Templates profissionais prontos em minutos.',
+    benefit: 'Documentos juridicamente sólidos',
     color: 'bg-green-50 dark:bg-green-950/30',
     textColor: 'text-green-600 dark:text-green-400',
   },
   {
     icon: BriefcaseMedical,
-    title: 'Gestão Completa',
+    title: 'Controle de Demonstrativos',
     description:
-      'Acompanhe todo o processo de contestação de glosas através de dashboards informativos e relatórios detalhados.',
+      'Cruzamento inteligente entre guias enviadas e demonstrativos recebidos. Identifica procedimentos não pagos e discrepâncias de valores automaticamente.',
+    benefit: 'Visibilidade completa dos pagamentos',
     color: 'bg-purple-50 dark:bg-purple-950/30',
     textColor: 'text-purple-600 dark:text-purple-400',
   },
   {
     icon: Shield,
-    title: 'Segurança e Conformidade',
+    title: 'Gestão de Prazos',
     description:
-      'Seus dados protegidos com a mais alta tecnologia em nuvem e em conformidade com a LGPD e requisitos do CFM.',
+      'Dashboard com alertas automáticos de prazos de contestação. Relatórios de performance por convênio e histórico detalhado de todas as movimentações.',
+    benefit: 'Nunca mais perca prazos',
     color: 'bg-amber-50 dark:bg-amber-950/30',
     textColor: 'text-amber-600 dark:text-amber-400',
   },
@@ -50,13 +54,13 @@ export function BenefitsSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Por que milhares de médicos escolhem o{' '}
-            <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              MedCheck
+            Como médicos brasileiros estão <strong className="text-blue-600">organizando melhor</strong> suas{' '}
+            <span className="bg-gradient-to-r from-blue-500 to-indigo-600 bg-clip-text text-transparent">
+              finanças médicas
             </span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Veja como nossa plataforma transforma o processo de auditoria médica
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <strong>Plataforma inteligente</strong> que automatiza a gestão de honorários, identifica glosas contestáveis e organiza seus demonstrativos de pagamento
           </p>
         </motion.div>
 
@@ -75,7 +79,10 @@ export function BenefitsSection() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground">{benefit.description}</p>
+                <p className="text-muted-foreground mb-3">{benefit.description}</p>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold">
+                  🎯 {benefit.benefit}
+                </div>
               </div>
             </motion.div>
           ))}
@@ -88,9 +95,14 @@ export function BenefitsSection() {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="text-center mt-12"
         >
-          <Button asChild size="lg" className="text-lg px-8 h-12 rounded-md">
-            <Link to="/register">Experimente grátis por 14 dias</Link>
-          </Button>
+          <div className="space-y-4">
+            <Button asChild size="lg" className="text-lg px-10 py-4 h-auto rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 font-semibold shadow-xl">
+              <Link to="/register">Começar Teste Gratuito - 14 Dias</Link>
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              ✅ <strong>Teste GRÁTIS por 14 dias</strong> • ✅ <strong>Sem cartão de crédito</strong> • ✅ <strong>Suporte incluído</strong>
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>
