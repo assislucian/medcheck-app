@@ -72,50 +72,50 @@ const HeroSection: React.FC = () => {
   const solutions = [
     {
       icon: <Calculator className="w-8 h-8" />,
-      title: 'Auditoria Inteligente CBHPM',
+      title: 'Auditoria CBHPM Automatizada',
       description:
-        'Análise automática de honorários com base na tabela CBHPM atualizada. Identifica valores defasados e calcula o valor correto automaticamente.',
-      benefit: 'Recupere até 40% dos seus honorários',
+        'Comparação automática entre seus honorários e a tabela CBHPM 2015 oficial. Identifica divergências de valores em segundos.',
+      benefit: 'Honorários mais precisos',
       features: [
-        'Comparação automática CBHPM',
+        'Comparação com CBHPM oficial',
         'Relatórios detalhados',
-        'Alertas de defasagem',
+        'Alertas de divergências',
       ],
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: 'Contestação Automatizada',
+      title: 'Contestação com Base Legal',
       description:
-        'Geração automática de contestações com base legal e técnica sólida. Documentos prontos para envio aos planos de saúde.',
-      benefit: 'Reduza glosas em até 70%',
+        'Geração de documentos de contestação fundamentados na legislação ANS (Lei 13.003/2014, RN 503/2022).',
+      benefit: 'Documentos juridicamente sólidos',
       features: [
-        'Base legal atualizada',
+        'Base legal ANS atualizada',
         'Templates profissionais',
-        'Histórico de sucesso',
+        'Fundamentação específica',
       ],
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
-      title: 'Gestão Financeira Médica',
+      title: 'Gestão de Demonstrativos',
       description:
-        'Controle completo das suas finanças com relatórios especializados e análises de performance por convênio.',
-      benefit: 'Aumente sua receita em 35%',
+        'Controle completo de guias e demonstrativos com análise de performance por convênio.',
+      benefit: 'Visibilidade financeira completa',
       features: [
         'Dashboard executivo',
         'Análise por convênio',
-        'Projeções financeiras',
+        'Histórico detalhado',
       ],
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: 'Automação de Prazos',
+      title: 'Gestão de Prazos',
       description:
-        'Nunca mais perca um prazo de contestação com alertas inteligentes e calendário automatizado.',
-      benefit: '100% dos prazos cumpridos',
+        'Sistema de alertas automáticos para nunca mais perder prazos de contestação.',
+      benefit: 'Prazos sempre em dia',
       features: [
-        'Alertas por WhatsApp',
+        'Alertas automáticos',
         'Calendário integrado',
-        'Lembretes automáticos',
+        'Lembretes personalizados',
       ],
     },
   ];

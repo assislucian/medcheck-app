@@ -368,7 +368,7 @@ PROTOCOLO INTERNO: CONT-${Date.now()}-${codigoGlosa}`;
 /**
  * ANÁLISE AUTOMÁTICA DE GLOSA
  */
-export function analisarGlosa(codigoGlosa: string): {
+export function analisarGlosa(codigoGlosa: string, motivoGlosa: string): {
   analise: GlosaCode;
   recomendacao: string;
   urgencia: 'baixa' | 'media' | 'alta';
@@ -395,52 +395,4 @@ export function analisarGlosa(codigoGlosa: string): {
     recomendacao,
     urgencia
   };
-}
-
-/**
- * GERA CONTESTAÇÃO ADAPTADA PARA O DIALOG
- * Adapta os dados do Dialog para o formato esperado por gerarContestacaoLegal
- */
-export async function generateContestation(data: {
-  procedureCode: string;
-  procedureDescription: string;
-  cbhpmValue: number;
-  paidValue: number;
-  difference: number;
-  role?: string;
-  reasonGiven?: string;
-  daysSince?: number;
-  patientName?: string;
-  guideNumber?: string;
-}): Promise<string> {
-  // Cria dados mock para campos obrigatórios que não estão disponíveis no Dialog
-  const contestationData: ContestationData = {
-    procedimento: {
-      guia: data.guideNumber || `GUI-${Date.now()}`,
-      codigo_cbhpm: data.procedureCode,
-      descricao: data.procedureDescription,
-      data_execucao: new Date().toISOString().split('T')[0], // Data atual como fallback
-      beneficiario: data.patientName || 'Paciente',
-      crm: 'CRM', // Placeholder
-      nome_medico: 'Médico Responsável', // Placeholder
-      valor_apresentado: data.cbhpmValue,
-      valor_pago: data.paidValue,
-      hospital: 'Hospital/Clínica' // Placeholder
-    },
-    glosa: {
-      codigo: '0001', // Código padrão para ausência de autorização
-      motivo: data.reasonGiven || 'Valor pago inferior ao valor CBHPM',
-      valor: data.difference,
-      categoria: 'administrativa'
-    },
-    medico: {
-      nome: 'Médico Responsável', // Placeholder
-      crm: 'CRM', // Placeholder
-      uf: 'SP' // Placeholder
-    },
-    dias_desde_execucao: data.daysSince || 0,
-    prazo_legal: 'dentro'
-  };
-
-  return gerarContestacaoLegal(contestationData);
 }

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Copy, Download, FileText, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { generateContestation } from '@/services/contestationService';
+import { gerarContestacaoLegal, ContestationData } from '@/services/contestationService';
 import { jsPDF } from 'jspdf';
 import { Card } from '@/components/ui/card';
 
@@ -43,18 +43,35 @@ export function ContestationDialog({
   const handleGenerateContestation = async () => {
     setLoading(true);
     try {
-      const text = await generateContestation({
-        procedureCode: procedureDetails.codigo,
-        procedureDescription: procedureDetails.procedimento,
-        cbhpmValue: procedureDetails.valorCBHPM,
-        paidValue: procedureDetails.valorPago,
-        difference: procedureDetails.diferenca,
-        role: procedureDetails.papel,
-        reasonGiven: procedureDetails.justificativa,
-        daysSince: procedureDetails.daysSince,
-        patientName: procedureDetails.patientName,
-        guideNumber: procedureDetails.guideNumber,
-      });
+      // Preparar dados com valores padrão
+      const contestationData: ContestationData = {
+        procedimento: {
+          guia: procedureDetails.guideNumber || 'N/A',
+          codigo_cbhpm: procedureDetails.codigo || '',
+          descricao: procedureDetails.procedimento || '',
+          data_execucao: new Date().toISOString().split('T')[0],
+          beneficiario: procedureDetails.patientName || 'PACIENTE',
+          crm: 'CRM-MÉDICO',
+          nome_medico: 'Dr(a). Médico(a)',
+          valor_apresentado: procedureDetails.valorCBHPM || 0,
+          valor_pago: procedureDetails.valorPago || 0,
+          hospital: 'HOSPITAL/OPERADORA',
+        },
+        glosa: {
+          codigo: '0002',
+          motivo: procedureDetails.justificativa || 'Divergência de valores entre CBHPM e valor pago',
+          valor: procedureDetails.diferenca || 0,
+          categoria: 'comercial',
+        },
+        medico: {
+          nome: 'Dr(a). Médico(a)',
+          crm: 'CRM-MÉDICO',
+          uf: 'UF',
+        },
+        dias_desde_execucao: procedureDetails.daysSince || 15,
+        prazo_legal: 'dentro',
+      };
+      const text = gerarContestacaoLegal(contestationData);
 
       setContestationText(text);
       setGenerated(true);

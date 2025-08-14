@@ -28,6 +28,15 @@ import {
 } from 'lucide-react';
 import { cbhpmTable, findProcedureByCodigo, calculateTotalCBHPM, CBHPMProcedure } from '@/data/cbhpmData';
 import ComparisonView from '@/components/ComparisonView';
+import { toast } from 'sonner';
+import { formatCurrency, formatPercentage } from '@/utils/format';
+import { InfoCard } from '@/components/ui/InfoCard';
+import { 
+  gerarContestacaoLegal, 
+  analisarGlosa, 
+  analisarPrazoLegal, 
+  ContestationData 
+} from '@/services/contestationService';
 
 interface LegalGuidance {
   title: string;
