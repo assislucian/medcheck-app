@@ -944,13 +944,14 @@ def log_audit(action, user_crm=None, ip=None, details=None):
 
 # --- Models ---
 class RegisterRequest(BaseModel):
-    uf: str
-    crm: str
+    email: str
+    password: Optional[str] = None  # New frontend format
+    senha: Optional[str] = None     # Legacy format
     nome: str
-    email: str  # Adicionado e-mail
-    senha: str
-    terms_accepted: bool
-    terms_version: str
+    crm: str
+    uf: Optional[str] = None  # Made optional for compatibility
+    terms_accepted: Optional[bool] = True  # Default to True
+    terms_version: Optional[str] = "2025-05-05"  # Default version
 
 
 class RegisterResponse(BaseModel):
@@ -1064,6 +1065,105 @@ WINDOW_SECONDS = 600  # 10 minutos
 @app.post("/api/v1/register", response_model=RegisterResponse)
 @limiter.limit("3/minute")  # Limite mais restritivo para cadastros
 def register_medico(req: RegisterRequest, request: Request):
+    # Validação de entrada
+    if not validate_crm(req.crm):
+        raise HTTPException(
+            status_code=400, detail="CRM deve conter apenas números (4-6 dígitos)"
+        )
+
+    if not validate_uf(req.uf):
+        raise HTTPException(status_code=400, detail="UF inválida")
+
+    # Sanitizar dados
+    req.nome = sanitize_text(req.nome, max_length=200)
+    req.crm = sanitize_text(req.crm, max_length=10)
+    req.uf = req.uf.upper().strip()
+
+    # Validação de senha forte
+    is_strong, msg = senha_forte(req.senha)
+    if not is_strong:
+        raise HTTPException(status_code=400, detail=msg)
+
+    db = SessionLocal()
+    try:
+        if db.query(Medico).filter_by(email=req.email).first():
+            raise HTTPException(status_code=400, detail="E-mail já cadastrado")
+
+        if db.query(Medico).filter_by(crm=req.crm, uf=req.uf).first():
+            raise HTTPException(
+                status_code=400, detail="CRM já cadastrado para este estado (UF)"
+            )
+        if not req.terms_accepted:
+            raise HTTPException(
+                status_code=400,
+                detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
+            )
+        senha_hash = bcrypt.hashpw(req.senha.encode(), bcrypt.gensalt()).decode()
+        medico = Medico(
+            crm=req.crm,
+            uf=req.uf,
+            nome=req.nome,
+            email=req.email,
+            senha_hash=senha_hash,
+            terms_accepted=1 if req.terms_accepted else 0,
+            terms_accepted_at=datetime.utcnow(),
+            terms_version=req.terms_version,
+        )
+        db.add(medico)
+        db.commit()
+        db.refresh(medico)  # Atualiza o objeto medico com o ID gerado
+
+        # Registrar consentimento histórico
+        ip = get_remote_address(request)
+        consent = Consentimento(
+            medico_id=medico.id,
+            terms_version=req.terms_version,
+            accepted_at=datetime.utcnow(),
+            ip=ip,
+        )
+        db.add(consent)
+        db.commit()  # Commit do consentimento
+
+        log_audit(
+            "register",
+            user_crm=req.crm,
+            ip=ip,
+            details={"uf": req.uf, "nome": req.nome},
+        )
+        logger.info(
+            f"Novo médico cadastrado: {req.uf}-{req.crm} - {req.nome} (aceite termos v{req.terms_version}, IP {ip})"
+        )
+        return RegisterResponse(message="Cadastro realizado com sucesso!")
+    finally:
+        db.close()
+
+
+# --- New unified registration endpoint (compatible with frontend) ---
+@app.post("/register", response_model=RegisterResponse)
+@limiter.limit("3/minute")
+def register_unified(req: RegisterRequest, request: Request):
+    """
+    Unified registration endpoint compatible with new frontend.
+    Supports both old and new request formats.
+    """
+    # Convert 'password' to 'senha' for compatibility with existing logic
+    if hasattr(req, 'password') and req.password:
+        req.senha = req.password
+    elif not hasattr(req, 'senha'):
+        raise HTTPException(status_code=400, detail="Password is required")
+    
+    # Set default UF if not provided
+    if not req.uf:
+        req.uf = "SP"  # Default to São Paulo
+    
+    # Ensure terms_accepted defaults to True for new format
+    if not hasattr(req, 'terms_accepted') or req.terms_accepted is None:
+        req.terms_accepted = True
+    
+    # Set default terms_version if not provided
+    if not hasattr(req, 'terms_version') or not req.terms_version:
+        req.terms_version = "2025-05-05"
+    
     # Validação de entrada
     if not validate_crm(req.crm):
         raise HTTPException(
