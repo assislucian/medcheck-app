@@ -174,3 +174,4 @@ legacy_cleanup_backup/
 # !docs/
 # !PERFORMANCE_AUDIT_REPORT.md
 .vercel
+src/__pycache__

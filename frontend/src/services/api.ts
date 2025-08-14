@@ -214,12 +214,13 @@ export class ApiService {
   }) {
     // Mapear password para senha conforme esperado pelo backend
     const backendData = {
-      ...userData,
-      senha: userData.password
+      crm: userData.crm,
+      nome: userData.nome,
+      email: userData.email,
+      senha: userData.password,
     };
-    delete backendData.password;
 
-    const response = await fetch(`${API_BASE}/api/v1/register`, {
+    const response = await fetch(`${API_BASE}/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

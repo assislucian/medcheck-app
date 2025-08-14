@@ -19,7 +19,6 @@ import { formatValidationError } from '../utils/errorUtils';
 
 const registerSchema = z
   .object({
-    uf: z.string().min(2, 'Selecione a UF'),
     crm: z.string().min(4, 'Informe o CRM'),
     nome: z.string().min(2, 'Informe o nome completo'),
     email: z.string().email('Informe um e-mail válido'),
@@ -37,10 +36,7 @@ const registerSchema = z
     path: ['confirmPassword'],
   });
 
-const TERMS_VERSION = '2025-05-05'; // ajuste conforme sua versão/data
-
 const RegisterForm = () => {
-  const [uf, setUf] = useState('SP');
   const [crm, setCrm] = useState('');
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -48,44 +44,28 @@ const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<{
-    uf?: string;
-    crm?: string;
-    nome?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [registerError, setRegisterError] = useState<string | null>(null);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handler compatível com SelectCustom e <select> nativo
-  const handleUfChange = (valueOrEvent: any) => {
-    const value = valueOrEvent?.target ? valueOrEvent.target.value : valueOrEvent;
-    setUf(value);
-  };
-
   const validateForm = () => {
-    try {
-      registerSchema.parse({ uf, crm, nome, email, password, confirmPassword });
+    const result = registerSchema.safeParse({
+      crm,
+      nome,
+      email,
+      password,
+      confirmPassword,
+    });
+    if (result.success) {
       setErrors({});
       return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: typeof errors = {};
-        error.errors.forEach((err) => {
-          if (err.path[0] === 'uf') newErrors.uf = err.message;
-          if (err.path[0] === 'crm') newErrors.crm = err.message;
-          if (err.path[0] === 'nome') newErrors.nome = err.message;
-          if (err.path[0] === 'email') newErrors.email = err.message;
-          if (err.path[0] === 'password') newErrors.password = err.message;
-          if (err.path[0] === 'confirmPassword') newErrors.confirmPassword = err.message;
-        });
-        setErrors(newErrors);
+    } else {
+      const newErrors: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        newErrors[issue.path[0]] = issue.message;
       }
+      setErrors(newErrors);
       return false;
     }
   };
@@ -93,32 +73,20 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegisterError(null);
-    setAcceptError(null);
 
-    if (!acceptedTerms) {
-      setAcceptError(
-        'É necessário aceitar os Termos de Uso e a Política de Privacidade para se cadastrar.'
-      );
-      return;
-    }
     if (!validateForm()) return;
 
     setIsLoading(true);
     try {
-      // payload EXATO que o backend espera
       const resp = await registerUser({
-        uf,
         crm,
-        nome,            // 'nome' (não 'name')
+        nome,
         email,
-        password,        // aqui estava o problema no seu código (era 'senha')
-        terms_accepted: acceptedTerms,
-        terms_version: TERMS_VERSION,
+        password,
       });
 
       toast.success(resp?.message ?? 'Cadastro realizado com sucesso!');
 
-      // login automático: /token espera username=email e password
       try {
         await loginWithPassword(email, password);
         navigate('/dashboard');
@@ -126,7 +94,6 @@ const RegisterForm = () => {
         navigate('/login');
       }
     } catch (error: any) {
-      // o serviço já tenta retornar o detail do FastAPI; vamos formatar se vier array
       const raw = error?.message ?? 'Erro ao cadastrar';
       let msg = raw;
       try {
@@ -142,159 +109,82 @@ const RegisterForm = () => {
 
   return (
     <Card className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-amber-200/30 dark:border-amber-700/30 shadow-2xl shadow-amber-500/20 dark:shadow-amber-900/40 rounded-2xl overflow-hidden">
-      {/* Header */}
-      <CardHeader className="text-center pb-8 pt-10 bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/20 dark:via-orange-900/10 dark:to-yellow-900/15">
-        <div className="flex items-center justify-center mb-4">
-          <UserPlus className="w-8 h-8 text-amber-600 dark:text-amber-400 mr-3" />
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
-          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-            Teste Grátis 30 Dias
-          </span>
-        </div>
-        <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-700 via-orange-600 to-yellow-600 bg-clip-text text-transparent mb-2">
-          Cadastro Premium
-        </CardTitle>
-        <CardDescription className="text-slate-600 dark:text-amber-200/70 text-lg">
-          Junte-se a 2.500+ médicos que já recuperaram R$ 2.3M+
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="px-8 py-6">
-        {registerError && (
-          <div className="mb-6 p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-200/50 dark:border-red-800/50 rounded-xl text-red-700 dark:text-red-400 text-center text-sm backdrop-blur-sm">
-            {registerError}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+      <form onSubmit={handleSubmit}>
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+            Crie sua Conta
+          </CardTitle>
+          <CardDescription className="text-lg text-slate-500 dark:text-slate-400">
+            Acesso exclusivo para médicos.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="px-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="col-span-1">
               <label
-                htmlFor="uf"
-                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+                htmlFor="nome"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
-                Estado (UF)
+                Nome Completo
               </label>
-              <SelectCustom
-                id="uf"
-                value={uf}
-                onChange={handleUfChange}
-                placeholder="Selecione seu estado"
-                disabled={isLoading}
-              >
-                <option value="AC">Acre (AC)</option>
-                <option value="AL">Alagoas (AL)</option>
-                <option value="AP">Amapá (AP)</option>
-                <option value="AM">Amazonas (AM)</option>
-                <option value="BA">Bahia (BA)</option>
-                <option value="CE">Ceará (CE)</option>
-                <option value="DF">Distrito Federal (DF)</option>
-                <option value="ES">Espírito Santo (ES)</option>
-                <option value="GO">Goiás (GO)</option>
-                <option value="MA">Maranhão (MA)</option>
-                <option value="MT">Mato Grosso (MT)</option>
-                <option value="MS">Mato Grosso do Sul (MS)</option>
-                <option value="MG">Minas Gerais (MG)</option>
-                <option value="PA">Pará (PA)</option>
-                <option value="PB">Paraíba (PB)</option>
-                <option value="PR">Paraná (PR)</option>
-                <option value="PE">Pernambuco (PE)</option>
-                <option value="PI">Piauí (PI)</option>
-                <option value="RJ">Rio de Janeiro (RJ)</option>
-                <option value="RN">Rio Grande do Norte (RN)</option>
-                <option value="RS">Rio Grande do Sul (RS)</option>
-                <option value="RO">Rondônia (RO)</option>
-                <option value="RR">Roraima (RR)</option>
-                <option value="SC">Santa Catarina (SC)</option>
-                <option value="SP">São Paulo (SP)</option>
-                <option value="SE">Sergipe (SE)</option>
-                <option value="TO">Tocantins (TO)</option>
-              </SelectCustom>
-              {errors.uf && (
-                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                  {errors.uf}
-                </div>
+              <input
+                id="nome"
+                type="text"
+                placeholder="Seu nome completo"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+              />
+              {errors.nome && (
+                <p className="mt-1 text-xs text-red-500">{errors.nome}</p>
               )}
             </div>
-
-            <div>
+            <div className="col-span-1">
               <label
                 htmlFor="crm"
-                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
-                Número do CRM
+                CRM
               </label>
               <input
                 id="crm"
                 type="text"
+                placeholder="Seu número de CRM"
                 value={crm}
                 onChange={(e) => setCrm(e.target.value)}
-                placeholder="Digite seu CRM"
-                className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
-                autoComplete="username"
-                disabled={isLoading}
+                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
               />
               {errors.crm && (
-                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                  {errors.crm}
-                </div>
+                <p className="mt-1 text-xs text-red-500">{errors.crm}</p>
               )}
             </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="nome"
-              className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
-            >
-              Nome Completo
-            </label>
-            <input
-              id="nome"
-              type="text"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              placeholder="Digite seu nome completo"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
-              autoComplete="name"
-              disabled={isLoading}
-            />
-            {errors.nome && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                {errors.nome}
-              </div>
-            )}
           </div>
 
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-200"
             >
               E-mail
             </label>
             <input
               id="email"
               type="email"
+              placeholder="seu-email@dominio.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Digite seu e-mail"
-              className="w-full px-4 py-4 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
-              autoComplete="email"
-              disabled={isLoading}
+              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
             />
             {errors.email && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                {errors.email}
-              </div>
+              <p className="mt-1 text-xs text-red-500">{errors.email}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
                 Senha
               </label>
@@ -302,33 +192,27 @@ const RegisterForm = () => {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
+                  placeholder="Crie uma senha forte"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crie uma senha forte"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
-                  autoComplete="new-password"
-                  disabled={isLoading}
+                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                  disabled={isLoading}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
               {errors.password && (
-                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
-                  {errors.password}
-                </div>
+                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
               )}
             </div>
-
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-semibold mb-3 text-slate-700 dark:text-amber-200/90"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-200"
               >
                 Confirme a Senha
               </label>
@@ -336,120 +220,69 @@ const RegisterForm = () => {
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Repita a senha"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirme sua senha"
-                  className="w-full px-4 py-4 pr-12 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-amber-200/50 dark:border-amber-700/50 rounded-xl text-slate-800 dark:text-amber-100 placeholder:text-slate-500 dark:placeholder:text-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all duration-300 hover:bg-white/80 dark:hover:bg-slate-800/60 text-lg"
-                  autoComplete="new-password"
-                  disabled={isLoading}
+                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 dark:text-amber-300/60 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-                  disabled={isLoading}
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={20} />
+                  ) : (
+                    <Eye size={20} />
+                  )}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <div className="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                <p className="mt-1 text-xs text-red-500">
                   {errors.confirmPassword}
-                </div>
+                </p>
               )}
             </div>
           </div>
 
-          {/* Termos e Condições */}
-          <div className="bg-gradient-to-br from-amber-50/50 via-orange-50/30 to-yellow-50/40 dark:from-amber-900/10 dark:via-orange-900/5 dark:to-yellow-900/10 rounded-xl p-6 border border-amber-200/30 dark:border-amber-700/20">
-            <div className="flex items-start gap-4">
-              <input
-                id="acceptTerms"
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-1 w-5 h-5 text-amber-600 bg-white/60 border-amber-300 rounded focus:ring-amber-500 focus:ring-2"
-                disabled={isLoading}
-                required
-              />
-              <div className="flex-1">
-                <label
-                  htmlFor="acceptTerms"
-                  className="text-sm text-slate-700 dark:text-amber-200/80 select-none leading-relaxed"
-                >
-                  Declaro que li e concordo com os{' '}
-                  <a
-                    href="/terms"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline decoration-amber-300/50"
-                  >
-                    Termos de Uso
-                  </a>{' '}
-                  e a{' '}
-                  <a
-                    href="/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline decoration-amber-300/50"
-                  >
-                    Política de Privacidade
-                  </a>.
-                </label>
-                <div className="mt-3 p-3 bg-slate-100/60 dark:bg-slate-800/40 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                  <p className="text-xs text-slate-600 dark:text-amber-200/60 leading-relaxed">
-                    <Shield className="w-4 h-4 inline mr-2 text-emerald-600 dark:text-emerald-400" />
-                    <strong>Atenção:</strong> O MedCheck é uma ferramenta de apoio à
-                    auditoria médica. O usuário é responsável pelos dados inseridos e
-                    pelas decisões tomadas com base nos relatórios da plataforma.
-                  </p>
-                </div>
-              </div>
+          {registerError && (
+            <div className="bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
+              <strong className="font-bold">Erro no cadastro:</strong>
+              <span className="block sm:inline ml-2">{registerError}</span>
             </div>
-            {acceptError && (
-              <div className="text-xs text-red-600 dark:text-red-400 mt-3 font-medium">
-                {acceptError}
-              </div>
-            )}
-          </div>
+          )}
 
+        </CardContent>
+        <CardFooter className="flex flex-col items-center justify-center px-8 pb-8">
           <Button
             type="submit"
-            className="w-full py-4 text-lg font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-yellow-600 hover:from-amber-700 hover:via-orange-700 hover:to-yellow-700 text-white rounded-xl transition-all duration-300 hover:scale-[1.02] shadow-xl shadow-amber-500/30 dark:shadow-amber-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="flex items-center justify-center gap-3">
-                <LoadingSpinner size="sm" />
-                Criando sua conta...
-              </span>
+              <>
+                <LoadingSpinner className="mr-2" />
+                Cadastrando...
+              </>
             ) : (
-              <span className="flex items-center justify-center gap-2">
-                <UserPlus className="w-5 h-5" />
-                Criar Conta Premium
-                <CheckCircle className="w-5 h-5" />
-              </span>
+              <>
+                <UserPlus className="mr-2" />
+                Finalizar Cadastro
+              </>
             )}
           </Button>
-        </form>
-      </CardContent>
 
-      <CardFooter className="flex flex-col gap-4 px-8 pb-8 bg-gradient-to-br from-amber-50/30 via-orange-50/20 to-yellow-50/30 dark:from-amber-900/10 dark:via-orange-900/5 dark:to-yellow-900/10">
-        <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent"></div>
-        <span className="text-slate-600 dark:text-amber-200/70 text-center">
-          Já tem uma conta?{' '}
-          <Link
-            to="/login"
-            className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors underline decoration-amber-300/50 hover:decoration-amber-500"
-          >
-            Faça login aqui
-          </Link>
-        </span>
-        <p className="text-xs text-center text-slate-500 dark:text-amber-200/50">
-          Ao se cadastrar, você concorda com nossos Termos de Uso e Política de
-          Privacidade
-        </p>
-      </CardFooter>
+          <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
+            Já tem uma conta?{' '}
+            <Link
+              to="/login"
+              className="font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
+            >
+              Faça login aqui
+            </Link>
+          </p>
+        </CardFooter>
+      </form>
     </Card>
   );
 };
