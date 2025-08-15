@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { MedCheckLogo } from '@/components/ui/MedCheckLogo';
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
@@ -212,9 +213,7 @@ const HeroSection: React.FC = () => {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo section without icon - just clean text */}
             <div className="flex items-center">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
-                MedCheck
-              </h1>
+              <MedCheckLogo variant="primary" size="lg" />
             </div>
             
             {/* Navigation */}
@@ -260,6 +259,13 @@ const HeroSection: React.FC = () => {
                   Confiado por médicos para recuperar honorários perdidos com glosas
                 </span>
               </div>
+            </div>
+
+            {/* Value Proposition - Foco no Benefício */}
+            <div className="text-center mb-12">
+              <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+                Sistema inteligente de auditoria médica para recuperação de honorários
+              </p>
             </div>
 
             {/* Headlines Científicas - Baseadas em Harvard/MIT */}

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Mail, ArrowLeft, Shield, CheckCircle, Clock } from 'lucide-react';
 import { AuthFooter } from '@/components/layout/AuthFooter';
+import { MedCheckLogo } from '@/components/ui/MedCheckLogo';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -74,9 +75,7 @@ const ForgotPasswordPage = () => {
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-screen">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-cyan-600 bg-clip-text text-transparent mb-4">
-              MedCheck
-            </h1>
+            <MedCheckLogo variant="success" size="lg" className="mb-4" />
           </div>
 
           <Card className="w-full max-w-md mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-green-200/30 dark:border-green-700/30 shadow-2xl shadow-green-500/20 dark:shadow-green-900/40 rounded-2xl overflow-hidden">
@@ -166,9 +165,7 @@ const ForgotPasswordPage = () => {
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12 min-h-screen">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
-            MedCheck
-          </h1>
+          <MedCheckLogo variant="attention" size="lg" className="mb-4" />
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Recuperar Senha
           </h2>

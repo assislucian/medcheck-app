@@ -2,6 +2,7 @@ import LoginForm from '@/components/LoginForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { MedCheckLogo } from '@/components/ui/MedCheckLogo';
 
 const LoginPage = () => {
   const { session, loading } = useAuth();
@@ -42,9 +43,7 @@ const LoginPage = () => {
             {/* Clean Professional Title matching homepage */}
             <div className="text-center mb-12">
               <div className="space-y-4">
-                <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
-                  MedCheck
-                </h1>
+                <MedCheckLogo variant="primary" size="lg" />
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                   Bem-vindo de volta
                 </h2>
