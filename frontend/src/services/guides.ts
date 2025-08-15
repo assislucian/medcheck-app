@@ -41,9 +41,9 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 /**
  * Timeout padrão para requisições HTTP.
- * ESCALABILIDADE: 15s é adequado para operações complexas como crosscheck
+ * ESCALABILIDADE: 60s é mais seguro para reativar serviços no Render
  */
-const DEFAULT_TIMEOUT = 15000;
+const DEFAULT_TIMEOUT = 60000;
 
 /**
  * Configuração de retry para requisições falhas.

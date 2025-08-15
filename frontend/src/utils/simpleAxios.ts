@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 // Criar instância do axios
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 30000,
+  timeout: 60000, // Aumentado para 60 segundos
   headers: {
     'Content-Type': 'application/json',
   },
