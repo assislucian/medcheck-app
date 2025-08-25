@@ -119,10 +119,10 @@ const RegisterForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-amber-200/30 dark:border-amber-700/30 shadow-2xl shadow-amber-500/20 dark:shadow-amber-900/40 rounded-2xl overflow-hidden">
+    <Card className="w-full max-w-2xl mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-blue-200/30 dark:border-blue-700/30 shadow-2xl shadow-blue-500/20 dark:shadow-blue-900/40 rounded-2xl overflow-hidden">
       <form onSubmit={handleSubmit}>
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+          <CardTitle className="text-3xl font-bold tracking-tight text-blue-700 dark:text-blue-400">
             Crie sua Conta
           </CardTitle>
           <CardDescription className="text-lg text-slate-500 dark:text-slate-400">
@@ -144,7 +144,7 @@ const RegisterForm = () => {
                 placeholder="Seu nome completo"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               {errors.nome && (
                 <p className="mt-1 text-xs text-red-500">{errors.nome}</p>
@@ -163,7 +163,7 @@ const RegisterForm = () => {
                 placeholder="Seu número de CRM"
                 value={crm}
                 onChange={(e) => setCrm(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+                className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               />
               {errors.crm && (
                 <p className="mt-1 text-xs text-red-500">{errors.crm}</p>
@@ -184,7 +184,7 @@ const RegisterForm = () => {
               placeholder="seu-email@dominio.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-500">{errors.email}</p>
@@ -206,12 +206,12 @@ const RegisterForm = () => {
                   placeholder="Crie uma senha forte"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600"
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-blue-600"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -234,12 +234,12 @@ const RegisterForm = () => {
                   placeholder="Repita a senha"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+                  className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-amber-600"
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-slate-500 hover:text-blue-600"
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={20} />
@@ -267,7 +267,7 @@ const RegisterForm = () => {
               id="uf"
               value={uf}
               onChange={(e) => setUf(e.target.value)}
-              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition appearance-none cursor-pointer text-slate-900 dark:text-slate-100"
+              className="mt-1 block w-full px-4 py-2 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none cursor-pointer text-slate-900 dark:text-slate-100"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                 backgroundPosition: 'right 0.5rem center',
@@ -315,14 +315,14 @@ const RegisterForm = () => {
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="mt-1 h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+              className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label htmlFor="terms" className="text-sm text-slate-700 dark:text-slate-200">
               Eu aceito os{' '}
               <button
                 type="button"
                 onClick={showTerms}
-                className="text-amber-600 hover:text-amber-700 underline font-medium"
+                className="text-blue-600 hover:text-blue-700 underline font-medium"
               >
                 Termos de Uso
               </button>
@@ -330,7 +330,7 @@ const RegisterForm = () => {
               <button
                 type="button"
                 onClick={showPrivacy}
-                className="text-amber-600 hover:text-amber-700 underline font-medium"
+                className="text-blue-600 hover:text-blue-700 underline font-medium"
               >
                 Política de Privacidade
               </button>
@@ -350,7 +350,7 @@ const RegisterForm = () => {
         <CardFooter className="flex flex-col items-center justify-center px-8 pb-8">
           <Button
             type="submit"
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center"
+            className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -370,7 +370,7 @@ const RegisterForm = () => {
             Já tem uma conta?{' '}
             <Link
               to="/login"
-              className="font-semibold text-amber-600 hover:text-amber-500 dark:text-amber-400 dark:hover:text-amber-300"
+              className="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Faça login aqui
             </Link>

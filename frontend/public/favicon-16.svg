@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <defs>
+    <linearGradient id="mc-mini" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect x="0" y="0" width="16" height="16" rx="3" fill="url(#mc-mini)"/>
+  
+  <!-- Simplified "M" for MedCheck -->
+  <g fill="#ffffff">
+    <!-- Left line -->
+    <rect x="3" y="4" width="2" height="8"/>
+    <!-- Right line -->  
+    <rect x="11" y="4" width="2" height="8"/>
+    <!-- Center peak -->
+    <polygon points="5,4 8,8 8,4"/>
+    <polygon points="8,4 8,8 11,4"/>
+  </g>
+  
+  <!-- Micro pulse -->
+  <path d="M2 13 L4 13 L5 11 L6 13 L7 10 L8 13 L9 11 L10 13 L14 13" 
+        stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+</svg>

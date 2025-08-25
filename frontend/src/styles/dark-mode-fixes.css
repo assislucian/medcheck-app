@@ -1,0 +1,119 @@
+/* Dark Mode Accessibility Improvements */
+
+/* Melhorar contraste de textos no dark mode */
+.dark {
+  /* Garantir que textos tenham contraste adequado (WCAG 4.5:1) */
+  --text-primary: #f8fafc; /* slate-50 */
+  --text-secondary: #e2e8f0; /* slate-200 */
+  --text-muted: #cbd5e1; /* slate-300 */
+  --text-subtle: #94a3b8; /* slate-400 */
+  
+  /* Backgrounds melhorados para better contrast */
+  --bg-primary: #0f172a; /* slate-900 */
+  --bg-secondary: #1e293b; /* slate-800 */
+  --bg-card: #334155; /* slate-700 */
+  --bg-muted: #475569; /* slate-600 */
+  
+  /* Borders com melhor visibilidade */
+  --border-primary: #475569; /* slate-600 */
+  --border-secondary: #64748b; /* slate-500 */
+}
+
+/* Gray Text Colors with WCAG AA compliance for dark mode */
+.dark .text-gray-400 { color: #9ca3af !important; } /* gray-400 - sufficient contrast on dark backgrounds */
+.dark .text-gray-500 { color: #94a3b8 !important; } /* slate-400 for better contrast */
+.dark .text-gray-600 { color: #cbd5e1 !important; } /* slate-300 for readable secondary text */
+.dark .text-gray-700 { color: #e2e8f0 !important; } /* slate-200 for primary text */
+.dark .text-gray-800 { color: #f1f5f9 !important; } /* slate-100 for high emphasis text */
+.dark .text-gray-900 { color: #f8fafc !important; } /* slate-50 for maximum contrast */
+
+/* Corrigir textos com baixo contraste */
+.dark .text-slate-600 {
+  color: var(--text-subtle) !important;
+}
+
+.dark .text-slate-500 {
+  color: var(--text-muted) !important;
+}
+
+.dark .text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-slate-300 {
+  color: var(--text-primary) !important;
+}
+
+/* Melhorar legibilidade de cards e containers */
+.dark .bg-white\/10 {
+  background-color: rgba(51, 65, 85, 0.3) !important; /* slate-700 with opacity */
+}
+
+.dark .bg-slate-900\/20 {
+  background-color: rgba(15, 23, 42, 0.8) !important; /* slate-900 with better opacity */
+}
+
+/* Corrigir borders com baixa visibilidade */
+.dark .border-slate-200\/30 {
+  border-color: rgba(71, 85, 105, 0.6) !important; /* slate-600 with opacity */
+}
+
+.dark .border-slate-700\/30 {
+  border-color: rgba(100, 116, 139, 0.4) !important; /* slate-500 with opacity */
+}
+
+/* Melhorar legibilidade de inputs */
+.dark input, .dark textarea, .dark select {
+  background-color: rgba(30, 41, 59, 0.8) !important; /* slate-800 */
+  border-color: rgba(71, 85, 105, 0.8) !important; /* slate-600 */
+  color: var(--text-primary) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-subtle) !important;
+}
+
+/* Melhorar contraste de links */
+.dark a {
+  color: #60a5fa !important; /* blue-400 - melhor contraste */
+}
+
+.dark a:hover {
+  color: #93c5fd !important; /* blue-300 */
+}
+
+/* Shadows melhoradas para dark mode */
+.dark .shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Gradientes de texto melhorados para dark mode */
+.dark .bg-gradient-to-r.from-blue-600.via-indigo-600.to-cyan-600 {
+  background: linear-gradient(to right, #3b82f6, #6366f1, #06b6d4) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Melhorar visibilidade de elementos interativos */
+.dark button:hover {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+/* Indicadores de status com melhor contraste */
+.dark .bg-emerald-500 {
+  background-color: #10b981 !important; /* emerald-500 mantém boa visibilidade */
+}
+
+.dark .bg-blue-500 {
+  background-color: #3b82f6 !important; /* blue-500 mantém boa visibilidade */
+}

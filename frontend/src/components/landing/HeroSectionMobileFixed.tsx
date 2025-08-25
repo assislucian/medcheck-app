@@ -206,10 +206,7 @@ const HeroSectionMobileFixed: React.FC = () => {
       <header className="relative z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 sticky top-0">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-2">
-            <MedCheckLogo size="sm" className="w-8 h-8" />
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
-              MedCheck
-            </span>
+            <MedCheckLogo size="sm" showImage={true} />
           </div>
           
           <div className="flex items-center space-x-2">
@@ -217,7 +214,7 @@ const HeroSectionMobileFixed: React.FC = () => {
               onClick={handleLogin}
               variant="ghost"
               size="sm"
-              className="text-blue-600 font-semibold px-3 py-2 h-10 rounded-lg hover:bg-blue-50 active:bg-blue-100 transition-colors"
+              className="text-blue-600 dark:text-blue-400 font-semibold px-3 py-2 h-10 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 active:bg-blue-100 dark:active:bg-blue-800/50 transition-colors"
             >
               {session ? 'Dashboard' : 'Entrar'}
             </Button>
@@ -289,7 +286,7 @@ const HeroSectionMobileFixed: React.FC = () => {
               </span>
             </h1>
 
-            <p className="text-gray-600 mb-8 text-base leading-relaxed max-w-xs mx-auto">
+            <p className="text-gray-600 dark:text-slate-300 mb-8 text-base leading-relaxed max-w-xs mx-auto">
               <strong className="text-blue-600">Auditoria CBHPM</strong>, 
               <strong className="text-emerald-600"> contestação automática</strong> e
               <strong className="text-blue-600"> gestão financeira</strong> integradas.
@@ -308,7 +305,7 @@ const HeroSectionMobileFixed: React.FC = () => {
               <Button
                 onClick={handleShowDemo}
                 variant="outline"
-                className="w-full h-12 border-gray-300 text-gray-700 text-lg font-semibold rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 active:scale-98 touch-manipulation"
+                className="w-full h-12 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-200 bg-white/80 dark:bg-slate-700/80 text-lg font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-600 active:bg-gray-100 dark:active:bg-slate-500 transition-all duration-200 active:scale-98 touch-manipulation"
               >
                 <Play className="mr-2 w-5 h-5" />
                 <span>Ver Demo (3 min)</span>
@@ -333,13 +330,13 @@ const HeroSectionMobileFixed: React.FC = () => {
                     <div className="flex items-center justify-center mb-2">
                       <stat.Icon className="w-4 h-4" />
                     </div>
-                    <div className="text-xl font-bold text-gray-800 mb-1 leading-none">
+                    <div className="text-xl font-bold text-gray-800 dark:text-slate-100 mb-1 leading-none">
                       {stat.value}
                     </div>
-                    <div className="text-gray-700 font-semibold text-sm mb-1 leading-none">
+                    <div className="text-gray-700 dark:text-slate-200 font-semibold text-sm mb-1 leading-none">
                       {stat.label}
                     </div>
-                    <div className="text-gray-500 text-xs leading-none">
+                    <div className="text-gray-500 dark:text-slate-400 text-xs leading-none">
                       {stat.sublabel}
                     </div>
                   </div>
@@ -375,7 +372,7 @@ const HeroSectionMobileFixed: React.FC = () => {
                   {pain.title}
                 </h3>
                 
-                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                <p className="text-gray-600 dark:text-slate-300 text-sm mb-4 leading-relaxed">
                   {pain.description}
                 </p>
                 
@@ -428,7 +425,7 @@ const HeroSectionMobileFixed: React.FC = () => {
                 
                 {isExpanded(index) && (
                   <div className="px-4 pb-4 border-t border-gray-100">
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4 mt-4">
+                    <p className="text-gray-600 dark:text-slate-300 text-sm leading-relaxed mb-4 mt-4">
                       {solution.description}
                     </p>
                     <div className="space-y-2">
@@ -456,10 +453,10 @@ const HeroSectionMobileFixed: React.FC = () => {
               Junte-se a 2.500+ médicos que aumentaram receita
             </p>
             
-            <Button
-              onClick={handleStartTrial}
-              className="w-full h-12 bg-white text-blue-600 hover:bg-gray-100 text-lg font-bold rounded-xl transition-all duration-200 active:scale-98 shadow-lg touch-manipulation"
-            >
+                      <Button
+            onClick={handleStartTrial}
+            className="w-full h-12 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-600 text-lg font-bold rounded-xl transition-all duration-200 active:scale-98 shadow-lg touch-manipulation"
+          >
               <span>Começar Agora - Grátis 30 Dias</span>
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>

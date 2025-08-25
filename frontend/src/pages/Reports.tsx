@@ -12,10 +12,10 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { AuthenticatedLayout } from '@/components/layout/AuthenticatedLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Button } from '../components/ui/button';
+import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout';
 import {
   BarChart3,
   Download,
@@ -47,20 +47,20 @@ import {
   Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatCurrency, formatPercentage } from '@/utils/format';
+import { formatCurrency, formatPercentage } from '../utils/format';
 import axios from 'axios';
-import { usePageTitle } from '@/hooks/usePageTitle';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { InfoCard } from '@/components/ui/InfoCard';
-import { Input } from '@/components/ui/input';
+import { usePageTitle } from '../hooks/usePageTitle';
+import { Badge } from '../components/ui/badge';
+import { Progress } from '../components/ui/progress';
+import { InfoCard } from '../components/ui/InfoCard';
+import { Input } from '../components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../components/ui/select';
 
 // Interfaces para tipagem dos dados
 interface DemonstrativoData {
@@ -368,7 +368,7 @@ const ReportsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30">
         <AuthenticatedLayout
           title="Central de Relatórios"
           description="Carregando análise financeira..."
@@ -381,7 +381,7 @@ const ReportsPage = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30">
         <AuthenticatedLayout
           title="Central de Relatórios"
           description="Análise financeira completa de honorários médicos"
@@ -392,7 +392,7 @@ const ReportsPage = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Dados Insuficientes para Análise
               </h2>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-gray-600 dark:text-slate-300 mb-6 max-w-md mx-auto">
                 Para gerar relatórios inteligentes, é necessário ter guias e
                 demonstrativos processados.
               </p>
@@ -418,8 +418,8 @@ const ReportsPage = () => {
 
   return (
     <>
-      {/* Background com Gradiente Médico Consistente */}
-      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+      {/* Background com Gradiente Padrão MedCheck */}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30">
         <AuthenticatedLayout
           title="Central de Relatórios"
           description="Análise financeira completa de honorários médicos"
@@ -427,18 +427,18 @@ const ReportsPage = () => {
           <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
             {/* Header Discreto Seguindo Padrão Dashboard */}
             <section className="text-center space-y-3 pt-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
-                <BarChart3 className="h-4 w-4 text-orange-700" />
-                <span className="text-xs font-medium text-orange-800">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200/50">
+                <BarChart3 className="h-4 w-4 text-blue-700" />
+                <span className="text-xs font-medium text-blue-800">
                   Central de inteligência financeira
                 </span>
               </div>
 
-              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-800 bg-clip-text text-transparent">
                 Central de Relatórios Inteligentes
               </h1>
 
-              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
                 Análise financeira completa focada na gestão de honorários médicos
                 com indicadores de rentabilidade e auditoria
               </p>
@@ -560,65 +560,52 @@ const ReportsPage = () => {
 
             {/* Indicador de Qualidade dos Dados */}
             {dataIntegrity && (
-              <section className={`border rounded-lg p-6 ${
-                dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
-                  ? 'bg-green-50 border-green-200' 
-                  : dataIntegrity.status === 'fair' 
-                    ? 'bg-yellow-50 border-yellow-200'
-                    : 'bg-red-50 border-red-200'
-              }`}>
-                <div className="flex items-start gap-4">
-                  <CheckCircle className={`h-6 w-6 mt-1 ${
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className={`h-6 w-6 ${
                     dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
                       ? 'text-green-600' 
                       : dataIntegrity.status === 'fair' 
                         ? 'text-yellow-600'
                         : 'text-red-600'
                   }`} />
-                  <div className="flex-1">
-                    <h3 className={`text-lg font-semibold mb-2 ${
-                      dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
-                        ? 'text-green-900' 
-                        : dataIntegrity.status === 'fair' 
-                          ? 'text-yellow-900'
-                          : 'text-red-900'
-                    }`}>
-                      🔍 Qualidade dos Dados: {dataIntegrity.data_quality.quality_score}% 
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+                      🔍 Qualidade dos Dados: {dataIntegrity.data_quality.quality_score}%
                     </h3>
-                    <p className={`mb-4 ${
-                      dataIntegrity.status === 'excellent' || dataIntegrity.status === 'good' 
-                        ? 'text-green-800' 
-                        : dataIntegrity.status === 'fair' 
-                          ? 'text-yellow-800'
-                          : 'text-red-800'
-                    }`}>
+                    <p className="text-gray-600 dark:text-slate-300">
                       {dataIntegrity.message}
                     </p>
+                  </div>
+                </div>
                     
                     <div className="grid gap-3 md:grid-cols-3 mb-4">
-                      <div className="bg-white rounded border p-3">
-                        <div className="text-sm font-medium">Cobertura Crosscheck</div>
-                        <div className="text-lg font-bold">{dataIntegrity.data_quality.crosscheck_coverage}%</div>
-                        <div className="text-xs text-gray-600">
-                          {dataIntegrity.data_quality.procedimentos_com_match} de {dataIntegrity.data_quality.total_guias} guias
-                        </div>
-                      </div>
+                      <InfoCard
+                        title="Cobertura Crosscheck"
+                        value={`${dataIntegrity.data_quality.crosscheck_coverage}%`}
+                        description={`${dataIntegrity.data_quality.procedimentos_com_match} de ${dataIntegrity.data_quality.total_guias} guias`}
+                        icon={<CheckCircle className="h-4 w-4 text-blue-600" />}
+                        variant="info"
+                        size="sm"
+                      />
                       
-                      <div className="bg-white rounded border p-3">
-                        <div className="text-sm font-medium">Códigos CBHPM</div>
-                        <div className="text-lg font-bold">{dataIntegrity.data_quality.cbhpm_coverage}%</div>
-                        <div className="text-xs text-gray-600">
-                          {dataIntegrity.data_quality.guias_com_cbhpm} códigos válidos
-                        </div>
-                      </div>
+                      <InfoCard
+                        title="Códigos CBHPM"
+                        value={`${dataIntegrity.data_quality.cbhpm_coverage}%`}
+                        description={`${dataIntegrity.data_quality.guias_com_cbhpm} códigos válidos`}
+                        icon={<FileText className="h-4 w-4 text-emerald-600" />}
+                        variant="success"
+                        size="sm"
+                      />
                       
-                      <div className="bg-white rounded border p-3">
-                        <div className="text-sm font-medium">Demonstrativos</div>
-                        <div className="text-lg font-bold">{dataIntegrity.data_quality.demonstrativos_processaveis}</div>
-                        <div className="text-xs text-gray-600">
-                          de {dataIntegrity.data_quality.total_demonstrativos} carregados
-                        </div>
-                      </div>
+                      <InfoCard
+                        title="Demonstrativos"
+                        value={dataIntegrity.data_quality.demonstrativos_processaveis}
+                        description={`de ${dataIntegrity.data_quality.total_demonstrativos} carregados`}
+                        icon={<BarChart3 className="h-4 w-4 text-purple-600" />}
+                        variant="neutral"
+                        size="sm"
+                      />
                     </div>
 
                     {dataIntegrity.issues && dataIntegrity.issues.length > 0 && (
@@ -650,57 +637,61 @@ const ReportsPage = () => {
                         </ul>
                       </div>
                     )}
-                  </div>
-                </div>
               </section>
             )}
 
             {/* Insights de Performance Médica */}
-            <section className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <div className="flex items-start gap-4">
-                <Activity className="h-6 w-6 text-blue-600 mt-1" />
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-blue-900 mb-4">
+            <section className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Activity className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
                     📊 Análise de Performance Financeira
                   </h3>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="bg-white rounded border border-blue-200 p-4">
-                      <div className="text-sm text-blue-700 mb-1">Eficiência de Recebimento</div>
-                      <div className="text-2xl font-bold text-blue-900">
-                        {formatPercentage(rentabilityMetrics?.eficienciaPagamento || 0)}
-                      </div>
-                      <div className="text-xs text-blue-600">
-                        {rentabilityMetrics?.eficienciaPagamento > 85 
-                          ? '✅ Excelente performance' 
-                          : rentabilityMetrics?.eficienciaPagamento > 75 
-                            ? '⚠️ Performance boa' 
-                            : '🚨 Requer atenção'
-                        }
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded border border-blue-200 p-4">
-                      <div className="text-sm text-blue-700 mb-1">Potencial de Recuperação</div>
-                      <div className="text-2xl font-bold text-blue-900">
-                        {formatCurrency(rentabilityMetrics?.potencialRecuperacao || 0)}
-                      </div>
-                      <div className="text-xs text-blue-600">
-                        70% das glosas são contestáveis
-                      </div>
-                    </div>
-                    
-                    <div className="bg-white rounded border border-blue-200 p-4">
-                      <div className="text-sm text-blue-700 mb-1">Tempo Médio Recebimento</div>
-                      <div className="text-2xl font-bold text-blue-900">
-                        {rentabilityMetrics?.tempoMedioRecebimento || 0} dias
-                      </div>
-                      <div className="text-xs text-blue-600">
-                        Baseado nos demonstrativos recebidos
-                      </div>
-                    </div>
-                  </div>
+                  <p className="text-gray-600 dark:text-slate-300">
+                    Métricas essenciais para gestão financeira médica
+                  </p>
                 </div>
               </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <InfoCard
+                      title="Eficiência de Recebimento"
+                      value={formatPercentage(rentabilityMetrics?.eficienciaPagamento || 0)}
+                      description={rentabilityMetrics?.eficienciaPagamento > 85 
+                        ? '✅ Excelente performance' 
+                        : rentabilityMetrics?.eficienciaPagamento > 75 
+                          ? '⚠️ Performance boa' 
+                          : '🚨 Requer atenção'
+                      }
+                      icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
+                      variant={
+                        (rentabilityMetrics?.eficienciaPagamento || 0) > 85
+                          ? 'success'
+                          : (rentabilityMetrics?.eficienciaPagamento || 0) > 75
+                            ? 'warning'
+                            : 'danger'
+                      }
+                      size="sm"
+                    />
+                    
+                    <InfoCard
+                      title="Potencial de Recuperação"
+                      value={formatCurrency(rentabilityMetrics?.potencialRecuperacao || 0)}
+                      description="70% das glosas são contestáveis"
+                      icon={<DollarSign className="h-4 w-4 text-emerald-600" />}
+                      variant="success"
+                      size="sm"
+                    />
+                    
+                    <InfoCard
+                      title="Tempo Médio Recebimento"
+                      value={`${rentabilityMetrics?.tempoMedioRecebimento || 0} dias`}
+                      description="Baseado nos demonstrativos recebidos"
+                      icon={<Clock className="h-4 w-4 text-purple-600" />}
+                      variant="neutral"
+                      size="sm"
+                    />
+                  </div>
             </section>
 
             {/* Tabs de Relatórios Especializados */}
@@ -834,28 +825,27 @@ const ReportsPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {rentabilityMetrics?.procedimentosPagos || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Procedimentos Pagos
-                    </div>
-                  </div>
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">
-                      {rentabilityMetrics?.procedimentosGlosados || 0}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Procedimentos Glosados
-                    </div>
-                  </div>
-                  <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {formatCurrency(rentabilityMetrics?.margemRealizada || 0)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">Margem Líquida</div>
-                  </div>
+                  <InfoCard
+                    title="Procedimentos Pagos"
+                    value={rentabilityMetrics?.procedimentosPagos || 0}
+                    icon={<CheckCircle className="h-4 w-4 text-blue-600" />}
+                    variant="info"
+                    size="sm"
+                  />
+                  <InfoCard
+                    title="Procedimentos Glosados"
+                    value={rentabilityMetrics?.procedimentosGlosados || 0}
+                    icon={<XCircle className="h-4 w-4 text-red-600" />}
+                    variant="danger"
+                    size="sm"
+                  />
+                  <InfoCard
+                    title="Margem Líquida"
+                    value={formatCurrency(rentabilityMetrics?.margemRealizada || 0)}
+                    icon={<DollarSign className="h-4 w-4 text-emerald-600" />}
+                    variant="success"
+                    size="sm"
+                  />
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -900,7 +890,7 @@ const ReportsPage = () => {
                               <div className="font-medium text-gray-900">
                                 {proc.codigo} - {proc.descricao}
                               </div>
-                              <div className="text-sm text-gray-600">
+                              <div className="text-sm text-gray-600 dark:text-slate-300">
                                 Guia: {proc.numero_guia} | {proc.participacao}
                               </div>
                             </div>
@@ -934,20 +924,20 @@ const ReportsPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 grid-cols-2">
-                    <div className="text-center p-3 border rounded">
-                      <div className="text-xl font-bold text-orange-600">
-                        {data.analytics.total_glosa_procedures}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Glosas Totais</div>
-                    </div>
-                    <div className="text-center p-3 border rounded">
-                      <div className="text-xl font-bold text-yellow-600">
-                        {data.analytics.total_partial_payments}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Pagamentos Parciais
-                      </div>
-                    </div>
+                    <InfoCard
+                      title="Glosas Totais"
+                      value={data.analytics.total_glosa_procedures}
+                      icon={<AlertTriangle className="h-4 w-4 text-orange-600" />}
+                      variant="warning"
+                      size="sm"
+                    />
+                    <InfoCard
+                      title="Pagamentos Parciais"
+                      value={data.analytics.total_partial_payments}
+                      icon={<Receipt className="h-4 w-4 text-yellow-600" />}
+                      variant="warning"
+                      size="sm"
+                    />
                   </div>
 
                   <div>
@@ -1102,7 +1092,7 @@ const ReportsPage = () => {
                       className={
                         (cashFlowMetrics?.tendencia || 0) > 0
                           ? 'text-green-600'
-                          : 'text-gray-600'
+                          : 'text-gray-600 dark:text-slate-300'
                       }
                     >
                       {(cashFlowMetrics?.tendencia || 0) > 0
@@ -1222,7 +1212,7 @@ const ReportsPage = () => {
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
                     Relatório por Convênio
                   </h3>
-                  <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                  <p className="text-gray-600 dark:text-slate-300 mb-4 max-w-md mx-auto">
                     Esta funcionalidade está sendo desenvolvida para analisar a
                     performance de pagamento por operadora.
                   </p>

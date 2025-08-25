@@ -8,6 +8,8 @@ interface MedCheckLogoProps {
   variant?: LogoVariant;
   size?: LogoSize;
   className?: string;
+  showImage?: boolean;
+  textOnly?: boolean;
 }
 
 const logoVariants: Record<LogoVariant, string> = {
@@ -38,11 +40,52 @@ const logoSizes: Record<LogoSize, string> = {
   xl: 'text-6xl md:text-7xl font-bold'
 };
 
+const imageSizes: Record<LogoSize, string> = {
+  sm: 'h-6 w-6',
+  md: 'h-8 w-8',
+  lg: 'h-10 w-10',
+  xl: 'h-12 w-12'
+};
+
 export const MedCheckLogo: React.FC<MedCheckLogoProps> = ({
   variant = 'primary',
   size = 'md',
-  className
+  className,
+  showImage = false,
+  textOnly = false
 }) => {
+  if (textOnly) {
+    return (
+      <h1 className={cn(
+        'bg-clip-text text-transparent tracking-tight',
+        logoVariants[variant],
+        logoSizes[size],
+        className
+      )}>
+        MedCheck
+      </h1>
+    );
+  }
+
+  if (showImage) {
+    return (
+      <div className={cn('flex items-center justify-center gap-3', className)}>
+        <img
+          src="/logo/Medcheck.png"
+          alt="MedCheck Logo"
+          className={cn(imageSizes[size], 'object-contain flex-shrink-0')}
+        />
+        <h1 className={cn(
+          'bg-clip-text text-transparent tracking-tight',
+          logoVariants[variant],
+          logoSizes[size]
+        )}>
+          MedCheck
+        </h1>
+      </div>
+    );
+  }
+
   return (
     <h1 className={cn(
       'bg-clip-text text-transparent tracking-tight',

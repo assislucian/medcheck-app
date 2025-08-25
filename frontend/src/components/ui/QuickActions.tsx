@@ -184,7 +184,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       <div className={cn('fixed bottom-6 right-6 z-50', className)}>
         <Button
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white border-0"
           onClick={action.onClick}
           aria-label={action.label}
         >
@@ -201,7 +201,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         <DropdownMenuTrigger asChild>
           <Button
             size="lg"
-            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
+            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white border-0"
             aria-label="Ações rápidas"
           >
             {isOpen ? (

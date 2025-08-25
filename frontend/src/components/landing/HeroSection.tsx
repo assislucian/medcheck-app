@@ -213,7 +213,7 @@ const HeroSection: React.FC = () => {
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Logo section without icon - just clean text */}
             <div className="flex items-center">
-              <MedCheckLogo variant="primary" size="lg" />
+              <MedCheckLogo variant="primary" size="lg" showImage={true} />
             </div>
             
             {/* Navigation */}
@@ -240,7 +240,7 @@ const HeroSection: React.FC = () => {
               </nav>
               <Button
                 onClick={handleLogin}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg transition-all duration-200 font-medium"
               >
                 {session ? 'Dashboard' : 'Entrar'}
               </Button>
@@ -284,19 +284,19 @@ const HeroSection: React.FC = () => {
                 </span>
               </h1>
 
-              <p className="text-xl md:text-2xl text-slate-600 mb-8 leading-relaxed max-w-5xl mx-auto">
-                Sistema inteligente que <strong className="text-blue-600">audita CBHPM automaticamente</strong>, 
-                <strong className="text-emerald-600"> identifica glosas contestáveis</strong> e 
-                <strong className="text-purple-600"> gera documentos jurídicos</strong> em minutos.
+              <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 leading-relaxed max-w-5xl mx-auto">
+                Sistema inteligente que <strong className="text-blue-600 dark:text-blue-400">audita CBHPM automaticamente</strong>, 
+                <strong className="text-emerald-600 dark:text-emerald-400"> identifica glosas contestáveis</strong> e 
+                <strong className="text-purple-600 dark:text-purple-400"> gera documentos jurídicos</strong> em minutos.
               </p>
 
               {/* Prova Social Realista */}
-              <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-slate-700">
+              <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-slate-700 dark:text-slate-200">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full border-2 border-white"></div>
-                    <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full border-2 border-white"></div>
-                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full border-2 border-white"></div>
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full border-2 border-white dark:border-slate-700"></div>
+                    <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full border-2 border-white dark:border-slate-700"></div>
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-full border-2 border-white dark:border-slate-700"></div>
                   </div>
                   <span className="font-semibold">Médicos brasileiros</span>
                 </div>
@@ -306,7 +306,7 @@ const HeroSection: React.FC = () => {
                   </div>
                   <span className="font-semibold">Avaliações reais</span>
                 </div>
-                <div className="font-semibold text-emerald-600">
+                <div className="font-semibold text-emerald-600 dark:text-emerald-400">
                   Resultados comprovados
                 </div>
               </div>
@@ -316,18 +316,18 @@ const HeroSection: React.FC = () => {
                 {painPoints.map((pain, index) => (
                   <div
                     key={index}
-                    className="bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
+                    className="bg-white/60 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200 dark:border-slate-600/50 rounded-2xl p-6 hover:shadow-lg dark:hover:shadow-slate-900/50 transition-all duration-300"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center mb-4">
-                      <div className="text-red-600">{pain.icon}</div>
+                    <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4">
+                      <div className="text-red-600 dark:text-red-400">{pain.icon}</div>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
                       {pain.title}
                     </h3>
-                    <p className="text-slate-600 text-sm mb-3">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-3">
                       {pain.description}
                     </p>
-                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-medium">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 text-sm font-medium">
                       {pain.impact}
                     </div>
                   </div>
@@ -347,7 +347,7 @@ const HeroSection: React.FC = () => {
                 <Button
                   onClick={handleShowDemo}
                   variant="outline"
-                  className="px-8 py-4 bg-white/80 backdrop-blur-sm border-slate-300 text-slate-700 text-lg font-semibold rounded-xl transition-all duration-200 hover:bg-slate-50 flex items-center"
+                  className="px-8 py-4 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-lg font-semibold rounded-xl transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center"
                 >
                   <Play className="mr-2 w-5 h-5" />
                   <span>Ver Demonstração (3 min)</span>
@@ -359,15 +359,15 @@ const HeroSection: React.FC = () => {
                 {stats.map((stat, index) => (
                   <div
                     key={index}
-                    className="text-center bg-white/60 backdrop-blur-sm rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
+                    className="text-center bg-white/60 dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl p-6 hover:shadow-lg dark:hover:shadow-slate-900/50 transition-all duration-300 border border-slate-200/50 dark:border-slate-600/30"
                   >
-                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent mb-2">
                       {stat.value}
                     </div>
-                    <div className="text-slate-900 font-semibold text-lg mb-1">
+                    <div className="text-slate-900 dark:text-slate-100 font-semibold text-lg mb-1">
                       {stat.label}
                     </div>
-                    <div className="text-slate-600 text-sm">
+                    <div className="text-slate-600 dark:text-slate-300 text-sm">
                       {stat.sublabel}
                     </div>
                   </div>
@@ -452,13 +452,13 @@ const HeroSection: React.FC = () => {
             </div>
 
             {/* Clean Final CTA */}
-            <div id="precos" className="text-center bg-white/60 backdrop-blur-sm border border-slate-200 rounded-2xl p-12">
+            <div id="precos" className="text-center bg-white/60 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-600/50 rounded-2xl p-12">
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <h2 className="text-5xl font-bold text-slate-900">
+                  <h2 className="text-5xl font-bold text-slate-900 dark:text-slate-50">
                     Pronto para recuperar seu dinheiro?
                   </h2>
-                  <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+                  <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
                     Junte-se a mais de 2.500 médicos que já aumentaram sua receita com o MedCheck
                   </p>
                 </div>
@@ -472,19 +472,19 @@ const HeroSection: React.FC = () => {
                     <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
                   </Button>
 
-                  <div className="text-slate-600 font-medium space-y-1">
+                  <div className="text-slate-600 dark:text-slate-300 font-medium space-y-1">
                     <div className="flex items-center justify-center space-x-4">
                       <span className="flex items-center">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
+                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-2" />
                         Sem cartão de crédito
                       </span>
                       <span className="flex items-center">
-                        <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
+                        <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-2" />
                         Suporte especializado
                       </span>
                     </div>
                     <div className="flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 mr-2" />
+                      <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mr-2" />
                       Resultados em 7 dias
                     </div>
                   </div>
@@ -494,25 +494,25 @@ const HeroSection: React.FC = () => {
 
             {/* Clean Social Proof */}
             <div id="contato" className="text-center mt-16">
-              <p className="text-slate-600 mb-8 font-medium">
+              <p className="text-slate-600 dark:text-slate-300 mb-8 font-medium">
                 Confiado por médicos em todo o Brasil
               </p>
               <div className="flex justify-center items-center space-x-8">
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  <span className="text-slate-700 font-medium">CFM Aprovado</span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 dark:bg-slate-700/80 rounded-lg border border-slate-200 dark:border-slate-600/50">
+                  <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">CFM Aprovado</span>
                 </div>
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
-                  <Shield className="w-5 h-5 text-emerald-600" />
-                  <span className="text-slate-700 font-medium">LGPD Compliant</span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 dark:bg-slate-700/80 rounded-lg border border-slate-200 dark:border-slate-600/50">
+                  <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">LGPD Compliant</span>
                 </div>
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
-                  <Award className="w-5 h-5 text-indigo-600" />
-                  <span className="text-slate-700 font-medium">ISO 27001</span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 dark:bg-slate-700/80 rounded-lg border border-slate-200 dark:border-slate-600/50">
+                  <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">ISO 27001</span>
                 </div>
-                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 rounded-lg border border-slate-200">
-                  <Briefcase className="w-5 h-5 text-slate-600" />
-                  <span className="text-slate-700 font-medium">Suporte Jurídico</span>
+                <div className="flex items-center space-x-2 px-4 py-2 bg-white/60 dark:bg-slate-700/80 rounded-lg border border-slate-200 dark:border-slate-600/50">
+                  <Briefcase className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">Suporte Jurídico</span>
                 </div>
               </div>
             </div>

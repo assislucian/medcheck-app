@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, Shield, Award, Users } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -41,11 +42,13 @@ const Header: React.FC = () => {
     <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Clean Logo */}
-          <Link to="/" className="flex items-center group">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-200">
-              MedCheck
-            </h1>
+          {/* Logo with Brand */}
+          <Link to="/" className="flex items-center group hover:scale-105 transition-transform duration-200">
+            <Logo 
+              size="lg" 
+              variant="header"
+              className="group-hover:scale-105 transition-transform duration-200"
+            />
           </Link>
 
           {/* Desktop Navigation */}

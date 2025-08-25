@@ -197,7 +197,7 @@ const Profile = () => {
                 Meu Perfil
               </h1>
 
-              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
                 Gerencie seus dados profissionais e configurações da plataforma
               </p>
             </section>
@@ -211,7 +211,7 @@ const Profile = () => {
                       <User className="w-8 h-8 text-slate-600" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
                         Dr(a). {profileData.nome || user?.name || 'Nome não informado'}
                       </h2>
                       <div className="flex items-center gap-3 mt-1">

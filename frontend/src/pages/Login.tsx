@@ -43,7 +43,7 @@ const LoginPage = () => {
             {/* Clean Professional Title matching homepage */}
             <div className="text-center mb-12">
               <div className="space-y-4">
-                <MedCheckLogo variant="primary" size="lg" />
+                <MedCheckLogo variant="primary" size="lg" showImage={true} />
                 <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                   Bem-vindo de volta
                 </h2>

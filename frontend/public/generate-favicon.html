@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MedCheck Favicon Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="32" height="32" style="border: 1px solid #ccc; image-rendering: pixelated; width: 128px; height: 128px;"></canvas>
+    <br><br>
+    <button onclick="downloadFavicon()">Download favicon.ico</button>
+    <button onclick="downloadPNG()">Download PNG</button>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function drawFavicon() {
+            // Clear canvas
+            ctx.clearRect(0, 0, 32, 32);
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, 32, 32);
+            gradient.addColorStop(0, '#3b82f6');
+            gradient.addColorStop(1, '#1e40af');
+            
+            // Draw background circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(16, 16, 14, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // White border
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Medical cross - white
+            ctx.fillStyle = '#ffffff';
+            
+            // Vertical bar
+            ctx.fillRect(14, 8, 4, 16);
+            
+            // Horizontal bar  
+            ctx.fillRect(8, 14, 16, 4);
+            
+            // Check mark accent
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(11, 18);
+            ctx.lineTo(13, 20);
+            ctx.lineTo(21, 12);
+            ctx.stroke();
+        }
+        
+        function downloadFavicon() {
+            drawFavicon();
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'favicon.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        function downloadPNG() {
+            drawFavicon();
+            const link = document.createElement('a');
+            link.download = 'medcheck-favicon-32.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Draw initial favicon
+        drawFavicon();
+    </script>
+</body>
+</html>
+
+

@@ -481,7 +481,7 @@ const UnpaidProceduresPage = () => {
   return (
     <>
       {/* Background com Gradiente Médico Consistente */}
-      <div className="min-h-screen bg-gradient-to-br from-orange-50/30 via-gray-50/20 to-red-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
         <AuthenticatedLayout
           title="Procedimentos Não Pagos"
           description="Procedimentos que aguardam confirmação de pagamento"
@@ -489,18 +489,18 @@ const UnpaidProceduresPage = () => {
           <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
             {/* Header Discreto Seguindo Padrão Dashboard */}
             <section className="text-center space-y-3 pt-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-amber-100 border border-orange-200/50">
-                <AlertTriangle className="h-4 w-4 text-orange-700" />
-                <span className="text-xs font-medium text-orange-800">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200/50">
+                <AlertTriangle className="h-4 w-4 text-blue-700" />
+                <span className="text-xs font-medium text-blue-800">
                   Auditoria de pagamentos
                 </span>
               </div>
 
-              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-700 via-amber-600 to-gray-800 bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-800 bg-clip-text text-transparent">
                 Procedimentos Não Pagos
               </h1>
 
-              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
                 Central de monitoramento e contestação de procedimentos pendentes de pagamento
                 com análise jurídica automatizada
               </p>
@@ -598,23 +598,30 @@ const UnpaidProceduresPage = () => {
                       </h3>
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="text-center p-3 bg-white rounded border">
-                          <div className="text-xs text-gray-600 mb-1">Código</div>
-                          <div className="font-bold text-lg">{glosaAnalysis.analise.codigo}</div>
-                        </div>
-                        <div className="text-center p-3 bg-white rounded border">
-                          <div className="text-xs text-gray-600 mb-1">Categoria</div>
-                          <div className="font-bold text-lg capitalize">{glosaAnalysis.analise.categoria}</div>
-                        </div>
-                        <div className="text-center p-3 bg-white rounded border">
-                          <div className="text-xs text-gray-600 mb-1">Chance de Sucesso</div>
-                          <div className={`font-bold text-lg ${
-                            glosaAnalysis.analise.chance_sucesso === 'alta' ? 'text-green-600' :
-                            glosaAnalysis.analise.chance_sucesso === 'media' ? 'text-yellow-600' : 'text-red-600'
-                          }`}>
-                            {glosaAnalysis.analise.chance_sucesso.toUpperCase()}
-                          </div>
-                        </div>
+                        <InfoCard
+                          title="Código"
+                          value={glosaAnalysis.analise.codigo}
+                          icon={<FileText className="h-4 w-4 text-blue-600" />}
+                          variant="info"
+                          size="sm"
+                        />
+                        <InfoCard
+                          title="Categoria"
+                          value={glosaAnalysis.analise.categoria.charAt(0).toUpperCase() + glosaAnalysis.analise.categoria.slice(1)}
+                          icon={<Scale className="h-4 w-4 text-purple-600" />}
+                          variant="neutral"
+                          size="sm"
+                        />
+                        <InfoCard
+                          title="Chance de Sucesso"
+                          value={glosaAnalysis.analise.chance_sucesso.toUpperCase()}
+                          icon={<AlertTriangle className="h-4 w-4 text-amber-600" />}
+                          variant={
+                            glosaAnalysis.analise.chance_sucesso === 'alta' ? 'success' :
+                            glosaAnalysis.analise.chance_sucesso === 'media' ? 'warning' : 'danger'
+                          }
+                          size="sm"
+                        />
                       </div>
                       
                       <div className="p-4 bg-blue-50 border border-blue-200 rounded">

@@ -30,6 +30,8 @@ import {
   Search,
   Shield,
   Trash2,
+  TrendingUp,
+  TrendingDown,
   Upload,
   User,
   X
@@ -186,10 +188,10 @@ function formatDateToISO(dateStr: string): string {
 // Função removida - não utilizada
 
 // =============================================================================
-// COMPONENTE DE STATUS FINANCEIRO DISCRETO (ESTILO DEMONSTRATIVOS)
+// COMPONENTE DE STATUS FINANCEIRO PREMIUM - DESIGN SAAS AVANÇADO
 // =============================================================================
 
-const FinancialStatusChip = ({
+const PremiumFinancialStatusBadge = ({
   procedure,
   financialInfo,
 }: {
@@ -232,31 +234,67 @@ const FinancialStatusChip = ({
         return {
           label: 'PAGO',
           value: formatCurrency(approvedValue),
-          bgColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          dotColor: 'bg-emerald-500',
+          bgGradient: 'bg-gradient-to-r from-emerald-500/10 via-green-500/10 to-emerald-600/10',
+          bgGradientHover: 'hover:from-emerald-500/20 hover:via-green-500/20 hover:to-emerald-600/20',
+          borderColor: 'border-emerald-300/60',
+          textColor: 'text-emerald-700 dark:text-emerald-300',
+          dotGradient: 'bg-gradient-to-r from-emerald-500 to-green-500',
+          glowEffect: 'shadow-emerald-500/25',
+          icon: '✓',
+          tooltipTitle: 'Pagamento Aprovado',
+          tooltipDesc: 'Valor foi processado e aprovado integralmente',
+          darkBg: 'dark:from-emerald-900/20 dark:via-green-900/20 dark:to-emerald-800/20',
+          darkBorder: 'dark:border-emerald-600/40',
         };
       case 'parcialmente_pago':
         return {
-          label: 'PARCIALMENTE PAGO',
+          label: 'PARCIAL',
           value: formatCurrency(approvedValue),
-          bgColor: 'bg-amber-50 text-amber-700 border-amber-200',
-          dotColor: 'bg-amber-500',
+          bgGradient: 'bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-orange-500/10',
+          bgGradientHover: 'hover:from-amber-500/20 hover:via-yellow-500/20 hover:to-orange-500/20',
+          borderColor: 'border-amber-300/60',
+          textColor: 'text-amber-700 dark:text-amber-300',
+          dotGradient: 'bg-gradient-to-r from-amber-500 to-orange-500',
+          glowEffect: 'shadow-amber-500/25',
+          icon: '◐',
+          tooltipTitle: 'Pagamento Parcial',
+          tooltipDesc: 'Parte do valor foi aprovada, há glosas aplicadas',
+          darkBg: 'dark:from-amber-900/20 dark:via-yellow-900/20 dark:to-orange-900/20',
+          darkBorder: 'dark:border-amber-600/40',
         };
       case 'glosado':
         return {
-          label: 'COM GLOSA',
+          label: 'GLOSA',
           value: formatCurrency(glosaValue),
-          bgColor: 'bg-red-50 text-red-700 border-red-200',
-          dotColor: 'bg-red-500',
+          bgGradient: 'bg-gradient-to-r from-red-500/10 via-rose-500/10 to-pink-500/10',
+          bgGradientHover: 'hover:from-red-500/20 hover:via-rose-500/20 hover:to-pink-500/20',
+          borderColor: 'border-red-300/60',
+          textColor: 'text-red-700 dark:text-red-300',
+          dotGradient: 'bg-gradient-to-r from-red-500 to-rose-500',
+          glowEffect: 'shadow-red-500/25',
+          icon: '✗',
+          tooltipTitle: 'Valor Glosado',
+          tooltipDesc: 'Pagamento foi recusado ou teve deduções',
+          darkBg: 'dark:from-red-900/20 dark:via-rose-900/20 dark:to-pink-900/20',
+          darkBorder: 'dark:border-red-600/40',
         };
       case 'nao_encontrado':
       case 'sem_demonstrativo':
       default:
         return {
-          label: 'AGUARDANDO DEMONSTRATIVO',
+          label: 'PENDENTE',
           value: '',
-          bgColor: 'bg-orange-50 text-orange-700 border-orange-200',
-          dotColor: 'bg-orange-500',
+          bgGradient: 'bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-600/10',
+          bgGradientHover: 'hover:from-blue-600/20 hover:via-indigo-600/20 hover:to-cyan-600/20',
+          borderColor: 'border-blue-300/60',
+          textColor: 'text-blue-700 dark:text-blue-300',
+          dotGradient: 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600',
+          glowEffect: 'shadow-blue-600/25',
+          icon: '⧖',
+          tooltipTitle: 'Aguardando Processamento',
+          tooltipDesc: 'Demonstrativo ainda não foi localizado no sistema',
+          darkBg: 'dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-cyan-900/20',
+          darkBorder: 'dark:border-blue-600/40',
         };
     }
   };
@@ -264,17 +302,217 @@ const FinancialStatusChip = ({
   const config = getStatusConfig();
 
   return (
-    <Badge
-      className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${config.bgColor} flex items-center gap-1.5 min-w-[190px] justify-center`}
-    >
-      <div className={`w-2 h-2 rounded-full ${config.dotColor} flex-shrink-0`}></div>
-      <span>
-        {config.label}
-        {config.value && (
-          <span className="ml-1 font-mono opacity-90">{config.value}</span>
-        )}
-      </span>
-    </Badge>
+    <div className="relative group">
+      {/* Badge Principal Premium */}
+      <div
+        className={`
+          inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl border 
+          backdrop-blur-sm transition-all duration-300 ease-out
+          ${config.bgGradient} ${config.darkBg}
+          ${config.bgGradientHover}
+          ${config.borderColor} ${config.darkBorder}
+          ${config.textColor}
+          shadow-lg ${config.glowEffect}
+          hover:shadow-xl hover:scale-105 hover:-translate-y-0.5
+          cursor-default min-w-[120px] justify-center
+          font-semibold text-sm tracking-wide
+        `}
+        title={`${config.tooltipTitle}: ${config.tooltipDesc}`}
+      >
+        {/* Indicador Visual Premium */}
+        <div
+          className={`
+            w-2.5 h-2.5 rounded-full ${config.dotGradient} 
+            shadow-sm animate-pulse flex-shrink-0
+            relative overflow-hidden
+          `}
+        >
+          {/* Efeito de brilho interno */}
+          <div className="absolute inset-0 bg-white/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        </div>
+
+        {/* Label do Status */}
+        <span className="font-bold text-xs tracking-wider select-none">
+          {config.label}
+        </span>
+
+        {/* Ícone de Status */}
+        <span className="text-sm opacity-80 group-hover:opacity-100 transition-opacity">
+          {config.icon}
+        </span>
+      </div>
+
+      {/* Valor Financeiro (se disponível) */}
+      {config.value && (
+        <div className="mt-1.5 text-center">
+          <span className={`
+            text-xs font-mono font-semibold px-2 py-0.5 rounded-md
+            bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm
+            ${config.textColor} border ${config.borderColor} ${config.darkBorder}
+            transition-all duration-200 group-hover:bg-white/80
+          `}>
+          {config.value}
+        </span>
+        </div>
+      )}
+
+      {/* Tooltip Premium (Hover) */}
+      <div className={`
+        absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2
+        px-3 py-2 rounded-lg shadow-xl border
+        bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm
+        ${config.borderColor} ${config.darkBorder}
+        opacity-0 group-hover:opacity-100 pointer-events-none
+        transition-all duration-300 ease-out
+        translate-y-1 group-hover:translate-y-0
+        z-50 whitespace-nowrap
+      `}>
+        <div className="text-xs font-semibold text-gray-900 dark:text-slate-100">
+          {config.tooltipTitle}
+        </div>
+        <div className="text-xs text-gray-600 dark:text-slate-400 mt-0.5">
+          {config.tooltipDesc}
+        </div>
+        
+        {/* Seta do tooltip */}
+        <div className={`
+          absolute top-full left-1/2 transform -translate-x-1/2
+          border-4 border-transparent border-t-white/95 dark:border-t-slate-800/95
+        `} />
+      </div>
+    </div>
+  );
+};
+
+// Manter compatibilidade com nome antigo
+const FinancialStatusChip = PremiumFinancialStatusBadge;
+
+// =============================================================================
+// COMPONENTE DE MÉTRICAS FINANCEIRAS PREMIUM
+// =============================================================================
+
+const PremiumFinancialMetrics = ({ guides }: { guides: Guide[] }) => {
+  const metrics = useMemo(() => {
+    let totalGuides = guides.length;
+    let pagas = 0;
+    let parciais = 0;
+    let glosadas = 0;
+    let pendentes = 0;
+    let totalAprovado = 0;
+    let totalGlosa = 0;
+
+    guides.forEach((guide) => {
+      const status = analyzeGuideFinancialStatus(guide);
+      switch (status.status) {
+        case 'pago':
+          pagas++;
+          break;
+        case 'parcialmente_pago':
+          parciais++;
+          break;
+        case 'glosado':
+          glosadas++;
+          break;
+        default:
+          pendentes++;
+      }
+      totalAprovado += status.total_approved;
+      totalGlosa += status.total_glosa;
+    });
+
+    const aprovacao = totalGuides > 0 ? ((pagas + parciais) / totalGuides) * 100 : 0;
+    const glosaRate = totalGuides > 0 ? (glosadas / totalGuides) * 100 : 0;
+
+    return {
+      totalGuides,
+      pagas,
+      parciais,
+      glosadas,
+      pendentes,
+      totalAprovado,
+      totalGlosa,
+      aprovacao,
+      glosaRate,
+    };
+  }, [guides]);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
+  };
+
+  if (guides.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Taxa de Aprovação */}
+      <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-4 rounded-xl border border-emerald-200/60 dark:border-emerald-600/40 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+            Taxa Aprovação
+          </div>
+          <TrendingUp className="h-4 w-4 text-emerald-500" />
+        </div>
+        <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+          {metrics.aprovacao.toFixed(1)}%
+        </div>
+        <div className="text-xs text-emerald-600/80 dark:text-emerald-400/80">
+          {metrics.pagas + metrics.parciais} de {metrics.totalGuides} guias
+        </div>
+      </div>
+
+      {/* Taxa de Glosa */}
+      <div className="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 p-4 rounded-xl border border-red-200/60 dark:border-red-600/40 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">
+            Taxa Glosa
+          </div>
+          <TrendingDown className="h-4 w-4 text-red-500" />
+        </div>
+        <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+          {metrics.glosaRate.toFixed(1)}%
+        </div>
+        <div className="text-xs text-red-600/80 dark:text-red-400/80">
+          {metrics.glosadas} guias glosadas
+        </div>
+      </div>
+
+      {/* Valor Aprovado */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-xl border border-blue-200/60 dark:border-blue-600/40 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+            Valor Aprovado
+          </div>
+          <DollarSign className="h-4 w-4 text-blue-500" />
+        </div>
+        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+          {formatCurrency(metrics.totalAprovado)}
+        </div>
+        <div className="text-xs text-blue-600/80 dark:text-blue-400/80">
+          Receita confirmada
+        </div>
+      </div>
+
+      {/* Pendentes */}
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4 rounded-xl border border-amber-200/60 dark:border-amber-600/40 shadow-sm hover:shadow-md transition-all duration-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+            Pendentes
+          </div>
+          <Clock className="h-4 w-4 text-amber-500" />
+        </div>
+        <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+          {metrics.pendentes}
+        </div>
+        <div className="text-xs text-amber-600/80 dark:text-amber-400/80">
+          Aguardando análise
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -464,10 +702,10 @@ const RefinedDataGrid = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-24">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-24">
         <div className="flex items-center justify-center">
-          <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-          <span className="ml-3 text-gray-600">Carregando guias...</span>
+          <RefreshCw className="h-8 w-8 animate-spin text-gray-400 dark:text-slate-500" />
+          <span className="ml-3 text-gray-600 dark:text-slate-300">Carregando guias...</span>
         </div>
       </div>
     );
@@ -475,13 +713,13 @@ const RefinedDataGrid = ({
 
   if (sortedData.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-24">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600 p-24">
         <div className="text-center">
           <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">
             Nenhuma guia encontrada
           </h3>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 dark:text-slate-400 mb-6">
             Não há guias que correspondam aos filtros aplicados.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
@@ -494,11 +732,11 @@ const RefinedDataGrid = ({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200/40 overflow-hidden w-full">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-600/40 overflow-hidden w-full">
       {/* Container com largura completa */}
       <div className="w-full">
         {/* Header da Tabela */}
-        <div className="bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 px-6 py-4">
+        <div className="bg-gradient-to-r from-white to-gray-50/30 dark:from-slate-800 dark:to-slate-700/50 border-b border-gray-100 dark:border-slate-600 px-6 py-4">
           <div className="grid grid-cols-12 gap-4 items-center">
             <div className="col-span-1 flex items-center">
               <Checkbox
@@ -517,12 +755,12 @@ const RefinedDataGrid = ({
             <div className="col-span-2 flex items-center">
               <button
                 onClick={() => handleSort('numero_guia')}
-                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide hover:text-gray-900 dark:hover:text-slate-100 transition-colors"
                 aria-label="Ordenar por número da guia"
               >
                 NÚMERO DA GUIA
                 {sortField === 'numero_guia' && (
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 dark:text-slate-500">
                     {sortDirection === 'asc' ? '▲' : '▼'}
                   </span>
                 )}
@@ -533,12 +771,12 @@ const RefinedDataGrid = ({
             <div className="col-span-2 flex items-center">
               <button
                 onClick={() => handleSort('data')}
-                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide hover:text-gray-900 dark:hover:text-slate-100 transition-colors"
                 aria-label="Ordenar por data"
               >
                 DATA
                 {sortField === 'data' && (
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 dark:text-slate-500">
                     {sortDirection === 'asc' ? '▲' : '▼'}
                   </span>
                 )}
@@ -546,15 +784,15 @@ const RefinedDataGrid = ({
             </div>
 
             {/* Paciente */}
-            <div className="col-span-3 flex items-center">
+            <div className="col-span-2 flex items-center">
               <button
                 onClick={() => handleSort('beneficiario')}
-                className="flex items-center gap-1 text-xs font-medium text-gray-600 uppercase tracking-wide hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide hover:text-gray-900 dark:hover:text-slate-100 transition-colors"
                 aria-label="Ordenar por paciente"
               >
                 PACIENTE
                 {sortField === 'beneficiario' && (
-                  <span className="text-gray-400">
+                  <span className="text-gray-400 dark:text-slate-500">
                     {sortDirection === 'asc' ? '▲' : '▼'}
                   </span>
                 )}
@@ -563,21 +801,21 @@ const RefinedDataGrid = ({
 
             {/* Procedimentos */}
             <div className="col-span-1 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide">
                 PROC.
               </span>
             </div>
 
             {/* Status Financeiro */}
-            <div className="col-span-2 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                STATUS
+            <div className="col-span-3 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide">
+                STATUS DE PAGAMENTO
               </span>
             </div>
 
             {/* Ações */}
             <div className="col-span-1 flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              <span className="text-xs font-medium text-gray-600 dark:text-slate-300 uppercase tracking-wide">
                 AÇÕES
               </span>
             </div>
@@ -585,7 +823,7 @@ const RefinedDataGrid = ({
         </div>
 
         {/* Corpo da Tabela */}
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-slate-600">
           {sortedData.map((guide, index) => {
             // Analisar status financeiro real da guia
             const realFinancialStatusInfo = analyzeGuideFinancialStatus(guide);
@@ -593,7 +831,7 @@ const RefinedDataGrid = ({
             return (
               <div
                 key={guide.numero_guia || index}
-                className="grid grid-cols-12 gap-4 items-center px-6 py-4 hover:bg-blue-50/30 transition-colors cursor-pointer group bg-white even:bg-gray-50/20"
+                className="grid grid-cols-12 gap-4 items-center px-6 py-5 hover:bg-blue-50/30 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group bg-white dark:bg-slate-800 even:bg-gray-50 dark:even:bg-slate-700/30"
                 onClick={() => onRowClick(guide)}
                 onKeyDown={(e) => handleKeyDown(e, guide)}
                 tabIndex={0}
@@ -614,18 +852,18 @@ const RefinedDataGrid = ({
                 </div>
                 {/* Número da Guia */}
                 <div className="col-span-2 flex items-center">
-                  <div className="font-mono text-sm font-medium text-slate-700 bg-slate-50/60 px-3 py-1.5 rounded-lg border border-slate-200/60">
+                  <div className="font-mono text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-50/60 dark:bg-slate-700/60 px-3 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-600/60">
                     {guide.numero_guia}
                   </div>
                 </div>
 
                 {/* Data */}
                 <div className="col-span-2 flex items-center">
-                  <div className="text-sm font-medium text-gray-900">{guide.data}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-slate-100">{guide.data}</div>
                 </div>
 
                 {/* Paciente */}
-                <div className="col-span-3 flex items-center">
+                <div className="col-span-2 flex items-center">
                   <div className="flex items-center gap-3 min-w-0 w-full">
                     <div className="w-8 h-8 rounded-full bg-slate-600/80 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                       {guide.beneficiario
@@ -635,7 +873,7 @@ const RefinedDataGrid = ({
                         .slice(0, 2)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-sm font-medium text-gray-900 truncate">
+                      <div className="text-sm font-medium text-gray-900 dark:text-slate-100 truncate">
                         {guide.beneficiario}
                       </div>
                     </div>
@@ -650,7 +888,7 @@ const RefinedDataGrid = ({
                 </div>
 
                 {/* Status Financeiro */}
-                <div className="col-span-2 flex items-center justify-center">
+                <div className="col-span-3 flex items-center justify-center py-2">
                   <FinancialStatusChip financialInfo={realFinancialStatusInfo} />
                 </div>
 
@@ -663,7 +901,7 @@ const RefinedDataGrid = ({
                       e.stopPropagation();
                       onViewDetails(guide);
                     }}
-                    className="h-8 w-8 p-0 rounded-lg hover:bg-blue-100/60 hover:text-blue-600 transition-all duration-200"
+                    className="h-8 w-8 p-0 rounded-lg hover:bg-blue-100/60 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
                     aria-label={`Ver detalhes da guia ${guide.numero_guia}`}
                   >
                     <Eye className="h-4 w-4" />
@@ -675,7 +913,7 @@ const RefinedDataGrid = ({
                       e.stopPropagation();
                       onDeleteGuide(guide);
                     }}
-                    className="h-8 w-8 p-0 rounded-lg hover:bg-red-100/60 hover:text-red-600 transition-all duration-200"
+                    className="h-8 w-8 p-0 rounded-lg hover:bg-red-100/60 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
                     aria-label={`Excluir guia ${guide.numero_guia}`}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -686,8 +924,8 @@ const RefinedDataGrid = ({
           })}
         </div>
         {/* Footer com Paginação e Ações */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-100 bg-white/50">
-          <div className="text-sm text-gray-600">
+        <div className="flex items-center justify-between p-4 border-t border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-800/50">
+          <div className="text-sm text-gray-600 dark:text-slate-300">
             {selectedGuides.length > 0 ? (
               <span>
                 {selectedGuides.length} de {data.length} guias selecionadas.
@@ -905,7 +1143,6 @@ const GuidesPage = () => {
 
         if (successes.length > 0) {
           const addedSum = successes.reduce((sum, r) => sum + (r.guias_adicionadas || 0), 0);
-          const parsers = Array.from(new Set(successes.map(r => r.parser_used).filter(Boolean)));
           toast.success(`${successes.length} guia(s) processada(s) com sucesso. ${addedSum} procedimento(s) identificado(s).`);
         }
         if (failures.length > 0) {
@@ -1158,23 +1395,23 @@ const GuidesPage = () => {
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">
+                  <Label className="text-sm font-medium text-gray-600 dark:text-slate-300">
                     Data de Execução
                   </Label>
                   <p className="text-sm font-medium">{guide.data}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">
+                  <Label className="text-sm font-medium text-gray-600 dark:text-slate-300">
                     Beneficiário
                   </Label>
                   <p className="text-sm font-medium">{guide.beneficiario}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">Prestador</Label>
+                  <Label className="text-sm font-medium text-gray-600 dark:text-slate-300">Prestador</Label>
                   <p className="text-sm font-medium">{guide.prestador}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-600">
+                  <Label className="text-sm font-medium text-gray-600 dark:text-slate-300">
                     Total de Procedimentos
                   </Label>
                   <p className="text-sm font-medium">{guide.qtdProcedimentos}</p>
@@ -1193,7 +1430,7 @@ const GuidesPage = () => {
               <CardContent>
                 <div className="space-y-4">
                   {guide.detalhes?.map((procedimento, index) => (
-                    <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                    <div key={index} className="border rounded-lg p-4 bg-gray-50 dark:bg-slate-700">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
@@ -1202,10 +1439,10 @@ const GuidesPage = () => {
                             </Badge>
                             <FinancialStatusChip procedure={procedimento} />
                           </div>
-                          <p className="font-medium text-gray-900 mb-1">
+                          <p className="font-medium text-gray-900 dark:text-slate-100 mb-1">
                             {procedimento.descricao}
                           </p>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-slate-300">
                             <span>
                               Papel: <strong>{procedimento.papel}</strong>
                             </span>
@@ -1223,14 +1460,14 @@ const GuidesPage = () => {
 
                       {/* Informações Financeiras */}
                       {procedimento.smart_payment_status?.demonstrativo_info && (
-                        <div className="mt-3 pt-3 border-t bg-white rounded p-3">
-                          <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                        <div className="mt-3 pt-3 border-t bg-white dark:bg-slate-800 rounded p-3">
+                          <h5 className="font-medium text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                             <DollarSign className="h-4 w-4" />
                             Informações Financeiras
                           </h5>
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
-                              <Label className="text-gray-600">Valor Apresentado</Label>
+                              <Label className="text-gray-600 dark:text-slate-300">Valor Apresentado</Label>
                               <p className="font-mono text-blue-600">
                                 {formatCurrency(
                                   procedimento.smart_payment_status.demonstrativo_info
@@ -1239,7 +1476,7 @@ const GuidesPage = () => {
                               </p>
                             </div>
                             <div>
-                              <Label className="text-gray-600">Valor Liberado</Label>
+                              <Label className="text-gray-600 dark:text-slate-300">Valor Liberado</Label>
                               <p className="font-mono text-green-600">
                                 {formatCurrency(
                                   procedimento.smart_payment_status.demonstrativo_info
@@ -1248,7 +1485,7 @@ const GuidesPage = () => {
                               </p>
                             </div>
                             <div>
-                              <Label className="text-gray-600">Glosa</Label>
+                              <Label className="text-gray-600 dark:text-slate-300">Glosa</Label>
                               <p className="font-mono text-red-600">
                                 {formatCurrency(
                                   procedimento.smart_payment_status.demonstrativo_info
@@ -1271,7 +1508,7 @@ const GuidesPage = () => {
                           {procedimento.smart_payment_status.demonstrativo_info
                             .payment_date && (
                               <div className="mt-2 pt-2 border-t">
-                                <Label className="text-gray-600">
+                                <Label className="text-gray-600 dark:text-slate-300">
                                   Período de Pagamento
                                 </Label>
                                 <p className="text-sm font-medium">
@@ -1288,20 +1525,20 @@ const GuidesPage = () => {
                       {/* Horários de Execução */}
                       {(procedimento.dt_inicio || procedimento.dt_fim) && (
                         <div className="mt-3 pt-3 border-t bg-blue-50 rounded p-3">
-                          <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <h5 className="font-medium text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             Horários de Execução
                           </h5>
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             {procedimento.dt_inicio && (
                               <div>
-                                <Label className="text-gray-600">Início</Label>
+                                <Label className="text-gray-600 dark:text-slate-300">Início</Label>
                                 <p className="font-mono">{procedimento.dt_inicio}</p>
                               </div>
                             )}
                             {procedimento.dt_fim && (
                               <div>
-                                <Label className="text-gray-600">Fim</Label>
+                                <Label className="text-gray-600 dark:text-slate-300">Fim</Label>
                                 <p className="font-mono">{procedimento.dt_fim}</p>
                               </div>
                             )}
@@ -1358,7 +1595,7 @@ const GuidesPage = () => {
                               <Label className="text-blue-600 font-medium">
                                 Total Apresentado
                               </Label>
-                              <p className="text-xl font-bold text-blue-700 font-mono">
+                              <p className="text-xl font-bold text-blue-700 dark:text-blue-400 font-mono">
                                 {formatCurrency(totalApresentado)}
                               </p>
                             </div>
@@ -1428,8 +1665,8 @@ const GuidesPage = () => {
             {/* Header Discreto Seguindo Padrão Dashboard */}
             <div className="text-center space-y-3 pt-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 border border-blue-200/50">
-                <FileText className="h-4 w-4 text-blue-700" />
-                <span className="text-xs font-medium text-blue-800">
+                <FileText className="h-4 w-4 text-blue-700 dark:text-blue-400" />
+                <span className="text-xs font-medium text-blue-800 dark:text-blue-300">
                   Suas guias TISS organizadas
                 </span>
               </div>
@@ -1438,7 +1675,7 @@ const GuidesPage = () => {
                 Central de Guias Médicas
               </h1>
 
-              <p className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
                 <strong>Envie suas guias e descubra instantaneamente</strong> se estão
                 corretas e quanto você deve receber. Simples como anexar um arquivo no
                 WhatsApp!
@@ -1446,7 +1683,7 @@ const GuidesPage = () => {
 
               {/* Actions Compactas */}
               <div className="flex justify-center items-center gap-2 flex-wrap pt-2">
-                <Badge variant="outline" className="gap-1 bg-white/80 text-xs">
+                <Badge variant="outline" className="gap-1 bg-white dark:bg-slate-800/80 text-xs">
                   <Crown className="h-3 w-3 text-blue-600" />
                   Sistema TISS Oficial
                 </Badge>
@@ -1480,18 +1717,18 @@ const GuidesPage = () => {
             <div className="w-full space-y-8">
               {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
               <section aria-label="Upload de Guias" className="space-y-6">
-                <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-blue-200 shadow-lg w-full relative overflow-hidden">
+                <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border-blue-200 shadow-lg w-full relative overflow-hidden">
                   {/* Linha de destaque superior */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
 
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-blue-900">
+                    <CardTitle className="flex items-center gap-3 text-blue-900 dark:text-blue-300">
                       <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100">
-                        <Upload className="h-6 w-6 text-blue-700" />
+                        <Upload className="h-6 w-6 text-blue-700 dark:text-blue-400" />
                       </div>
                       Análise de Guias TISS
                     </CardTitle>
-                    <CardDescription className="text-blue-700">
+                    <CardDescription className="text-blue-700 dark:text-blue-400">
                       <strong>Analise suas guias médicas:</strong> Envie suas guias TISS (PDF ou
                       XML) para verificar procedimentos e valores automaticamente
                     </CardDescription>
@@ -1509,7 +1746,7 @@ const GuidesPage = () => {
                           accept=".pdf,.xml"
                           onChange={handleFileSelect}
                           disabled={uploading}
-                          className="cursor-pointer bg-white/90 border-blue-200 h-12 text-blue-800 file:bg-blue-100 file:text-blue-700 file:border-0 file:rounded-lg"
+                          className="cursor-pointer bg-white dark:bg-slate-800/90 border-blue-200 h-12 text-blue-800 dark:text-blue-300 file:bg-blue-100 file:text-blue-700 dark:text-blue-400 file:border-0 file:rounded-lg"
                           placeholder="Clique aqui para escolher suas guias..."
                         />
                       </div>
@@ -1534,7 +1771,7 @@ const GuidesPage = () => {
                     </div>
 
                     {selectedFiles && selectedFiles.length > 0 && (
-                      <div className="text-sm text-blue-700 bg-blue-100/60 p-4 rounded-xl border border-blue-200/60">
+                      <div className="text-sm text-blue-700 dark:text-blue-400 bg-blue-100/60 p-4 rounded-xl border border-blue-200/60">
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-blue-600" />
                           <strong>
@@ -1548,23 +1785,39 @@ const GuidesPage = () => {
                 </Card>
               </section>
 
-              {/* 2. INFORMAÇÃO: Cards de Resumo (Hierarquia Menor) */}
-              <section aria-label="Visão Geral dos Dados" className="space-y-4">
+              {/* 2. MÉTRICAS FINANCEIRAS PREMIUM - Insights Avançados */}
+              <section aria-label="Análise Financeira Premium" className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 bg-gradient-to-b from-gray-400 to-gray-500 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
-                    Resumo dos Dados
+                  <div className="w-1 h-4 bg-gradient-to-b from-blue-600 via-indigo-600 to-cyan-600 rounded-full"></div>
+                  <h3 className="text-base font-medium bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
+                    Análise Financeira Premium
                   </h3>
-                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                  <Crown className="h-4 w-4 text-amber-500" />
+                  <div className="flex-1 h-px bg-gradient-to-r from-blue-200 via-indigo-200 to-cyan-200"></div>
                 </div>
 
                 {loading ? (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, i) => (
                       <SkeletonInfoCard key={i} />
                     ))}
                   </div>
                 ) : (
+                  <PremiumFinancialMetrics guides={filteredGuides} />
+                )}
+              </section>
+
+              {/* 2.1 INFORMAÇÃO: Cards de Resumo Geral (Complementar) */}
+              {!loading && guides.length > 0 && (
+                <section aria-label="Resumo Geral" className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 bg-gradient-to-b from-gray-400 to-gray-500 rounded-full"></div>
+                    <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
+                      Resumo Operacional
+                    </h3>
+                    <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                  </div>
+
                   <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     <InfoCard
                       title="Total de Guias"
@@ -1605,15 +1858,15 @@ const GuidesPage = () => {
                       size="sm"
                     />
                   </div>
-                )}
-              </section>
+                </section>
+              )}
 
               {/* 3. AÇÕES: Ações Rápidas (FeatureCards) */}
               {guides.length > 0 && (
                 <section className="space-y-4">
                   <div className="flex items-center gap-2">
                     <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full"></div>
-                    <h3 className="text-base font-medium text-gray-700">
+                    <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                       Ações Rápidas
                     </h3>
                     <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
@@ -1660,45 +1913,45 @@ const GuidesPage = () => {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                     Filtros & Análise
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
-                <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
+                <Card className="bg-white dark:bg-slate-800/40 backdrop-blur-sm border border-gray-200 dark:border-slate-600/30 shadow-sm w-full">
                   <CardContent className="p-4">
                     <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
                       <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
                         <Input
                           placeholder="Buscar por paciente, número da guia ou procedimento..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                          className="pl-10 h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                         />
                       </div>
 
                       <div className="flex gap-2 flex-wrap items-center">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3 text-gray-500" />
+                          <Calendar className="h-3 w-3 text-gray-500 dark:text-slate-400" />
                           <Input
                             type="date"
                             placeholder="Data Início"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                            className="w-[140px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                           />
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-400 text-sm">até</span>
+                          <span className="text-gray-400 dark:text-slate-500 text-sm">até</span>
                           <Input
                             type="date"
                             placeholder="Data Fim"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                            className="w-[140px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                           />
                         </div>
 
@@ -1710,14 +1963,14 @@ const GuidesPage = () => {
                               setStartDate('');
                               setEndDate('');
                             }}
-                            className="h-9 px-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-white/80"
+                            className="h-9 px-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300 rounded-lg hover:bg-white dark:bg-slate-800/80"
                           >
                             <X className="h-3 w-3" />
                           </Button>
                         )}
 
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                          <SelectTrigger className="w-[160px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                          <SelectTrigger className="w-[160px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm">
                             <SelectValue placeholder="Status Financeiro" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1737,13 +1990,13 @@ const GuidesPage = () => {
                             <SelectItem value="glosado">
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                Glosada
+                                Glosa
                               </div>
                             </SelectItem>
                             <SelectItem value="sem_demonstrativo">
                               <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                                Sem Demonstrativo
+                                Pendente
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1752,7 +2005,7 @@ const GuidesPage = () => {
                     </div>
 
                     {filteredGuides.length !== guides.length && (
-                      <div className="mt-3 text-xs text-gray-600">
+                      <div className="mt-3 text-xs text-gray-600 dark:text-slate-300">
                         Mostrando {filteredGuides.length} de {guides.length} guias
                       </div>
                     )}
@@ -1761,8 +2014,17 @@ const GuidesPage = () => {
               </section>
 
               {/* 5. ANÁLISE: DataGrid */}
-              <div className="w-full">
-                <RefinedDataGrid
+              <section className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
+                    Análise Detalhada
+                  </h3>
+                  <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+                </div>
+
+                <div className="w-full">
+                  <RefinedDataGrid
                   data={paginatedData}
                   loading={loading}
                   onRowClick={(guide) => setSelectedGuide(guide)}
@@ -1782,7 +2044,8 @@ const GuidesPage = () => {
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
                 />
-              </div>
+                </div>
+              </section>
             </div>
 
             {/* Modal de detalhes da guia */}

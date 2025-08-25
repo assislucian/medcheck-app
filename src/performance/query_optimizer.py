@@ -184,3 +184,4 @@ class ConnectionManager:
                     raise
                 logger.warning(f"Database operation failed (attempt {attempt + 1}): {e}")
                 time.sleep(0.1 * (2 ** attempt))  # Exponential backoff
+

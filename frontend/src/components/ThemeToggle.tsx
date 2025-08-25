@@ -16,6 +16,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       onClick={toggleTheme}
       className={className}
       aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+      title={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
     >
       {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
       <span className="sr-only">

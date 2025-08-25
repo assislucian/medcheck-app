@@ -12,8 +12,8 @@ export function DashboardActions() {
     <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {/* Guias Médicas */}
       <Link to="/guides">
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 group-hover:from-blue-100 group-hover:via-indigo-100 group-hover:to-blue-200 transition-all duration-500"></div>
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 group-hover:from-blue-100 group-hover:via-indigo-100 group-hover:to-blue-200 dark:group-hover:from-slate-700 dark:group-hover:via-slate-600 dark:group-hover:to-slate-700 transition-all duration-500"></div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
           <CardContent className="relative p-8">
             <div className="space-y-6">
@@ -26,15 +26,15 @@ export function DashboardActions() {
                 </Badge>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-blue-800">
+                <h3 className="text-xl font-bold text-blue-800 dark:text-blue-300">
                   📋 Passo 1: Suas Guias
                 </h3>
-                <p className="text-blue-600 leading-relaxed">
+                <p className="text-blue-600 dark:text-blue-400 leading-relaxed">
                   <strong>Envie suas guias TISS aqui.</strong> É igual anexar um arquivo no WhatsApp! 
                   Em segundos você vai saber se estão corretas e quanto deve receber.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-blue-700 font-medium group-hover:gap-3 transition-all duration-300">
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-medium group-hover:gap-3 transition-all duration-300">
                 <span>💪 Começar agora (2 min)</span>
                 <ChevronRight className="h-4 w-4" />
               </div>
@@ -45,8 +45,8 @@ export function DashboardActions() {
 
       {/* Demonstrativos */}
       <Link to="/demonstratives">
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 group-hover:from-emerald-100 group-hover:via-green-100 group-hover:to-emerald-200 transition-all duration-500"></div>
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 group-hover:from-emerald-100 group-hover:via-green-100 group-hover:to-emerald-200 dark:group-hover:from-slate-700 dark:group-hover:via-slate-600 dark:group-hover:to-slate-700 transition-all duration-500"></div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
           <CardContent className="relative p-8">
             <div className="space-y-6">
@@ -59,15 +59,15 @@ export function DashboardActions() {
                 </Badge>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-emerald-800">
+                <h3 className="text-xl font-bold text-emerald-800 dark:text-emerald-300">
                   💰 Passo 2: Seus Pagamentos
                 </h3>
-                <p className="text-emerald-600 leading-relaxed">
+                <p className="text-emerald-600 dark:text-emerald-400 leading-relaxed">
                   <strong>Envie o que o plano te pagou.</strong> Nosso robô vai comparar com sua tabela e mostrar 
                   na tela se você foi <span className="text-red-600 font-semibold">lesado</span> ou não.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-emerald-700 font-medium group-hover:gap-3 transition-all duration-300">
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium group-hover:gap-3 transition-all duration-300">
                 <span>🔍 Descobrir se me lesaram</span>
                 <ChevronRight className="h-4 w-4" />
               </div>
@@ -78,8 +78,8 @@ export function DashboardActions() {
 
       {/* Contestações */}
       <Link to="/unpaid-procedures">
-        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
-          <div className="absolute inset-0 bg-gradient-to-br from-medical-50 via-brand-50 to-trust-100 group-hover:from-medical-100 group-hover:via-brand-100 group-hover:to-trust-200 transition-all duration-500"></div>
+        <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl dark:shadow-slate-900/50 transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer">
+          <div className="absolute inset-0 bg-gradient-to-br from-medical-50 via-brand-50 to-trust-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 group-hover:from-medical-100 group-hover:via-brand-100 group-hover:to-trust-200 dark:group-hover:from-slate-700 dark:group-hover:via-slate-600 dark:group-hover:to-slate-700 transition-all duration-500"></div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-medical-500 to-brand-600"></div>
           <CardContent className="relative p-8">
             <div className="space-y-6">
@@ -92,15 +92,15 @@ export function DashboardActions() {
                 </Badge>
               </div>
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-medical-800">
+                <h3 className="text-xl font-bold text-medical-800 dark:text-purple-300">
                   ⚖️ Passo 3: Seus Direitos
                 </h3>
-                <p className="text-medical-600 leading-relaxed">
+                <p className="text-medical-600 dark:text-purple-400 leading-relaxed">
                   <strong>Vai brigar pelo que é seu?</strong> Te ajudamos a contestar glosas indevidas. 
                   É seu dinheiro! <span className="text-green-600 font-semibold">Recupere até 70%</span> do que negaram.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-medical-700 font-medium group-hover:gap-3 transition-all duration-300">
+              <div className="flex items-center gap-2 text-medical-700 dark:text-purple-400 font-medium group-hover:gap-3 transition-all duration-300">
                 <span>⚡ Recuperar meu dinheiro</span>
                 <ChevronRight className="h-4 w-4" />
               </div>

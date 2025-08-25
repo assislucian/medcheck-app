@@ -4,6 +4,8 @@
 @import './styles/mobile.css';
 @import './styles/mobile-hero.css';
 @import './styles/mobile-guides.css';
+@import './styles/dark-mode-fixes.css';
+@import './styles/hero-dark-mode-fixes.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

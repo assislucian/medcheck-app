@@ -192,7 +192,7 @@ export function AuthFooter({ variant }: AuthFooterProps) {
           {/* Empresa */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+              <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent">
                 MedCheck
               </div>
             </div>
@@ -203,19 +203,19 @@ export function AuthFooter({ variant }: AuthFooterProps) {
             <div className="flex gap-3">
               <a
                 href="#"
-                className="p-2 bg-slate-800 rounded-lg hover:bg-amber-600 transition-colors"
+                className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <Linkedin className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="p-2 bg-slate-800 rounded-lg hover:bg-amber-600 transition-colors"
+                className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <Instagram className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="p-2 bg-slate-800 rounded-lg hover:bg-amber-600 transition-colors"
+                className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 <Youtube className="h-4 w-4" />
               </a>

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useSidebarContext } from '../../contexts/SidebarContext';
-import { ClipboardCheck, FileText } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 interface BrandProps {
   collapsed?: boolean;
@@ -15,28 +15,33 @@ export default function Brand({ collapsed }: BrandProps) {
 
   return (
     <div
-      className="flex items-center gap-3 cursor-pointer group hover:scale-[1.01] transition-all duration-300"
+      className="cursor-pointer group hover:scale-[1.01] transition-all duration-300"
       onClick={() => navigate('/dashboard')}
     >
-      {/* Logo para Auditoria Médica */}
-      <div className="relative">
-        <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-200 transition-all duration-300">
-          <div className="relative">
-            <ClipboardCheck className="h-5 w-5 text-white" />
-            <FileText className="h-2.5 w-2.5 text-white/80 absolute -bottom-0.5 -right-0.5" />
-          </div>
-        </div>
-      </div>
-
-      {/* Branding */}
-      {!shouldCollapse && (
-        <div className="transition-all duration-300">
-          <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent">
-            MedCheck
-          </h1>
-          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-none mt-0.5">
+      {!shouldCollapse ? (
+        /* Layout expandido - Logo + texto em coluna */
+        <div className="flex flex-col items-center">
+          <Logo 
+            size="md" 
+            variant="sidebar" 
+            showText={true}
+            collapsed={false}
+            className="group-hover:scale-[1.01] transition-all duration-300"
+          />
+          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-none transition-all duration-300 -mt-2 self-end">
             Auditoria Médica
           </p>
+        </div>
+      ) : (
+        /* Layout colapsado - Só logo */
+        <div className="flex items-center justify-center">
+          <Logo 
+            size="md" 
+            variant="sidebar" 
+            showText={false}
+            collapsed={true}
+            className="group-hover:scale-[1.01] transition-all duration-300"
+          />
         </div>
       )}
     </div>

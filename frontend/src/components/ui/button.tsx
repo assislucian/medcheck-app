@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm hover:from-blue-700 hover:to-blue-800 hover:shadow-md active:from-blue-800 active:to-blue-900 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
+          'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-sm hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 hover:shadow-md active:from-blue-800 active:via-indigo-800 active:to-cyan-800 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
         destructive:
           'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm hover:from-red-600 hover:to-red-700 hover:shadow-md active:from-red-700 active:to-red-800 focus:ring-red-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
         outline:
@@ -27,7 +27,7 @@ const buttonVariants = cva(
         medical:
           'bg-gradient-to-r from-health-primary to-health-accent text-white shadow-sm hover:from-health-dark hover:to-health-accent hover:shadow-md active:from-health-dark active:to-health-accent focus:ring-health-primary/30 transform hover:scale-[1.01] active:scale-[0.99]',
         primary:
-          'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm hover:from-blue-700 hover:to-blue-800 hover:shadow-md active:from-blue-800 active:to-blue-900 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
+          'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-sm hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 hover:shadow-md active:from-blue-800 active:via-indigo-800 active:to-cyan-800 focus:ring-blue-500/30 transform hover:scale-[1.01] active:scale-[0.99]',
       },
       size: {
         default: 'h-10 px-4 py-2 text-sm',

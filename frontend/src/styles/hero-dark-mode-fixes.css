@@ -1,0 +1,248 @@
+/* Hero Page Dark Mode Legibility Fixes */
+
+/* Badge na hero page com melhor contraste */
+.dark .bg-gradient-to-r.from-blue-50.to-indigo-50 {
+  background: linear-gradient(to right, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.8)) !important;
+}
+
+.dark .border-blue-200 {
+  border-color: rgba(71, 85, 105, 0.6) !important;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* Headlines principais com melhor contraste */
+.dark .text-slate-900 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+.dark .text-slate-600 {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+.dark .text-slate-700 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* Cards de pain points com fundo adequado para dark mode */
+.dark .bg-white\/60 {
+  background-color: rgba(30, 41, 59, 0.8) !important; /* slate-800 with opacity */
+}
+
+.dark .border-slate-200 {
+  border-color: rgba(71, 85, 105, 0.6) !important; /* slate-600 with opacity */
+}
+
+/* Ícones e elementos de destaque */
+.dark .bg-red-100 {
+  background-color: rgba(239, 68, 68, 0.2) !important; /* red-500 with low opacity */
+}
+
+.dark .text-red-600 {
+  color: #f87171 !important; /* red-400 - melhor contraste */
+}
+
+.dark .text-red-700 {
+  color: #fca5a5 !important; /* red-300 */
+}
+
+.dark .bg-red-100.text-red-700 {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+/* Melhorar contraste de textos em strong/bold */
+.dark strong.text-blue-600 {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+.dark strong.text-emerald-600 {
+  color: #34d399 !important; /* emerald-400 */
+}
+
+.dark strong.text-purple-600 {
+  color: #a78bfa !important; /* purple-400 */
+}
+
+/* Prova social com cores adequadas */
+.dark .text-emerald-600 {
+  color: #34d399 !important; /* emerald-400 */
+}
+
+.dark .text-blue-600 {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+.dark .text-indigo-600 {
+  color: #818cf8 !important; /* indigo-400 */
+}
+
+/* CTA Section final com melhor contraste */
+.dark .bg-white\/60.backdrop-blur-sm {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Social proof badges */
+.dark .bg-white\/60.rounded-lg {
+  background-color: rgba(51, 65, 85, 0.8) !important;
+}
+
+/* Modal content */
+.dark .bg-slate-900 {
+  background-color: #0f172a !important; /* slate-900 mais escuro */
+}
+
+.dark .text-slate-900 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+/* Gradientes de texto otimizados para dark mode */
+.dark .bg-gradient-to-r.from-red-500.to-rose-600 {
+  background: linear-gradient(to right, #ef4444, #f43f5e) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.dark .bg-gradient-to-r.from-blue-500.to-indigo-600 {
+  background: linear-gradient(to right, #3b82f6, #4f46e5) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Botões com melhor visibilidade */
+.dark .bg-gradient-to-r.from-blue-600.to-indigo-600 {
+  background: linear-gradient(to right, #2563eb, #4338ca) !important;
+}
+
+.dark .hover\:from-blue-700.hover\:to-indigo-700:hover {
+  background: linear-gradient(to right, #1d4ed8, #3730a3) !important;
+}
+
+/* Melhorar contraste de placeholders e textos descritivos */
+.dark p.text-xl.text-slate-600 {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+.dark span.text-slate-700 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+/* CheckCircle icons com melhor visibilidade */
+.dark .text-emerald-600 {
+  color: #10b981 !important; /* emerald-500 mantém boa visibilidade */
+}
+
+/* Hover states para elementos interativos */
+.dark .hover\:shadow-lg:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .hover\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Títulos principais com contraste máximo */
+.dark h1, .dark h2, .dark h3 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+/* Pain points cards - fundo mais contrastante */
+.dark .bg-white\/60.backdrop-blur-sm.border.border-slate-200.rounded-2xl {
+  background-color: rgba(15, 23, 42, 0.8) !important; /* slate-900 with opacity */
+  border-color: rgba(71, 85, 105, 0.4) !important;
+}
+
+/* Texto dos pain points */
+.dark .text-lg.font-semibold.text-slate-900 {
+  color: #f1f5f9 !important; /* slate-100 */
+}
+
+.dark .text-slate-600.text-sm {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+/* Correção específica para métricas com tarja azul */
+.dark .bg-gradient-to-r.from-blue-600.to-indigo-600.bg-clip-text.text-transparent {
+  background: linear-gradient(to right, #60a5fa, #818cf8) !important; /* blue-400 to indigo-400 */
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* Cards das métricas com melhor contraste */
+.dark .bg-white\/60.backdrop-blur-sm.rounded-2xl {
+  background-color: rgba(30, 41, 59, 0.95) !important; /* slate-800 mais opaco */
+  border-color: rgba(71, 85, 105, 0.3) !important;
+}
+
+/* Textos das métricas com máximo contraste */
+.dark .text-slate-900.dark\:text-slate-100 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+.dark .text-slate-600.dark\:text-slate-300 {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+
+/* Botões com melhor contraste no dark mode */
+.dark .bg-blue-600 {
+  background-color: #2563eb !important; /* blue-600 mais visível */
+}
+
+.dark .hover\:bg-blue-700:hover {
+  background-color: #1d4ed8 !important; /* blue-700 */
+}
+
+.dark .text-blue-600 {
+  color: #60a5fa !important; /* blue-400 para melhor contraste */
+}
+
+.dark .hover\:text-blue-600:hover {
+  color: #93c5fd !important; /* blue-300 */
+}
+
+/* Botões outline com fundo adequado para dark mode */
+.dark .bg-white\/80 {
+  background-color: rgba(51, 65, 85, 0.9) !important; /* slate-700 com opacity */
+}
+
+.dark .border-slate-300 {
+  border-color: rgba(71, 85, 105, 0.8) !important; /* slate-600 */
+}
+
+.dark .text-slate-700 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+.dark .hover\:bg-slate-50:hover {
+  background-color: rgba(71, 85, 105, 0.6) !important; /* slate-600 with opacity */
+}
+
+/* Botões ghost com hover states adequados */
+.dark .hover\:bg-blue-50:hover {
+  background-color: rgba(59, 130, 246, 0.15) !important; /* blue-600 com baixa opacity */
+}
+
+.dark .active\:bg-blue-100:active {
+  background-color: rgba(59, 130, 246, 0.25) !important; /* blue-600 com opacity maior */
+}
+
+/* Botões com background branco adaptados */
+.dark .bg-white {
+  background-color: rgba(51, 65, 85, 0.95) !important; /* slate-700 quase opaco */
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: rgba(71, 85, 105, 0.8) !important; /* slate-600 */
+}
+
+/* Text colors específicos para links e botões */
+.dark .text-gray-700 {
+  color: #e2e8f0 !important; /* slate-200 */
+}
+
+.dark .border-gray-300 {
+  border-color: rgba(71, 85, 105, 0.8) !important; /* slate-600 */
+}

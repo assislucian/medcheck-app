@@ -89,9 +89,9 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
     if (!isOverlay) {
       const root = document.documentElement;
       if (isCollapsed) {
-        root.style.setProperty('--sidebar-width', '72px');
+        root.style.setProperty('--sidebar-width', '70px');
       } else {
-        root.style.setProperty('--sidebar-width', '280px'); // Nova largura premium
+        root.style.setProperty('--sidebar-width', '280px');
       }
     }
   }, [isCollapsed, isOverlay]);

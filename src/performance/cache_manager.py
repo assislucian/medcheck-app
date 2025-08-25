@@ -180,3 +180,4 @@ def clear_user_cache(crm: str, uf: str) -> None:
             del app_cache._cache[key]
     
     logger.info(f"Cleared cache for user {crm}-{uf}")
+

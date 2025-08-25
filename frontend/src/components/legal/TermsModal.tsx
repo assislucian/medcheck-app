@@ -215,7 +215,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
             </section>
 
             {/* Informações Finais */}
-            <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <p className="font-semibold text-amber-800 dark:text-amber-200">Documento Juridicamente Vinculativo</p>
@@ -244,7 +244,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                 Fechar
               </Button>
               {showAcceptButton && (
-                <Button onClick={handleAccept} className="bg-amber-600 hover:bg-amber-700">
+                <Button onClick={handleAccept} variant="primary">
                   Aceitar Termos
                 </Button>
               )}

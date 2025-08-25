@@ -12,6 +12,7 @@ import { NotificationsMenu } from './navbar/NotificationsMenu';
 import { HelpMenu } from './navbar/HelpMenu';
 import { UserMenu } from './navbar/UserMenu';
 import { MobileMenu } from './navbar/MobileMenu';
+import { Logo } from '@/components/ui/logo';
 
 interface NavbarProps {
   isLoggedIn?: boolean;
@@ -101,9 +102,10 @@ const Navbar = ({
               </Button>
             ) : null}
             <Link to="/" className="flex items-center">
-              <span className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent">
-                MedCheck
-              </span>
+              <Logo 
+                size="xl" 
+                variant="default"
+              />
             </Link>
           </div>
 

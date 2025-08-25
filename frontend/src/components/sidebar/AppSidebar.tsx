@@ -205,7 +205,7 @@ export function AppSidebar() {
         ? 'w-4/5 max-w-[280px] transform'
         : isCollapsed
           ? 'w-[70px]'
-          : 'w-[260px]'
+          : 'w-[280px]'
     }
     ${isOverlay && !isOpen ? '-translate-x-full' : 'translate-x-0'}
   `;

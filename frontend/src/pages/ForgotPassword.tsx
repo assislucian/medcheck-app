@@ -174,10 +174,10 @@ const ForgotPasswordPage = () => {
           </p>
         </div>
 
-        <Card className="w-full max-w-md mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-amber-200/30 dark:border-amber-700/30 shadow-2xl shadow-amber-500/20 dark:shadow-amber-900/40 rounded-2xl overflow-hidden">
+        <Card className="w-full max-w-md mx-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/20 border border-blue-200/30 dark:border-blue-700/30 shadow-2xl shadow-blue-500/20 dark:shadow-blue-900/40 rounded-2xl overflow-hidden">
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4">
-              <Shield className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+              <Shield className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
               Esqueceu a Senha?
@@ -204,7 +204,7 @@ const ForgotPasswordPage = () => {
                     placeholder="seu-email@dominio.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full pl-10 pr-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition"
+                    className="mt-1 block w-full pl-10 pr-4 py-3 bg-white/50 dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                     disabled={loading}
                   />
                 </div>
@@ -231,7 +231,7 @@ const ForgotPasswordPage = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out flex items-center justify-center"
                 disabled={loading}
               >
                 {loading ? (

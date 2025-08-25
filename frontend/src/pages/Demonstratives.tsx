@@ -50,6 +50,8 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { SkeletonInfoCard } from '../components/ui/skeleton';
+import { InfoCard } from '../components/ui/InfoCard';
+import { AnimatedNumber } from '../components/ui/AnimatedNumber';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { ApiService } from '../services/api';
@@ -135,7 +137,7 @@ const getProceduresColumns = (navigate: any) => [
     width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-slate-700 whitespace-nowrap">
+      <span className="font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
         {formatCurrency(value)}
       </span>
     ),
@@ -146,7 +148,7 @@ const getProceduresColumns = (navigate: any) => [
     width: 110,
     valueFormatter: (params: any) => formatCurrency(params.value),
     renderCell: ({ value }) => (
-      <span className="font-medium text-emerald-700 whitespace-nowrap">
+      <span className="font-medium text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
         {formatCurrency(value)}
       </span>
     ),
@@ -165,8 +167,8 @@ const getProceduresColumns = (navigate: any) => [
           <Badge
             variant={hasGlosa ? 'destructive' : 'default'}
             className={`text-xs font-medium px-2 py-0.5 whitespace-nowrap ${hasGlosa
-              ? 'bg-red-50 text-red-700 border-red-200'
-              : 'bg-slate-50 text-slate-600 border-slate-200'
+              ? 'bg-red-50 text-red-700 dark:text-red-400 border-red-200 dark:bg-red-900/30 dark:border-red-700'
+              : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
               }`}
           >
             {formatCurrency(value)}
@@ -184,7 +186,7 @@ const getProceduresColumns = (navigate: any) => [
       params.value && params.value > 0 ? formatCurrency(params.value) : '--',
     renderCell: ({ value }) =>
       value && value > 0 ? (
-        <span className="font-medium text-slate-700 whitespace-nowrap">
+        <span className="font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
           {formatCurrency(value)}
         </span>
       ) : (
@@ -202,13 +204,13 @@ const getProceduresColumns = (navigate: any) => [
     renderCell: ({ value, row }) => {
       if (!row.cbhpm || row.cbhpm <= 0)
         return <span className="text-slate-400 text-xs">--</span>;
-      let bgClass = 'bg-slate-50 text-slate-700 border-slate-200';
+      let bgClass = 'bg-slate-50 text-slate-700 dark:text-slate-300 border-slate-200 dark:bg-slate-700 dark:border-slate-600';
       let Icon = null;
       if (value < 0) {
-        bgClass = 'bg-red-50 text-red-700 border-red-200';
+        bgClass = 'bg-red-50 text-red-700 dark:text-red-400 border-red-200 dark:bg-red-900/30 dark:border-red-700';
         Icon = <ArrowDownRight className="w-3 h-3" />;
       } else if (value > 0) {
-        bgClass = 'bg-blue-50 text-blue-700 border-blue-200';
+        bgClass = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700';
         Icon = <ArrowUpRight className="w-3 h-3" />;
       }
       return (
@@ -234,11 +236,11 @@ const getProceduresColumns = (navigate: any) => [
     renderCell: ({ value, row }) => {
       if (!row.cbhpm || row.cbhpm <= 0)
         return <span className="text-slate-400 text-xs">--</span>;
-      let bgClass = 'bg-slate-50 text-slate-700 border-slate-200';
+      let bgClass = 'bg-slate-50 text-slate-700 dark:text-slate-300 border-slate-200 dark:bg-slate-700 dark:border-slate-600';
       if (value < 0) {
-        bgClass = 'bg-red-50 text-red-700 border-red-200';
+        bgClass = 'bg-red-50 text-red-700 dark:text-red-400 border-red-200 dark:bg-red-900/30 dark:border-red-700';
       } else if (value > 0) {
-        bgClass = 'bg-blue-50 text-blue-700 border-blue-200';
+        bgClass = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-700';
       }
       return (
         <Badge
@@ -281,7 +283,7 @@ const getProceduresColumns = (navigate: any) => [
       return (
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 border-emerald-200 px-2 py-0.5 whitespace-nowrap">
+          <Badge className="text-xs font-medium bg-emerald-50 text-emerald-700 dark:text-emerald-400 border-emerald-200 px-2 py-0.5 whitespace-nowrap">
             {papelDisplay(value)}
           </Badge>
         </div>
@@ -435,42 +437,42 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
         }}
       >
         <div className="flex flex-col h-full min-h-0 gap-3 p-3 overflow-hidden">
-          <DialogHeader className="flex-shrink-0 border-b border-gray-100/60 pb-3">
+          <DialogHeader className="flex-shrink-0 border-b border-gray-100 dark:border-slate-600/60 pb-3">
             <div className="flex items-center justify-between overflow-hidden">
               <div className="flex-shrink-0">
-                <DialogTitle className="text-xl font-semibold text-gray-900">
+                <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-slate-100">
                   {demonstrative.periodo}
                 </DialogTitle>
-                <DialogDescription className="text-sm text-gray-500 mt-1">
+                <DialogDescription className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                   {totals.totalProcedimentos} procedimentos detalhados
                 </DialogDescription>
               </div>
 
               {/* Resumo discreto e elegante */}
-              <div className="flex items-center gap-6 text-sm bg-gray-50/50 px-4 py-2.5 rounded-xl border border-gray-100 overflow-hidden flex-shrink-0">
+              <div className="flex items-center gap-6 text-sm bg-gray-50 dark:bg-slate-700/50 px-4 py-2.5 rounded-xl border border-gray-100 dark:border-slate-600 overflow-hidden flex-shrink-0">
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-emerald-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                  <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">
                     Liberado
                   </span>
-                  <span className="font-semibold text-emerald-700">
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                     {formatCurrency(totals.totalLiberado)}
                   </span>
                 </div>
                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                  <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">
                     Glosas
                   </span>
-                  <span className="font-semibold text-red-700">
+                  <span className="font-semibold text-red-700 dark:text-red-400">
                     {formatCurrency(totals.totalGlosa)}
                   </span>
                 </div>
                 <div className="w-px h-4 bg-gray-200 flex-shrink-0"></div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="w-2 h-2 rounded-full bg-blue-500/80"></div>
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">
+                  <span className="text-gray-500 dark:text-slate-400 text-xs uppercase tracking-wide">
                     Taxa
                   </span>
                   <span className="font-semibold text-blue-700">
@@ -486,7 +488,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
             </div>
           </DialogHeader>
           {/* Barra de filtros elegante e minimalista */}
-          <div className="flex items-center justify-between bg-white/60 backdrop-blur-sm p-2 rounded-lg border border-gray-200/40 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between bg-white dark:bg-slate-800/60 backdrop-blur-sm p-2 rounded-lg border border-gray-200 dark:border-slate-600/40 shadow-sm overflow-hidden">
             <div className="flex items-center gap-2 text-sm text-gray-600 flex-shrink-0">
               {(() => {
                 const filteredCount = procedures.filter((row) => {
@@ -539,7 +541,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                 }}
                 className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${showOnlyPendentes
                   ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-sm'
-                  : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white/70'
+                  : 'border-amber-200 text-amber-600 hover:bg-amber-50/70 hover:border-amber-300 bg-white dark:bg-slate-800/70'
                   }`}
               >
                 {showOnlyPendentes ? 'Todos' : 'Pendentes'}
@@ -551,7 +553,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                   await handleExportPDF();
                   toast.success('PDF exportado com sucesso.');
                 }}
-                className="h-7 px-3 text-xs border-gray-200 text-gray-600 hover:bg-gray-50/70 font-medium transition-all duration-200 bg-white/70"
+                className="h-7 px-3 text-xs border-gray-200 dark:border-slate-600 text-gray-600 hover:bg-gray-50 dark:bg-slate-700/70 font-medium transition-all duration-200 bg-white dark:bg-slate-800/70"
               >
                 <Download className="w-3 h-3 mr-1" />
                 PDF
@@ -577,7 +579,7 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
                   }}
                   className={`h-7 px-3 text-xs font-medium transition-all duration-200 ${showOnlyGlosas
                     ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 shadow-sm'
-                    : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white/70'
+                    : 'border-red-200 text-red-600 hover:bg-red-50/70 hover:border-red-300 bg-white dark:bg-slate-800/70'
                     }`}
                 >
                   <AlertCircle className="h-3 w-3 mr-1" />
@@ -588,32 +590,32 @@ const DemonstrativeDetailDialog = ({ demonstrative }: DemonstrativeDetailDialogP
           </div>
           {/* Tabela de procedimentos - Design elegante e focado */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            <Card className="h-full flex flex-col border-gray-200 shadow-lg rounded-xl bg-white">
-              <CardHeader className="flex-shrink-0 py-2 px-4 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 rounded-t-xl">
+            <Card className="h-full flex flex-col border-gray-200 dark:border-slate-600 shadow-lg rounded-xl bg-white dark:bg-slate-800">
+              <CardHeader className="flex-shrink-0 py-2 px-4 bg-gradient-to-r from-white to-gray-50/30 border-b border-gray-100 dark:border-slate-600 rounded-t-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6 overflow-hidden">
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-emerald-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                      <span className="text-gray-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">
                         Confirmado
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-amber-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                      <span className="text-gray-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">
                         Pendente
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="w-2 h-2 rounded-full bg-red-500/70"></div>
-                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">
+                      <span className="text-gray-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider">
                         Glosa
                       </span>
                     </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 min-h-0 p-0 bg-white overflow-hidden">
+              <CardContent className="flex-1 min-h-0 p-0 bg-white dark:bg-slate-800 overflow-hidden">
                 {loading ? (
                   <div className="flex items-center justify-center h-64">
                     <Loader2 className="animate-spin text-blue-500 w-6 h-6" />
@@ -1204,7 +1206,7 @@ const DemonstrativesPage = () => {
       </Helmet>
 
       {/* Background com Gradiente Médico Consistente */}
-      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-gray-50/20 to-emerald-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-gray-50/20 to-emerald-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <AuthenticatedLayout
           title="Demonstrativos & Honorários"
           description="Central de análise e gerenciamento de demonstrativos de pagamento médico com análise financeira avançada e insights de performance"
@@ -1213,8 +1215,8 @@ const DemonstrativesPage = () => {
             {/* Header Discreto Seguindo Padrão Dashboard */}
             <div className="text-center space-y-3 pt-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-green-100 border border-emerald-200/50">
-                <FileBarChart className="h-4 w-4 text-emerald-700" />
-                <span className="text-xs font-medium text-emerald-800">
+                <FileBarChart className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                <span className="text-xs font-medium text-emerald-800 dark:text-emerald-300">
                   Análise financeira avançada
                 </span>
               </div>
@@ -1230,8 +1232,8 @@ const DemonstrativesPage = () => {
 
               {/* Actions Compactas */}
               <div className="flex justify-center items-center gap-2 flex-wrap pt-2">
-                <Badge variant="outline" className="gap-1 bg-white/80 text-xs">
-                  <TrendingUp className="h-3 w-3 text-emerald-600" />
+                <Badge variant="outline" className="gap-1 bg-white dark:bg-slate-800/80 text-xs">
+                  <TrendingUp className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                   Análise Avançada
                 </Badge>
 
@@ -1242,18 +1244,18 @@ const DemonstrativesPage = () => {
             <div className="w-full space-y-8">
               {/* 1. CONVERSÃO: Upload Principal (Destaque Máximo) */}
               <section aria-label="Upload de Demonstrativos" className="space-y-6">
-                <Card className="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 border-emerald-200 shadow-lg w-full relative overflow-hidden">
+                <Card className="bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border-emerald-200 dark:border-slate-600 shadow-lg w-full relative overflow-hidden">
                   {/* Linha de destaque superior */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
 
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-emerald-900">
+                    <CardTitle className="flex items-center gap-3 text-emerald-900 dark:text-emerald-300">
                       <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100 to-green-100">
-                        <Upload className="h-6 w-6 text-emerald-700" />
+                        <Upload className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
                       </div>
                       Upload de Demonstrativos
                     </CardTitle>
-                    <CardDescription className="text-emerald-700">
+                    <CardDescription className="text-emerald-700 dark:text-emerald-400">
                       <strong>Analise seus honorários:</strong> Envie seus demonstrativos para
                       análise automática de pagamentos e identificação de glosas
                     </CardDescription>
@@ -1271,7 +1273,7 @@ const DemonstrativesPage = () => {
                           accept=".pdf,.csv,.xlsx"
                           onChange={handleFileChange}
                           disabled={uploading}
-                          className="cursor-pointer bg-white/80 border-emerald-200/60"
+                          className="cursor-pointer bg-white dark:bg-slate-800/80 border-emerald-200/60"
                         />
                       </div>
                       <Button
@@ -1294,9 +1296,9 @@ const DemonstrativesPage = () => {
                     </div>
 
                     {uploadFiles.length > 0 && (
-                      <div className="text-sm text-emerald-700 bg-emerald-100/60 p-4 rounded-xl border border-emerald-200/60">
+                      <div className="text-sm text-emerald-700 dark:text-emerald-400 bg-emerald-100/60 p-4 rounded-xl border border-emerald-200/60">
                         <div className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-emerald-600" />
+                          <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           <strong>
                             {uploadFiles.length} arquivo(s) selecionado(s):
                           </strong>{' '}
@@ -1312,161 +1314,68 @@ const DemonstrativesPage = () => {
               <section aria-label="Visão Geral Financeira" className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-emerald-400 to-emerald-500 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                     Resumo Financeiro
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
                 {loading ? (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <SkeletonInfoCard key={i} />
                     ))}
                   </div>
                 ) : (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                    {/* Card Valores Liberados - Verde */}
-                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100"></div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-600"></div>
-                      <CardContent className="relative p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-100 to-green-100">
-                              <CheckCircle className="h-4 w-4 text-emerald-700" />
-                            </div>
-                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs">
-                              Liberado
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">
-                              Total Liberado
-                            </p>
-                            <p className="text-xl font-bold text-emerald-800 leading-none">
-                              {formatCurrency(summaryStats.totalProcessado)}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-5">
+                    <InfoCard
+                      title="Liberado"
+                      value={formatCurrency(summaryStats.totalProcessado)}
+                      description="Total liberado"
+                      icon={<CheckCircle className="h-4 w-4 text-emerald-600" />}
+                      variant="success"
+                      size="sm"
+                    />
 
-                    {/* Card Glosas - Vermelho */}
-                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-br from-red-50 via-rose-50 to-red-100"></div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-rose-600"></div>
-                      <CardContent className="relative p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-red-100 to-rose-100">
-                              <AlertCircle className="h-4 w-4 text-red-700" />
-                            </div>
-                            <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
-                              Glosas
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                              Total Glosado
-                            </p>
-                            <p className="text-xl font-bold text-red-800 leading-none">
-                              {formatCurrency(summaryStats.totalGlosa)}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <InfoCard
+                      title="Glosas"
+                      value={formatCurrency(summaryStats.totalGlosa)}
+                      description="Total glosado"
+                      icon={<AlertCircle className="h-4 w-4 text-red-600" />}
+                      variant="danger"
+                      size="sm"
+                    />
 
-                    {/* Card Procedimentos - Azul */}
-                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100"></div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-sky-600"></div>
-                      <CardContent className="relative p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-sky-100">
-                              <FileText className="h-4 w-4 text-blue-700" />
-                            </div>
-                            <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs">
-                              Processados
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                              Procedimentos
-                            </p>
-                            <p className="text-xl font-bold text-blue-800 leading-none">
-                              {summaryStats.totalProcedimentos}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <InfoCard
+                      title="Processados"
+                      value={<AnimatedNumber value={summaryStats.totalProcedimentos} />}
+                      description="Procedimentos"
+                      icon={<FileText className="h-4 w-4 text-blue-600" />}
+                      variant="info"
+                      size="sm"
+                    />
 
-                    {/* Card Demonstrativos - Âmbar */}
-                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"></div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-orange-600"></div>
-                      <CardContent className="relative p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100">
-                              <ClipboardList className="h-4 w-4 text-amber-700" />
-                            </div>
-                            <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-xs">
-                              Analisados
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">
-                              Demonstrativos
-                            </p>
-                            <p className="text-xl font-bold text-amber-800 leading-none">
-                              {demonstratives.length}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <InfoCard
+                      title="Analisados"
+                      value={<AnimatedNumber value={demonstratives.length} />}
+                      description="Demonstrativos"
+                      icon={<ClipboardList className="h-4 w-4 text-amber-600" />}
+                      variant="warning"
+                      size="sm"
+                    />
 
-                    {/* ✅ Card Auditorias Pendentes - Roxo */}
-                    <Card className="relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-violet-50 to-purple-100"></div>
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-violet-600"></div>
-                      <CardContent className="relative p-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-100 to-violet-100">
-                              {pendingAuditsLoading ? (
-                                <Loader2 className="h-4 w-4 text-purple-700 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 text-purple-700" />
-                              )}
-                            </div>
-                            <Badge className={`text-xs ${pendingAudits > 0
-                              ? 'bg-purple-100 text-purple-700 border-purple-200'
-                              : 'bg-green-100 text-green-700 border-green-200'
-                              }`}>
-                              {pendingAudits > 0 ? 'Pendente' : 'OK'}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-purple-600">
-                              Aguardando Guias
-                            </p>
-                            <p className="text-xl font-bold text-purple-800 leading-none">
-                              {pendingAuditsLoading ? '...' : pendingAudits}
-                            </p>
-                            {pendingAuditsError && (
-                              <p className="text-xs text-red-600 mt-1">
-                                {pendingAuditsError}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <InfoCard
+                      title="Pendente"
+                      value={pendingAuditsLoading ? '...' : <AnimatedNumber value={pendingAudits} />}
+                      description="Aguardando guias"
+                      icon={pendingAuditsLoading ? (
+                        <Loader2 className="h-4 w-4 text-purple-600 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 text-purple-600" />
+                      )}
+                      variant="neutral"
+                      size="sm"
+                    />
                   </div>
                 )}
               </section>
@@ -1475,7 +1384,7 @@ const DemonstrativesPage = () => {
               <section aria-label="Status da Análise" className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                     Status da Análise
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
@@ -1487,13 +1396,13 @@ const DemonstrativesPage = () => {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-gray-300 to-gray-400 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                     Filtros & Análise
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
                 </div>
 
-                <Card className="bg-white/40 backdrop-blur-sm border border-gray-200/30 shadow-sm w-full">
+                <Card className="bg-white dark:bg-slate-800/40 backdrop-blur-sm border border-gray-200 dark:border-slate-600/30 shadow-sm w-full">
                   <CardContent className="p-4 space-y-4">
                     {/* Linha 1: Busca */}
                     <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
@@ -1503,7 +1412,7 @@ const DemonstrativesPage = () => {
                           placeholder="Buscar por período, arquivo..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10 h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                          className="pl-10 h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                         />
                       </div>
 
@@ -1519,7 +1428,7 @@ const DemonstrativesPage = () => {
                           value={selectedStatus}
                           onValueChange={setSelectedStatus}
                         >
-                          <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                          <SelectTrigger className="w-[140px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm">
                             <SelectValue placeholder="Status" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1542,7 +1451,7 @@ const DemonstrativesPage = () => {
                     </div>
 
                     {/* Linha 2: Filtros de Data */}
-                    <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-gray-50/30 p-3 rounded-lg border border-gray-200/40">
+                    <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center bg-gray-50 dark:bg-slate-700/30 p-3 rounded-lg border border-gray-200 dark:border-slate-600/40">
                       <div className="flex items-center gap-2">
                         <Label className="text-sm font-medium text-gray-600 whitespace-nowrap">
                           Período de Upload:
@@ -1567,7 +1476,7 @@ const DemonstrativesPage = () => {
                               // Limpar período pré-definido quando usar data personalizada
                               if (e.target.value) setSelectedPeriod('all');
                             }}
-                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                            className="w-[140px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                           />
                         </div>
 
@@ -1588,7 +1497,7 @@ const DemonstrativesPage = () => {
                               // Limpar período pré-definido quando usar data personalizada
                               if (e.target.value) setSelectedPeriod('all');
                             }}
-                            className="w-[140px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm"
+                            className="w-[140px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm"
                           />
                         </div>
 
@@ -1614,7 +1523,7 @@ const DemonstrativesPage = () => {
                               }
                             }}
                           >
-                            <SelectTrigger className="w-[120px] h-9 rounded-lg bg-white/80 border-gray-200/60 text-sm">
+                            <SelectTrigger className="w-[120px] h-9 rounded-lg bg-white dark:bg-slate-800/80 border-gray-200 dark:border-slate-600/60 text-sm">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1683,7 +1592,7 @@ const DemonstrativesPage = () => {
               <section className="space-y-4">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-4 bg-gradient-to-b from-blue-400 to-blue-500 rounded-full"></div>
-                  <h3 className="text-base font-medium text-gray-700">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-slate-300">
                     Análise Detalhada
                   </h3>
                   <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
@@ -1694,7 +1603,7 @@ const DemonstrativesPage = () => {
                     rows={filteredDemonstratives}
                     columns={columns}
                     loading={loading}
-                    className="bg-white/80 backdrop-blur-sm border-gray-200/60 shadow-lg"
+                    className="bg-white dark:bg-slate-800/80 backdrop-blur-sm border-gray-200 dark:border-slate-600/60 shadow-lg"
                   />
                 </div>
               </section>

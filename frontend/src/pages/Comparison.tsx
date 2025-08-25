@@ -214,34 +214,64 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
   // If we have an analysisId, show the comparison view
   if (analysisId) {
     return (
-      <AuthenticatedLayout title="Comparação">
+      <>
         <Helmet>
           <title>Análise Comparativa | MedCheck</title>
+          <meta name="description" content="Análise comparativa detalhada de guias médicas com valores CBHPM" />
         </Helmet>
-        <ComparisonView analysisId={analysisId} />
-      </AuthenticatedLayout>
+        
+        {/* Background com Gradiente Padrão MedCheck */}
+        <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30">
+          <AuthenticatedLayout
+            title="Análise Comparativa"
+            description="Comparação detalhada com valores CBHPM de referência"
+          >
+            <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+              <ComparisonView analysisId={analysisId} />
+            </div>
+          </AuthenticatedLayout>
+        </div>
+      </>
     );
   }
 
   return (
-    <AuthenticatedLayout title="Centro de Tabelas e Orientação Jurídica">
+    <>
       <Helmet>
         <title>Centro de Tabelas e Orientação Jurídica | MedCheck</title>
         <meta name="description" content="Base completa CBHPM, calculadora de honorários e orientação jurídica para médicos" />
+        <meta name="keywords" content="CBHPM, calculadora honorários médicos, orientação jurídica médica, contestação glosas" />
       </Helmet>
 
-      <div className="space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Centro de Tabelas e Orientação Jurídica
-          </h1>
-          <p className="text-lg text-gray-600 max-w-4xl mx-auto">
-            Consulte a base completa CBHPM, calcule honorários médicos e obtenha orientação jurídica 
-            para defesa dos seus direitos profissionais.
-          </p>
-        </div>
+      {/* Background com Gradiente Padrão MedCheck */}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30">
+        <AuthenticatedLayout
+          title="Centro de Tabelas e Orientação Jurídica"
+          description="Base completa CBHPM, calculadora de honorários e orientação jurídica para médicos"
+        >
+          <div className="space-y-12 px-4 sm:px-6 lg:px-8 max-w-full overflow-hidden">
+            {/* Header Discreto Seguindo Padrão */}
+            <section className="text-center space-y-3 pt-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200/50">
+                <Scale className="h-4 w-4 text-blue-700" />
+                <span className="text-xs font-medium text-blue-800">
+                  Centro de conhecimento médico
+                </span>
+              </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-700 via-indigo-600 to-cyan-800 bg-clip-text text-transparent">
+                Centro de Tabelas e Orientação Jurídica
+              </h1>
+
+              <p className="text-sm text-gray-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
+                Base completa CBHPM, calculadora de honorários médicos e orientação jurídica 
+                para defesa dos seus direitos profissionais
+              </p>
+            </section>
+
+            {/* Seção Principal de Conteúdo */}
+            <section className="space-y-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="database" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
@@ -277,7 +307,7 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                   <div className="flex-1">
                     <Label htmlFor="search">Buscar Procedimento</Label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-slate-500" />
                       <Input
                         id="search"
                         placeholder="Digite o nome do procedimento ou código CBHPM..."
@@ -328,7 +358,7 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                                   <Badge variant="outline">{procedure.codigo}</Badge>
                                   <Badge variant="secondary">{getRoleName(selectedRole)}</Badge>
                                 </div>
-                                <p className="text-sm text-gray-900 leading-relaxed">
+                                <p className="text-sm text-gray-900 dark:text-slate-100 leading-relaxed">
                                   {procedure.procedimento}
                                 </p>
                               </div>
@@ -336,7 +366,7 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                                 <div className="text-lg font-semibold text-green-600">
                                   {formatCurrency(value)}
                                 </div>
-                                <div className="text-xs text-gray-500">Valor de referência</div>
+                                <div className="text-xs text-gray-500 dark:text-slate-400">Valor de referência</div>
                               </div>
                             </div>
                           </div>
@@ -447,13 +477,13 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                           </CardHeader>
                           <CardContent className="space-y-4">
                             <div>
-                              <h4 className="font-medium text-gray-900 mb-1">Procedimento:</h4>
-                              <p className="text-sm text-gray-700">{result.procedure.procedimento}</p>
+                              <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-1">Procedimento:</h4>
+                              <p className="text-sm text-gray-700 dark:text-slate-300">{result.procedure.procedimento}</p>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
                               <div>
-                                <h4 className="font-medium text-gray-900 mb-2">Detalhamento:</h4>
+                                <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2">Detalhamento:</h4>
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
                                     <span>Valor base ({getRoleName(calculatorValues.papel)}):</span>
@@ -474,11 +504,11 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                                 </div>
                               </div>
                               <div className="text-right">
-                                <h4 className="font-medium text-gray-900 mb-2">Total Calculado:</h4>
+                                <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2">Total Calculado:</h4>
                                 <div className="text-3xl font-bold text-green-600">
                                   {formatCurrency(result.total)}
                                 </div>
-                                <div className="text-sm text-gray-600 mt-1">
+                                <div className="text-sm text-gray-600 dark:text-slate-400 mt-1">
                                   Valor de referência CBHPM
                                 </div>
                               </div>
@@ -546,13 +576,13 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                             <BookOpen className="h-4 w-4" />
                             Base Legal:
                           </h4>
                           <ul className="space-y-1">
                             {guidance.laws.map((law, index) => (
-                              <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
+                              <li key={index} className="text-sm text-gray-700 dark:text-slate-300 flex items-start gap-2">
                                 <CheckCircle className="h-3 w-3 text-green-500 mt-1 flex-shrink-0" />
                                 {law}
                               </li>
@@ -561,13 +591,13 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
                         </div>
 
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <h4 className="font-medium text-gray-900 dark:text-slate-100 mb-2 flex items-center gap-2">
                             <TrendingUp className="h-4 w-4" />
                             Ações Recomendadas:
                           </h4>
                           <ul className="space-y-1">
                             {guidance.actions.map((action, index) => (
-                              <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
+                              <li key={index} className="text-sm text-gray-700 dark:text-slate-300 flex items-start gap-2">
                                 <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center mt-0.5 flex-shrink-0">
                                   {index + 1}
                                 </div>
@@ -677,9 +707,12 @@ Solicito a revisão da glosa aplicada, com base na fundamentação técnica apre
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+              </Tabs>
+            </section>
+          </div>
+        </AuthenticatedLayout>
       </div>
-    </AuthenticatedLayout>
+    </>
   );
 };
 

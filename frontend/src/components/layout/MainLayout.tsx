@@ -10,6 +10,7 @@ import { UserMenu } from '../navbar/UserMenu';
 import { AuthFooter } from './AuthFooter';
 
 import { Loader2 } from 'lucide-react';
+import { MedicalLoader } from '../ui/PremiumLoading';
 
 interface MainLayoutProps {
   title?: string;
@@ -28,7 +29,7 @@ export function MainLayout({
   loadingMessage = 'Carregando...',
   children,
 }: MainLayoutProps) {
-  const { isOpen, isOverlay } = useSidebarContext();
+  const { isOpen, isOverlay, isCollapsed } = useSidebarContext();
   const { user, userProfile, logout } = useAuth();
 
   useEffect(() => {
@@ -41,12 +42,12 @@ export function MainLayout({
         root.style.setProperty('--sidebar-width', '0px');
       } else {
         // Desktop: sidebar fixa
-        root.style.setProperty('--sidebar-width', isOpen ? '280px' : '70px');
+        root.style.setProperty('--sidebar-width', isCollapsed ? '70px' : '280px');
       }
     };
 
     updateLayoutVariables();
-  }, [isOpen, isOverlay]);
+  }, [isCollapsed, isOverlay]);
 
   // Consolidar dados do usuário - prioriza userProfile, fallback para user
   const currentUser = userProfile || user;
@@ -60,11 +61,12 @@ export function MainLayout({
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background font-sans antialiased flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-          <p className="text-sm text-gray-600 dark:text-gray-400">{loadingMessage}</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-cyan-50/30 font-sans antialiased flex items-center justify-center">
+        <MedicalLoader
+          size="xl"
+          variant="brain"
+          message={loadingMessage}
+        />
       </div>
     );
   }
@@ -84,9 +86,9 @@ export function MainLayout({
                 ? 'ml-0'
                 : isOverlay
                   ? 'ml-0'
-                  : isOpen
-                    ? 'ml-[280px]'
-                    : 'ml-[70px]'
+                  : isCollapsed
+                    ? 'ml-[70px]'
+                    : 'ml-[280px]'
             }
           `}
         >
