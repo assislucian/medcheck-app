@@ -39,9 +39,8 @@
           var storageKey = 'medcheck-theme';
           var theme = localStorage.getItem(storageKey);
           if (!theme) {
-            theme = window.matchMedia('(prefers-color-scheme: dark)').matches
-              ? 'dark'
-              : 'light';
+            // Sempre usar light mode como padrão, independente da preferência do sistema
+            theme = 'light';
           }
           document.documentElement.classList.remove('light', 'dark');
           document.documentElement.classList.add(theme);

@@ -222,43 +222,42 @@
    DARK MODE TYPOGRAPHY
    ======================================================================== */
 
-@media (prefers-color-scheme: dark) {
-  .dark .medical-heading-primary {
-    color: #E6F4FF;
-    text-shadow: 0 1px 2px rgba(230, 244, 255, 0.1);
-  }
-  
-  .dark .medical-heading-secondary {
-    color: #7DD3FC;
-  }
-  
-  .dark .medical-heading-tertiary {
-    color: #BAE6FD;
-  }
-  
-  .dark .medical-body {
-    color: #D4D4D8;
-  }
-  
-  .dark .medical-body-small {
-    color: #A1A1AA;
-  }
-  
-  .dark .medical-label {
-    color: #E6F4FF;
-  }
-  
-  .dark .medical-value-large {
-    color: #E6F4FF;
-  }
-  
-  .dark .medical-value {
-    color: #38BDF8;
-  }
-  
-  .dark .medical-code {
-    color: #2DD4BF;
-    background: rgba(45, 212, 191, 0.1);
-    border-color: rgba(45, 212, 191, 0.2);
-  }
+/* Dark mode typography - só aplica quando o tema dark estiver ativo */
+.dark .medical-heading-primary {
+  color: #E6F4FF;
+  text-shadow: 0 1px 2px rgba(230, 244, 255, 0.1);
+}
+
+.dark .medical-heading-secondary {
+  color: #7DD3FC;
+}
+
+.dark .medical-heading-tertiary {
+  color: #BAE6FD;
+}
+
+.dark .medical-body {
+  color: #D4D4D8;
+}
+
+.dark .medical-body-small {
+  color: #A1A1AA;
+}
+
+.dark .medical-label {
+  color: #E6F4FF;
+}
+
+.dark .medical-value-large {
+  color: #E6F4FF;
+}
+
+.dark .medical-value {
+  color: #38BDF8;
+}
+
+.dark .medical-code {
+  color: #2DD4BF;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.2);
 } 

@@ -439,21 +439,19 @@
   }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .mobile-card {
-    @apply bg-gray-800 border-gray-700;
-  }
+/* Dark mode support - só aplica quando o tema dark estiver ativo */
+.dark .mobile-card {
+  @apply bg-gray-800 border-gray-700;
+}
 
-  .mobile-card-title {
-    @apply text-gray-100;
-  }
+.dark .mobile-card-title {
+  @apply text-gray-100;
+}
 
-  .mobile-data-label {
-    @apply text-gray-300;
-  }
+.dark .mobile-data-label {
+  @apply text-gray-300;
+}
 
-  .mobile-data-value {
-    @apply text-gray-100;
-  }
+.dark .mobile-data-value {
+  @apply text-gray-100;
 } 

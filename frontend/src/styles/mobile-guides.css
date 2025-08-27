@@ -481,20 +481,18 @@
     }
   }
 
-  /* Dark mode support (future) */
-  @media (prefers-color-scheme: dark) {
-    .guides-mobile-container {
-      background: #111827;
-      color: white;
-    }
-    
-    .guide-mobile-card,
-    .guides-search-container,
-    .guides-upload-card {
-      background: #1f2937;
-      border-color: #374151;
-      color: white;
-    }
+  /* Dark mode support - só aplica quando o tema dark estiver ativo */
+  .dark .guides-mobile-container {
+    background: #111827;
+    color: white;
+  }
+  
+  .dark .guide-mobile-card,
+  .dark .guides-search-container,
+  .dark .guides-upload-card {
+    background: #1f2937;
+    border-color: #374151;
+    color: white;
   }
 }
 

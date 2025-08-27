@@ -450,21 +450,19 @@
   }
 }
 
-/* Dark mode support (if needed in future) */
-@media (prefers-color-scheme: dark) {
-  .mobile-hero-container {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    color: white;
-  }
-  
-  .mobile-card,
-  .mobile-pain-card,
-  .mobile-stat-card,
-  .mobile-solution-card {
-    background: #374151;
-    border-color: #4b5563;
-    color: white;
-  }
+/* Dark mode support - só aplica quando o tema dark estiver ativo */
+.dark .mobile-hero-container {
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  color: white;
+}
+
+.dark .mobile-card,
+.dark .mobile-pain-card,
+.dark .mobile-stat-card,
+.dark .mobile-solution-card {
+  background: #374151;
+  border-color: #4b5563;
+  color: white;
 }
 
 /* Print styles */
