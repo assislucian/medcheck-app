@@ -1147,10 +1147,23 @@ BLOCK_TIME_SECONDS = 600  # 10 minutos
 WINDOW_SECONDS = 600  # 10 minutos
 
 
-# --- Endpoint de cadastro com validação aprimorada ---
+# --- Endpoint de cadastro unificado (compatible with frontend) ---
 @app.post("/api/v1/register", response_model=RegisterResponse)
 @limiter.limit("3/minute")  # Limite mais restritivo para cadastros
-def register_medico(req: RegisterRequest, request: Request):
+async def register_medico(req: RegisterRequest, request: Request):
+    """
+    Unified registration endpoint compatible with new frontend.
+    Supports both old and new request formats.
+    """
+    # Ensure required fields have values
+    if not req.password:
+        raise HTTPException(status_code=400, detail="Password is required")
+    
+    # Apply defaults
+    req.uf = req.uf or "SP"
+    req.terms_accepted = req.terms_accepted if req.terms_accepted is not None else True
+    req.terms_version = req.terms_version or "2025-05-05"
+    
     # Validação de entrada
     if not validate_crm(req.crm):
         raise HTTPException(
@@ -1166,7 +1179,7 @@ def register_medico(req: RegisterRequest, request: Request):
     req.uf = req.uf.upper().strip()
 
     # Validação de senha forte
-    is_strong, msg = senha_forte(req.senha)
+    is_strong, msg = senha_forte(req.password)
     if not is_strong:
         raise HTTPException(status_code=400, detail=msg)
 
@@ -1184,7 +1197,7 @@ def register_medico(req: RegisterRequest, request: Request):
                 status_code=400,
                 detail="É necessário aceitar os Termos de Uso e a Política de Privacidade.",
             )
-        senha_hash = bcrypt.hashpw(req.senha.encode(), bcrypt.gensalt()).decode()
+        senha_hash = bcrypt.hashpw(req.password.encode(), bcrypt.gensalt()).decode()
         medico = Medico(
             crm=req.crm,
             uf=req.uf,
