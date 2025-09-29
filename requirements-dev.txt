@@ -15,7 +15,7 @@ mypy==1.7.1
 
 # Security scanning
 bandit==1.7.5
-safety==2.3.5
+safety==3.6.2
 
 # Pin specific versions to resolve conflicts
 packaging>=22.0  # Required by black and pytest
