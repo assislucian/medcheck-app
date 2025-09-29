@@ -24,7 +24,7 @@ mypy==1.7.1
 
 # Security Scanning
 bandit==1.7.5
-safety==2.3.5
+safety==3.6.2
 
 # Development Tools
 ipython==8.18.1
