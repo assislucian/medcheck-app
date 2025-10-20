@@ -3,7 +3,7 @@
 
 # Web Framework
 fastapi==0.112.2
-uvicorn[standard]==0.30.6
+uvicorn[standard]==0.38.0
 
 # Authentication & Security
 bcrypt==4.0.1
