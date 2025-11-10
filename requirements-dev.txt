@@ -14,7 +14,7 @@ flake8==6.1.0
 mypy==1.7.1
 
 # Security scanning
-bandit==1.7.5
+bandit==1.8.6
 safety==2.3.5
 
 # Pin specific versions to resolve conflicts
