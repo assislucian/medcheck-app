@@ -22,7 +22,7 @@ pydantic-settings==2.4.0
 numpy==1.26.4
 pandas==2.1.4
 pandera==0.17.2
-multimethod==1.9.1
+multimethod==2.0
 
 # Database ORM
 sqlalchemy==2.0.32
